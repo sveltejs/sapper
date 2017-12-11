@@ -7,11 +7,11 @@ module.exports = function create_matchers(files) {
 			if (parts[parts.length - 1] === 'index') parts.pop();
 
 			const dynamic = parts
-				.filter(part => part[0] === '%')
+				.filter(part => part[0] === '[')
 				.map(part => part.slice(1, -1));
 
 			const pattern = new RegExp(
-				`^\\/${parts.map(p => p[0] === '%' ? '([^/]+)' : p).join('\\/')}$`
+				`^\\/${parts.map(p => p[0] === '[' ? '([^/]+)' : p).join('\\/')}$`
 			);
 
 			const test = url => pattern.test(url);

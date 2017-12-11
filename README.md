@@ -44,13 +44,13 @@ Like Next, routes are defined by the project directory structure, but with some 
 
 * Files with an `.html` extension are treated as Svelte components. The `routes/about.html` (or `routes/about/index.html`) would create the `/about` route.
 * Files with a `.js` or `.mjs` extension are more generic route handlers. These files should export functions corresponding to the HTTP methods they support (example below).
-* Instead of route masking, we embed parameters in the filename. For example `post/%id%.html` maps to `/post/:id`, and the component will be rendered with the appropriate parameter.
-* Nested routes (read [this article](https://joshduff.com/2015-06-why-you-need-a-state-router.md)) can be handled by creating a file that matches the subroute — for example, `routes/app/settings/%submenu%.html` would match `/app/settings/profile` *and* `app/settings`, but in the latter case the `submenu` parameter would be `null`.
+* Instead of route masking, we embed parameters in the filename. For example `post/[id].html` maps to `/post/:id`, and the component will be rendered with the appropriate parameter.
+* Nested routes (read [this article](https://joshduff.com/2015-06-why-you-need-a-state-router.md)) can be handled by creating a file that matches the subroute — for example, `routes/app/settings/[submenu].html` would match `/app/settings/profile` *and* `app/settings`, but in the latter case the `submenu` parameter would be `null`.
 
 An example of a generic route:
 
 ```js
-// routes/api/post/%id%.js
+// routes/api/post/[id].js
 export async function get(req, res) {
   try {
     const data = await getPostFromDatabase(req.params.id);
@@ -71,7 +71,7 @@ export async function get(req, res) {
 Or, if you omit the `res` argument, it can use the return value:
 
 ```js
-// routes/api/post/%id%.js
+// routes/api/post/[id].js
 export async function get(req) {
   return await getPostFromDatabase(req.params.id);
 }
@@ -121,10 +121,10 @@ function navigate(url) {
     import('/index.js').then(render);
   } else if (match = /^\/post\/([^\/]+)$/.exec(url.pathname)) {
     params.id = match[1];
-    import('/post/%id%.html').then(render);
+    import('/post/[id].html').then(render);
   } else if (match = /^\/([^\/]+)$/.exec(url.pathname)) {
     params.wildcard = match[1];
-    import('/%wildcard%.html').then(render);
+    import('/[wildcard].html').then(render);
   }
 
   return true;
