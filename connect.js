@@ -3,7 +3,6 @@ const esm = require('@std/esm');
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
-const tmp = require('tmp');
 const create_matchers = require('./utils/create_matchers.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
@@ -11,8 +10,6 @@ const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 const esmRequire = esm(module, {
 	esm: 'all'
 });
-
-const dir = tmp.dirSync({ unsafeCleanup: true });
 
 module.exports = function connect(opts) {
 	const routes = path.resolve('routes');
@@ -24,7 +21,6 @@ module.exports = function connect(opts) {
 	let server_routes = glob.sync('**/*.+(js|mjs)', { cwd: routes });
 	let server_route_matchers = create_matchers(server_routes);
 
-	// create_app(routes, dir.name, page_matchers, opts.dev);
 	create_app(routes, out, page_matchers, opts.dev);
 
 	const webpack_compiler = create_webpack_compiler(
@@ -91,4 +87,3 @@ module.exports = function connect(opts) {
 		next();
 	};
 };
-
