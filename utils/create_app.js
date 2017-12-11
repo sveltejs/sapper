@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const tmp = require('tmp');
 
 const template = fs.readFileSync(path.resolve(__dirname, '../templates/main.js'), 'utf-8');
 
@@ -11,12 +10,23 @@ module.exports = function create_app(routes, dest, matchers, dev) {
 		.map(matcher => {
 			const condition = matcher.dynamic.length === 0 ?
 				`url.pathname === '/${matcher.parts.join('/')}'` :
-				`${matcher.pattern}.test(url.pathname)`;
+				`match = ${matcher.pattern}.exec(url.pathname)`;
+
+			const lines = [];
+
+			matcher.dynamic.forEach((part, i) => {
+				lines.push(
+					`params.${part} = match[${i + 1}];`
+				);
+			});
+
+			lines.push(
+				`import('${routes}/${matcher.file}').then(render);`
+			);
 
 			return `
 				if (${condition}) {
-					// TODO set params, if applicable
-					import('${routes}/${matcher.file}').then(render);
+					${lines.join(`\n\t\t\t\t\t`)}
 				}
 			`.replace(/^\t{3}/gm, '').trim();
 		})
