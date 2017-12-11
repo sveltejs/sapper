@@ -8,13 +8,15 @@
   },
   "dependencies": {
     "@std/esm": "^0.18.0",
-    "extract-text-webpack-plugin": "^3.0.2",
-    "tmp": "0.0.33",
     "webpack": "^3.10.0"
   },
   "devDependencies": {
-    "mocha": "^4.0.1",
-    "svelte": "^1.47.1"
+    "mocha": "^4.0.1"
+  },
+  "peerDependencies": {
+    "extract-text-webpack-plugin": "^3.0.2",
+    "svelte": "^1.47.1",
+    "svelte-loader": "^2.2.1"
   },
   "scripts": {
     "test": "mocha --opts mocha.opts"
