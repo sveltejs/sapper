@@ -27,8 +27,6 @@ A Sapper app is just an Express app (conventionally, `server.js`) that uses the 
 const app = require('express')();
 const sapper = require('sapper');
 
-const app = express();
-
 app.use(sapper());
 
 const { PORT = 3000 } = process.env;
@@ -74,7 +72,7 @@ Or, if you omit the `res` argument, it can use the return value:
 
 ```js
 // routes/api/post/%id%.js
-export async function get(req, res) {
+export async function get(req) {
   return await getPostFromDatabase(req.params.id);
 }
 ```

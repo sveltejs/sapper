@@ -1,14 +1,20 @@
 require('svelte/ssr/register');
 const esm = require('@std/esm');
+const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
+const tmp = require('tmp');
 const create_matchers = require('./utils/create_matchers.js');
+const create_app = require('./utils/create_app.js');
+const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 
-require = esm(module, {
+const esmRequire = esm(module, {
 	esm: 'all'
 });
 
-module.exports = function connect(opts = {}) {
+const dir = tmp.dirSync({ unsafeCleanup: true });
+
+module.exports = function connect(opts) {
 	const routes = path.resolve('routes');
 	const out = path.resolve('.sapper');
 
@@ -18,8 +24,22 @@ module.exports = function connect(opts = {}) {
 	let server_routes = glob.sync('**/*.+(js|mjs)', { cwd: routes });
 	let server_route_matchers = create_matchers(server_routes);
 
+	// create_app(routes, dir.name, page_matchers, opts.dev);
+	create_app(routes, out, page_matchers, opts.dev);
+
+	const webpack_compiler = create_webpack_compiler(
+		path.join(out, 'main.js'),
+		path.resolve('.sapper/webpack'),
+		opts.dev
+	);
+
 	return async function(req, res, next) {
 		const url = req.url.replace(/\?.+/, '');
+
+		if (url.startsWith('/webpack/')) {
+			fs.createReadStream(path.resolve('.sapper' + url)).pipe(res);
+			return;
+		}
 
 		for (let i = 0; i < page_matchers.length; i += 1) {
 			const matcher = page_matchers[i];
@@ -27,10 +47,17 @@ module.exports = function connect(opts = {}) {
 				const params = matcher.exec(url);
 				const Component = require(`${routes}/${matcher.file}`);
 
-				res.end(Component.render({
-					params,
-					query: req.query
-				}));
+				const app = await webpack_compiler.app;
+
+				const page = opts.template({
+					app,
+					html: Component.render({
+						params,
+						query: req.query
+					})
+				});
+
+				res.end(page);
 				return;
 			}
 		}
@@ -39,7 +66,7 @@ module.exports = function connect(opts = {}) {
 			const matcher = server_route_matchers[i];
 			if (matcher.test(url)) {
 				req.params = matcher.exec(url);
-				const route = require(`${routes}/${matcher.file}`);
+				const route = esmRequire(`${routes}/${matcher.file}`);
 
 				const handler = route[req.method.toLowerCase()];
 				if (handler) {

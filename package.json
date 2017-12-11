@@ -7,11 +7,14 @@
     "test": "test"
   },
   "dependencies": {
-    "@std/esm": "^0.18.0"
+    "@std/esm": "^0.18.0",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "tmp": "0.0.33",
+    "webpack": "^3.10.0"
   },
   "devDependencies": {
     "mocha": "^4.0.1",
-	"svelte": "^1.47.0"
+    "svelte": "^1.47.1"
   },
   "scripts": {
     "test": "mocha --opts mocha.opts"

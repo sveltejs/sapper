@@ -30,6 +30,7 @@ module.exports = function create_matchers(files) {
 
 			return {
 				file,
+				pattern,
 				test,
 				exec,
 				parts,
@@ -41,12 +42,5 @@ module.exports = function create_matchers(files) {
 				(a.dynamic.length - b.dynamic.length) || // match static paths first
 				(b.parts.length - a.parts.length) // match longer paths first
 			);
-		})
-		.map(matcher => {
-			return {
-				file: matcher.file,
-				test: matcher.test,
-				exec: matcher.exec
-			}
 		});
 }
