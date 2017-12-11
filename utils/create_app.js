@@ -15,7 +15,8 @@ module.exports = function create_app(routes, dest, matchers, dev) {
 
 			return `
 				if (${condition}) {
-					import('../routes/${matcher.file}').then(render);
+					// TODO set params, if applicable
+					import('${routes}/${matcher.file}').then(render);
 				}
 			`.replace(/^\t{3}/gm, '').trim();
 		})
