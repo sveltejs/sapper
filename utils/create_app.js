@@ -30,7 +30,7 @@ module.exports = function create_app(routes, dest, matchers, dev) {
 				}
 			`.replace(/^\t{3}/gm, '').trim();
 		})
-		.join(' else ');
+		.join(' else ') + ' else return false;';
 
 	const main = template.replace('// ROUTES', code);
 

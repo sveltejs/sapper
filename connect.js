@@ -8,7 +8,7 @@ const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 
 const esmRequire = esm(module, {
-	esm: 'all'
+	esm: 'js'
 });
 
 module.exports = function connect(opts) {

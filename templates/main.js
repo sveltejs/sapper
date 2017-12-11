@@ -3,7 +3,14 @@ window.addEventListener('click', event => {
 	while (a && a.nodeName !== 'A') a = a.parentNode;
 	if (!a) return;
 
-	if (navigate(new URL(a.href))) event.preventDefault();
+	if (navigate(new URL(a.href))) {
+		event.preventDefault();
+		history.pushState({}, '', a.href);
+	}
+});
+
+window.addEventListener('popstate', event => {
+	navigate(window.location);
 });
 
 const target = document.querySelector('main');
