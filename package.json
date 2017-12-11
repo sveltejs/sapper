@@ -1,0 +1,36 @@
+{
+  "name": "sapper",
+  "version": "0.0.1",
+  "description": "Combat-ready apps, engineered by Svelte",
+  "main": "connect.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@std/esm": "^0.18.0"
+  },
+  "devDependencies": {
+    "mocha": "^4.0.1",
+	"svelte": "^1.47.0"
+  },
+  "scripts": {
+    "test": "mocha --opts mocha.opts"
+  },
+  "repository": "https://github.com/sveltejs/sapper",
+  "keywords": [
+    "svelte",
+    "isomorphic",
+    "universal",
+    "template",
+    "express"
+  ],
+  "author": "Rich Harris",
+  "license": "LIL",
+  "bugs": {
+    "url": "https://github.com/sveltejs/sapper/issues"
+  },
+  "homepage": "https://github.com/sveltejs/sapper#readme",
+  "@std/esm": {
+    "esm": "js"
+  }
+}
