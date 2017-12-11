@@ -16,6 +16,7 @@ High-level goals:
 * Code-splitting and HMR out of the box (probably via webpack)
 * Best-in-class performance
 * As little magic as possible. Anyone should be able to understand how everything fits together, and e.g. make changes to the webpack config
+* Links are just `<a>` tags, no special `<Link>` components
 
 
 ## Design
@@ -79,6 +80,64 @@ export async function get(req, res) {
 ```
 
 
+## Client-side app
+
+Sapper will create (and in development mode, update) a barebones `main.js` file that dynamically imports individual routes and renders them — something like this:
+
+```js
+window.addEventListener('click', event => {
+  let a = event.target;
+  while (a && a.nodeName !== 'A') a = a.parentNode;
+  if (!a) return;
+
+  if (navigate(new URL(a.href))) event.preventDefault();
+});
+
+const target = document.querySelector('#sapper');
+let component;
+
+function navigate(url) {
+  if (url.origin !== window.location.origin) return;
+
+  let match;
+  let params = {};
+  const query = {};
+
+  function render(mod) {
+    if (component) {
+      component.destroy();
+    } else {
+      target.innerHTML = '';
+    }
+
+    component = new mod.default({
+      target,
+      data: { query, params },
+      hydrate: !!component
+    });
+  }
+
+  if (url.pathname === '/about') {
+    import('/about/index.html').then(render);
+  } else if (url.pathname === '/') {
+    import('/index.js').then(render);
+  } else if (match = /^\/post\/([^\/]+)$/.exec(url.pathname)) {
+    params.id = match[1];
+    import('/post/%id%.html').then(render);
+  } else if (match = /^\/([^\/]+)$/.exec(url.pathname)) {
+    params.wildcard = match[1];
+    import('/%wildcard%.html').then(render);
+  }
+
+  return true;
+}
+
+navigate(window.location);
+```
+
+We're glossing over a lot of important stuff here — e.g. handling `popstate` — but you get the idea. Knowledge of all the possible routes means we can generate optimal code, much in the same way that statically analysing Svelte templates allows the compiler to generate optimal code.
+
+
 ## Things to figure out
 
 * How to customise the overall page template
@@ -87,4 +146,7 @@ export async function get(req, res) {
 * `store` integration
 * Route transitions
 * Equivalent of `next export`
+* A good story for realtime/GraphQL stuff
+* Service worker
+* Using `Link...rel=preload` headers to push main.js/[route].js plus styles
 * ...and lots of other things that haven't occurred to me yet.
