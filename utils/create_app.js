@@ -3,25 +3,26 @@ const path = require('path');
 
 const template = fs.readFileSync(path.resolve(__dirname, '../templates/main.js'), 'utf-8');
 
-module.exports = function create_app(routes, dest, matchers, options) {
+module.exports = function create_app(src, dest, routes, options) {
 	// TODO in dev mode, watch files
 
-	const code = matchers
-		.map(matcher => {
-			const condition = matcher.dynamic.length === 0 ?
-				`url.pathname === '/${matcher.parts.join('/')}'` :
-				`match = ${matcher.pattern}.exec(url.pathname)`;
+	const code = routes
+		.filter(route => route.type === 'page')
+		.map(route => {
+			const condition = route.dynamic.length === 0 ?
+				`url.pathname === '/${route.parts.join('/')}'` :
+				`match = ${route.pattern}.exec(url.pathname)`;
 
 			const lines = [];
 
-			matcher.dynamic.forEach((part, i) => {
+			route.dynamic.forEach((part, i) => {
 				lines.push(
 					`params.${part} = match[${i + 1}];`
 				);
 			});
 
 			lines.push(
-				`import('${routes}/${matcher.file}').then(render);`
+				`import('${src}/${route.file}').then(render);`
 			);
 
 			return `

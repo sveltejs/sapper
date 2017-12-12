@@ -3,7 +3,8 @@ const esm = require('@std/esm');
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
-const create_matchers = require('./utils/create_matchers.js');
+const rimraf = require('rimraf');
+const create_routes = require('./utils/create_routes.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 
@@ -12,81 +13,78 @@ const esmRequire = esm(module, {
 });
 
 module.exports = function connect(opts) {
-	const routes = path.resolve('routes');
-	const out = path.resolve('.sapper');
+	const src = path.resolve('routes');
+	const dest = path.resolve(opts.tmpDir || '.sapper');
 
-	let pages = glob.sync('**/*.html', { cwd: routes });
-	let page_matchers = create_matchers(pages);
+	rimraf.sync(dest);
+	fs.mkdirSync(dest);
 
-	let server_routes = glob.sync('**/*.+(js|mjs)', { cwd: routes });
-	let server_route_matchers = create_matchers(server_routes);
+	let routes = create_routes(
+		glob.sync('**/*.+(html|js|mjs)', { cwd: src })
+	);
 
-	create_app(routes, out, page_matchers, opts);
+	create_app(src, dest, routes, opts);
 
 	const webpack_compiler = create_webpack_compiler(
-		path.join(out, 'main.js'),
-		path.resolve('.sapper/webpack'),
+		dest,
+		routes,
 		opts.dev
 	);
 
 	return async function(req, res, next) {
 		const url = req.url.replace(/\?.+/, '');
 
-		if (url.startsWith('/webpack/')) {
-			fs.createReadStream(path.resolve('.sapper' + url)).pipe(res);
+		if (url.startsWith('/client/')) {
+			fs.createReadStream(`${dest}${url}`).pipe(res);
 			return;
 		}
 
-		for (let i = 0; i < page_matchers.length; i += 1) {
-			const matcher = page_matchers[i];
-			if (matcher.test(url)) {
-				const params = matcher.exec(url);
-				const Component = require(`${routes}/${matcher.file}`);
+		for (const route of routes) {
+			if (route.test(url)) {
+				req.params = route.exec(url);
 
-				const main = await webpack_compiler.app;
+				const chunk = await webpack_compiler.get_chunk(route.id);
+				const mod = require(chunk);
 
-				const page = opts.template({
-					main,
-					html: Component.render({
-						params,
-						query: req.query
-					})
-				});
+				if (route.type === 'page') {
+					const main = await webpack_compiler.client_main;
 
-				res.status(200);
-				res.set({
-					// TODO etag stuff
-					'Content-Length': page.length,
-					'Content-Type': 'text/html'
-				});
-				res.end(page);
-				return;
-			}
-		}
+					const page = opts.template({
+						main,
+						html: mod.default.render({
+							params: req.params,
+							query: req.query
+						})
+					});
 
-		for (let i = 0; i < server_route_matchers.length; i += 1) {
-			const matcher = server_route_matchers[i];
-			if (matcher.test(url)) {
-				req.params = matcher.exec(url);
-				const route = esmRequire(`${routes}/${matcher.file}`);
-
-				const handler = route[req.method.toLowerCase()];
-				if (handler) {
-					if (handler.length === 2) {
-						handler(req, res);
-					} else {
-						const data = await handler(req);
-
-						// TODO headers, error handling
-						if (typeof data === 'string') {
-							res.end(data);
-						} else {
-							res.end(JSON.stringify(data));
-						}
-					}
-
-					return;
+					res.status(200);
+					res.set({
+						// TODO etag stuff
+						'Content-Length': page.length,
+						'Content-Type': 'text/html'
+					});
+					res.end(page);
 				}
+
+				else {
+					const handler = mod[req.method.toLowerCase()];
+						if (handler) {
+							if (handler.length === 2) {
+								handler(req, res);
+							} else {
+								const data = await handler(req);
+
+								// TODO headers, error handling
+								if (typeof data === 'string') {
+									res.end(data);
+								} else {
+									res.end(JSON.stringify(data));
+								}
+							}
+						}
+				}
+
+				return;
 			}
 		}
 
