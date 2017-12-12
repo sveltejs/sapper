@@ -21,7 +21,7 @@ module.exports = function connect(opts) {
 	let server_routes = glob.sync('**/*.+(js|mjs)', { cwd: routes });
 	let server_route_matchers = create_matchers(server_routes);
 
-	create_app(routes, out, page_matchers, opts.dev);
+	create_app(routes, out, page_matchers, opts);
 
 	const webpack_compiler = create_webpack_compiler(
 		path.join(out, 'main.js'),
@@ -43,16 +43,22 @@ module.exports = function connect(opts) {
 				const params = matcher.exec(url);
 				const Component = require(`${routes}/${matcher.file}`);
 
-				const app = await webpack_compiler.app;
+				const main = await webpack_compiler.app;
 
 				const page = opts.template({
-					app,
+					main,
 					html: Component.render({
 						params,
 						query: req.query
 					})
 				});
 
+				res.status(200);
+				res.set({
+					// TODO etag stuff
+					'Content-Length': page.length,
+					'Content-Type': 'text/html'
+				});
 				res.end(page);
 				return;
 			}

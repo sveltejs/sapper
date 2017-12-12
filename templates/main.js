@@ -13,7 +13,7 @@ window.addEventListener('popstate', event => {
 	navigate(window.location);
 });
 
-const target = document.querySelector('main');
+const target = document.querySelector('__selector__');
 let component;
 
 function navigate(url) {

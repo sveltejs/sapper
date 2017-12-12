@@ -3,7 +3,7 @@ const path = require('path');
 
 const template = fs.readFileSync(path.resolve(__dirname, '../templates/main.js'), 'utf-8');
 
-module.exports = function create_app(routes, dest, matchers, dev) {
+module.exports = function create_app(routes, dest, matchers, options) {
 	// TODO in dev mode, watch files
 
 	const code = matchers
@@ -32,7 +32,9 @@ module.exports = function create_app(routes, dest, matchers, dev) {
 		})
 		.join(' else ') + ' else return false;';
 
-	const main = template.replace('// ROUTES', code);
+	const main = template
+		.replace('__selector__', options.selector || 'main')
+		.replace('// ROUTES', code);
 
 	fs.writeFileSync(path.join(dest, 'main.js'), main);
 };
