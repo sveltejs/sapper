@@ -3,6 +3,8 @@ const path = require('path');
 module.exports = function create_matchers(files) {
 	return files
 		.map(file => {
+			if (/(^|\/|\\)_/.test(file)) return;
+
 			const parts = file.replace(/\.(html|js|mjs)$/, '').split(path.sep);
 			if (parts[parts.length - 1] === 'index') parts.pop();
 
@@ -37,6 +39,7 @@ module.exports = function create_matchers(files) {
 				dynamic
 			};
 		})
+		.filter(Boolean)
 		.sort((a, b) => {
 			return (
 				(a.dynamic.length - b.dynamic.length) || // match static paths first
