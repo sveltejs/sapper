@@ -8,6 +8,8 @@ module.exports = function create_matchers(files) {
 			const parts = file.replace(/\.(html|js|mjs)$/, '').split(path.sep);
 			if (parts[parts.length - 1] === 'index') parts.pop();
 
+			const id = parts.join('_').replace(/[[\]]/g, '$');
+
 			const dynamic = parts
 				.filter(part => part[0] === '[')
 				.map(part => part.slice(1, -1));
@@ -31,6 +33,8 @@ module.exports = function create_matchers(files) {
 			};
 
 			return {
+				id,
+				type: path.extname(file) === '.html' ? 'page' : 'route',
 				file,
 				pattern,
 				test,
