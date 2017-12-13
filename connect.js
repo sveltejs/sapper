@@ -45,6 +45,11 @@ module.exports = function connect(opts) {
 			return;
 		}
 
+		// whatever happens, we're going to serve some HTML
+		res.set({
+			'Content-Type': 'text/html'
+		});
+
 		try {
 			for (const route of routes) {
 				if (route.test(url)) {
@@ -68,10 +73,6 @@ module.exports = function connect(opts) {
 						});
 
 						res.status(200);
-						res.set({
-							// TODO etag stuff
-							'Content-Type': 'text/html'
-						});
 						res.end(page);
 					}
 
@@ -97,7 +98,10 @@ module.exports = function connect(opts) {
 				}
 			}
 
-			next();
+			res.status(404).end(templates.render(404, {
+				status: 404,
+				url
+			}));
 		} catch(err) {
 			// TODO nice error pages
 			res.status(500);
