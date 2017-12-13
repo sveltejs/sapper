@@ -8,7 +8,7 @@ module.exports = function create_matchers(files) {
 			const parts = file.replace(/\.(html|js|mjs)$/, '').split(path.sep);
 			if (parts[parts.length - 1] === 'index') parts.pop();
 
-			const id = parts.join('_').replace(/[[\]]/g, '$');
+			const id = parts.join('_').replace(/[[\]]/g, '$') || '_';
 
 			const dynamic = parts
 				.filter(part => part[0] === '[')
