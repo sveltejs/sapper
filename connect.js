@@ -39,35 +39,36 @@ module.exports = function connect(opts) {
 			return;
 		}
 
-		for (const route of routes) {
-			if (route.test(url)) {
-				req.params = route.exec(url);
+		try {
+			for (const route of routes) {
+				if (route.test(url)) {
+					req.params = route.exec(url);
 
-				const chunk = await webpack_compiler.get_chunk(route.id);
-				const mod = require(chunk);
+					const chunk = await webpack_compiler.get_chunk(route.id);
+					const mod = require(chunk);
 
-				if (route.type === 'page') {
-					const main = await webpack_compiler.client_main;
+					if (route.type === 'page') {
+						const main = await webpack_compiler.client_main;
 
-					const page = opts.template({
-						main,
-						html: mod.default.render({
-							params: req.params,
-							query: req.query
-						})
-					});
+						const page = opts.template({
+							main,
+							html: mod.default.render({
+								params: req.params,
+								query: req.query
+							})
+						});
 
-					res.status(200);
-					res.set({
-						// TODO etag stuff
-						'Content-Length': page.length,
-						'Content-Type': 'text/html'
-					});
-					res.end(page);
-				}
+						res.status(200);
+						res.set({
+							// TODO etag stuff
+							'Content-Length': page.length,
+							'Content-Type': 'text/html'
+						});
+						res.end(page);
+					}
 
-				else {
-					const handler = mod[req.method.toLowerCase()];
+					else {
+						const handler = mod[req.method.toLowerCase()];
 						if (handler) {
 							if (handler.length === 2) {
 								handler(req, res);
@@ -82,12 +83,17 @@ module.exports = function connect(opts) {
 								}
 							}
 						}
+					}
+
+					return;
 				}
-
-				return;
 			}
-		}
 
-		next();
+			next();
+		} catch(err) {
+			// TODO nice error pages
+			res.status(500);
+			res.end(err.message);
+		}
 	};
 };
