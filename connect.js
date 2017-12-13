@@ -5,6 +5,7 @@ const path = require('path');
 const glob = require('glob');
 const rimraf = require('rimraf');
 const create_routes = require('./utils/create_routes.js');
+const create_templates = require('./utils/create_templates.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 
@@ -31,10 +32,15 @@ module.exports = function connect(opts) {
 		opts.dev
 	);
 
+	const templates = create_templates();
+
 	return async function(req, res, next) {
 		const url = req.url.replace(/\?.+/, '');
 
 		if (url.startsWith('/client/')) {
+			res.set({
+				'Content-Type': 'application/javascript'
+			});
 			fs.createReadStream(`${dest}${url}`).pipe(res);
 			return;
 		}
@@ -55,10 +61,10 @@ module.exports = function connect(opts) {
 
 						const { html, css } = mod.default.render(data);
 
-						const page = opts.template({
+						const page = templates.render(200, {
 							main,
 							html,
-							css: (css && css.code || '')
+							styles: (css && css.code ? `<style>${css.code}</style>` : '')
 						});
 
 						res.status(200);

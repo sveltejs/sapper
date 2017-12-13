@@ -1,6 +1,5 @@
 const router = {
 	init(callback) {
-		console.log('initing');
 		window.addEventListener('click', event => {
 			let a = event.target;
 			while (a && a.nodeName !== 'A') a = a.parentNode;
