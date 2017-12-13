@@ -1,22 +1,9 @@
-window.addEventListener('click', event => {
-	let a = event.target;
-	while (a && a.nodeName !== 'A') a = a.parentNode;
-	if (!a) return;
-
-	if (navigate(new URL(a.href))) {
-		event.preventDefault();
-		history.pushState({}, '', a.href);
-	}
-});
-
-window.addEventListener('popstate', event => {
-	navigate(window.location);
-});
+import router from 'sapper/runtime/router.js';
 
 const target = document.querySelector('__selector__');
 let component;
 
-function navigate(url) {
+router.init(url => {
 	if (url.origin !== window.location.origin) return;
 
 	let match;
@@ -24,22 +11,26 @@ function navigate(url) {
 	const query = {};
 
 	function render(mod) {
-		if (component) {
-			component.destroy();
-		} else {
-			target.innerHTML = '';
-		}
+		const route = { query, params };
 
-		component = new mod.default({
-			target,
-			data: { query, params },
-			hydrate: !!component
+		Promise.resolve(
+			mod.default.preload ? mod.default.preload(route) : {}
+		).then(preloaded => {
+			if (component) {
+				component.destroy();
+			} else {
+				target.innerHTML = '';
+			}
+
+			component = new mod.default({
+				target,
+				data: Object.assign(route, preloaded),
+				hydrate: !!component
+			});
 		});
 	}
 
 	// ROUTES
 
 	return true;
-}
-
-navigate(window.location);
+});
