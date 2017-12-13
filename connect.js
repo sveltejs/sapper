@@ -50,18 +50,20 @@ module.exports = function connect(opts) {
 					if (route.type === 'page') {
 						const main = await webpack_compiler.client_main;
 
+						let data = { params: req.params, query: req.query };
+						if (mod.default.preload) data = Object.assign(data, await mod.default.preload(data));
+
+						const { html, css } = mod.default.render(data);
+
 						const page = opts.template({
 							main,
-							html: mod.default.render({
-								params: req.params,
-								query: req.query
-							})
+							html,
+							css: (css && css.code || '')
 						});
 
 						res.status(200);
 						res.set({
 							// TODO etag stuff
-							'Content-Length': page.length,
 							'Content-Type': 'text/html'
 						});
 						res.end(page);
@@ -93,7 +95,7 @@ module.exports = function connect(opts) {
 		} catch(err) {
 			// TODO nice error pages
 			res.status(500);
-			res.end(err.message);
+			res.end(err.stack);
 		}
 	};
 };
