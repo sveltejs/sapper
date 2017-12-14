@@ -37,7 +37,8 @@ module.exports = function connect(opts) {
 	return async function(req, res, next) {
 		const url = req.url.replace(/\?.+/, '');
 
-		if (url.startsWith('/client/')) {
+		if (url === '/service-worker.js' || url.startsWith('/client/')) {
+			await webpack_compiler.ready;
 			res.set({
 				'Content-Type': 'application/javascript'
 			});
@@ -53,21 +54,21 @@ module.exports = function connect(opts) {
 		try {
 			for (const route of routes) {
 				if (route.test(url)) {
+					await webpack_compiler.ready;
+
 					req.params = route.exec(url);
 
-					const chunk = await webpack_compiler.get_chunk(route.id);
-					const mod = require(chunk);
+					const chunk = webpack_compiler.chunks[route.id];
+					const mod = require(path.resolve(dest, 'server', chunk));
 
 					if (route.type === 'page') {
-						const main = await webpack_compiler.client_main;
-
 						let data = { params: req.params, query: req.query };
 						if (mod.default.preload) data = Object.assign(data, await mod.default.preload(data));
 
 						const { html, head, css } = mod.default.render(data);
 
 						const page = templates.render(200, {
-							main,
+							main: webpack_compiler.client_main,
 							html,
 							head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
 							styles: (css && css.code ? `<style>${css.code}</style>` : '')
