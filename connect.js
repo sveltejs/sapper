@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const rimraf = require('rimraf');
+const mkdirp = require('mkdirp');
 const create_routes = require('./utils/create_routes.js');
 const create_templates = require('./utils/create_templates.js');
 const create_app = require('./utils/create_app.js');
@@ -15,8 +16,8 @@ const esmRequire = esm(module, {
 });
 
 module.exports = function connect(opts) {
-	rimraf.sync(dest);
-	fs.mkdirSync(dest);
+	mkdirp(dest);
+	rimraf.sync(path.join(dest, '**'));
 
 	let routes = create_routes(
 		glob.sync('**/*.+(html|js|mjs)', { cwd: src })

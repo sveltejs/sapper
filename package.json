@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Combat-ready apps, engineered by Svelte",
   "main": "connect.js",
   "directories": {
@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@std/esm": "^0.18.0",
+    "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "webpack": "^3.10.0"
   },
