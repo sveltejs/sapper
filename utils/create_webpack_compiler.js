@@ -30,9 +30,10 @@ module.exports = function create_webpack_compiler(out, routes, dev) {
 	} else {
 		compiler.client_main = new Promise((fulfil, reject) => {
 			client.run((err, stats) => {
+				console.log(stats.toString({ colors: true }));
+
 				if (err || stats.hasErrors()) {
-					console.log(stats.toString({ colors: true }));
-					reject(err);
+					reject(err || stats.toJson().errors[0]);
 				}
 
 				const filename = stats.toJson().assetsByChunkName.main;
@@ -42,10 +43,10 @@ module.exports = function create_webpack_compiler(out, routes, dev) {
 
 		const chunks = new Promise((fulfil, reject) => {
 			server.run((err, stats) => {
+				console.log(stats.toString({ colors: true }));
+
 				if (err || stats.hasErrors()) {
-					// TODO deal with hasErrors
-					console.log(stats.toString({ colors: true }));
-					reject(err);
+					reject(err || stats.toJson().errors[0]);
 				}
 
 				fulfil(stats.toJson().assetsByChunkName);

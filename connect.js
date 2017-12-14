@@ -9,6 +9,7 @@ const create_routes = require('./utils/create_routes.js');
 const create_templates = require('./utils/create_templates.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
+const escape_html = require('escape-html');
 const { src, dest, dev } = require('./lib/config.js');
 
 const esmRequire = esm(module, {
@@ -99,13 +100,17 @@ module.exports = function connect(opts) {
 			}
 
 			res.status(404).end(templates.render(404, {
+				title: 'Not found',
 				status: 404,
+				method: req.method,
 				url
 			}));
 		} catch(err) {
-			// TODO nice error pages
-			res.status(500);
-			res.end(err ? (err.stack || err.message || err) : 'Unknown error');
+			res.status(500).end(templates.render(500, {
+				title: err.name || 'Internal server error',
+				url,
+				error: escape_html(err.details || err.message || err || 'Unknown error')
+			}));
 		}
 	};
 };
