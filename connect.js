@@ -17,7 +17,7 @@ const esmRequire = esm(module, {
 
 module.exports = function connect(opts) {
 	mkdirp(dest);
-	rimraf.sync(path.join(dest, '**'));
+	rimraf.sync(path.join(dest, '**/*'));
 
 	let routes = create_routes(
 		glob.sync('**/*.+(html|js|mjs)', { cwd: src })
