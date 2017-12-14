@@ -1,8 +1,11 @@
 import app from '__app__';
-import { detachNode } from 'svelte/shared.js';
 
 const target = document.querySelector('__selector__');
 let component;
+
+const detach = node => {
+	node.parentNode.removeChild(node);
+};
 
 app.init(url => {
 	if (url.origin !== window.location.origin) return;
@@ -25,9 +28,9 @@ app.init(url => {
 				let end = document.querySelector('#sapper-head-end');
 
 				if (start && end) {
-					while (start.nextSibling !== end) detachNode(start.nextSibling);
-					detachNode(start);
-					detachNode(end);
+					while (start.nextSibling !== end) detach(start.nextSibling);
+					detach(start);
+					detach(end);
 				}
 
 				target.innerHTML = '';
