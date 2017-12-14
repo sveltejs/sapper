@@ -9,85 +9,13 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 module.exports = function create_webpack_compiler(out, routes, dev) {
 	const compiler = {};
 
-	const client = webpack({
-		entry: {
-			main: `${out}/main`
-		},
-		resolve: {
-			extensions: ['.js', '.html']
-		},
-		output: {
-			path: `${out}/client`,
-			filename: '[name].[hash].js',
-			chunkFilename: '[name].[id].js',
-			publicPath: '/client/'
-		},
-		module: {
-			rules: [
-				{
-					test: /\.html$/,
-					exclude: /node_modules/,
-					use: {
-						loader: 'svelte-loader',
-						options: {
-							emitCss: true,
-							cascade: false,
-							store: true
-						}
-					}
-				},
-				{
-					test: /\.css$/,
-					use: ExtractTextPlugin.extract({
-						fallback: 'style-loader',
-						use: [{ loader: 'css-loader', options: { sourceMap: dev } }]
-					})
-				}
-			]
-		},
-		plugins: [
-			new ExtractTextPlugin('main.css'),
-			!dev && new webpack.optimize.ModuleConcatenationPlugin(),
-			!dev && new UglifyJSPlugin()
-		].filter(Boolean),
-		devtool: dev ? 'inline-source-map' : false
-	});
+	const client = webpack(
+		require(path.resolve('webpack.client.config.js'))
+	);
 
-	const server_entries = {};
-	routes.forEach(route => {
-		server_entries[route.id] = path.resolve('routes', route.file);
-	});
-
-	const server = webpack({
-		entry: server_entries,
-		target: 'node',
-		resolve: {
-			extensions: ['.js', '.html']
-		},
-		output: {
-			path: `${out}/server`,
-			filename: '[name].[hash].js',
-			chunkFilename: '[name].[id].js',
-			libraryTarget: 'commonjs2'
-		},
-		module: {
-			rules: [
-				{
-					test: /\.html$/,
-					exclude: /node_modules/,
-					use: {
-						loader: 'svelte-loader',
-						options: {
-							css: false,
-							cascade: false,
-							store: true,
-							generate: 'ssr'
-						}
-					}
-				}
-			]
-		}
-	});
+	const server = webpack(
+		require(path.resolve('webpack.server.config.js'))
+	);
 
 	if (false) { // TODO watch in dev
 		// TODO how can we invalidate compiler.client_main when watcher restarts?
@@ -107,7 +35,7 @@ module.exports = function create_webpack_compiler(out, routes, dev) {
 		compiler.client_main = new Promise((fulfil, reject) => {
 			client.run((err, stats) => {
 				if (err || stats.hasErrors()) {
-					console.log(stats.toString());
+					console.log(stats.toString({ colors: true }));
 					reject(err);
 				}
 
@@ -120,7 +48,7 @@ module.exports = function create_webpack_compiler(out, routes, dev) {
 			server.run((err, stats) => {
 				if (err || stats.hasErrors()) {
 					// TODO deal with hasErrors
-					console.log(stats.toString());
+					console.log(stats.toString({ colors: true }));
 					reject(err);
 				}
 
