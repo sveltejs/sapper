@@ -1,4 +1,4 @@
-const router = {
+const app = {
 	init(callback) {
 		window.addEventListener('click', event => {
 			let a = event.target;
@@ -19,6 +19,4 @@ const router = {
 	}
 };
 
-window.router = router;
-
-export default router;
+export default app;

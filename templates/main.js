@@ -1,9 +1,10 @@
-import router from 'sapper/runtime/router.js';
+import app from 'sapper/runtime/app.js';
+import { detachNode } from 'svelte/shared.js';
 
 const target = document.querySelector('__selector__');
 let component;
 
-router.init(url => {
+app.init(url => {
 	if (url.origin !== window.location.origin) return;
 
 	let match;
@@ -19,6 +20,16 @@ router.init(url => {
 			if (component) {
 				component.destroy();
 			} else {
+				// remove SSR'd <head> contents
+				const start = document.querySelector('#sapper-head-start');
+				let end = document.querySelector('#sapper-head-end');
+
+				if (start && end) {
+					while (start.nextSibling !== end) detachNode(start.nextSibling);
+					detachNode(start);
+					detachNode(end);
+				}
+
 				target.innerHTML = '';
 			}
 

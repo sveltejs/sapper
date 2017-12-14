@@ -64,11 +64,12 @@ module.exports = function connect(opts) {
 						let data = { params: req.params, query: req.query };
 						if (mod.default.preload) data = Object.assign(data, await mod.default.preload(data));
 
-						const { html, css } = mod.default.render(data);
+						const { html, head, css } = mod.default.render(data);
 
 						const page = templates.render(200, {
 							main,
 							html,
+							head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
 							styles: (css && css.code ? `<style>${css.code}</style>` : '')
 						});
 
