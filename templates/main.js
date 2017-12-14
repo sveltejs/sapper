@@ -1,4 +1,4 @@
-import app from 'sapper/runtime/app.js';
+import app from '__app__';
 import { detachNode } from 'svelte/shared.js';
 
 const target = document.querySelector('__selector__');

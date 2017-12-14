@@ -34,6 +34,7 @@ module.exports = function create_app(src, dest, routes, options) {
 		.join(' else ') + ' else return false;';
 
 	const main = template
+		.replace('__app__', path.resolve(__dirname, '../runtime/app.js'))
 		.replace('__selector__', options.selector || 'main')
 		.replace('// ROUTES', code);
 
