@@ -105,7 +105,7 @@ module.exports = function connect(opts) {
 		} catch(err) {
 			// TODO nice error pages
 			res.status(500);
-			res.end(err.stack);
+			res.end(err ? (err.stack || err.message || err) : 'Unknown error');
 		}
 	};
 };
