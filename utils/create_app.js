@@ -9,34 +9,18 @@ module.exports = function create_app(src, dest, routes, options) {
 	const code = routes
 		.filter(route => route.type === 'page')
 		.map(route => {
-			const condition = route.dynamic.length === 0 ?
-				`url.pathname === '/${route.parts.join('/')}'` :
-				`match = ${route.pattern}.exec(url.pathname)`;
+			const params = route.dynamic.length === 0 ?
+				'{}' :
+				`{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ') } }`;
 
-			const lines = [];
-
-			route.dynamic.forEach((part, i) => {
-				lines.push(
-					`params.${part} = match[${i + 1}];`
-				);
-			});
-
-			lines.push(
-				`import('${src}/${route.file}').then(render);`
-			);
-
-			return `
-				if (${condition}) {
-					${lines.join(`\n\t\t\t\t\t`)}
-				}
-			`.replace(/^\t{3}/gm, '').trim();
+			return `{ pattern: ${route.pattern}, params: match => (${params}), load: () => import('${src}/${route.file}') }`
 		})
-		.join(' else ') + ' else return false;';
+		.join(',\n\t');
 
 	const main = template
 		.replace('__app__', path.resolve(__dirname, '../runtime/app.js'))
 		.replace('__selector__', options.selector || 'main')
-		.replace('// ROUTES', code);
+		.replace('__routes__', code);
 
 	fs.writeFileSync(path.join(dest, 'main.js'), main);
 };
