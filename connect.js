@@ -8,15 +8,13 @@ const create_routes = require('./utils/create_routes.js');
 const create_templates = require('./utils/create_templates.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
+const { src, dest, dev } = require('./lib/config.js');
 
 const esmRequire = esm(module, {
 	esm: 'js'
 });
 
 module.exports = function connect(opts) {
-	const src = path.resolve('routes');
-	const dest = path.resolve(opts.tmpDir || '.sapper');
-
 	rimraf.sync(dest);
 	fs.mkdirSync(dest);
 
@@ -29,7 +27,7 @@ module.exports = function connect(opts) {
 	const webpack_compiler = create_webpack_compiler(
 		dest,
 		routes,
-		opts.dev
+		dev
 	);
 
 	const templates = create_templates();
