@@ -1,10 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-
-// TODO make the webpack config, err, configurable
 
 module.exports = function create_webpack_compiler(out, routes, dev) {
 	const compiler = {};
