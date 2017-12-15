@@ -6,7 +6,7 @@ const glob = require('glob');
 const rimraf = require('rimraf');
 const mkdirp = require('mkdirp');
 const create_routes = require('./utils/create_routes.js');
-const create_templates = require('./utils/create_templates.js');
+const templates = require('./lib/templates.js');
 const create_app = require('./utils/create_app.js');
 const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
 const escape_html = require('escape-html');
@@ -32,15 +32,13 @@ module.exports = function connect(opts) {
 		dev
 	);
 
-	const templates = create_templates();
-
 	return async function(req, res, next) {
 		const url = req.url.replace(/\?.+/, '');
 
-		if (url === '/service-worker.js' || url.startsWith('/client/')) {
+		if (url === '/service-worker.js' || url === '/index.html' || url.startsWith('/client/')) {
 			await webpack_compiler.ready;
 			res.set({
-				'Content-Type': 'application/javascript'
+				'Content-Type': url === '/index.html' ? 'text/html' : 'application/javascript'
 			});
 			fs.createReadStream(`${dest}${url}`).pipe(res);
 			return;
