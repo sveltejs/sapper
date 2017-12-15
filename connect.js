@@ -5,10 +5,10 @@ const path = require('path');
 const glob = require('glob');
 const rimraf = require('rimraf');
 const mkdirp = require('mkdirp');
-const create_routes = require('./utils/create_routes.js');
+const create_routes = require('./lib/utils/create_routes.js');
 const templates = require('./lib/templates.js');
-const create_app = require('./utils/create_app.js');
-const create_webpack_compiler = require('./utils/create_webpack_compiler.js');
+const create_app = require('./lib/utils/create_app.js');
+const create_webpack_compiler = require('./lib/utils/create_webpack_compiler.js');
 const escape_html = require('escape-html');
 const { src, dest, dev } = require('./lib/config.js');
 
