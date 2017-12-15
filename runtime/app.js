@@ -77,7 +77,6 @@ const app = {
 					scroll_history[cid] = { x: 0, y: 0 };
 
 					history.pushState({ id }, '', url.href);
-					event.preventDefault();
 				}
 
 				selected.route.load().then(mod => {
@@ -121,7 +120,9 @@ const app = {
 
 			const scroll = scroll_state();
 
-			navigate(new URL(a.href), null);
+			if (navigate(new URL(a.href), null)) {
+				event.preventDefault();
+			}
 		});
 
 		function preload(event) {
