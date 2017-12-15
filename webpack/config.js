@@ -16,7 +16,7 @@ module.exports = {
 			return {
 				path: `${dest}/client`,
 				filename: '[name].[hash].js',
-				chunkFilename: '[name].[id].js',
+				chunkFilename: '[name].[id].[hash].js',
 				publicPath: '/client/'
 			};
 		}
@@ -35,7 +35,7 @@ module.exports = {
 			return {
 				path: `${dest}/server`,
 				filename: '[name].[hash].js',
-				chunkFilename: '[name].[id].js',
+				chunkFilename: '[name].[id].[hash].js',
 				libraryTarget: 'commonjs2'
 			};
 		}
