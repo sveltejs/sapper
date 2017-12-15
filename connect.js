@@ -39,7 +39,7 @@ module.exports = function connect(opts) {
 			await compiler.ready;
 			res.set({
 				'Content-Type': 'application/javascript',
-				'Cache-Control': 'max-age=600'
+				'Cache-Control': dev ? 'no-cache' : 'max-age=600'
 			});
 			res.end(compiler.service_worker);
 		}
@@ -48,7 +48,7 @@ module.exports = function connect(opts) {
 			await compiler.ready;
 			res.set({
 				'Content-Type': 'text/html',
-				'Cache-Control': 'max-age=600'
+				'Cache-Control': dev ? 'no-cache' : 'max-age=600'
 			});
 			res.end(compiler.shell);
 		}
