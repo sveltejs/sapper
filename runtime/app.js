@@ -103,8 +103,6 @@ const app = {
 			const a = findAnchor(event.target);
 			if (!a) return;
 
-			event.preventDefault();
-
 			// check if link is inside an svg
 			// in this case, both href and target are always inside an object
 			const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
