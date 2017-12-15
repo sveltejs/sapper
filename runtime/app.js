@@ -4,6 +4,16 @@ const detach = node => {
 
 let component;
 
+const scroll_history = {};
+let uid = 1;
+let cid;
+
+window.scroll_history = scroll_history;
+
+if ('scrollRestoration' in history) {
+	history.scrollRestoration = 'manual'
+}
+
 const app = {
 	init(target, routes) {
 		function select_route(url) {
@@ -22,7 +32,7 @@ const app = {
 			}
 		}
 
-		function render(Component, data) {
+		function render(Component, data, scroll) {
 			Promise.resolve(
 				Component.preload ? Component.preload(data) : {}
 			).then(preloaded => {
@@ -48,33 +58,70 @@ const app = {
 					data: Object.assign(data, preloaded),
 					hydrate: !!component
 				});
+
+				window.scrollTo(scroll.x, scroll.y);
 			});
 		}
 
-		function navigate(url) {
+		function navigate(url, id) {
 			const selected = select_route(url);
 			if (selected) {
+				if (id) {
+					// popstate or initial navigation
+					cid = id;
+				} else {
+					// clicked on a link. preserve scroll state
+					scroll_history[cid] = scroll_state();
+
+					id = cid = ++uid;
+					scroll_history[cid] = { x: 0, y: 0 };
+
+					history.pushState({ id }, '', url.href);
+					event.preventDefault();
+				}
+
 				selected.route.load().then(mod => {
-					render(mod.default, selected.data);
+					render(mod.default, selected.data, scroll_history[id]);
 				});
 
+				cid = id;
 				return true;
 			}
 		}
 
 		function findAnchor(node) {
-			while (node && node.nodeName !== 'A') node = node.parentNode;
+			while (node && node.nodeName.toUpperCase() !== 'A') node = node.parentNode; // SVG <a> elements have a lowercase name
 			return node;
 		}
 
 		window.addEventListener('click', event => {
+			// Adapted from https://github.com/visionmedia/page.js
+			// MIT license https://github.com/visionmedia/page.js#license
+			if (which(event) !== 1) return;
+			if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+			if (event.defaultPrevented) return;
+
 			const a = findAnchor(event.target);
 			if (!a) return;
 
-			if (navigate(new URL(a.href))) {
-				event.preventDefault();
-				history.pushState({}, '', a.href);
-			}
+			event.preventDefault();
+
+			// check if link is inside an svg
+			// in this case, both href and target are always inside an object
+			const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
+			const href = svg ? a.href.baseVal : a.href;
+
+			// Ignore if tag has
+			// 1. 'download' attribute
+			// 2. rel='external' attribute
+			if (a.hasAttribute('download') || a.getAttribute('rel') === 'external') return;
+
+			// Ignore if <a> has a target
+			if (svg ? a.target.baseVal : a.target) return;
+
+			const scroll = scroll_state();
+
+			navigate(new URL(a.href), null);
 		});
 
 		function preload(event) {
@@ -94,11 +141,31 @@ const app = {
 		window.addEventListener('mouseover', preload);
 
 		window.addEventListener('popstate', event => {
-			navigate(new URL(window.location));
+			if (!event.state) return; // hashchange, or otherwise outside sapper's control
+			scroll_history[cid] = scroll_state();
+
+			console.log(`storing current scroll: ${cid}`, scroll_state());
+			console.log(`navigating to state: ${event.state.id}`, scroll_history[event.state.id]);
+			navigate(new URL(window.location), event.state.id);
 		});
 
-		navigate(new URL(window.location));
+		const scroll = scroll_history[uid] = scroll_state();
+
+		history.replaceState({ id: uid }, '', window.location.href);
+		navigate(new URL(window.location), uid);
 	}
 };
+
+function which(event) {
+	event = event || window.event;
+	return event.which === null ? event.button : event.which;
+}
+
+function scroll_state() {
+	return {
+		x: window.scrollX,
+		y: window.scrollY
+	};
+}
 
 export default app;
