@@ -144,8 +144,6 @@ const app = {
 			if (!event.state) return; // hashchange, or otherwise outside sapper's control
 			scroll_history[cid] = scroll_state();
 
-			console.log(`storing current scroll: ${cid}`, scroll_state());
-			console.log(`navigating to state: ${event.state.id}`, scroll_history[event.state.id]);
 			navigate(new URL(window.location), event.state.id);
 		});
 
