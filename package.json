@@ -7,18 +7,13 @@
     "test": "test"
   },
   "dependencies": {
-    "@std/esm": "^0.18.0",
     "escape-html": "^1.0.3",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "webpack": "^3.10.0"
   },
   "devDependencies": {
-    "mocha": "^4.0.1",
-    "svelte": "^1.47.1"
-  },
-  "peerDependencies": {
-    "svelte": "^1.47.1"
+    "mocha": "^4.0.1"
   },
   "scripts": {
     "test": "mocha --opts mocha.opts"
@@ -36,8 +31,5 @@
   "bugs": {
     "url": "https://github.com/sveltejs/sapper/issues"
   },
-  "homepage": "https://github.com/sveltejs/sapper#readme",
-  "@std/esm": {
-    "esm": "js"
-  }
+  "homepage": "https://github.com/sveltejs/sapper#readme"
 }
