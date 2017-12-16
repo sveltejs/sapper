@@ -57,7 +57,9 @@ const app = {
 					hydrate: !!component
 				});
 
-				window.scrollTo(scroll.x, scroll.y);
+				if (scroll) {
+					window.scrollTo(scroll.x, scroll.y);
+				}
 			});
 		}
 
@@ -119,11 +121,7 @@ const app = {
 			const url = new URL(href);
 
 			// Don't handle hash changes
-			if (url.pathname === window.location.pathname && url.search === window.location.search) {
-				return;
-			}
-
-			const scroll = scroll_state();
+			if (url.pathname === window.location.pathname && url.search === window.location.search) return;
 
 			if (navigate(url, null)) {
 				event.preventDefault();
@@ -147,10 +145,15 @@ const app = {
 		window.addEventListener('mouseover', preload);
 
 		window.addEventListener('popstate', event => {
-			if (!event.state) return; // hashchange, or otherwise outside sapper's control
 			scroll_history[cid] = scroll_state();
 
-			navigate(new URL(window.location), event.state.id);
+			if (event.state) {
+				navigate(new URL(window.location), event.state.id);
+			} else {
+				// hashchange
+				cid = ++uid;
+				history.replaceState({ id: cid }, '', window.location.href);
+			}
 		});
 
 		const scroll = scroll_history[uid] = scroll_state();
