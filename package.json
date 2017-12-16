@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Combat-ready apps, engineered by Svelte",
   "main": "connect.js",
   "directories": {
