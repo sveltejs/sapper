@@ -108,7 +108,10 @@ const app = {
 			const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
 			const href = svg ? a.href.baseVal : a.href;
 
-			if (href === window.location.href) return;
+			if (href === window.location.href) {
+				event.preventDefault();
+				return;
+			}
 
 			// Ignore if tag has
 			// 1. 'download' attribute
