@@ -8,8 +8,6 @@ const scroll_history = {};
 let uid = 1;
 let cid;
 
-window.scroll_history = scroll_history;
-
 if ('scrollRestoration' in history) {
 	history.scrollRestoration = 'manual'
 }
@@ -108,6 +106,8 @@ const app = {
 			const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
 			const href = svg ? a.href.baseVal : a.href;
 
+			if (href === window.location.href) return;
+
 			// Ignore if tag has
 			// 1. 'download' attribute
 			// 2. rel='external' attribute
@@ -116,9 +116,16 @@ const app = {
 			// Ignore if <a> has a target
 			if (svg ? a.target.baseVal : a.target) return;
 
+			const url = new URL(href);
+
+			// Don't handle hash changes
+			if (url.pathname === window.location.pathname && url.search === window.location.search) {
+				return;
+			}
+
 			const scroll = scroll_state();
 
-			if (navigate(new URL(a.href), null)) {
+			if (navigate(url, null)) {
 				event.preventDefault();
 			}
 		});
