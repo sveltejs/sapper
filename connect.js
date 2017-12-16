@@ -69,14 +69,13 @@ module.exports = function connect(opts) {
 
 						req.params = route.exec(url);
 
-						const chunk = compiler.chunks[route.id];
-						const mod = require(path.resolve(dest, 'server', chunk));
+						const mod = require(compiler.server_routes)[route.id];
 
 						if (route.type === 'page') {
 							let data = { params: req.params, query: req.query };
-							if (mod.default.preload) data = Object.assign(data, await mod.default.preload(data));
+							if (mod.preload) data = Object.assign(data, await mod.preload(data));
 
-							const { html, head, css } = mod.default.render(data);
+							const { html, head, css } = mod.render(data);
 
 							const page = templates.render(200, {
 								main: compiler.client_main,

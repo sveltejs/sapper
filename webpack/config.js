@@ -1,6 +1,6 @@
 const path = require('path');
 const route_manager = require('../lib/route_manager.js');
-const { src, dest, dev, main_built } = require('../lib/config.js');
+const { src, dest, dev, main_built, server_routes } = require('../lib/config.js');
 
 module.exports = {
 	dev,
@@ -24,11 +24,9 @@ module.exports = {
 
 	server: {
 		entry: () => {
-			const entries = {};
-			route_manager.routes.forEach(route => {
-				entries[route.id] = path.resolve(src, route.file);
-			});
-			return entries;
+			return {
+				server_routes
+			}
 		},
 
 		output: () => {
