@@ -1,5 +1,3 @@
-require('svelte/ssr/register');
-const esm = require('@std/esm');
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
@@ -11,10 +9,6 @@ const create_app = require('./lib/utils/create_app.js');
 const create_compiler = require('./lib/utils/create_compiler.js');
 const escape_html = require('escape-html');
 const { src, dest, dev } = require('./lib/config.js');
-
-const esmRequire = esm(module, {
-	esm: 'js'
-});
 
 module.exports = function connect(opts) {
 	mkdirp(dest);
@@ -125,9 +119,10 @@ module.exports = function connect(opts) {
 				}));
 			} catch(err) {
 				res.status(500).end(templates.render(500, {
-					title: err.name || 'Internal server error',
+					title: (err && err.name) || 'Internal server error',
 					url,
-					error: escape_html(err.details || err.message || err || 'Unknown error')
+					error: escape_html(err && (err.details || err.message || err) || 'Unknown error'),
+					stack: err && err.stack.split('\n').slice(1).join('\n')
 				}));
 			}
 		}
