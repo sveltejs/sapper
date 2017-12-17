@@ -1,6 +1,6 @@
 const path = require('path');
 const route_manager = require('../lib/route_manager.js');
-const { src, dest, dev, main_built, server_routes } = require('../lib/config.js');
+const { src, dest, dev, server_routes } = require('../lib/config.js');
 
 module.exports = {
 	dev,
@@ -8,7 +8,7 @@ module.exports = {
 	client: {
 		entry: () => {
 			return {
-				main: main_built
+				main: `${dest}/main.js`
 			};
 		},
 
