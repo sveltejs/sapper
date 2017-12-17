@@ -2,7 +2,7 @@ const detach = node => {
 	node.parentNode.removeChild(node);
 };
 
-let component;
+export let component;
 let target;
 let routes;
 
@@ -158,28 +158,26 @@ function findAnchor(node) {
 
 let inited;
 
-const app = {
-	init(_target, _routes) {
-		target = _target;
-		routes = _routes;
+export function init(_target, _routes) {
+	target = _target;
+	routes = _routes;
 
-		if (!inited) { // this check makes HMR possible
-			window.addEventListener('click', handle_click);
-			window.addEventListener('popstate', handle_popstate);
+	if (!inited) { // this check makes HMR possible
+		window.addEventListener('click', handle_click);
+		window.addEventListener('popstate', handle_popstate);
 
-			// prefetch
-			window.addEventListener('touchstart', prefetch);
-			window.addEventListener('mouseover', prefetch);
+		// prefetch
+		window.addEventListener('touchstart', prefetch);
+		window.addEventListener('mouseover', prefetch);
 
-			inited = true;
-		}
-
-		const scroll = scroll_history[uid] = scroll_state();
-
-		history.replaceState({ id: uid }, '', window.location.href);
-		navigate(new URL(window.location), uid);
+		inited = true;
 	}
-};
+
+	const scroll = scroll_history[uid] = scroll_state();
+
+	history.replaceState({ id: uid }, '', window.location.href);
+	navigate(new URL(window.location), uid);
+}
 
 function which(event) {
 	event = event || window.event;
@@ -192,5 +190,3 @@ function scroll_state() {
 		y: window.scrollY
 	};
 }
-
-export default app;
