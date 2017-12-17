@@ -3,6 +3,8 @@ const detach = node => {
 };
 
 let component;
+let target;
+let routes;
 
 const scroll_history = {};
 let uid = 1;
@@ -12,152 +14,165 @@ if ('scrollRestoration' in history) {
 	history.scrollRestoration = 'manual'
 }
 
-const app = {
-	init(target, routes) {
-		function select_route(url) {
-			if (url.origin !== window.location.origin) return null;
+function select_route(url) {
+	if (url.origin !== window.location.origin) return null;
 
-			for (const route of routes) {
-				const match = route.pattern.exec(url.pathname);
-				if (match) {
-					const params = route.params(match);
+	for (const route of routes) {
+		const match = route.pattern.exec(url.pathname);
+		if (match) {
+			const params = route.params(match);
 
-					const query = {};
-					for (const [key, value] of url.searchParams) query[key] = value || true;
+			const query = {};
+			for (const [key, value] of url.searchParams) query[key] = value || true;
 
-					return { route, data: { params, query } };
-				}
-			}
+			return { route, data: { params, query } };
 		}
+	}
+}
 
-		function render(Component, data, scroll) {
-			Promise.resolve(
-				Component.preload ? Component.preload(data) : {}
-			).then(preloaded => {
-				if (component) {
-					component.destroy();
-				} else {
-					// first load — remove SSR'd <head> contents
-					const start = document.querySelector('#sapper-head-start');
-					let end = document.querySelector('#sapper-head-end');
+function render(Component, data, scroll) {
+	Promise.resolve(
+		Component.preload ? Component.preload(data) : {}
+	).then(preloaded => {
+		if (component) {
+			component.destroy();
+		} else {
+			// first load — remove SSR'd <head> contents
+			const start = document.querySelector('#sapper-head-start');
+			let end = document.querySelector('#sapper-head-end');
 
-					if (start && end) {
-						while (start.nextSibling !== end) detach(start.nextSibling);
-						detach(start);
-						detach(end);
-					}
-
-					// preload additional routes
-					routes.reduce((promise, route) => promise.then(route.load), Promise.resolve());
-				}
-
-				component = new Component({
-					target,
-					data: Object.assign(data, preloaded),
-					hydrate: !!component
-				});
-
-				if (scroll) {
-					window.scrollTo(scroll.x, scroll.y);
-				}
-			});
-		}
-
-		function navigate(url, id) {
-			const selected = select_route(url);
-			if (selected) {
-				if (id) {
-					// popstate or initial navigation
-					cid = id;
-				} else {
-					// clicked on a link. preserve scroll state
-					scroll_history[cid] = scroll_state();
-
-					id = cid = ++uid;
-					scroll_history[cid] = { x: 0, y: 0 };
-
-					history.pushState({ id }, '', url.href);
-				}
-
-				selected.route.load().then(mod => {
-					render(mod.default, selected.data, scroll_history[id]);
-				});
-
-				cid = id;
-				return true;
-			}
-		}
-
-		function findAnchor(node) {
-			while (node && node.nodeName.toUpperCase() !== 'A') node = node.parentNode; // SVG <a> elements have a lowercase name
-			return node;
-		}
-
-		window.addEventListener('click', event => {
-			// Adapted from https://github.com/visionmedia/page.js
-			// MIT license https://github.com/visionmedia/page.js#license
-			if (which(event) !== 1) return;
-			if (event.metaKey || event.ctrlKey || event.shiftKey) return;
-			if (event.defaultPrevented) return;
-
-			const a = findAnchor(event.target);
-			if (!a) return;
-
-			// check if link is inside an svg
-			// in this case, both href and target are always inside an object
-			const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
-			const href = svg ? a.href.baseVal : a.href;
-
-			if (href === window.location.href) {
-				event.preventDefault();
-				return;
+			if (start && end) {
+				while (start.nextSibling !== end) detach(start.nextSibling);
+				detach(start);
+				detach(end);
 			}
 
-			// Ignore if tag has
-			// 1. 'download' attribute
-			// 2. rel='external' attribute
-			if (a.hasAttribute('download') || a.getAttribute('rel') === 'external') return;
+			// preload additional routes
+			routes.reduce((promise, route) => promise.then(route.load), Promise.resolve());
+		}
 
-			// Ignore if <a> has a target
-			if (svg ? a.target.baseVal : a.target) return;
-
-			const url = new URL(href);
-
-			// Don't handle hash changes
-			if (url.pathname === window.location.pathname && url.search === window.location.search) return;
-
-			if (navigate(url, null)) {
-				event.preventDefault();
-			}
+		component = new Component({
+			target,
+			data: Object.assign(data, preloaded),
+			hydrate: !!component
 		});
 
-		function preload(event) {
-			const a = findAnchor(event.target);
-			if (!a || a.rel !== 'prefetch') return;
-
-			const selected = select_route(new URL(a.href));
-
-			if (selected) {
-				selected.route.load().then(mod => {
-					if (mod.default.preload) mod.default.preload(selected.data);
-				});
-			}
+		if (scroll) {
+			window.scrollTo(scroll.x, scroll.y);
 		}
+	});
+}
 
-		window.addEventListener('touchstart', preload);
-		window.addEventListener('mouseover', preload);
-
-		window.addEventListener('popstate', event => {
+function navigate(url, id) {
+	const selected = select_route(url);
+	if (selected) {
+		if (id) {
+			// popstate or initial navigation
+			cid = id;
+		} else {
+			// clicked on a link. preserve scroll state
 			scroll_history[cid] = scroll_state();
 
-			if (event.state) {
-				navigate(new URL(window.location), event.state.id);
-			} else {
-				// hashchange
-				cid = ++uid;
-				history.replaceState({ id: cid }, '', window.location.href);
-			}
+			id = cid = ++uid;
+			scroll_history[cid] = { x: 0, y: 0 };
+
+			history.pushState({ id }, '', url.href);
+		}
+
+		selected.route.load().then(mod => {
+			render(mod.default, selected.data, scroll_history[id]);
 		});
+
+		cid = id;
+		return true;
+	}
+}
+
+function handle_click(event) {
+	// Adapted from https://github.com/visionmedia/page.js
+	// MIT license https://github.com/visionmedia/page.js#license
+	if (which(event) !== 1) return;
+	if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+	if (event.defaultPrevented) return;
+
+	const a = findAnchor(event.target);
+	if (!a) return;
+
+	// check if link is inside an svg
+	// in this case, both href and target are always inside an object
+	const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
+	const href = svg ? a.href.baseVal : a.href;
+
+	if (href === window.location.href) {
+		event.preventDefault();
+		return;
+	}
+
+	// Ignore if tag has
+	// 1. 'download' attribute
+	// 2. rel='external' attribute
+	if (a.hasAttribute('download') || a.getAttribute('rel') === 'external') return;
+
+	// Ignore if <a> has a target
+	if (svg ? a.target.baseVal : a.target) return;
+
+	const url = new URL(href);
+
+	// Don't handle hash changes
+	if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+	if (navigate(url, null)) {
+		event.preventDefault();
+	}
+}
+
+function handle_popstate(event) {
+	scroll_history[cid] = scroll_state();
+
+	if (event.state) {
+		navigate(new URL(window.location), event.state.id);
+	} else {
+		// hashchange
+		cid = ++uid;
+		history.replaceState({ id: cid }, '', window.location.href);
+	}
+}
+
+function prefetch(event) {
+	const a = findAnchor(event.target);
+	if (!a || a.rel !== 'prefetch') return;
+
+	const selected = select_route(new URL(a.href));
+
+	if (selected) {
+		selected.route.load().then(mod => {
+			if (mod.default.preload) mod.default.preload(selected.data);
+		});
+	}
+}
+
+function findAnchor(node) {
+	while (node && node.nodeName.toUpperCase() !== 'A') node = node.parentNode; // SVG <a> elements have a lowercase name
+	return node;
+}
+
+let inited;
+
+const app = {
+	init(_target, _routes) {
+		target = _target;
+		routes = _routes;
+
+		if (!inited) { // this check makes HMR possible
+			window.addEventListener('click', handle_click);
+			window.addEventListener('popstate', handle_popstate);
+
+			// prefetch
+			window.addEventListener('touchstart', prefetch);
+			window.addEventListener('mouseover', prefetch);
+
+			inited = true;
+		}
 
 		const scroll = scroll_history[uid] = scroll_state();
 

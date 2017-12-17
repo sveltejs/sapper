@@ -2,15 +2,18 @@
   "name": "sapper",
   "version": "0.0.21",
   "description": "Combat-ready apps, engineered by Svelte",
-  "main": "connect.js",
+  "main": "lib/index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
+    "chalk": "^2.3.0",
     "escape-html": "^1.0.3",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "webpack-dev-middleware": "^2.0.1",
+    "webpack-hot-middleware": "^2.21.0"
   },
   "devDependencies": {
     "mocha": "^4.0.1"
