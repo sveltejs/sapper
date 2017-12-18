@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.1
+
+* Inject HMR logic in dev mode
+
 ## 0.2.0
 
 * Separate `sapper build` from prod server ([#21](https://github.com/sveltejs/sapper/issues/21))
