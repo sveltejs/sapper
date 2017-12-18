@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.0
+
+* Separate `sapper build` from prod server ([#21](https://github.com/sveltejs/sapper/issues/21))
+
 ## 0.1.3-5
 
 * Fix typo
