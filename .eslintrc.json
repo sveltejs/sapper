@@ -32,14 +32,8 @@
         "plugin:import/errors",
         "plugin:import/warnings"
     ],
-    "plugins": [
-        "html"
-    ],
     "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module"
-    },
-    "settings": {
-        "import/core-modules": [ "svelte" ]
     }
 }
