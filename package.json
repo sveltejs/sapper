@@ -3,6 +3,9 @@
   "version": "0.1.5",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "lib/index.js",
+  "bin": {
+    "sapper": "cli/index.js"
+  },
   "directories": {
     "test": "test"
   },
@@ -10,6 +13,7 @@
     "chalk": "^2.3.0",
     "escape-html": "^1.0.3",
     "mkdirp": "^0.5.1",
+    "require-relative": "^0.8.7",
     "rimraf": "^2.6.2",
     "webpack": "^3.10.0",
     "webpack-dev-middleware": "^2.0.1",
