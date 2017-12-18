@@ -12,7 +12,6 @@
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "webpack": "^3.10.0",
-    "webpack-dev-middleware": "^2.0.1",
     "webpack-hot-middleware": "^2.21.0"
   },
   "devDependencies": {
