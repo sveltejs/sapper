@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.1.3
+
+* Fix typo
+
 ## 0.1.2
 
 * Use `atime.getTime()` and `mtime.getTime()` instead of `atimeMs` and `mtimeMs` ([#11](https://github.com/sveltejs/sapper/issues/11))
