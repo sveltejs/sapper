@@ -1,7 +1,7 @@
 const path = require('path');
 const assert = require('assert');
 
-const create_matchers = require('./create_matchers.js');
+const create_matchers = require('../../lib/utils/create_routes.js');
 
 describe('create_matchers', () => {
 	it('sorts routes correctly', () => {
