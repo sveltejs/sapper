@@ -7,4 +7,4 @@ env:
     - BUILD_TIMEOUT=10000
 install:
   - npm install
-
+  - (cd test/app && npm install)
