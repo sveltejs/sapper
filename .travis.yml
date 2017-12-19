@@ -1,0 +1,10 @@
+sudo: false
+language: node_js
+node_js:
+  - "stable"
+env:
+  global:
+    - BUILD_TIMEOUT=10000
+install:
+  - npm install
+  - (cd test/app && npm install)

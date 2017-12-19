@@ -1,0 +1,37 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<script>
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/service-worker.js');
+		}
+	</script>
+
+	<!-- Sapper generates a <style> tag containing critical CSS
+	     for the current page. CSS for the rest of the app is
+	     lazily loaded when it precaches secondary pages -->
+	%sapper.styles%
+
+	<!-- This contains the contents of the <:Head> component, if
+	     the current page has one -->
+	%sapper.head%
+</head>
+<body>
+	<!-- The application will be rendered inside this element,
+	     because `templates/main.js` references it -->
+	<div id='sapper'>%sapper.html%</div>
+
+	<!-- Sapper creates a <script> tag containing `templates/main.js`
+	     and anything else it needs to hydrate the app and
+	     initialise the router -->
+	<script src='%sapper.main%'></script>
+</body>
+</html>
