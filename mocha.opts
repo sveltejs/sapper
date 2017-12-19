@@ -1,2 +1,2 @@
 --recursive
-utils/**/*.test.js
+test/unit/**/*.js

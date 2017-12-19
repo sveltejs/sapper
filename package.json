@@ -20,11 +20,22 @@
     "webpack-hot-middleware": "^2.21.0"
   },
   "devDependencies": {
+    "cypress": "^1.3.0",
     "eslint": "^4.13.1",
-    "mocha": "^4.0.1"
+    "mocha": "^4.0.1",
+    "npm-run-all": "^4.1.2",
+    "wait-on": "^2.0.2"
   },
   "scripts": {
-    "test": "mocha --opts mocha.opts"
+    "cy:open": "cypress open",
+    "test": "run-s test:unit test:dev test:prod",
+    "test:unit": "mocha --opts mocha.opts",
+    "test:dev": "run-p --race test:launch:dev cy:run:dev",
+    "test:launch:dev": "node test/launch.js --dev",
+    "cy:run:dev": "wait-on http://localhost:3000 && cypress run -s test/cypress/integration/dev.js",
+    "test:prod": "run-p --race test:launch:prod cy:run:prod",
+    "test:launch:prod": "node test/launch.js --prod",
+    "cy:run:prod": "wait-on http://localhost:3000 && cypress run -s test/cypress/integration/prod.js"
   },
   "repository": "https://github.com/sveltejs/sapper",
   "keywords": [

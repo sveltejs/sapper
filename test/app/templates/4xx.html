@@ -1,0 +1,44 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<!-- %sapper.status% is the HTTP status code, e.g. 404 -->
+	<title>%sapper.status%</title>
+
+	<style>
+		body {
+			max-width: 800px;
+			padding: 1em;
+			margin: 0 auto;
+			font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+			background-color: #f4f4f4;
+			box-sizing: border-box;
+		}
+
+		h1 {
+			color: rgb(170,30,30);
+			border-bottom: 1px solid #aaa;
+			padding: 0 0 0.5em 0;
+			margin: 1em 0;
+		}
+
+		pre {
+			font-family: Menlo, monospace;
+			font-size: 14px;
+			line-height: 1.2;
+			overflow-x: auto;
+			white-space: pre-wrap;
+		}
+	</style>
+</head>
+<body>
+	<h1>%sapper.title%</h1>
+	<p>Could not %sapper.method% %sapper.url%</p>
+</body>
+</html>
