@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.2.2
+
+* Create destination directory when building, don't assume it's already there from dev mode
+* We have tests now!
+
 ## 0.2.1
 
 * Inject HMR logic in dev mode
