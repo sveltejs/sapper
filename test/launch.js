@@ -43,20 +43,33 @@ function start_server() {
 	});
 }
 
-if (process.argv[2] === '--dev') {
-	start_server();
-} else {
-	console.log('building...')
-	child_process.exec(`npm run build`, {
-		cwd: app_dir,
-		// env: {
-		// 	PATH: `${path.resolve(app_dir, 'node_modules/.bin')}:${process.env.PATH}`
-		// }
+function launch() {
+	if (process.argv[2] === '--dev') {
+		start_server();
+	} else {
+		child_process.exec(`npm run build`, {
+			cwd: app_dir
+		}, (err, stdout, stderr) => {
+			if (err) throw err;
+
+			process.stdout.write(stdout);
+			process.stderr.write(stderr);
+			start_server();
+		});
+	}
+}
+
+// this is a terrible hack
+if (process.env.APPVEYOR) {
+	child_process.exec(`npm install`, {
+		cwd: app_dir
 	}, (err, stdout, stderr) => {
 		if (err) throw err;
 
 		process.stdout.write(stdout);
 		process.stderr.write(stderr);
-		start_server();
+		launch();
 	});
+} else {
+	launch();
 }
