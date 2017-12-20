@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.2.3
+
+* Posixify import paths, even on Windows ([#31](https://github.com/sveltejs/sapper/pull/31))
+* Pass `url` to 404 handler
+
 ## 0.2.2
 
 * Create destination directory when building, don't assume it's already there from dev mode
