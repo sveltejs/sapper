@@ -1,5 +1,4 @@
 const path = require('path');
-const route_manager = require('../lib/route_manager.js');
 const { src, dest, dev, server_routes } = require('../lib/config.js');
 
 module.exports = {
