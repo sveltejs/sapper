@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.4
+
+* Posixify path to HMR client
+
 ## 0.2.3
 
 * Posixify import paths, even on Windows ([#31](https://github.com/sveltejs/sapper/pull/31))
