@@ -1,5 +1,5 @@
 const path = require('path');
-const { src, dest, dev, server_routes } = require('../lib/config.js');
+const { src, dest, dev, entry } = require('../lib/config.js');
 
 module.exports = {
 	dev,
@@ -7,7 +7,7 @@ module.exports = {
 	client: {
 		entry: () => {
 			return {
-				main: `${dest}/main.js`
+				main: entry.client
 			};
 		},
 
@@ -24,7 +24,7 @@ module.exports = {
 	server: {
 		entry: () => {
 			return {
-				server_routes
+				main: entry.server
 			}
 		},
 
