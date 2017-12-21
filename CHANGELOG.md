@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.7
+
+* Fix streaming bug
+
 ## 0.2.6
 
 * Render main.js back to templates, to allow relative imports ([#40](https://github.com/sveltejs/sapper/issues/40))
