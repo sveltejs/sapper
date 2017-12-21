@@ -5,15 +5,17 @@ const create_routes = require('../../lib/utils/create_routes.js');
 
 describe('create_routes', () => {
 	it('sorts routes correctly', () => {
-		const routes = create_routes(['index.html', 'about.html', '[wildcard].html', 'post/[id].html']);
+		const routes = create_routes(['index.html', 'about.html', '[wildcard].html', 'post/foo.html', 'post/[id].html', 'post/bar.html']);
 
 		assert.deepEqual(
 			routes.map(r => r.file),
 			[
-				'about.html',
-				'index.html',
+				'post/foo.html',
+				'post/bar.html',
 				'post/[id].html',
-				'[wildcard].html'
+				'about.html',
+				'[wildcard].html',
+				'index.html'
 			]
 		);
 	});
@@ -47,5 +49,26 @@ describe('create_routes', () => {
 				'index.html'
 			]
 		);
+	});
+
+	it('matches /foo/:bar before /:baz/qux', () => {
+		const a = create_routes(['foo/[bar].html', '[baz]/qux.html']);
+		const b = create_routes(['[baz]/qux.html', 'foo/[bar].html']);
+
+		assert.deepEqual(
+			a.map(r => r.file),
+			['foo/[bar].html', '[baz]/qux.html']
+		);
+
+		assert.deepEqual(
+			b.map(r => r.file),
+			['foo/[bar].html', '[baz]/qux.html']
+		);
+	});
+
+	it('fails if routes are indistinguishable', () => {
+		assert.throws(() => {
+			create_routes(['[foo].html', '[bar]/index.html']);
+		}, /The \[foo\].html and \[bar\]\/index.html routes clash/);
 	});
 });
