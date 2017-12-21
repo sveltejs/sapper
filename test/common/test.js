@@ -12,7 +12,7 @@ run('development');
 
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(10000);
+		this.timeout(30000);
 
 		let PORT;
 		let server;
