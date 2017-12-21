@@ -116,6 +116,9 @@ function run(env) {
 		after(() => {
 			server.close();
 			middleware.close();
+
+			// give a chance to clean up
+			return new Promise(fulfil => setTimeout(fulfil, 500));
 		});
 
 		describe('basic functionality', () => {
@@ -185,7 +188,10 @@ function run(env) {
 					'text/html'
 				);
 
-				assert.ok(/<\/client\/main.\w+\.js\>;rel="preload";as="script", <\/client\/_.2.\w+.js>;rel="preload";as="script"/.test(headers['Link']))
+				assert.ok
+					(/<\/client\/main.\w+\.js\>;rel="preload";as="script", <\/client\/_.2.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
+					headers['Link']
+				);
 			});
 		});
 	});
