@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.6
+
+* Render main.js back to templates, to allow relative imports ([#40](https://github.com/sveltejs/sapper/issues/40))
+
 ## 0.2.5
 
 * Fix nested routes on Windows ([#39](https://github.com/sveltejs/sapper/pull/39))
