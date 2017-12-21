@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "lib/index.js",
   "bin": {
