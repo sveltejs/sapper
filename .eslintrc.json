@@ -1,7 +1,6 @@
 {
     "root": true,
     "rules": {
-        "indent": [ 2, "tab", { "SwitchCase": 1 } ],
         "semi": [ 2, "always" ],
         "space-before-blocks": [ 2, "always" ],
         "no-mixed-spaces-and-tabs": [ 2, "smart-tabs" ],
@@ -33,7 +32,7 @@
         "plugin:import/warnings"
     ],
     "parserOptions": {
-        "ecmaVersion": 6,
+        "ecmaVersion": 8,
         "sourceType": "module"
     }
 }
