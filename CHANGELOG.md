@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.2.8
+
+* Add `goto` function ([#29](https://github.com/sveltejs/sapper/issues/29))
+* Don't use `/tmp` as destination in Now environments
+
 ## 0.2.7
 
 * Fix streaming bug
