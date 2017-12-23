@@ -196,7 +196,7 @@ function scroll_state() {
 }
 
 export function goto(href, opts = {}) {
-	if (navigate(new URL(href))) {
+	if (navigate(new URL(href, window.location.href))) {
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 	} else {
 		window.location.href = href;

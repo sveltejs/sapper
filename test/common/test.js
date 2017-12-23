@@ -128,6 +128,14 @@ function run(env) {
 				nightmare.on('console', (type, ...args) => {
 					console[type](...args);
 				});
+
+				nightmare.on('page', (type, ...args) => {
+					if (type === 'error') {
+						console.error(args[1]);
+					} else {
+						console.warn(type, args);
+					}
+				});
 			});
 
 			afterEach(async () => {
@@ -178,18 +186,13 @@ function run(env) {
 				assert.deepEqual(requests.map(r => r.url), []);
 			});
 
-			it.only('navigates programmatically', async () => {
-				// const html = await nightmare.goto(`${base}/about`).evaluate(() => document.body.innerHTML);
-				// console.log(html);
-
-				// const button = await nightmare.goto(`${base}/about`).evaluate(() => !!document.querySelector('button'));
-				// console.log({ button });
-
+			it('navigates programmatically', async () => {
 				await nightmare
 					.goto(`${base}/about`)
 					.wait(() => window.READY)
-					.click('#click-me')
-					.wait(() => window.location.pathname === '/blog/what-is-sapper');
+					.click('button')
+					.wait(() => window.location.pathname === '/blog/what-is-sapper')
+					.wait(1);
 
 				assert.equal(
 					await nightmare.evaluate(() => document.title),
