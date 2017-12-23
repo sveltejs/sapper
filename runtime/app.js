@@ -6,12 +6,17 @@ export let component;
 let target;
 let routes;
 
+const history = typeof window !== 'undefined' ? window.history : {
+	pushState: () => {},
+	replaceState: () => {},
+};
+
 const scroll_history = {};
 let uid = 1;
 let cid;
 
 if ('scrollRestoration' in history) {
-	history.scrollRestoration = 'manual'
+	history.scrollRestoration = 'manual';
 }
 
 function select_route(url) {
@@ -39,7 +44,7 @@ function render(Component, data, scroll) {
 		} else {
 			// first load — remove SSR'd <head> contents
 			const start = document.querySelector('#sapper-head-start');
-			let end = document.querySelector('#sapper-head-end');
+			const end = document.querySelector('#sapper-head-end');
 
 			if (start && end) {
 				while (start.nextSibling !== end) detach(start.nextSibling);
@@ -75,8 +80,6 @@ function navigate(url, id) {
 
 			id = cid = ++uid;
 			scroll_history[cid] = { x: 0, y: 0 };
-
-			history.pushState({ id }, '', url.href);
 		}
 
 		selected.route.load().then(mod => {
@@ -123,6 +126,7 @@ function handle_click(event) {
 
 	if (navigate(url, null)) {
 		event.preventDefault();
+		history.pushState({ id: cid }, '', url.href);
 	}
 }
 
@@ -173,7 +177,7 @@ export function init(_target, _routes) {
 		inited = true;
 	}
 
-	const scroll = scroll_history[uid] = scroll_state();
+	scroll_history[uid] = scroll_state();
 
 	history.replaceState({ id: uid }, '', window.location.href);
 	navigate(new URL(window.location), uid);
@@ -189,4 +193,12 @@ function scroll_state() {
 		x: window.scrollX,
 		y: window.scrollY
 	};
+}
+
+export function goto(href, opts = {}) {
+	if (navigate(new URL(href, window.location.href))) {
+		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
+	} else {
+		window.location.href = href;
+	}
 }

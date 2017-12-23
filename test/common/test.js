@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const express = require('express');
@@ -12,7 +11,7 @@ run('development');
 
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(30000);
+		this.timeout(5000);
 
 		let PORT;
 		let server;
@@ -23,7 +22,7 @@ function run(env) {
 		let base;
 
 		function get(url) {
-			return new Promise((fulfil, reject) => {
+			return new Promise(fulfil => {
 				const req = {
 					url,
 					method: 'GET'
@@ -93,7 +92,7 @@ function run(env) {
 				return result;
 			};
 
-			app = express();
+			const app = express();
 
 			app.use(serve('assets'));
 
@@ -127,6 +126,14 @@ function run(env) {
 
 				nightmare.on('console', (type, ...args) => {
 					console[type](...args);
+				});
+
+				nightmare.on('page', (type, ...args) => {
+					if (type === 'error') {
+						console.error(args[1]);
+					} else {
+						console.warn(type, args);
+					}
 				});
 			});
 
@@ -177,6 +184,20 @@ function run(env) {
 
 				assert.deepEqual(requests.map(r => r.url), []);
 			});
+
+			it('navigates programmatically', async () => {
+				await nightmare
+					.goto(`${base}/about`)
+					.wait(() => window.READY)
+					.click('button')
+					.wait(() => window.location.pathname === '/blog/what-is-sapper')
+					.wait(100);
+
+				assert.equal(
+					await nightmare.evaluate(() => document.title),
+					'What is Sapper?'
+				);
+			});
 		});
 
 		describe('headers', () => {
@@ -188,8 +209,8 @@ function run(env) {
 					'text/html'
 				);
 
-				assert.ok
-					(/<\/client\/main.\w+\.js\>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
+				assert.ok(
+					/<\/client\/main.\w+\.js>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
 					headers['Link']
 				);
 			});
@@ -200,10 +221,13 @@ function run(env) {
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
 		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			if (err) return reject(err);
+			if (err) {
+				process.stdout.write(stdout);
+				process.stderr.write(stderr);
 
-			process.stdout.write(stdout);
-			process.stderr.write(stderr);
+				return reject(err);
+			}
+
 			fulfil();
 		});
 	});
