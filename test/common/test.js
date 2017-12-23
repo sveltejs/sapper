@@ -12,7 +12,7 @@ run('development');
 
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(30000);
+		this.timeout(5000);
 
 		let PORT;
 		let server;
@@ -23,7 +23,7 @@ function run(env) {
 		let base;
 
 		function get(url) {
-			return new Promise((fulfil, reject) => {
+			return new Promise(fulfil => {
 				const req = {
 					url,
 					method: 'GET'
@@ -93,7 +93,7 @@ function run(env) {
 				return result;
 			};
 
-			app = express();
+			const app = express();
 
 			app.use(serve('assets'));
 
@@ -177,6 +177,25 @@ function run(env) {
 
 				assert.deepEqual(requests.map(r => r.url), []);
 			});
+
+			it.only('navigates programmatically', async () => {
+				// const html = await nightmare.goto(`${base}/about`).evaluate(() => document.body.innerHTML);
+				// console.log(html);
+
+				// const button = await nightmare.goto(`${base}/about`).evaluate(() => !!document.querySelector('button'));
+				// console.log({ button });
+
+				await nightmare
+					.goto(`${base}/about`)
+					.wait(() => window.READY)
+					.click('#click-me')
+					.wait(() => window.location.pathname === '/blog/what-is-sapper');
+
+				assert.equal(
+					await nightmare.evaluate(() => document.title),
+					'What is Sapper?'
+				);
+			});
 		});
 
 		describe('headers', () => {
@@ -188,8 +207,8 @@ function run(env) {
 					'text/html'
 				);
 
-				assert.ok
-					(/<\/client\/main.\w+\.js\>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
+				assert.ok(
+					/<\/client\/main.\w+\.js>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
 					headers['Link']
 				);
 			});
