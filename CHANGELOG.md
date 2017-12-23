@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.9
+
+* Don't write files to disk in prod mode
+
 ## 0.2.8
 
 * Add `goto` function ([#29](https://github.com/sveltejs/sapper/issues/29))
