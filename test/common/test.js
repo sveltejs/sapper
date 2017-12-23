@@ -191,7 +191,7 @@ function run(env) {
 					.wait(() => window.READY)
 					.click('button')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
-					.wait(1);
+					.wait(100);
 
 				assert.equal(
 					await nightmare.evaluate(() => document.title),
