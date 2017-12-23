@@ -21,6 +21,7 @@
     "webpack-hot-middleware": "^2.21.0"
   },
   "devDependencies": {
+    "css-loader": "^0.28.7",
     "eslint": "^4.13.1",
     "eslint-plugin-import": "^2.8.0",
     "express": "^4.16.2",
@@ -29,6 +30,9 @@
     "nightmare": "^2.10.0",
     "node-fetch": "^1.7.3",
     "npm-run-all": "^4.1.2",
+    "style-loader": "^0.19.1",
+    "svelte": "^1.49.1",
+    "svelte-loader": "^2.3.2",
     "wait-on": "^2.0.2"
   },
   "scripts": {

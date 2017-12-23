@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const express = require('express');
@@ -222,10 +221,13 @@ function run(env) {
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
 		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			if (err) return reject(err);
+			if (err) {
+				process.stdout.write(stdout);
+				process.stderr.write(stderr);
 
-			process.stdout.write(stdout);
-			process.stderr.write(stderr);
+				return reject(err);
+			}
+
 			fulfil();
 		});
 	});
