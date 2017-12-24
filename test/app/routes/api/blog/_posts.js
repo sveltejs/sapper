@@ -82,6 +82,30 @@ const posts = [
 		html: `
 			<p>We're so glad you asked! Come on over to the <a href='https://github.com/sveltejs/svelte'>Svelte</a> and <a href='https://github.com/sveltejs/sapper'>Sapper</a> repos, and join us in the <a href='https://gitter.im/sveltejs/svelte'>Gitter chatroom</a>. Everyone is welcome, especially you!</p>
 		`
+	},
+
+	{
+		title: 'A very long post with deep links',
+		slug: 'a-very-long-post',
+		html: `
+			<h2 id='one'>One</h2>
+			<p>I'll have a vodka rocks. (Mom, it's breakfast time.) And a piece of toast. Let me out that Queen. Fried cheese… with club sauce.</p>
+			<p>Her lawyers are claiming the seal is worth $250,000. And that's not even including Buster's Swatch. This was a big get for God. What, so the guy we are meeting with can't even grow his own hair? COME ON! She's always got to wedge herself in the middle of us so that she can control everything. Yeah. Mom's awesome. It's, like, Hey, you want to go down to the whirlpool? Yeah, I don't have a husband. I call it Swing City. The CIA should've just Googled for his hideout, evidently. There are dozens of us! DOZENS! Yeah, like I'm going to take a whiz through this $5,000 suit. COME ON.</p>
+
+			<h2 id='two'>Two</h2>
+			<p>Tobias Fünke costume. Heart attack never stopped old big bear.</p>
+			<p>Nellie is blowing them all AWAY. I will be a bigger and hairier mole than the one on your inner left thigh! I'll sacrifice anything for my children.</p>
+			<p>Up yours, granny! You couldn't handle it! Hey, Dad. Look at you. You're a year older…and a year closer to death. Buster: Oh yeah, I guess that's kind of funny. Bob Loblaw Law Blog. The guy runs a prison, he can have any piece of ass he wants.</p>
+
+			<h2 id='three'>Three</h2>
+			<p>I prematurely shot my wad on what was supposed to be a dry run, so now I'm afraid I have something of a mess on my hands. Dead Dove DO NOT EAT. Never once touched my per diem. I'd go to Craft Service, get some raw veggies, bacon, Cup-A-Soup…baby, I got a stew goin'. You're losing blood, aren't you? Gob: Probably, my socks are wet. Sure, let the little fruit do it. HUZZAH! Although George Michael had only got to second base, he'd gone in head first, like Pete Rose. I will pack your sweet pink mouth with so much ice cream you'll be the envy of every Jerry and Jane on the block!</p>
+			<p>Gosh Mom… after all these years, God's not going to take a call from you. Come on, this is a Bluth family celebration. It's no place for children.</p>
+			<p>And I wouldn't just lie there, if that's what you're thinking. That's not what I WAS thinking. Who? i just dont want him to point out my cracker ass in front of ann. When a man needs to prove to a woman that he's actually… When a man loves a woman… Heyyyyyy Uncle Father Oscar. [Stabbing Gob] White power! Gob: I'm white! Let me take off my assistant's skirt and put on my Barbra-Streisand-in-The-Prince-of-Tides ass-masking therapist pantsuit. In the mid '90s, Tobias formed a folk music band with Lindsay and Maebe which he called Dr. Funke's 100 Percent Natural Good Time Family Band Solution. The group was underwritten by the Natural Food Life Company, a division of Chem-Grow, an Allen Crayne acqusition, which was part of the Squimm Group. Their motto was simple: We keep you alive.</p>
+
+			<h2 id='four'>Four</h2>
+			<p>If you didn't have adult onset diabetes, I wouldn't mind giving you a little sugar. Everybody dance NOW. And the soup of the day is bread. Great, now I'm gonna smell to high heaven like a tuna melt!</p>
+			<p>That's how Tony Wonder lost a nut. She calls it a Mayonegg. Go ahead, touch the Cornballer. There's a new daddy in town. A discipline daddy.</p>
+		`
 	}
 ];
 

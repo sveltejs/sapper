@@ -166,7 +166,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', async () => {
-				await nightmare.goto(base);
+				await nightmare.goto(base).wait(() => window.READY).wait(100);
 
 				const requests = await capture(async () => {
 					await nightmare.click('a[href="/about"]');
@@ -197,6 +197,16 @@ function run(env) {
 					await nightmare.evaluate(() => document.title),
 					'What is Sapper?'
 				);
+			});
+
+			it('scrolls to active deeplink', async () => {
+				const scrollY = await nightmare
+					.goto(`${base}/blog/a-very-long-post#four`)
+					.wait(() => window.READY)
+					.wait(100)
+					.evaluate(() => window.scrollY);
+
+				assert.ok(scrollY > 0, scrollY);
 			});
 		});
 
