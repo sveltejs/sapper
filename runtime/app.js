@@ -177,10 +177,17 @@ export function init(_target, _routes) {
 		inited = true;
 	}
 
-	scroll_history[uid] = scroll_state();
+	setTimeout(() => {
+		const { hash, href } = window.location;
 
-	history.replaceState({ id: uid }, '', window.location.href);
-	navigate(new URL(window.location), uid);
+		const deep_linked = hash && document.querySelector(hash);
+		scroll_history[uid] = deep_linked ?
+			{ x: 0, y: deep_linked.getBoundingClientRect().top } :
+			scroll_state();
+
+		history.replaceState({ id: uid }, '', href);
+		navigate(new URL(window.location), uid);
+	});
 }
 
 function which(event) {
