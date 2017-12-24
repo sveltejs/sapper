@@ -203,7 +203,7 @@ function run(env) {
 				const scrollY = await nightmare
 					.goto(`${base}/blog/a-very-long-post#four`)
 					.wait(() => window.READY)
-					.wait(10)
+					.wait(100)
 					.evaluate(() => window.scrollY);
 
 				assert.ok(scrollY > 0, scrollY);
