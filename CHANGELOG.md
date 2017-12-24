@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.2.10
+
+* Handle deep links correctly ([#44](https://github.com/sveltejs/sapper/issues/44))
+
 ## 0.2.9
 
 * Don't write files to disk in prod mode
