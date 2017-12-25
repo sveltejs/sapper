@@ -37,38 +37,43 @@ function select_route(url: URL): { route: Route, data: RouteData } {
 
 let current_token: {};
 
-function render(Component: ComponentConstructor, data: { query: Query, params: Params }, scroll: ScrollPosition, token: {}) {
-	Promise.resolve(
+function render(Component: ComponentConstructor, data: any, scroll: ScrollPosition, token: {}) {
+	if (current_token !== token) return;
+
+	if (component) {
+		component.destroy();
+	} else {
+		// first load — remove SSR'd <head> contents
+		const start = document.querySelector('#sapper-head-start');
+		const end = document.querySelector('#sapper-head-end');
+
+		if (start && end) {
+			while (start.nextSibling !== end) detach(start.nextSibling);
+			detach(start);
+			detach(end);
+		}
+
+		// preload additional routes
+		routes.reduce((promise: Promise<any>, route) => promise.then(route.load), Promise.resolve());
+	}
+
+	component = new Component({
+		target,
+		data,
+		hydrate: !!component
+	});
+
+	if (scroll) {
+		window.scrollTo(scroll.x, scroll.y);
+	}
+}
+
+function prepare_route(Component, data) {
+	return Promise.resolve(
 		Component.preload ? Component.preload(data) : {}
 	).then(preloaded => {
-		if (current_token !== token) return;
-
-		if (component) {
-			component.destroy();
-		} else {
-			// first load — remove SSR'd <head> contents
-			const start = document.querySelector('#sapper-head-start');
-			const end = document.querySelector('#sapper-head-end');
-
-			if (start && end) {
-				while (start.nextSibling !== end) detach(start.nextSibling);
-				detach(start);
-				detach(end);
-			}
-
-			// preload additional routes
-			routes.reduce((promise: Promise<any>, route) => promise.then(route.load), Promise.resolve());
-		}
-
-		component = new Component({
-			target,
-			data: Object.assign(data, preloaded),
-			hydrate: !!component
-		});
-
-		if (scroll) {
-			window.scrollTo(scroll.x, scroll.y);
-		}
+		Object.assign(data, preloaded)
+		return { Component, data };
 	});
 }
 
@@ -86,8 +91,16 @@ function navigate(url: URL, id: number) {
 			scroll_history[cid] = { x: 0, y: 0 };
 		}
 
-		selected.route.load().then(mod => {
-			render(mod.default, selected.data, scroll_history[id], current_token = {});
+		const loaded = prefetching && prefetching.href === url.href ?
+			prefetching.promise :
+			selected.route.load().then(mod => prepare_route(mod.default, selected.data));
+
+		prefetching = null;
+
+		const token = current_token = {};
+
+		loaded.then(({ Component, data }) => {
+			render(Component, data, scroll_history[id], token);
 		});
 
 		cid = id;
@@ -146,6 +159,11 @@ function handle_popstate(event: PopStateEvent) {
 	}
 }
 
+let prefetching: {
+	href: string;
+	promise: Promise<{ Component: ComponentConstructor, data: any }>;
+} = null;
+
 function prefetch(event: MouseEvent | TouchEvent) {
 	const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
 	if (!a || a.rel !== 'prefetch') return;
@@ -153,9 +171,10 @@ function prefetch(event: MouseEvent | TouchEvent) {
 	const selected = select_route(new URL(a.href));
 
 	if (selected) {
-		selected.route.load().then(mod => {
-			if (mod.default.preload) mod.default.preload(selected.data);
-		});
+		prefetching = {
+			href: a.href,
+			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.data))
+		};
 	}
 }
 

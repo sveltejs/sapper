@@ -42,6 +42,7 @@
   "scripts": {
     "cy:open": "cypress open",
     "test": "mocha --opts mocha.opts",
+    "pretest": "npm run build",
     "build": "rollup -c",
     "dev": "rollup -cw"
   },
