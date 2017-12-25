@@ -1,0 +1,11 @@
+<h1>This page should never render</h1>
+
+<script>
+	export default {
+		preload() {
+			return new Promise(fulfil => {
+				window.fulfil = fulfil;
+			});
+		}
+	};
+</script>
