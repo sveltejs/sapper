@@ -30,14 +30,20 @@
     "nightmare": "^2.10.0",
     "node-fetch": "^1.7.3",
     "npm-run-all": "^4.1.2",
+    "rollup": "^0.53.0",
+    "rollup-plugin-typescript": "^0.8.1",
     "style-loader": "^0.19.1",
     "svelte": "^1.49.1",
     "svelte-loader": "^2.3.2",
+    "tslib": "^1.8.1",
+    "typescript": "^2.6.2",
     "wait-on": "^2.0.2"
   },
   "scripts": {
     "cy:open": "cypress open",
-    "test": "mocha --opts mocha.opts"
+    "test": "mocha --opts mocha.opts",
+    "build": "rollup -c",
+    "dev": "rollup -cw"
   },
   "repository": "https://github.com/sveltejs/sapper",
   "keywords": [
