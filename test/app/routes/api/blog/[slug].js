@@ -13,7 +13,7 @@ export function get(req, res, next) {
 	if (slug in lookup) {
 		res.set({
 			'Content-Type': 'application/json',
-			'Cache-Control': `max-age=${30 * 60 * 1e3}` // cache for 30 minutes
+			'Cache-Control': `no-cache`
 		});
 
 		res.end(lookup[slug]);
