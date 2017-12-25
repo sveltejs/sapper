@@ -1,10 +1,8 @@
 <nav>
 	<ul>
-		<li><a class='{{page === "home"  ? "selected" : ""}}' href='/'>home</a></li>
-		<li><a class='{{page === "about"  ? "selected" : ""}}' href='/about'>about</a></li>
-
-		<!-- for the blog link, we're using rel=prefetch so that Sapper prefetches
-		     the blog data when we hover over the link or tap it on a touchscreen -->
+		<li><a href='/'>home</a></li>
+		<li><a href='/about'>about</a></li>
+		<li><a href='/slow-preload'>slow preload</a></li>
 		<li><a rel=prefetch class='{{page === "blog"  ? "selected" : ""}}' href='/blog'>blog</a></li>
 	</ul>
 </nav>
