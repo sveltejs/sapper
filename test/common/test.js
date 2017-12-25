@@ -208,6 +208,31 @@ function run(env) {
 
 				assert.ok(scrollY > 0, scrollY);
 			});
+
+			it('reuses prefetch promise', async () => {
+				await nightmare
+					.goto(`${base}/blog`)
+					.wait(() => window.READY)
+					.wait(200);
+
+				const mouseover_requests = (await capture(async () => {
+					await nightmare
+						.mouseover('[href="/blog/what-is-sapper"]')
+						.wait(200);
+				})).map(r => r.url);
+
+				assert.deepEqual(mouseover_requests, [
+					'/api/blog/what-is-sapper'
+				]);
+
+				const click_requests = (await capture(async () => {
+					await nightmare
+						.click('[href="/blog/what-is-sapper"]')
+						.wait(200);
+				})).map(r => r.url);
+
+				assert.deepEqual(click_requests, []);
+			});
 		});
 
 		describe('headers', () => {
