@@ -232,6 +232,40 @@ function run(env) {
 				})).map(r => r.url);
 
 				assert.deepEqual(click_requests, []);
+      });
+      
+			it('cancels navigation if subsequent navigation occurs during preload', async () => {
+				await nightmare
+					.goto(base)
+					.wait(() => window.READY)
+					.click('a[href="/slow-preload"]')
+					.wait(100)
+					.click('a[href="/about"]')
+					.wait(100);
+
+				assert.equal(
+					await nightmare.path(),
+					'/about'
+				);
+
+				assert.equal(
+					await nightmare.evaluate(() => document.querySelector('h1').textContent),
+					'About this site'
+				);
+
+				await nightmare
+					.evaluate(() => window.fulfil({}))
+					.wait(100);
+
+				assert.equal(
+					await nightmare.path(),
+					'/about'
+				);
+
+				assert.equal(
+					await nightmare.evaluate(() => document.querySelector('h1').textContent),
+					'About this site'
+				);
 			});
 		});
 

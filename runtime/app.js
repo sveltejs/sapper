@@ -35,10 +35,14 @@ function select_route(url) {
 	}
 }
 
-function render(Component, data, scroll) {
+let current_token;
+
+function render(Component, data, scroll, token) {
 	Promise.resolve(
 		Component.preload ? Component.preload(data) : {}
 	).then(preloaded => {
+		if (current_token !== token) return;
+
 		if (component) {
 			component.destroy();
 		} else {
@@ -83,7 +87,7 @@ function navigate(url, id) {
 		}
 
 		selected.route.load().then(mod => {
-			render(mod.default, selected.data, scroll_history[id]);
+			render(mod.default, selected.data, scroll_history[id], current_token = {});
 		});
 
 		cid = id;
