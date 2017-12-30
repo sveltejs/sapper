@@ -267,6 +267,14 @@ function run(env) {
 					'About this site'
 				);
 			});
+
+			it('passes entire request object to preload', async () => {
+				const html = await nightmare
+					.goto(`${base}/show-url`)
+					.evaluate(() => document.querySelector('p').innerHTML);
+
+				assert.equal(html, `URL is /show-url`);
+			});
 		});
 
 		describe('headers', () => {
