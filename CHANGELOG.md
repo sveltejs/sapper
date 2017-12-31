@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.3.1
+
+* Fix missing `runtime.js`
+
 ## 0.3.0
 
 * Move `sapper/runtime/app.js` to `sapper/runtime.js`
