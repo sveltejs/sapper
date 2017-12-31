@@ -1,5 +1,4 @@
-const path = require('path');
-const { src, dest, dev, entry } = require('../lib/config.js');
+const { dest, dev, entry } = require('../lib/config.js');
 
 module.exports = {
 	dev,
@@ -25,7 +24,7 @@ module.exports = {
 		entry: () => {
 			return {
 				main: entry.server
-			}
+			};
 		},
 
 		output: () => {
