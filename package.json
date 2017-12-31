@@ -6,6 +6,12 @@
   "bin": {
     "sapper": "cli/index.js"
   },
+  "files": [
+    "cli",
+    "lib",
+    "runtime",
+    "webpack"
+  ],
   "directories": {
     "test": "test"
   },
