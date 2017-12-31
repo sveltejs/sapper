@@ -10,12 +10,12 @@ describe('create_routes', () => {
 		assert.deepEqual(
 			routes.map(r => r.file),
 			[
+				'index.html',
+				'about.html',
 				'post/foo.html',
 				'post/bar.html',
 				'post/[id].html',
-				'about.html',
-				'[wildcard].html',
-				'index.html'
+				'[wildcard].html'
 			]
 		);
 	});
@@ -45,8 +45,8 @@ describe('create_routes', () => {
 		assert.deepEqual(
 			routes.map(r => r.file),
 			[
-				'e/f/g/h.html',
-				'index.html'
+				'index.html',
+				'e/f/g/h.html'
 			]
 		);
 	});
@@ -70,5 +70,45 @@ describe('create_routes', () => {
 		assert.throws(() => {
 			create_routes(['[foo].html', '[bar]/index.html']);
 		}, /The \[foo\].html and \[bar\]\/index.html routes clash/);
+	});
+
+	it('matches nested routes', () => {
+		const route = create_routes(['settings/[submenu].html'])[0];
+
+		assert.deepEqual(route.exec('/settings/foo'), {
+			submenu: 'foo'
+		});
+
+		assert.deepEqual(route.exec('/settings'), {
+			submenu: null
+		});
+	});
+
+	it('prefers index routes to nested routes', () => {
+		const routes = create_routes(['settings/[submenu].html', 'settings.html']);
+
+		assert.deepEqual(
+			routes.map(r => r.file),
+			['settings.html', 'settings/[submenu].html']
+		);
+	});
+
+	it('matches deeply nested routes', () => {
+		const route = create_routes(['settings/[a]/[b]/index.html'])[0];
+
+		assert.deepEqual(route.exec('/settings/foo/bar'), {
+			a: 'foo',
+			b: 'bar'
+		});
+
+		assert.deepEqual(route.exec('/settings/foo'), {
+			a: 'foo',
+			b: null
+		});
+
+		assert.deepEqual(route.exec('/settings'), {
+			a: null,
+			b: null
+		});
 	});
 });
