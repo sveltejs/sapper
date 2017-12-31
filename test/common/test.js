@@ -11,7 +11,7 @@ run('development');
 
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(5000);
+		this.timeout(20000);
 
 		let PORT;
 		let server;
@@ -266,6 +266,14 @@ function run(env) {
 					await nightmare.evaluate(() => document.querySelector('h1').textContent),
 					'About this site'
 				);
+			});
+
+			it('passes entire request object to preload', async () => {
+				const html = await nightmare
+					.goto(`${base}/show-url`)
+					.evaluate(() => document.querySelector('p').innerHTML);
+
+				assert.equal(html, `URL is /show-url`);
 			});
 		});
 
