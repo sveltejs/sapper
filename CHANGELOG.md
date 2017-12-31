@@ -1,5 +1,13 @@
 # sapper changelog
 
+## 0.3.0
+
+* Move `sapper/runtime/app.js` to `sapper/runtime.js`
+* Cancel navigation if overtaken by second navigation ([#48](https://github.com/sveltejs/sapper/issues/48))
+* Store preloaded data, to avoiding double prefetching ([#49](https://github.com/sveltejs/sapper/issues/49))
+* Pass server request object to `preload` ([#54](https://github.com/sveltejs/sapper/pull/54))
+* Nested routes ([#55](https://github.com/sveltejs/sapper/issues/55))
+
 ## 0.2.10
 
 * Handle deep links correctly ([#44](https://github.com/sveltejs/sapper/issues/44))
