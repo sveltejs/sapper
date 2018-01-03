@@ -166,7 +166,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', async () => {
-				await nightmare.goto(base).wait(() => window.READY).wait(100);
+				await nightmare.goto(base).wait(() => window.READY).wait(200);
 
 				const requests = await capture(async () => {
 					await nightmare.click('a[href="/about"]');
@@ -189,7 +189,7 @@ function run(env) {
 				await nightmare
 					.goto(`${base}/about`)
 					.wait(() => window.READY)
-					.click('button')
+					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
 					.wait(100);
 
@@ -197,6 +197,20 @@ function run(env) {
 					await nightmare.evaluate(() => document.title),
 					'What is Sapper?'
 				);
+			});
+
+			it('prefetches programmatically', async () => {
+				await nightmare
+					.goto(`${base}/about`)
+					.wait(() => window.READY);
+
+				const requests = await capture(async () => {
+					return await nightmare
+						.click('.prefetch')
+						.wait(100);
+				});
+
+				assert.ok(!!requests.find(r => r.url === '/api/blog/why-the-name'));
 			});
 
 			it('scrolls to active deeplink', async () => {
