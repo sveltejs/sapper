@@ -164,18 +164,22 @@ let prefetching: {
 	promise: Promise<{ Component: ComponentConstructor, data: any }>;
 } = null;
 
-function prefetch(event: MouseEvent | TouchEvent) {
-	const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
-	if (!a || a.rel !== 'prefetch') return;
-
-	const selected = select_route(new URL(a.href));
+export function prefetch(href: string) {
+	const selected = select_route(new URL(href));
 
 	if (selected) {
 		prefetching = {
-			href: a.href,
+			href,
 			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.data))
 		};
 	}
+}
+
+function handle_touchstart_mouseover(event: MouseEvent | TouchEvent) {
+        const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
+        if (!a || a.rel !== 'prefetch') return;
+
+        prefetch(a.href);
 }
 
 let inited: boolean;
@@ -189,8 +193,8 @@ export function init(_target: Node, _routes: Route[]) {
 		window.addEventListener('popstate', handle_popstate);
 
 		// prefetch
-		window.addEventListener('touchstart', prefetch);
-		window.addEventListener('mouseover', prefetch);
+		window.addEventListener('touchstart', handle_touchstart_mouseover);
+		window.addEventListener('mouseover', handle_touchstart_mouseover);
 
 		inited = true;
 	}
