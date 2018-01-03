@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.3.2
+
+* Expose `prefetch` function ([#61](https://github.com/sveltejs/sapper/pull/61))
+
 ## 0.3.1
 
 * Fix missing `runtime.js`
