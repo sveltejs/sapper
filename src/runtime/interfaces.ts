@@ -17,6 +17,10 @@ export type Route = {
 	load: () => Promise<{ default: ComponentConstructor }>
 };
 
+export type InitOpts = {
+	preloadRoutes: boolean;
+};
+
 export type ScrollPosition = {
 	x: number;
 	y: number;
