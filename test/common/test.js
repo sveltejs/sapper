@@ -332,7 +332,7 @@ function run(env) {
 						'api/blog/how-can-i-get-involved/index.html',
 
 						'blog/how-is-sapper-different-from-next/index.html',
-							'api/blog/how-is-sapper-different-from-next/index.html',
+						'api/blog/how-is-sapper-different-from-next/index.html',
 
 						'blog/how-to-use-sapper/index.html',
 						'api/blog/how-to-use-sapper/index.html',
