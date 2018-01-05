@@ -322,6 +322,9 @@ function run(env) {
 						'about/index.html',
 						'api/about/index.html',
 
+						'slow-preload/index.html',
+						'api/slow-preload/index.html',
+
 						'blog/index.html',
 						'api/blog/index.html',
 
@@ -351,10 +354,32 @@ function run(env) {
 						'svelte-logo-192.png',
 						'svelte-logo-512.png',
 					];
+					// Client scripts that should show up in the extraction directory.
+					const expectedClientRegexes = [
+						/client\/_\..*?\.js/,
+						/client\/about\..*?\.js/,
+						/client\/blog_\$slug\$\..*?\.js/,
+						/client\/blog\..*?\.js/,
+						/client\/main\..*?\.js/,
+						/client\/show_url\..*?\.js/,
+						/client\/slow_preload\..*?\.js/,
+					];
 					const allPages = walkSync(dest);
 
 					expectedPages.forEach((expectedPage) => {
 						assert.ok(allPages.includes(expectedPage));
+					});
+					expectedClientRegexes.forEach((expectedRegex) => {
+						// Ensure each client page regular expression matches at least one
+						// generated page.
+						let matched = false;
+						for (const page of allPages) {
+							if (expectedRegex.test(page)) {
+								matched = true;
+								break;
+							}
+						}
+						assert.ok(matched);
 					});
 				});
 			});
