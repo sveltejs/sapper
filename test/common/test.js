@@ -178,7 +178,7 @@ function run(env) {
 				);
 
 				assert.equal(
-					await nightmare.evaluate(() => document.title),
+					await nightmare.title(),
 					'About'
 				);
 
@@ -194,7 +194,7 @@ function run(env) {
 					.wait(100);
 
 				assert.equal(
-					await nightmare.evaluate(() => document.title),
+					await nightmare.title(),
 					'What is Sapper?'
 				);
 			});
