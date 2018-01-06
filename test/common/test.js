@@ -9,6 +9,12 @@ const fetch = require('node-fetch');
 run('production');
 run('development');
 
+Nightmare.action('page', {
+	title(done) {
+		this.evaluate_now(() => document.querySelector('h1').textContent, done);
+	}
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
 		this.timeout(20000);
@@ -142,26 +148,17 @@ function run(env) {
 			});
 
 			it('serves /', async () => {
-				const title = await nightmare
-					.goto(base)
-					.evaluate(() => document.querySelector('h1').textContent);
-
+				const title = await nightmare.goto(base).page.title();
 				assert.equal(title, 'Great success!');
 			});
 
 			it('serves static route', async () => {
-				const title = await nightmare
-					.goto(`${base}/about`)
-					.evaluate(() => document.querySelector('h1').textContent);
-
+				const title = await nightmare.goto(`${base}/about`).page.title();
 				assert.equal(title, 'About this site');
 			});
 
 			it('serves dynamic route', async () => {
-				const title = await nightmare
-					.goto(`${base}/blog/what-is-sapper`)
-					.evaluate(() => document.querySelector('h1').textContent);
-
+				const title = await nightmare.goto(`${base}/blog/what-is-sapper`).page.title();
 				assert.equal(title, 'What is Sapper?');
 			});
 
@@ -263,7 +260,7 @@ function run(env) {
 				);
 
 				assert.equal(
-					await nightmare.evaluate(() => document.querySelector('h1').textContent),
+					await nightmare.page.title(),
 					'About this site'
 				);
 
@@ -277,7 +274,7 @@ function run(env) {
 				);
 
 				assert.equal(
-					await nightmare.evaluate(() => document.querySelector('h1').textContent),
+					await nightmare.page.title(),
 					'About this site'
 				);
 			});
