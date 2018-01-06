@@ -367,7 +367,8 @@ function run(env) {
 					const allPages = walkSync(dest);
 
 					expectedPages.forEach((expectedPage) => {
-						assert.ok(allPages.includes(expectedPage));
+						assert.ok(allPages.includes(expectedPage),
+						    `Could not find page matching ${expectedPage}`);
 					});
 					expectedClientRegexes.forEach((expectedRegex) => {
 						// Ensure each client page regular expression matches at least one
@@ -379,7 +380,8 @@ function run(env) {
 								break;
 							}
 						}
-						assert.ok(matched);
+						assert.ok(matched,
+							  `Could not find client page matching ${expectedRegex}`);
 					});
 				});
 			});
