@@ -283,11 +283,12 @@ function run(env) {
 			});
 
 			it('passes entire request object to preload', async () => {
-				const html = await nightmare
+				await nightmare
 					.goto(`${base}/show-url`)
-					.evaluate(() => document.querySelector('p').innerHTML);
-
-				assert.equal(html, `URL is /show-url`);
+					.evaluate(() => document.querySelector('p').innerHTML)
+					.end().then(html => {
+						assert.equal(html, `URL is /show-url`);
+					});
 			});
 		});
 
