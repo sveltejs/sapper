@@ -2,7 +2,9 @@
 
 <script>
 	export default {
-		preload({ url }) {
+		preload(foo) {
+			let url = foo.url;
+			console.log('> i am here', url, foo);
 			return { url };
 		}
 	};
