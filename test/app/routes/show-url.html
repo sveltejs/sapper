@@ -2,10 +2,8 @@
 
 <script>
 	export default {
-		preload(foo) {
-			let url = foo.url;
-			console.log('> i am here', url, foo);
-			return { url };
+		preload({ url }) {
+			if (url) return { url };
 		}
 	};
 </script>
