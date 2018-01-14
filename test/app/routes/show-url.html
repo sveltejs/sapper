@@ -3,7 +3,7 @@
 <script>
 	export default {
 		preload({ url }) {
-			return { url };
+			if (url) return { url };
 		}
 	};
 </script>
