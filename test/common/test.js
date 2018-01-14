@@ -409,13 +409,10 @@ function run(env) {
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
 		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			if (err) {
-				process.stdout.write(stdout);
-				process.stderr.write(stderr);
+			process.stdout.write(stdout);
+			process.stderr.write(stderr);
 
-				return reject(err);
-			}
-
+			if (err) return reject(err);
 			fulfil();
 		});
 	});
