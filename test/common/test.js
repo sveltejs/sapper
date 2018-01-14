@@ -296,6 +296,18 @@ function run(env) {
 						assert.equal(html, `URL is /show-url`);
 					});
 			});
+
+			it('calls a delete handler', () => {
+				return nightmare
+					.goto(`${base}/delete-test`)
+					.wait(() => window.READY)
+					.click('.del')
+					.wait(() => window.deleted)
+					.evaluate(() => window.deleted.id)
+					.then(id => {
+						assert.equal(id, 42);
+					});
+			});
 		});
 
 		describe('headers', () => {
@@ -397,13 +409,10 @@ function run(env) {
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
 		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			if (err) {
-				process.stdout.write(stdout);
-				process.stderr.write(stderr);
+			process.stdout.write(stdout);
+			process.stderr.write(stderr);
 
-				return reject(err);
-			}
-
+			if (err) return reject(err);
 			fulfil();
 		});
 	});
