@@ -289,6 +289,7 @@ function run(env) {
 			it('passes entire request object to preload', () => {
 				return nightmare
 					.goto(`${base}/show-url`)
+					.wait(() => window.READY)
 					.evaluate(() => document.querySelector('p').innerHTML)
 					.end().then(html => {
 						assert.equal(html, `URL is /show-url`);
