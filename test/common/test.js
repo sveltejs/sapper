@@ -334,34 +334,24 @@ function run(env) {
 					// Pages that should show up in the extraction directory.
 					const expectedPages = [
 						'index.html',
-						'api/index.html',
-
 						'about/index.html',
-						'api/about/index.html',
-
 						'slow-preload/index.html',
-						'api/slow-preload/index.html',
 
 						'blog/index.html',
-						'api/blog/index.html',
-
 						'blog/a-very-long-post/index.html',
-						'api/blog/a-very-long-post/index.html',
-
 						'blog/how-can-i-get-involved/index.html',
-						'api/blog/how-can-i-get-involved/index.html',
-
 						'blog/how-is-sapper-different-from-next/index.html',
-						'api/blog/how-is-sapper-different-from-next/index.html',
-
 						'blog/how-to-use-sapper/index.html',
-						'api/blog/how-to-use-sapper/index.html',
-
 						'blog/what-is-sapper/index.html',
-						'api/blog/what-is-sapper/index.html',
-
 						'blog/why-the-name/index.html',
-						'api/blog/why-the-name/index.html',
+
+						'api/blog/contents',
+						'api/blog/a-very-long-post',
+						'api/blog/how-can-i-get-involved',
+						'api/blog/how-is-sapper-different-from-next',
+						'api/blog/how-to-use-sapper',
+						'api/blog/what-is-sapper',
+						'api/blog/why-the-name',
 
 						'favicon.png',
 						'global.css',
@@ -408,12 +398,19 @@ function run(env) {
 
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
-		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			process.stdout.write(stdout);
-			process.stderr.write(stderr);
+		const parts = cmd.split(' ');
+		const proc = require('child_process').spawn(parts.shift(), parts);
 
-			if (err) return reject(err);
-			fulfil();
+		proc.stdout.on('data', data => {
+			process.stdout.write(data);
 		});
+
+		proc.stderr.on('data', data => {
+			process.stderr.write(data);
+		});
+
+		proc.on('error', reject);
+
+		proc.on('close', () => fulfil());
 	});
 }
