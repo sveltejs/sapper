@@ -68,10 +68,16 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 	}
 }
 
-function prepare_route(Component, data) {
-	return Promise.resolve(
-		Component.preload ? Component.preload(data) : {}
-	).then(preloaded => {
+function prepare_route(Component: ComponentConstructor, data: RouteData) {
+	if (!Component.preload) {
+		return { Component, data };
+	}
+
+	if (!component && window.__SAPPER__ && window.__SAPPER__.preloaded) {
+		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded) };
+	}
+
+	return Promise.resolve(Component.preload(data)).then(preloaded => {
 		Object.assign(data, preloaded)
 		return { Component, data };
 	});
@@ -176,10 +182,10 @@ export function prefetch(href: string) {
 }
 
 function handle_touchstart_mouseover(event: MouseEvent | TouchEvent) {
-        const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
-        if (!a || a.rel !== 'prefetch') return;
+	const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
+	if (!a || a.rel !== 'prefetch') return;
 
-        prefetch(a.href);
+	prefetch(a.href);
 }
 
 let inited: boolean;

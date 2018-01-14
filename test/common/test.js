@@ -9,6 +9,12 @@ const fetch = require('node-fetch');
 run('production');
 run('development');
 
+Nightmare.action('page', {
+	title(done) {
+		this.evaluate_now(() => document.querySelector('h1').textContent, done);
+	}
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
 		this.timeout(20000);
@@ -150,55 +156,38 @@ function run(env) {
 			});
 
 			it('serves /', () => {
-				return nightmare
-					.goto(base)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'Great success!');
-					});
+				return nightmare.goto(base).page.title().then(title => {
+					assert.equal(title, 'Great success!');
+				});
 			});
 
 			it('serves static route', () => {
-				return nightmare
-					.goto(`${base}/about`)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'About this site');
-					});
+				return nightmare.goto(`${base}/about`).page.title().then(title => {
+					assert.equal(title, 'About this site');
+				});
 			});
 
 			it('serves dynamic route', () => {
-				return nightmare
-					.goto(`${base}/blog/what-is-sapper`)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'What is Sapper?');
-					});
+				return nightmare.goto(`${base}/blog/what-is-sapper`).page.title().then(title => {
+					assert.equal(title, 'What is Sapper?');
+				});
 			});
 
 			it('navigates to a new page without reloading', () => {
-				let requests;
-				return nightmare
-					.goto(base).wait(() => window.READY).wait(200)
+				return nightmare.goto(base).wait(() => window.READY).wait(200)
 					.then(() => {
-						return capture(() => {
-							return nightmare.click('a[href="/about"]');
-						});
+						return capture(() => nightmare.click('a[href="/about"]'));
 					})
-					.then(reqs => {
-						requests = reqs;
-
+					.then(requests => {
+						assert.deepEqual(requests.map(r => r.url), []);
 						return nightmare.path();
 					})
 					.then(path => {
 						assert.equal(path, '/about');
-
-						return nightmare.evaluate(() => document.title);
+						return nightmare.title();
 					})
 					.then(title => {
 						assert.equal(title, 'About');
-
-						assert.deepEqual(requests.map(r => r.url), []);
 					});
 			});
 
@@ -209,7 +198,7 @@ function run(env) {
 					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
 					.wait(100)
-					.then(() => nightmare.evaluate(() => document.title))
+					.title()
 					.then(title => {
 						assert.equal(title, 'What is Sapper?');
 					});
@@ -281,45 +270,29 @@ function run(env) {
 					.then(() => nightmare.path())
 					.then(path => {
 						assert.equal(path, '/about');
-
-						return nightmare.evaluate(() => document.querySelector('h1').textContent);
+						return nightmare.title();
 					})
-					.then(header_text => {
-						assert.equal(header_text, 'About this site');
-
+					.then(title => {
+						assert.equal(title, 'About');
 						return nightmare.evaluate(() => window.fulfil({})).wait(100);
 					})
 					.then(() => nightmare.path())
 					.then(path => {
 						assert.equal(path, '/about');
-
-						return nightmare.evaluate(() => document.querySelector('h1').textContent);
+						return nightmare.title();
 					})
-					.then(header_text => {
-						assert.equal(header_text, 'About this site');
-
-						return nightmare.evaluate(() => window.fulfil({})).wait(100);
+					.then(title => {
+						assert.equal(title, 'About');
 					});
 			});
 
 			it('passes entire request object to preload', () => {
 				return nightmare
 					.goto(`${base}/show-url`)
-					.evaluate(() => document.querySelector('p').innerHTML)
-					.then(html => {
-						assert.equal(html, `URL is /show-url`);
-					});
-			});
-
-			it('calls a delete handler', () => {
-				return nightmare
-					.goto(`${base}/delete-test`)
 					.wait(() => window.READY)
-					.click('.del')
-					.wait(() => window.deleted)
-					.evaluate(() => window.deleted.id)
-					.then(id => {
-						assert.equal(id, 42);
+					.evaluate(() => document.querySelector('p').innerHTML)
+					.end().then(html => {
+						assert.equal(html, `URL is /show-url`);
 					});
 			});
 		});
