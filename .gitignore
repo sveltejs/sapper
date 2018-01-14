@@ -3,3 +3,4 @@ node_modules
 cypress/screenshots
 test/app/.sapper
 runtime.js
+yarn.lock
