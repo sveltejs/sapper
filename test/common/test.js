@@ -9,6 +9,12 @@ const fetch = require('node-fetch');
 run('production');
 run('development');
 
+Nightmare.action('page', {
+	title(done) {
+		this.evaluate_now(() => document.querySelector('h1').textContent, done);
+	}
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
 		this.timeout(20000);
@@ -149,57 +155,39 @@ function run(env) {
 				return nightmare.end();
 			});
 
-			it('serves /', () => {
-				return nightmare
-					.goto(base)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'Great success!');
-					});
+			it('serves /', async () => {
+				const title = await nightmare.goto(base).page.title();
+				assert.equal(title, 'Great success!');
 			});
 
-			it('serves static route', () => {
-				return nightmare
-					.goto(`${base}/about`)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'About this site');
-					});
+			it('serves static route', async () => {
+				const title = await nightmare.goto(`${base}/about`).page.title();
+				assert.equal(title, 'About this site');
 			});
 
-			it('serves dynamic route', () => {
-				return nightmare
-					.goto(`${base}/blog/what-is-sapper`)
-					.evaluate(() => document.querySelector('h1').textContent)
-					.then(title => {
-						assert.equal(title, 'What is Sapper?');
-					});
+			it('serves dynamic route', async () => {
+				const title = await nightmare.goto(`${base}/blog/what-is-sapper`).page.title();
+				assert.equal(title, 'What is Sapper?');
 			});
 
-			it('navigates to a new page without reloading', () => {
-				let requests;
-				return nightmare
-					.goto(base).wait(() => window.READY).wait(200)
-					.then(() => {
-						return capture(() => {
-							return nightmare.click('a[href="/about"]');
-						});
-					})
-					.then(reqs => {
-						requests = reqs;
+			it('navigates to a new page without reloading', async () => {
+				await nightmare.goto(base).wait(() => window.READY).wait(200);
 
-						return nightmare.path();
-					})
-					.then(path => {
-						assert.equal(path, '/about');
+				const requests = await capture(async () => {
+					await nightmare.click('a[href="/about"]');
+				});
 
-						return nightmare.evaluate(() => document.title);
-					})
-					.then(title => {
-						assert.equal(title, 'About');
+				assert.equal(
+					await nightmare.path(),
+					'/about'
+				);
 
-						assert.deepEqual(requests.map(r => r.url), []);
-					});
+				assert.equal(
+					await nightmare.title(),
+					'About'
+				);
+
+				assert.deepEqual(requests.map(r => r.url), []);
 			});
 
 			it('navigates programmatically', () => {
@@ -208,11 +196,12 @@ function run(env) {
 					.wait(() => window.READY)
 					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
-					.wait(100)
-					.then(() => nightmare.evaluate(() => document.title))
-					.then(title => {
-						assert.equal(title, 'What is Sapper?');
-					});
+					.wait(100);
+
+				assert.equal(
+					await nightmare.title(),
+					'What is Sapper?'
+				);
 			});
 
 			it('prefetches programmatically', () => {
@@ -277,49 +266,39 @@ function run(env) {
 					.click('a[href="/slow-preload"]')
 					.wait(100)
 					.click('a[href="/about"]')
-					.wait(100)
-					.then(() => nightmare.path())
-					.then(path => {
-						assert.equal(path, '/about');
+					.wait(100);
 
-						return nightmare.evaluate(() => document.querySelector('h1').textContent);
-					})
-					.then(header_text => {
-						assert.equal(header_text, 'About this site');
+				assert.equal(
+					await nightmare.path(),
+					'/about'
+				);
 
-						return nightmare.evaluate(() => window.fulfil({})).wait(100);
-					})
-					.then(() => nightmare.path())
-					.then(path => {
-						assert.equal(path, '/about');
+				assert.equal(
+					await nightmare.page.title(),
+					'About this site'
+				);
 
-						return nightmare.evaluate(() => document.querySelector('h1').textContent);
-					})
-					.then(header_text => {
-						assert.equal(header_text, 'About this site');
+				await nightmare
+					.evaluate(() => window.fulfil({}))
+					.wait(100);
 
-						return nightmare.evaluate(() => window.fulfil({})).wait(100);
-					});
+				assert.equal(
+					await nightmare.path(),
+					'/about'
+				);
+
+				assert.equal(
+					await nightmare.page.title(),
+					'About this site'
+				);
 			});
 
-			it('passes entire request object to preload', () => {
-				return nightmare
+			it('passes entire request object to preload', async () => {
+				await nightmare
 					.goto(`${base}/show-url`)
 					.evaluate(() => document.querySelector('p').innerHTML)
-					.then(html => {
+					.end().then(html => {
 						assert.equal(html, `URL is /show-url`);
-					});
-			});
-
-			it('calls a delete handler', () => {
-				return nightmare
-					.goto(`${base}/delete-test`)
-					.wait(() => window.READY)
-					.click('.del')
-					.wait(() => window.deleted)
-					.evaluate(() => window.deleted.id)
-					.then(id => {
-						assert.equal(id, 42);
 					});
 			});
 		});
