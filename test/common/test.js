@@ -311,17 +311,16 @@ function run(env) {
 					});
 			});
 
-			it('calls a delete handler', async () => {
-				await nightmare
+			it('calls a delete handler', () => {
+				return nightmare
 					.goto(`${base}/delete-test`)
 					.wait(() => window.READY)
 					.click('.del')
-					.wait(() => window.deleted);
-
-				assert.equal(
-					await nightmare.evaluate(() => window.deleted.id),
-					42
-				);
+					.wait(() => window.deleted)
+					.evaluate(() => window.deleted.id)
+					.then(id => {
+						assert.equal(id, 42);
+					});
 			});
 		});
 
