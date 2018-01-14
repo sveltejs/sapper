@@ -289,6 +289,19 @@ function run(env) {
 
 				assert.equal(html, `URL is /show-url`);
 			});
+
+			it('calls a delete handler', async () => {
+				await nightmare
+					.goto(`${base}/delete-test`)
+					.wait(() => window.READY)
+					.click('.del')
+					.wait(() => window.deleted);
+
+				assert.equal(
+					await nightmare.evaluate(() => window.deleted.id),
+					42
+				);
+			});
 		});
 
 		describe('headers', () => {
