@@ -155,39 +155,40 @@ function run(env) {
 				return nightmare.end();
 			});
 
-			it('serves /', async () => {
-				const title = await nightmare.goto(base).page.title();
-				assert.equal(title, 'Great success!');
-			});
-
-			it('serves static route', async () => {
-				const title = await nightmare.goto(`${base}/about`).page.title();
-				assert.equal(title, 'About this site');
-			});
-
-			it('serves dynamic route', async () => {
-				const title = await nightmare.goto(`${base}/blog/what-is-sapper`).page.title();
-				assert.equal(title, 'What is Sapper?');
-			});
-
-			it('navigates to a new page without reloading', async () => {
-				await nightmare.goto(base).wait(() => window.READY).wait(200);
-
-				const requests = await capture(async () => {
-					await nightmare.click('a[href="/about"]');
+			it('serves /', () => {
+				return nightmare.goto(base).page.title().then(title => {
+					assert.equal(title, 'Great success!');
 				});
+			});
 
-				assert.equal(
-					await nightmare.path(),
-					'/about'
-				);
+			it('serves static route', () => {
+				return nightmare.goto(`${base}/about`).page.title().then(title => {
+					assert.equal(title, 'About this site');
+				});
+			});
 
-				assert.equal(
-					await nightmare.title(),
-					'About'
-				);
+			it('serves dynamic route', () => {
+				return nightmare.goto(`${base}/blog/what-is-sapper`).page.title().then(title => {
+					assert.equal(title, 'What is Sapper?');
+				});
+			});
 
-				assert.deepEqual(requests.map(r => r.url), []);
+			it('navigates to a new page without reloading', () => {
+				return nightmare.goto(base).wait(() => window.READY).wait(200)
+					.then(() => {
+						return capture(() => nightmare.click('a[href="/about"]'));
+					})
+					.then(requests => {
+						assert.deepEqual(requests.map(r => r.url), []);
+						return nightmare.path();
+					})
+					.then(path => {
+						assert.equal(path, '/about');
+						return nightmare.title();
+					})
+					.then(title => {
+						assert.equal(title, 'About');
+					});
 			});
 
 			it('navigates programmatically', () => {
@@ -196,12 +197,11 @@ function run(env) {
 					.wait(() => window.READY)
 					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
-					.wait(100);
-
-				assert.equal(
-					await nightmare.title(),
-					'What is Sapper?'
-				);
+					.wait(100)
+					.title()
+					.then(title => {
+						assert.equal(title, 'What is Sapper?');
+					});
 			});
 
 			it('prefetches programmatically', () => {
@@ -266,35 +266,28 @@ function run(env) {
 					.click('a[href="/slow-preload"]')
 					.wait(100)
 					.click('a[href="/about"]')
-					.wait(100);
-
-				assert.equal(
-					await nightmare.path(),
-					'/about'
-				);
-
-				assert.equal(
-					await nightmare.page.title(),
-					'About this site'
-				);
-
-				await nightmare
-					.evaluate(() => window.fulfil({}))
-					.wait(100);
-
-				assert.equal(
-					await nightmare.path(),
-					'/about'
-				);
-
-				assert.equal(
-					await nightmare.page.title(),
-					'About this site'
-				);
+					.wait(100)
+					.then(() => nightmare.path())
+					.then(path => {
+						assert.equal(path, '/about');
+						return nightmare.title();
+					})
+					.then(title => {
+						assert.equal(title, 'About');
+						return nightmare.evaluate(() => window.fulfil({})).wait(100);
+					})
+					.then(() => nightmare.path())
+					.then(path => {
+						assert.equal(path, '/about');
+						return nightmare.title();
+					})
+					.then(title => {
+						assert.equal(title, 'About');
+					});
 			});
 
-			it('passes entire request object to preload', async () => {
-				await nightmare
+			it('passes entire request object to preload', () => {
+				return nightmare
 					.goto(`${base}/show-url`)
 					.evaluate(() => document.querySelector('p').innerHTML)
 					.end().then(html => {
