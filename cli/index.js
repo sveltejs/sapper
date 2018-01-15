@@ -14,11 +14,11 @@ if (cmd === 'build') {
 		.catch(err => {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 		});
-} else if (cmd === 'extract') {
+} else if (cmd === 'export') {
 	const start = Date.now();
 
 	build()
-		.then(() => require('../lib/utils/extract.js')())
+		.then(() => require('../lib/utils/export.js')())
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
