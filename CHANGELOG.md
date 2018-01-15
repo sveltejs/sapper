@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.5.0
+
+* Experimental support for `sapper export` ([#9](https://github.com/sveltejs/sapper/issues/9))
+* Lazily load chokidar, for faster startup ([#64](https://github.com/sveltejs/sapper/pull/64))
+
 ## 0.4.0
 
 * `%sapper.main%` has been replaced with `%sapper.scripts%` ([#86](https://github.com/sveltejs/sapper/issues/86))
