@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "chalk": "^2.3.0",
+    "cheerio": "^1.0.0-rc.2",
     "chokidar": "^1.7.0",
     "code-frame": "^5.0.0",
     "escape-html": "^1.0.3",
