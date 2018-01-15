@@ -79,7 +79,7 @@ function run(env) {
 
 			if (env === 'production') {
 				const cli = path.resolve(__dirname, '../../cli/index.js');
-				exec_promise = exec(`${cli} build`).then(() => exec(`${cli} extract`));
+				exec_promise = exec(`${cli} build`).then(() => exec(`${cli} export`));
 			}
 
 			return exec_promise.then(() => {
@@ -327,8 +327,8 @@ function run(env) {
 		});
 
 		if (env === 'production') {
-			describe('extract', () => {
-				it('extract all pages', () => {
+			describe('export', () => {
+				it('export all pages', () => {
 					const dest = path.resolve(__dirname, '../app/dist');
 
 					// Pages that should show up in the extraction directory.
