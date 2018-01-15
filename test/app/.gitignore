@@ -4,3 +4,4 @@ node_modules
 yarn.lock
 cypress/screenshots
 templates/.*
+dist

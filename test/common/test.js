@@ -5,6 +5,7 @@ const serve = require('serve-static');
 const Nightmare = require('nightmare');
 const getPort = require('get-port');
 const fetch = require('node-fetch');
+const walkSync = require('walk-sync');
 
 run('production');
 run('development');
@@ -78,7 +79,7 @@ function run(env) {
 
 			if (env === 'production') {
 				const cli = path.resolve(__dirname, '../../cli/index.js');
-				exec_promise = exec(`${cli} build`);
+				exec_promise = exec(`${cli} build`).then(() => exec(`${cli} export`));
 			}
 
 			return exec_promise.then(() => {
@@ -324,20 +325,92 @@ function run(env) {
 				});
 			});
 		});
+
+		if (env === 'production') {
+			describe('export', () => {
+				it('export all pages', () => {
+					const dest = path.resolve(__dirname, '../app/dist');
+
+					// Pages that should show up in the extraction directory.
+					const expectedPages = [
+						'index.html',
+						'about/index.html',
+						'slow-preload/index.html',
+
+						'blog/index.html',
+						'blog/a-very-long-post/index.html',
+						'blog/how-can-i-get-involved/index.html',
+						'blog/how-is-sapper-different-from-next/index.html',
+						'blog/how-to-use-sapper/index.html',
+						'blog/what-is-sapper/index.html',
+						'blog/why-the-name/index.html',
+
+						'api/blog/contents',
+						'api/blog/a-very-long-post',
+						'api/blog/how-can-i-get-involved',
+						'api/blog/how-is-sapper-different-from-next',
+						'api/blog/how-to-use-sapper',
+						'api/blog/what-is-sapper',
+						'api/blog/why-the-name',
+
+						'favicon.png',
+						'global.css',
+						'great-success.png',
+						'manifest.json',
+						'service-worker.js',
+						'svelte-logo-192.png',
+						'svelte-logo-512.png',
+					];
+					// Client scripts that should show up in the extraction directory.
+					const expectedClientRegexes = [
+						/client\/_\..*?\.js/,
+						/client\/about\..*?\.js/,
+						/client\/blog_\$slug\$\..*?\.js/,
+						/client\/blog\..*?\.js/,
+						/client\/main\..*?\.js/,
+						/client\/show_url\..*?\.js/,
+						/client\/slow_preload\..*?\.js/,
+					];
+					const allPages = walkSync(dest);
+
+					expectedPages.forEach((expectedPage) => {
+						assert.ok(allPages.includes(expectedPage),
+						    `Could not find page matching ${expectedPage}`);
+					});
+					expectedClientRegexes.forEach((expectedRegex) => {
+						// Ensure each client page regular expression matches at least one
+						// generated page.
+						let matched = false;
+						for (const page of allPages) {
+							if (expectedRegex.test(page)) {
+								matched = true;
+								break;
+							}
+						}
+						assert.ok(matched,
+							  `Could not find client page matching ${expectedRegex}`);
+					});
+				});
+			});
+		}
 	});
 }
 
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
-		require('child_process').exec(cmd, (err, stdout, stderr) => {
-			if (err) {
-				process.stdout.write(stdout);
-				process.stderr.write(stderr);
+		const parts = cmd.split(' ');
+		const proc = require('child_process').spawn(parts.shift(), parts);
 
-				return reject(err);
-			}
-
-			fulfil();
+		proc.stdout.on('data', data => {
+			process.stdout.write(data);
 		});
+
+		proc.stderr.on('data', data => {
+			process.stderr.write(data);
+		});
+
+		proc.on('error', reject);
+
+		proc.on('close', () => fulfil());
 	});
 }
