@@ -29,6 +29,7 @@
     "rimraf": "^2.6.2",
     "sander": "^0.6.0",
     "serialize-javascript": "^1.4.0",
+    "url-parse": "^1.2.0",
     "walk-sync": "^0.3.2",
     "webpack": "^3.10.0",
     "webpack-hot-middleware": "^2.21.0"
