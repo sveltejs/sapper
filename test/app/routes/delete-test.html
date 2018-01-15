@@ -1,0 +1,15 @@
+<button class='del' on:click='del()'>delete</button>
+
+<script>
+	export default {
+		methods: {
+			del() {
+				fetch(`/api/delete/42`, { method: 'DELETE' })
+					.then(r => r.json())
+					.then(data => {
+						window.deleted = data;
+					});
+			}
+		}
+	};
+</script>

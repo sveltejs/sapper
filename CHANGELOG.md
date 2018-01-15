@@ -1,5 +1,13 @@
 # sapper changelog
 
+## 0.4.0
+
+* `%sapper.main%` has been replaced with `%sapper.scripts%` ([#86](https://github.com/sveltejs/sapper/issues/86))
+* Node 6 support ([#67](https://github.com/sveltejs/sapper/pull/67))
+* Explicitly load css-loader and style-loader ([#72](https://github.com/sveltejs/sapper/pull/72))
+* DELETE requests are handled with `del` exports ([#77](https://github.com/sveltejs/sapper/issues/77))
+* Send preloaded data for first route to client, where possible ([#3](https://github.com/sveltejs/sapper/issues/3))
+
 ## 0.3.2
 
 * Expose `prefetch` function ([#61](https://github.com/sveltejs/sapper/pull/61))

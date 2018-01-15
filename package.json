@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "lib/index.js",
   "bin": {
@@ -19,11 +19,14 @@
   "dependencies": {
     "chalk": "^2.3.0",
     "chokidar": "^1.7.0",
+    "code-frame": "^5.0.0",
     "escape-html": "^1.0.3",
+    "locate-character": "^2.0.5",
     "mkdirp": "^0.5.1",
     "relative": "^3.0.2",
     "require-relative": "^0.8.7",
     "rimraf": "^2.6.2",
+    "serialize-javascript": "^1.4.0",
     "webpack": "^3.10.0",
     "webpack-hot-middleware": "^2.21.0"
   },
