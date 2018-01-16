@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.5.1
+
+* Only write service-worker.js to filesystem in dev mode ([#90](https://github.com/sveltejs/sapper/issues/90))
+
 ## 0.5.0
 
 * Experimental support for `sapper export` ([#9](https://github.com/sveltejs/sapper/issues/9))
