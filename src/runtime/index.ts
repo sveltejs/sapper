@@ -60,7 +60,7 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 	component = new Component({
 		target,
 		data,
-		hydrate: !!component
+		hydrate: !component
 	});
 
 	if (scroll) {
@@ -73,7 +73,7 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 		return { Component, data };
 	}
 
-	if (!component && window.__SAPPER__ && window.__SAPPER__.preloaded) {
+	if (!component && window.__SAComponentPPER__ && window.__SAPPER__.preloaded) {
 		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded) };
 	}
 
