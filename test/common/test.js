@@ -92,6 +92,10 @@ function run(env) {
 				PORT = port;
 				base = `http://localhost:${PORT}`;
 
+				Nightmare.action('init', function(done) {
+					this.evaluate_now(() => window.init(), done);
+				});
+
 				global.fetch = (url, opts) => {
 					if (url[0] === '/') url = `${base}${url}`;
 					return fetch(url, opts);
@@ -175,7 +179,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return nightmare.goto(base).wait(() => window.READY).wait(200)
+				return nightmare.goto(base).init().wait(200)
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
@@ -195,7 +199,8 @@ function run(env) {
 			it('navigates programmatically', () => {
 				return nightmare
 					.goto(`${base}/about`)
-					.wait(() => window.READY)
+					.init()
+					.wait(100)
 					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
 					.wait(100)
@@ -208,7 +213,8 @@ function run(env) {
 			it('prefetches programmatically', () => {
 				return nightmare
 					.goto(`${base}/about`)
-					.wait(() => window.READY)
+					.init()
+					.wait(100)
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -224,7 +230,7 @@ function run(env) {
 			it('scrolls to active deeplink', () => {
 				return nightmare
 					.goto(`${base}/blog/a-very-long-post#four`)
-					.wait(() => window.READY)
+					.init()
 					.wait(100)
 					.evaluate(() => window.scrollY)
 					.then(scrollY => {
@@ -235,7 +241,7 @@ function run(env) {
 			it('reuses prefetch promise', () => {
 				return nightmare
 					.goto(`${base}/blog`)
-					.wait(() => window.READY)
+					.init()
 					.wait(200)
 					.then(() => {
 						return capture(() => {
@@ -263,7 +269,7 @@ function run(env) {
 			it('cancels navigation if subsequent navigation occurs during preload', () => {
 				return nightmare
 					.goto(base)
-					.wait(() => window.READY)
+					.init()
 					.click('a[href="/slow-preload"]')
 					.wait(100)
 					.click('a[href="/about"]')
@@ -290,7 +296,7 @@ function run(env) {
 			it('passes entire request object to preload', () => {
 				return nightmare
 					.goto(`${base}/show-url`)
-					.wait(() => window.READY)
+					.init()
 					.evaluate(() => document.querySelector('p').innerHTML)
 					.end().then(html => {
 						assert.equal(html, `URL is /show-url`);
@@ -300,12 +306,27 @@ function run(env) {
 			it('calls a delete handler', () => {
 				return nightmare
 					.goto(`${base}/delete-test`)
-					.wait(() => window.READY)
+					.init().wait(100)
 					.click('.del')
 					.wait(() => window.deleted)
 					.evaluate(() => window.deleted.id)
 					.then(id => {
 						assert.equal(id, 42);
+					});
+			});
+
+			it('hydrates initial route', () => {
+				return nightmare.goto(base)
+					.wait('h1')
+					.evaluate(() => {
+						window.h1 = document.querySelector('h1');
+					})
+					.init().wait(100)
+					.evaluate(() => {
+						return document.querySelector('h1') === window.h1;
+					})
+					.then(matches => {
+						assert.ok(matches);
 					});
 			});
 		});
