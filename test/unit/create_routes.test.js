@@ -70,6 +70,10 @@ describe('create_routes', () => {
 		assert.throws(() => {
 			create_routes(['[foo].html', '[bar]/index.html']);
 		}, /The \[foo\].html and \[bar\]\/index.html routes clash/);
+
+		assert.throws(() => {
+			create_routes(['foo.html', 'foo.js']);
+		}, /The foo.html and foo.js routes clash/);
 	});
 
 	it('matches nested routes', () => {
