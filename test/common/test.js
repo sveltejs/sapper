@@ -41,7 +41,11 @@ function run(env) {
 				};
 
 				const res = {
-					set: (headers, value) => {
+					setHeader(header, value) {
+						result.headers[header] = value;
+					},
+
+					set(headers, value) {
 						if (typeof headers === 'string') {
 							return res.set({ [headers]: value });
 						}
@@ -49,15 +53,15 @@ function run(env) {
 						Object.assign(result.headers, headers);
 					},
 
-					status: code => {
+					status(code) {
 						result.status = code;
 					},
 
-					write: data => {
+					write(data) {
 						result.body += data;
 					},
 
-					end: data => {
+					end(data) {
 						result.body += data;
 						fulfil(result);
 					}
