@@ -83,7 +83,7 @@ function run(env) {
 
 			if (env === 'production') {
 				const cli = path.resolve(__dirname, '../../cli/index.js');
-				exec_promise = exec(`${cli} build`).then(() => exec(`${cli} export`));
+				exec_promise = exec(`node ${cli} export`);
 			}
 
 			return exec_promise.then(() => {
