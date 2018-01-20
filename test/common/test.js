@@ -317,13 +317,13 @@ function run(env) {
 
 			it('hydrates initial route', () => {
 				return nightmare.goto(base)
-					.wait('h1')
+					.wait('.hydrate-test')
 					.evaluate(() => {
-						window.h1 = document.querySelector('h1');
+						window.el = document.querySelector('.hydrate-test');
 					})
 					.init().wait(100)
 					.evaluate(() => {
-						return document.querySelector('h1') === window.h1;
+						return document.querySelector('.hydrate-test') === window.el;
 					})
 					.then(matches => {
 						assert.ok(matches);
