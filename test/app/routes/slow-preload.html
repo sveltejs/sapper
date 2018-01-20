@@ -4,7 +4,11 @@
 	export default {
 		preload() {
 			return new Promise(fulfil => {
-				window.fulfil = fulfil;
+				if (typeof window !== 'undefined') {
+					window.fulfil = fulfil;
+				} else {
+					fulfil({});
+				}
 			});
 		}
 	};
