@@ -60,7 +60,7 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 	component = new Component({
 		target,
 		data,
-		hydrate: !!component
+		hydrate: !component
 	});
 
 	if (scroll) {
