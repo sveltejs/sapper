@@ -4,7 +4,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
-import { route_manager, templates, create_app, compilers, generate_asset_cache } from 'sapper/core.js';
+import { create_routes, templates, create_app, get_compilers, generate_asset_cache } from 'sapper/core.js';
 import create_watcher from './create_watcher.js';
 import { dest, dev, entry, src } from '../config.js';
 
@@ -14,7 +14,16 @@ function connect_dev() {
 
 	create_app({ dev, entry, src });
 
-	const watcher = create_watcher();
+	const compilers = get_compilers();
+
+	let routes;
+
+	const watcher = create_watcher({
+		compilers,
+		on_routes_update: _ => {
+			routes = _;
+		}
+	});
 
 	let asset_cache;
 
@@ -55,7 +64,7 @@ function connect_dev() {
 			fn: pathname => asset_cache.client.chunks[pathname]
 		}),
 
-		get_route_handler(() => asset_cache),
+		get_route_handler(() => asset_cache, () => routes),
 
 		get_not_found_handler(() => asset_cache)
 	]);
@@ -75,6 +84,8 @@ function connect_prod() {
 		client_info: read_json(path.join(dest, 'stats.client.json')),
 		server_info: read_json(path.join(dest, 'stats.server.json'))
 	});
+
+	const routes = create_routes({ src }); // TODO rename update
 
 	const middleware = compose_handlers([
 		set_req_pathname,
@@ -100,7 +111,7 @@ function connect_prod() {
 			fn: pathname => asset_cache.client.chunks[pathname]
 		}),
 
-		get_route_handler(() => asset_cache),
+		get_route_handler(() => asset_cache, () => routes),
 
 		get_not_found_handler(() => asset_cache)
 	]);
@@ -132,7 +143,7 @@ function get_asset_handler(opts) {
 
 const resolved = Promise.resolve();
 
-function get_route_handler(fn) {
+function get_route_handler(get_assets, get_routes) {
 	function handle_route(route, req, res, next, { client, server }) {
 		req.params = route.exec(req.pathname);
 
@@ -204,8 +215,9 @@ function get_route_handler(fn) {
 
 		resolved
 			.then(() => {
-				for (const route of route_manager.routes) {
-					if (route.test(url)) return handle_route(route, req, res, next, fn());
+				const routes = get_routes();
+				for (const route of routes) {
+					if (route.test(url)) return handle_route(route, req, res, next, get_assets());
 				}
 
 				// no matching route — 404

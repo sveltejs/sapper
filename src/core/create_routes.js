@@ -1,6 +1,7 @@
 import * as path from 'path';
+import glob from 'glob';
 
-export default function create_routes(files) {
+export default function create_routes({ src, files = glob.sync('**/*.+(html|js|mjs)', { cwd: src }) }) {
 	const routes = files
 		.map(file => {
 			if (/(^|\/|\\)_/.test(file)) return;

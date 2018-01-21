@@ -1,16 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as route_manager from '../route_manager.js';
-import { create_templates } from '../templates.js';
+import create_routes from '../create_routes.js';
+// import { create_templates } from '../templates.js';
 
 function posixify(file) {
 	return file.replace(/[/\\]/g, '/');
 }
 
 function create_app({ src, dev, entry }) {
-	// const { routes } = route_manager;
-	route_manager.update({ src });
-	const { routes } = route_manager;
+	const routes = create_routes({ src });
 
 	function create_client_main() {
 		const template = fs.readFileSync('templates/main.js', 'utf-8');
@@ -68,31 +66,31 @@ function create_app({ src, dev, entry }) {
 	create_server_routes();
 }
 
-export function start_watching({ src }) {
-	const chokidar = require('chokidar');
+// export function start_watching({ src }) {
+// 	const chokidar = require('chokidar');
 
-	const watch = (glob, callback) => {
-		const watcher = chokidar.watch(glob, {
-			ignoreInitial: true,
-			persistent: false
-		});
+// 	const watch = (glob, callback) => {
+// 		const watcher = chokidar.watch(glob, {
+// 			ignoreInitial: true,
+// 			persistent: false
+// 		});
 
-		watcher.on('add', callback);
-		watcher.on('change', callback);
-		watcher.on('unlink', callback);
-	};
+// 		watcher.on('add', callback);
+// 		watcher.on('change', callback);
+// 		watcher.on('unlink', callback);
+// 	};
 
-	watch('templates/main.js', create_app);
+// 	watch('templates/main.js', create_app);
 
-	watch('routes/**/*.+(html|js|mjs)', () => {
-		route_manager.update({ src });
-		create_app();
-	});
+// 	watch('routes/**/*.+(html|js|mjs)', () => {
+// 		route_manager.update({ src });
+// 		create_app();
+// 	});
 
-	watch('templates/**.html', () => {
-		create_templates();
-		// TODO reload current page?
-	});
-}
+// 	watch('templates/**.html', () => {
+// 		create_templates();
+// 		// TODO reload current page?
+// 	});
+// }
 
 export default create_app;

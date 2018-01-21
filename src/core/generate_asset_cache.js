@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import glob from 'glob';
 import { create_templates, render } from './templates.js';
-import * as route_manager from './route_manager.js';
+import create_routes from './create_routes.js';
 
 function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
@@ -17,6 +17,8 @@ export default function generate_asset_cache({ src, dest, dev, client_info, serv
 
 	const service_worker = generate_service_worker({ chunk_files, src });
 	const index = generate_index(main_file);
+
+	const routes = create_routes({ src }); // TODO rename update
 
 	if (dev) {
 		fs.writeFileSync(path.join(dest, 'service-worker.js'), service_worker);
@@ -34,7 +36,8 @@ export default function generate_asset_cache({ src, dest, dev, client_info, serv
 				return lookup;
 			}, {}),
 
-			routes: route_manager.routes.reduce((lookup, route) => {
+			// TODO confusing that `routes` refers to an array *and* a lookup
+			routes: routes.reduce((lookup, route) => {
 				lookup[route.id] = `/client/${ensure_array(client_info.assetsByChunkName[route.id])[0]}`;
 				return lookup;
 			}, {}),
@@ -54,10 +57,10 @@ export default function generate_asset_cache({ src, dest, dev, client_info, serv
 function generate_service_worker({ chunk_files, src }) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
 
-	route_manager.update({ src }); // TODO refactor
+	const routes = create_routes({ src }); // TODO refactor
 
 	const route_code = `[${
-		route_manager.routes
+		routes
 			.filter(route => route.type === 'page')
 			.map(route => `{ pattern: ${route.pattern} }`)
 			.join(', ')

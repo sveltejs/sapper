@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import * as compilers from './utils/compilers.js';
+import get_compilers from './get_compilers.js';
 import create_app from './utils/create_app.js';
 import generate_asset_cache from './generate_asset_cache.js';
 
@@ -28,7 +28,7 @@ export default function build({ dest, dev, entry, src }) {
 			}
 		}
 
-		const { client, server } = compilers.get_compilers(); // TODO refactor
+		const { client, server } = get_compilers();
 
 		client.run((err, client_stats) => {
 			handleErrors(err, client_stats);

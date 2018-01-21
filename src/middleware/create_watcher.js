@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { compilers, generate_asset_cache } from 'sapper/core.js';
+import { generate_asset_cache, create_routes } from 'sapper/core.js';
 import { dest } from '../config.js';
 
 function deferred() {
@@ -15,7 +15,7 @@ function deferred() {
 	return d;
 }
 
-export default function create_watcher() {
+export default function create_watcher({ compilers, src, onroutes }) {
 	const deferreds = {
 		client: deferred(),
 		server: deferred()
@@ -58,6 +58,36 @@ export default function create_watcher() {
 			}
 		});
 	}
+
+	const chokidar = require('chokidar');
+
+	function watch_files(pattern, callback) {
+		const watcher = chokidar.watch(pattern, {
+			ignoreInitial: true,
+			persistent: false
+		});
+
+		watcher.on('add', callback);
+		watcher.on('change', callback);
+		watcher.on('unlink', callback);
+
+		// watch('templates/main.js', create_app);
+
+		// watch('routes/**/*.+(html|js|mjs)', () => {
+		// 	route_manager.update({ src });
+		// 	create_app();
+		// });
+
+		// watch('templates/**.html', () => {
+		// 	create_templates();
+		// 	// TODO reload current page?
+		// });
+	}
+
+	watch_files('routes/**/*.+(html|js|mjs)', () => {
+		const routes = create_routes({ src });
+		onroutes(routes);
+	});
 
 	const watcher = {
 		ready: invalidate(),

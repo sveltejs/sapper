@@ -1,7 +1,7 @@
 import * as path from 'path';
 import relative from 'require-relative';
 
-export function get_compilers() {
+export default function get_compilers() {
 	const webpack = relative('webpack', process.cwd());
 
 	return {
