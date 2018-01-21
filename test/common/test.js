@@ -183,7 +183,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return nightmare.goto(base).init().wait(200)
+				return nightmare.goto(base).init().wait(100)
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
@@ -204,7 +204,6 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.wait(100)
 					.click('.goto')
 					.wait(() => window.location.pathname === '/blog/what-is-sapper')
 					.wait(100)
@@ -218,7 +217,6 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.wait(100)
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -235,7 +233,6 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/blog/a-very-long-post#four`)
 					.init()
-					.wait(100)
 					.evaluate(() => window.scrollY)
 					.then(scrollY => {
 						assert.ok(scrollY > 0, scrollY);
@@ -245,8 +242,7 @@ function run(env) {
 			it('reuses prefetch promise', () => {
 				return nightmare
 					.goto(`${base}/blog`)
-					.init()
-					.wait(200)
+					.init().wait(100)
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -310,7 +306,7 @@ function run(env) {
 			it('calls a delete handler', () => {
 				return nightmare
 					.goto(`${base}/delete-test`)
-					.init().wait(100)
+					.init()
 					.click('.del')
 					.wait(() => window.deleted)
 					.evaluate(() => window.deleted.id)
@@ -325,7 +321,7 @@ function run(env) {
 					.evaluate(() => {
 						window.el = document.querySelector('.hydrate-test');
 					})
-					.init().wait(100)
+					.init()
 					.evaluate(() => {
 						return document.querySelector('.hydrate-test') === window.el;
 					})

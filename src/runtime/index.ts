@@ -1,5 +1,5 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Target } from './interfaces';
 
 export let component: Component;
 let target: Node;
@@ -19,7 +19,7 @@ if ('scrollRestoration' in history) {
 	history.scrollRestoration = 'manual';
 }
 
-function select_route(url: URL): { route: Route, data: RouteData } {
+function select_route(url: URL): Target {
 	if (url.origin !== window.location.origin) return null;
 
 	for (const route of routes) {
@@ -30,7 +30,7 @@ function select_route(url: URL): { route: Route, data: RouteData } {
 			const query: Record<string, string | true> = {};
 			for (const [key, value] of url.searchParams) query[key] = value || true;
 
-			return { route, data: { params, query } };
+			return { url, route, data: { params, query } };
 		}
 	}
 }
@@ -83,35 +83,31 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 	});
 }
 
-function navigate(url: URL, id: number) {
-	const selected = select_route(url);
-	if (selected) {
-		if (id) {
-			// popstate or initial navigation
-			cid = id;
-		} else {
-			// clicked on a link. preserve scroll state
-			scroll_history[cid] = scroll_state();
-
-			id = cid = ++uid;
-			scroll_history[cid] = { x: 0, y: 0 };
-		}
-
-		const loaded = prefetching && prefetching.href === url.href ?
-			prefetching.promise :
-			selected.route.load().then(mod => prepare_route(mod.default, selected.data));
-
-		prefetching = null;
-
-		const token = current_token = {};
-
-		loaded.then(({ Component, data }) => {
-			render(Component, data, scroll_history[id], token);
-		});
-
+function navigate(target: Target, id: number) {
+	if (id) {
+		// popstate or initial navigation
 		cid = id;
-		return true;
+	} else {
+		// clicked on a link. preserve scroll state
+		scroll_history[cid] = scroll_state();
+
+		id = cid = ++uid;
+		scroll_history[cid] = { x: 0, y: 0 };
 	}
+
+	cid = id;
+
+	const loaded = prefetching && prefetching.href === target.url.href ?
+		prefetching.promise :
+		target.route.load().then(mod => prepare_route(mod.default, target.data));
+
+	prefetching = null;
+
+	const token = current_token = {};
+
+	return loaded.then(({ Component, data }) => {
+		render(Component, data, scroll_history[id], token);
+	});
 }
 
 function handle_click(event: MouseEvent) {
@@ -147,7 +143,9 @@ function handle_click(event: MouseEvent) {
 	// Don't handle hash changes
 	if (url.pathname === window.location.pathname && url.search === window.location.search) return;
 
-	if (navigate(url, null)) {
+	const target = select_route(url);
+	if (target) {
+		navigate(target, null);
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
 	}
@@ -157,7 +155,9 @@ function handle_popstate(event: PopStateEvent) {
 	scroll_history[cid] = scroll_state();
 
 	if (event.state) {
-		navigate(new URL(window.location.href), event.state.id);
+		const url = new URL(window.location.href);
+		const target = select_route(url);
+		navigate(target, event.state.id);
 	} else {
 		// hashchange
 		cid = ++uid;
@@ -205,7 +205,7 @@ export function init(_target: Node, _routes: Route[]) {
 		inited = true;
 	}
 
-	setTimeout(() => {
+	return Promise.resolve().then(() => {
 		const { hash, href } = window.location;
 
 		const deep_linked = hash && document.querySelector(hash);
@@ -214,12 +214,16 @@ export function init(_target: Node, _routes: Route[]) {
 			scroll_state();
 
 		history.replaceState({ id: uid }, '', href);
-		navigate(new URL(window.location.href), uid);
+
+		const target = select_route(new URL(window.location.href));
+		return navigate(target, uid);
 	});
 }
 
 export function goto(href: string, opts = { replaceState: false }) {
-	if (navigate(new URL(href, window.location.href), null)) {
+	const target = select_route(new URL(href, window.location.href));
+	if (target) {
+		navigate(target, null);
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 	} else {
 		window.location.href = href;

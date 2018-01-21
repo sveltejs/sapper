@@ -21,3 +21,9 @@ export type ScrollPosition = {
 	x: number;
 	y: number;
 };
+
+export type Target = {
+	url: URL;
+	route: Route;
+	data: RouteData;
+};
