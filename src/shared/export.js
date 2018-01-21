@@ -1,22 +1,24 @@
-const path = require('path');
-const sander = require('sander');
-const app = require('express')();
-const cheerio = require('cheerio');
-const fetch = require('node-fetch');
-const URL = require('url-parse');
-const generate_asset_cache = require('./generate_asset_cache.js');
-const sapper = require('../index.js');
+import * as path from 'path';
+import * as sander from 'sander';
+import express from 'express';
+import cheerio from 'cheerio';
+import fetch from 'node-fetch';
+import URL from 'url-parse';
+import generate_asset_cache from './generate_asset_cache.js';
+import { dest } from '../config.js';
+import middleware from '../middleware/index.js';
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
-const { dest } = require('../config.js');
 
 const origin = `http://localhost:${PORT}`;
+
+const app = express();
 
 function read_json(file) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-module.exports = function() {
+export default function() {
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
@@ -60,7 +62,7 @@ module.exports = function() {
 		return fetch(url, opts);
 	};
 
-	app.use(sapper());
+	app.use(middleware());
 	const server = app.listen(PORT);
 
 	const seen = new Set();
@@ -95,4 +97,4 @@ module.exports = function() {
 
 	return handle(new URL(origin)) // TODO all static routes
 		.then(() => server.close());
-};
+}

@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-const compilers = require('./compilers.js');
-const generate_asset_cache = require('./generate_asset_cache.js');
-const { dest } = require('../config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
+import * as compilers from './compilers.js';
+import generate_asset_cache from '../../shared/generate_asset_cache.js';
+import { dest } from '../../config.js';
 
 function deferred() {
 	const d = {};
@@ -16,7 +16,7 @@ function deferred() {
 	return d;
 }
 
-module.exports = function create_watcher() {
+export default function create_watcher() {
 	const deferreds = {
 		client: deferred(),
 		server: deferred()
@@ -72,4 +72,4 @@ module.exports = function create_watcher() {
 	};
 
 	return watcher;
-};
+}

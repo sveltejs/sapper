@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const route_manager = require('../route_manager.js');
-const { src, entry, dev } = require('../config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as route_manager from '../route_manager.js';
+import { src, entry, dev } from '../../config.js';
 
 function posixify(file) {
 	return file.replace(/[/\\]/g, '/');
@@ -79,4 +79,4 @@ if (dev) {
 	watcher.on('unlink', create_app);
 }
 
-module.exports = create_app;
+export default create_app;

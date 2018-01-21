@@ -1,15 +1,17 @@
-const glob = require('glob');
-const create_routes = require('./utils/create_routes.js');
-const { src, dev } = require('./config.js');
+import glob from 'glob';
+import create_routes from './utils/create_routes.js';
+import { src, dev } from '../config.js';
 
 const callbacks = [];
 
-exports.onchange = fn => {
+export function onchange(fn) {
 	callbacks.push(fn);
-};
+}
+
+export let routes;
 
 function update() {
-	exports.routes = create_routes(
+	routes = create_routes(
 		glob.sync('**/*.+(html|js|mjs)', { cwd: src })
 	);
 

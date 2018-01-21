@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const serialize = require('serialize-javascript');
-const route_manager = require('./route_manager.js');
-const templates = require('./templates.js');
-const create_app = require('./utils/create_app.js');
-const create_watcher = require('./utils/create_watcher.js');
-const compilers = require('./utils/compilers.js');
-const generate_asset_cache = require('./utils/generate_asset_cache.js');
-const escape_html = require('escape-html');
-const { dest, dev } = require('./config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import serialize from 'serialize-javascript';
+import escape_html from 'escape-html';
+import * as route_manager from '../shared/route_manager.js';
+import * as templates from '../shared/templates.js';
+import create_app from '../shared/utils/create_app.js';
+import create_watcher from '../shared/utils/create_watcher.js';
+import * as compilers from '../shared/utils/compilers.js';
+import generate_asset_cache from '../shared/generate_asset_cache.js';
+import { dest, dev } from '../config.js';
 
 function connect_dev() {
 	create_app();
@@ -109,7 +109,7 @@ function connect_prod() {
 	return middleware;
 }
 
-module.exports = dev ? connect_dev : connect_prod;
+export default dev ? connect_dev : connect_prod;
 
 function set_req_pathname(req, res, next) {
 	req.pathname = req.url.replace(/\?.+/, '');

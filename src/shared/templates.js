@@ -1,9 +1,9 @@
-const fs = require('fs');
-const glob = require('glob');
-const chalk = require('chalk');
-const framer = require('code-frame');
-const { locate } = require('locate-character');
-const { dev } = require('./config.js');
+import * as fs from 'fs';
+import glob from 'glob';
+import chalk from 'chalk';
+import framer from 'code-frame';
+import { locate } from 'locate-character';
+import { dev } from '../config.js';
 
 let templates;
 
@@ -112,16 +112,16 @@ if (dev) {
 	watcher.on('unlink', create_templates);
 }
 
-exports.render = (status, data) => {
+export function render(status, data) {
 	const template = templates.find(template => template.test(status));
 	if (template) return template.render(data);
 
 	return `Missing template for status code ${status}`;
-};
+}
 
-exports.stream = (res, status, data) => {
+export function stream(res, status, data) {
 	const template = templates.find(template => template.test(status));
 	if (template) return template.stream(res, data);
 
 	return `Missing template for status code ${status}`;
-};
+}

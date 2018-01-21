@@ -1,6 +1,30 @@
-const { dest, dev, entry } = require('../lib/config.js');
+'use strict';
 
-module.exports = {
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var path = require('path');
+var mkdirp = _interopDefault(require('mkdirp'));
+var rimraf = _interopDefault(require('rimraf'));
+
+const dev = process.env.NODE_ENV !== 'production';
+
+const templates = path.resolve(process.env.SAPPER_TEMPLATES || 'templates');
+
+const src = path.resolve(process.env.SAPPER_ROUTES || 'routes');
+
+const dest = path.resolve(process.env.SAPPER_DEST || '.sapper');
+
+if (dev) {
+	mkdirp.sync(dest);
+	rimraf.sync(path.join(dest, '**/*'));
+}
+
+const entry = {
+	client: path.resolve(templates, '.main.rendered.js'),
+	server: path.resolve(dest, 'server-entry.js')
+};
+
+var index = {
 	dev,
 
 	client: {
@@ -42,3 +66,5 @@ module.exports = {
 		}
 	}
 };
+
+module.exports = index;

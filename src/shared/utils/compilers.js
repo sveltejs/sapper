@@ -1,11 +1,12 @@
-const path = require('path');
-const relative = require('require-relative');
+import * as path from 'path';
+import relative from 'require-relative';
+
 const webpack = relative('webpack', process.cwd());
 
-exports.client = webpack(
+export const client = webpack(
 	require(path.resolve('webpack.client.config.js'))
 );
 
-exports.server = webpack(
+export const server = webpack(
 	require(path.resolve('webpack.server.config.js'))
 );

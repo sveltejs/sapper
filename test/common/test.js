@@ -1,11 +1,18 @@
-const path = require('path');
-const assert = require('assert');
+import * as path from 'path';
+import * as assert from 'assert';
+
+// import express from 'express';
+// import Nightmare from 'nightmare';
+// import serve from 'serve-static';
+// import walkSync from 'walk-sync';
+// import fetch from 'node-fetch';
+
+// TODO reintegrate these as imports
+const Nightmare = require('nightmare');
 const express = require('express');
 const serve = require('serve-static');
-const Nightmare = require('nightmare');
-const getPort = require('get-port');
-const fetch = require('node-fetch');
 const walkSync = require('walk-sync');
+const fetch = require('node-fetch');
 
 run('production');
 run('development');
@@ -82,7 +89,7 @@ function run(env) {
 			let sapper;
 
 			if (env === 'production') {
-				const cli = path.resolve(__dirname, '../../cli/index.js');
+				const cli = path.resolve(__dirname, '../../cli.js');
 				exec_promise = exec(`node ${cli} export`);
 			}
 
@@ -91,7 +98,7 @@ function run(env) {
 				delete require.cache[resolved];
 				sapper = require(resolved);
 
-				return getPort();
+				return require('get-port')();
 			}).then(port => {
 				PORT = port;
 				base = `http://localhost:${PORT}`;

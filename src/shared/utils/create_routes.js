@@ -1,6 +1,6 @@
-const path = require('path');
+import * as path from 'path';
 
-module.exports = function create_matchers(files) {
+export default function create_matchers(files) {
 	const routes = files
 		.map(file => {
 			if (/(^|\/|\\)_/.test(file)) return;
@@ -87,4 +87,4 @@ module.exports = function create_matchers(files) {
 		});
 
 	return routes;
-};
+}

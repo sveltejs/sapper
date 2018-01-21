@@ -1,7 +1,6 @@
-const path = require('path');
-const assert = require('assert');
+import * as assert from 'assert';
 
-const create_routes = require('../../lib/utils/create_routes.js');
+import create_routes from '../../src/shared/utils/create_routes.js';
 
 describe('create_routes', () => {
 	it('sorts routes correctly', () => {

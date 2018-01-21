@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const templates = require('../templates.js');
-const route_manager = require('../route_manager.js');
-const { dest, dev } = require('../config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import glob from 'glob';
+import * as templates from './templates.js';
+import * as route_manager from './route_manager.js';
+import { dest, dev } from '../config.js';
 
 function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
 }
 
-module.exports = function generate_asset_cache(clientInfo, serverInfo) {
+export default function generate_asset_cache(clientInfo, serverInfo) {
 	const main_file = `/client/${ensure_array(clientInfo.assetsByChunkName.main)[0]}`;
 
 	const chunk_files = clientInfo.assets.map(chunk => `/client/${chunk.name}`);
@@ -48,7 +48,7 @@ module.exports = function generate_asset_cache(clientInfo, serverInfo) {
 
 		service_worker
 	};
-};
+}
 
 function generate_service_worker(chunk_files) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });

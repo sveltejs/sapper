@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-
-const build = require('../lib/build.js');
+import build from '../shared/build.js';
+import exporter from '../shared/export.js';
 
 const cmd = process.argv[2];
 const start = Date.now();
@@ -18,7 +17,7 @@ if (cmd === 'build') {
 	const start = Date.now();
 
 	build()
-		.then(() => require('../lib/utils/export.js')())
+		.then(() => exporter())
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'

@@ -1,3 +1,4 @@
+--require ts-node/register
 --recursive
 test/unit/**/*.js
 test/common/test.js

@@ -1,15 +1,15 @@
 process.env.NODE_ENV = 'production';
 
-const fs = require('fs');
-const path = require('path');
-const mkdirp = require('mkdirp');
-const rimraf = require('rimraf');
-const { client, server } = require('./utils/compilers.js');
-const create_app = require('./utils/create_app.js');
-const generate_asset_cache = require('./utils/generate_asset_cache.js');
-const { dest } = require('./config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import mkdirp from 'mkdirp';
+import rimraf from 'rimraf';
+import { client, server } from './utils/compilers.js';
+import create_app from './utils/create_app.js';
+import generate_asset_cache from './generate_asset_cache.js';
+import { dest } from '../config.js';
 
-module.exports = () => {
+export default () => {
 	mkdirp.sync(dest);
 	rimraf.sync(path.join(dest, '**/*'));
 
