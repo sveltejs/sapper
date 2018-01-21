@@ -1,12 +1,9 @@
 import * as path from 'path';
 import relative from 'require-relative';
 
-const webpack = relative('webpack', process.cwd());
-
-export let client;
-export let server;
-
 export function get_compilers() {
+	const webpack = relative('webpack', process.cwd());
+
 	return {
 		client: webpack(
 			require(path.resolve('webpack.client.config.js'))
@@ -17,11 +14,3 @@ export function get_compilers() {
 		)
 	};
 }
-
-// export const client = webpack(
-// 	require(path.resolve('webpack.client.config.js'))
-// );
-
-// export const server = webpack(
-// 	require(path.resolve('webpack.server.config.js'))
-// );

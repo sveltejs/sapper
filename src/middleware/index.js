@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import mkdirp from 'mkdirp';
+import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { route_manager, templates, create_app, compilers, generate_asset_cache } from 'sapper/core.js';
@@ -7,6 +9,9 @@ import create_watcher from './create_watcher.js';
 import { dest, dev, entry, src } from '../config.js';
 
 function connect_dev() {
+	mkdirp.sync(dest);
+	rimraf.sync(path.join(dest, '**/*'));
+
 	create_app({ dev, entry, src });
 
 	const watcher = create_watcher();

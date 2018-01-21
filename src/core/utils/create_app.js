@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as route_manager from '../route_manager.js';
-import * as templates from '../templates.js';
+import { create_templates } from '../templates.js';
 
 function posixify(file) {
 	return file.replace(/[/\\]/g, '/');
@@ -90,7 +90,7 @@ export function start_watching({ src }) {
 	});
 
 	watch('templates/**.html', () => {
-		templates.create_templates();
+		create_templates();
 		// TODO reload current page?
 	});
 }

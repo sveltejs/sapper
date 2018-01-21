@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import glob from 'glob';
-import * as templates from './templates.js';
+import { create_templates, render } from './templates.js';
 import * as route_manager from './route_manager.js';
 
 function ensure_array(thing) {
@@ -9,7 +9,7 @@ function ensure_array(thing) {
 }
 
 export default function generate_asset_cache({ src, dest, dev, client_info, server_info }) {
-	templates.create_templates(); // TODO refactor this...
+	create_templates(); // TODO refactor this...
 
 	const main_file = `/client/${ensure_array(client_info.assetsByChunkName.main)[0]}`;
 
@@ -71,7 +71,7 @@ function generate_service_worker({ chunk_files, src }) {
 }
 
 function generate_index(main_file) {
-	return templates.render(200, {
+	return render(200, {
 		styles: '',
 		head: '',
 		html: '<noscript>Please enable JavaScript!</noscript>',
