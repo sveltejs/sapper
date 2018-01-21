@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { create_assets, create_routes, create_app } from 'sapper/core.js';
+import { create_app, create_assets, create_routes, create_templates } from 'sapper/core.js';
 import { dest } from '../config.js';
 
 function deferred() {
@@ -70,11 +70,6 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 		watcher.on('add', callback);
 		watcher.on('change', callback);
 		watcher.on('unlink', callback);
-
-		// watch('templates/**.html', () => {
-		// 	create_templates();
-		// 	// TODO reload current page?
-		// });
 	}
 
 	watch_files('routes/**/*.+(html|js|mjs)', () => {
@@ -86,6 +81,11 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 
 	watch_files('templates/main.js', () => {
 		create_app({ dev, entry, src });
+	});
+
+	watch_files('templates/**.html', () => {
+		create_templates();
+		// TODO reload current page?
 	});
 
 	const watcher = {

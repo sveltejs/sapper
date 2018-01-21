@@ -57,7 +57,7 @@ export default function create_assets({ src, dest, dev, client_info, server_info
 function generate_service_worker({ chunk_files, src }) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
 
-	const routes = create_routes({ src }); // TODO refactor
+	const routes = create_routes({ src });
 
 	const route_code = `[${
 		routes
