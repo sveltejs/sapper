@@ -6,106 +6,14 @@ var fs = require('fs');
 var path = require('path');
 var serialize = _interopDefault(require('serialize-javascript'));
 var escape_html = _interopDefault(require('escape-html'));
-var glob = _interopDefault(require('glob'));
+var core_js = require('./core.js');
+var chalk = _interopDefault(require('chalk'));
 var mkdirp = _interopDefault(require('mkdirp'));
 var rimraf = _interopDefault(require('rimraf'));
-var chalk = _interopDefault(require('chalk'));
-var framer = _interopDefault(require('code-frame'));
-var locateCharacter = require('locate-character');
-var relative = _interopDefault(require('require-relative'));
-
-function create_matchers(files) {
-	const routes = files
-		.map(file => {
-			if (/(^|\/|\\)_/.test(file)) return;
-
-			const parts = file.replace(/\.(html|js|mjs)$/, '').split('/'); // glob output is always posix-style
-			if (parts[parts.length - 1] === 'index') parts.pop();
-
-			const id = (
-				parts.join('_').replace(/[[\]]/g, '$').replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '_')
-			 ) || '_';
-
-			const dynamic = parts
-				.filter(part => part[0] === '[')
-				.map(part => part.slice(1, -1));
-
-			let pattern_string = '';
-			let i = parts.length;
-			let nested = true;
-			while (i--) {
-				const part = parts[i];
-				const dynamic = part[0] === '[';
-
-				if (dynamic) {
-					pattern_string = nested ? `(?:\\/([^/]+)${pattern_string})?` : `\\/([^/]+)${pattern_string}`;
-				} else {
-					nested = false;
-					pattern_string = `\\/${part}${pattern_string}`;
-				}
-			}
-
-			const pattern = new RegExp(`^${pattern_string}\\/?$`);
-
-			const test = url => pattern.test(url);
-
-			const exec = url => {
-				const match = pattern.exec(url);
-				if (!match) return;
-
-				const params = {};
-				dynamic.forEach((param, i) => {
-					params[param] = match[i + 1];
-				});
-
-				return params;
-			};
-
-			return {
-				id,
-				type: path.extname(file) === '.html' ? 'page' : 'route',
-				file,
-				pattern,
-				test,
-				exec,
-				parts,
-				dynamic
-			};
-		})
-		.filter(Boolean)
-		.sort((a, b) => {
-			let same = true;
-
-			for (let i = 0; true; i += 1) {
-				const a_part = a.parts[i];
-				const b_part = b.parts[i];
-
-				if (!a_part && !b_part) {
-					if (same) throw new Error(`The ${a.file} and ${b.file} routes clash`);
-					return 0;
-				}
-
-				if (!a_part) return -1;
-				if (!b_part) return 1;
-
-				const a_is_dynamic = a_part[0] === '[';
-				const b_is_dynamic = b_part[0] === '[';
-
-				if (a_is_dynamic === b_is_dynamic) {
-					if (!a_is_dynamic && a_part !== b_part) same = false;
-					continue;
-				}
-
-				return a_is_dynamic ? 1 : -1;
-			}
-		});
-
-	return routes;
-}
 
 const dev = process.env.NODE_ENV !== 'production';
 
-const templates = path.resolve(process.env.SAPPER_TEMPLATES || 'templates');
+const templates$1 = path.resolve(process.env.SAPPER_TEMPLATES || 'templates');
 
 const src = path.resolve(process.env.SAPPER_ROUTES || 'routes');
 
@@ -117,331 +25,9 @@ if (dev) {
 }
 
 const entry = {
-	client: path.resolve(templates, '.main.rendered.js'),
+	client: path.resolve(templates$1, '.main.rendered.js'),
 	server: path.resolve(dest, 'server-entry.js')
 };
-
-const callbacks = [];
-
-function onchange(fn) {
-	callbacks.push(fn);
-}
-
-let routes;
-
-function update() {
-	routes = create_matchers(
-		glob.sync('**/*.+(html|js|mjs)', { cwd: src })
-	);
-
-	callbacks.forEach(fn => fn());
-}
-
-update();
-
-if (dev) {
-	const watcher = require('chokidar').watch(`${src}/**/*.+(html|js|mjs)`, {
-		ignoreInitial: true,
-		persistent: false
-	});
-
-	watcher.on('add', update);
-	watcher.on('change', update);
-	watcher.on('unlink', update);
-}
-
-
-var route_manager = Object.freeze({
-	onchange: onchange,
-	get routes () { return routes; }
-});
-
-let templates$1;
-
-function error(e) {
-	if (e.title) console.error(chalk.bold.red(e.title));
-	if (e.body) console.error(chalk.red(e.body));
-	if (e.url) console.error(chalk.cyan(e.url));
-	if (e.frame) console.error(chalk.grey(e.frame));
-
-	process.exit(1);
-}
-
-function create_templates() {
-	templates$1 = glob.sync('*.html', { cwd: 'templates' })
-		.map(file => {
-			const template = fs.readFileSync(`templates/${file}`, 'utf-8');
-			const status = file.replace('.html', '').toLowerCase();
-
-			if (!/^[0-9x]{3}$/.test(status)) {
-				error({
-					title: `templates/${file}`,
-					body: `Bad template — should be a valid status code like 404.html, or a wildcard like 2xx.html`
-				});
-			}
-
-			const index = template.indexOf('%sapper.main%');
-			if (index !== -1) {
-				// TODO remove this in a future version
-				const { line, column } = locateCharacter.locate(template, index, { offsetLine: 1 });
-				const frame = framer(template, line, column);
-
-				error({
-					title: `templates/${file}`,
-					body: `<script src='%sapper.main%'> is unsupported — use %sapper.scripts% (without the <script> tag) instead`,
-					url: 'https://github.com/sveltejs/sapper/issues/86',
-					frame
-				});
-			}
-
-			const specificity = (
-				(status[0] === 'x' ? 0 : 4) +
-				(status[1] === 'x' ? 0 : 2) +
-				(status[2] === 'x' ? 0 : 1)
-			);
-
-			const pattern = new RegExp(`^${status.split('').map(d => d === 'x' ? '\\d' : d).join('')}$`);
-
-			return {
-				test: status => pattern.test(status),
-				specificity,
-				render: data => {
-					return template.replace(/%sapper\.(\w+)%/g, (match, key) => {
-						return key in data ? data[key] : '';
-					});
-				},
-				stream: (res, data) => {
-					let i = 0;
-
-					function stream_inner() {
-						if (i >= template.length) {
-							return;
-						}
-
-						const start = template.indexOf('%sapper', i);
-
-						if (start === -1) {
-							res.end(template.slice(i));
-							return;
-						}
-
-						res.write(template.slice(i, start));
-
-						const end = template.indexOf('%', start + 1);
-						if (end === -1) {
-							throw new Error(`Bad template`); // TODO validate ahead of time
-						}
-
-						const tag = template.slice(start + 1, end);
-						const match = /sapper\.(\w+)/.exec(tag);
-						if (!match || !(match[1] in data)) throw new Error(`Bad template`); // TODO ditto
-
-						return Promise.resolve(data[match[1]]).then(datamatch => {
-							res.write(datamatch);
-							i = end + 1;
-							return stream_inner();
-						});
-					}
-
-					return Promise.resolve().then(stream_inner);
-				}
-			};
-		})
-		.sort((a, b) => b.specificity - a.specificity);
-}
-
-create_templates();
-
-if (dev) {
-	const watcher = require('chokidar').watch('templates/**.html', {
-		ignoreInitial: true,
-		persistent: false
-	});
-
-	watcher.on('add', create_templates);
-	watcher.on('change', create_templates);
-	watcher.on('unlink', create_templates);
-}
-
-function render(status, data) {
-	const template = templates$1.find(template => template.test(status));
-	if (template) return template.render(data);
-
-	return `Missing template for status code ${status}`;
-}
-
-function stream(res, status, data) {
-	const template = templates$1.find(template => template.test(status));
-	if (template) return template.stream(res, data);
-
-	return `Missing template for status code ${status}`;
-}
-
-function posixify(file) {
-	return file.replace(/[/\\]/g, '/');
-}
-
-function create_app() {
-	const { routes: routes$$1 } = route_manager;
-
-	function create_client_main() {
-		const template = fs.readFileSync('templates/main.js', 'utf-8');
-
-		const code = `[${
-			routes$$1
-				.filter(route => route.type === 'page')
-				.map(route => {
-					const params = route.dynamic.length === 0 ?
-						'{}' :
-						`{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ') } }`;
-
-					const file = posixify(`${src}/${route.file}`);
-					return `{ pattern: ${route.pattern}, params: match => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`
-				})
-				.join(', ')
-		}]`;
-
-		let main = template
-			.replace(/__app__/g, posixify(path.resolve(__dirname, '../../runtime/app.js')))
-			.replace(/__routes__/g, code)
-			.replace(/__dev__/g, String(dev));
-
-		if (dev) {
-			const hmr_client = posixify(require.resolve(`webpack-hot-middleware/client`));
-			main += `\n\nimport('${hmr_client}?path=/__webpack_hmr&timeout=20000'); if (module.hot) module.hot.accept();`;
-		}
-
-		fs.writeFileSync(entry.client, main);
-
-		// need to fudge the mtime, because webpack is soft in the head
-		const { atime, mtime } = fs.statSync(entry.client);
-		fs.utimesSync(entry.client, new Date(atime.getTime() - 999999), new Date(mtime.getTime() - 999999));
-	}
-
-	function create_server_routes() {
-		const imports = routes$$1
-			.map(route => {
-				const file = posixify(`${src}/${route.file}`);
-				return route.type === 'page' ?
-					`import ${route.id} from '${file}';` :
-					`import * as ${route.id} from '${file}';`;
-			})
-			.join('\n');
-
-		const exports = `export { ${routes$$1.map(route => route.id)} };`;
-
-		fs.writeFileSync(entry.server, `${imports}\n\n${exports}`);
-
-		const { atime, mtime } = fs.statSync(entry.server);
-		fs.utimesSync(entry.server, new Date(atime.getTime() - 999999), new Date(mtime.getTime() - 999999));
-	}
-
-	create_client_main();
-	create_server_routes();
-}
-
-if (dev) {
-	onchange(create_app);
-
-	const watcher = require('chokidar').watch(`templates/main.js`, {
-		ignoreInitial: true,
-		persistent: false
-	});
-
-	watcher.on('add', create_app);
-	watcher.on('change', create_app);
-	watcher.on('unlink', create_app);
-}
-
-const webpack = relative('webpack', process.cwd());
-
-const client = webpack(
-	require(path.resolve('webpack.client.config.js'))
-);
-
-const server = webpack(
-	require(path.resolve('webpack.server.config.js'))
-);
-
-var compilers = Object.freeze({
-	client: client,
-	server: server
-});
-
-function ensure_array(thing) {
-	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
-}
-
-function generate_asset_cache(clientInfo, serverInfo) {
-	const main_file = `/client/${ensure_array(clientInfo.assetsByChunkName.main)[0]}`;
-
-	const chunk_files = clientInfo.assets.map(chunk => `/client/${chunk.name}`);
-
-	const service_worker = generate_service_worker(chunk_files);
-	const index = generate_index(main_file);
-
-	if (dev) {
-		fs.writeFileSync(path.join(dest, 'service-worker.js'), service_worker);
-		fs.writeFileSync(path.join(dest, 'index.html'), index);
-	}
-
-	return {
-		client: {
-			main_file,
-			chunk_files,
-
-			main: read(`${dest}${main_file}`),
-			chunks: chunk_files.reduce((lookup, file) => {
-				lookup[file] = read(`${dest}${file}`);
-				return lookup;
-			}, {}),
-
-			routes: routes.reduce((lookup, route) => {
-				lookup[route.id] = `/client/${ensure_array(clientInfo.assetsByChunkName[route.id])[0]}`;
-				return lookup;
-			}, {}),
-
-			index,
-			service_worker
-		},
-
-		server: {
-			entry: path.resolve(dest, 'server', serverInfo.assetsByChunkName.main)
-		},
-
-		service_worker
-	};
-}
-
-function generate_service_worker(chunk_files) {
-	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
-
-	const route_code = `[${
-		routes
-			.filter(route => route.type === 'page')
-			.map(route => `{ pattern: ${route.pattern} }`)
-			.join(', ')
-	}]`;
-
-	return read('templates/service-worker.js')
-		.replace(/__timestamp__/g, Date.now())
-		.replace(/__assets__/g, JSON.stringify(assets))
-		.replace(/__shell__/g, JSON.stringify(chunk_files.concat('/index.html')))
-		.replace(/__routes__/g, route_code);
-}
-
-function generate_index(main_file) {
-	return render(200, {
-		styles: '',
-		head: '',
-		html: '<noscript>Please enable JavaScript!</noscript>',
-		main: main_file
-	});
-}
-
-function read(file) {
-	return fs.readFileSync(file, 'utf-8');
-}
 
 function deferred() {
 	const d = {};
@@ -470,14 +56,14 @@ function create_watcher() {
 		const server_info = server_stats.toJson();
 		fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-		return generate_asset_cache(
+		return core_js.generate_asset_cache(
 			client_stats.toJson(),
 			server_stats.toJson()
 		);
 	});
 
 	function watch_compiler(type) {
-		const compiler = compilers[type];
+		const compiler = core_js.compilers[type];
 
 		compiler.plugin('invalid', filename => {
 			console.log(chalk.cyan(`${type} bundle invalidated, file changed: ${chalk.bold(filename)}`));
@@ -513,14 +99,14 @@ function create_watcher() {
 }
 
 function connect_dev() {
-	create_app();
+	core_js.create_app();
 
 	const watcher = create_watcher();
 
 	let asset_cache;
 
 	const middleware = compose_handlers([
-		require('webpack-hot-middleware')(client, {
+		require('webpack-hot-middleware')(core_js.compilers.client, {
 			reload: true,
 			path: '/__webpack_hmr',
 			heartbeat: 10 * 1000
@@ -570,7 +156,7 @@ function connect_dev() {
 }
 
 function connect_prod() {
-	const asset_cache = generate_asset_cache(
+	const asset_cache = core_js.generate_asset_cache(
 		read_json(path.join(dest, 'stats.client.json')),
 		read_json(path.join(dest, 'stats.server.json'))
 	);
@@ -632,15 +218,15 @@ function get_asset_handler(opts) {
 const resolved = Promise.resolve();
 
 function get_route_handler(fn) {
-	function handle_route(route, req, res, next, { client: client$$1, server: server$$1 }) {
+	function handle_route(route, req, res, next, { client, server }) {
 		req.params = route.exec(req.pathname);
 
-		const mod = require(server$$1.entry)[route.id];
+		const mod = require(server.entry)[route.id];
 
 		if (route.type === 'page') {
 			// preload main.js and current route
 			// TODO detect other stuff we can preload? images, CSS, fonts?
-			res.setHeader('Link', `<${client$$1.main_file}>;rel="preload";as="script", <${client$$1.routes[route.id]}>;rel="preload";as="script"`);
+			res.setHeader('Link', `<${client.main_file}>;rel="preload";as="script", <${client.routes[route.id]}>;rel="preload";as="script"`);
 
 			const data = { params: req.params, query: req.query };
 
@@ -652,9 +238,9 @@ function get_route_handler(fn) {
 					return { rendered: mod.render(data), serialized };
 				});
 
-				return stream(res, 200, {
+				return core_js.templates.stream(res, 200, {
 					scripts: promise.then(({ serialized }) => {
-						const main = `<script src='${client$$1.main_file}'></script>`;
+						const main = `<script src='${client.main_file}'></script>`;
 
 						if (serialized) {
 							return `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${main}`;
@@ -669,8 +255,8 @@ function get_route_handler(fn) {
 			} else {
 				const { html, head, css } = mod.render(data);
 
-				const page = render(200, {
-					scripts: `<script src='${client$$1.main_file}'></script>`,
+				const page = core_js.templates.render(200, {
+					scripts: `<script src='${client.main_file}'></script>`,
 					html,
 					head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
 					styles: (css && css.code ? `<style>${css.code}</style>` : '')
@@ -703,7 +289,7 @@ function get_route_handler(fn) {
 
 		resolved
 			.then(() => {
-				for (const route of routes) {
+				for (const route of core_js.route_manager.routes) {
 					if (route.test(url)) return handle_route(route, req, res, next, fn());
 				}
 
@@ -712,7 +298,7 @@ function get_route_handler(fn) {
 			})
 			.catch(err => {
 				res.statusCode = 500;
-				res.end(render(500, {
+				res.end(core_js.templates.render(500, {
 					title: (err && err.name) || 'Internal server error',
 					url,
 					error: escape_html(err && (err.details || err.message || err) || 'Unknown error'),
@@ -727,7 +313,7 @@ function get_not_found_handler(fn) {
 		const asset_cache = fn();
 
 		res.statusCode = 404;
-		res.end(render(404, {
+		res.end(core_js.templates.render(404, {
 			title: 'Not found',
 			status: 404,
 			method: req.method,

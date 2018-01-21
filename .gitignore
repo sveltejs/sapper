@@ -4,3 +4,6 @@ cypress/screenshots
 test/app/.sapper
 runtime.js
 yarn.lock
+cli.js
+middleware.js
+core.js

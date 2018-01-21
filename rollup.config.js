@@ -3,8 +3,13 @@ import pkg from './package.json';
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
-	Object.keys(process.binding('natives'))
+	Object.keys(process.binding('natives')),
+	'sapper'
 );
+
+const paths = {
+	'sapper/core.js': './core.js'
+};
 
 export default [
 	// cli.js
@@ -16,6 +21,7 @@ export default [
 			banner: '#!/usr/bin/env node'
 		},
 		external,
+		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -24,20 +30,21 @@ export default [
 	},
 
 	// core.js
-	// {
-	// 	input: 'src/core/index.js',
-	// 	output: {
-	// 		file: 'core.js',
-	// 		format: 'cjs',
-	// 		banner: '#!/usr/bin/env node'
-	// 	},
-	// 	external,
-	// 	plugins: [
-	// 		typescript({
-	// 			typescript: require('typescript')
-	// 		})
-	// 	]
-	// },
+	{
+		input: 'src/core/index.js',
+		output: {
+			file: 'core.js',
+			format: 'cjs',
+			banner: '#!/usr/bin/env node'
+		},
+		external,
+		paths,
+		plugins: [
+			typescript({
+				typescript: require('typescript')
+			})
+		]
+	},
 
 	// middleware.js
 	{
@@ -47,6 +54,7 @@ export default [
 			format: 'cjs'
 		},
 		external,
+		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -62,6 +70,7 @@ export default [
 			format: 'es'
 		},
 		external,
+		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -77,6 +86,7 @@ export default [
 			format: 'cjs'
 		},
 		external,
+		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')

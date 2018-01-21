@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import * as compilers from './compilers.js';
-import generate_asset_cache from '../../shared/generate_asset_cache.js';
-import { dest } from '../../config.js';
+import { compilers, generate_asset_cache } from 'sapper/core.js';
+import { dest } from '../config.js';
 
 function deferred() {
 	const d = {};

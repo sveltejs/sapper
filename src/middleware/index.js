@@ -2,12 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
-import * as route_manager from '../shared/route_manager.js';
-import * as templates from '../shared/templates.js';
-import create_app from '../shared/utils/create_app.js';
-import create_watcher from '../shared/utils/create_watcher.js';
-import * as compilers from '../shared/utils/compilers.js';
-import generate_asset_cache from '../shared/generate_asset_cache.js';
+import { route_manager, templates, create_app, compilers, generate_asset_cache } from 'sapper/core.js';
+import create_watcher from './create_watcher.js';
 import { dest, dev } from '../config.js';
 
 function connect_dev() {

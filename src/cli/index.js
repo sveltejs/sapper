@@ -1,5 +1,4 @@
-import build from '../shared/build.js';
-import exporter from '../shared/export.js';
+import { build, export as exporter } from 'sapper/core.js';
 
 const cmd = process.argv[2];
 const start = Date.now();
