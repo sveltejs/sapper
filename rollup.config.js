@@ -4,7 +4,7 @@ import pkg from './package.json';
 const external = [].concat(
 	Object.keys(pkg.dependencies),
 	Object.keys(process.binding('natives')),
-	'sapper'
+	'sapper/core.js'
 );
 
 const paths = {
@@ -18,10 +18,11 @@ export default [
 		output: {
 			file: 'cli.js',
 			format: 'cjs',
-			banner: '#!/usr/bin/env node'
+			banner: '#!/usr/bin/env node',
+			paths,
+			sourcemap: true
 		},
 		external,
-		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -35,10 +36,11 @@ export default [
 		output: {
 			file: 'core.js',
 			format: 'cjs',
-			banner: '#!/usr/bin/env node'
+			banner: '#!/usr/bin/env node',
+			paths,
+			sourcemap: true
 		},
 		external,
-		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -51,10 +53,11 @@ export default [
 		input: 'src/middleware/index.js',
 		output: {
 			file: 'middleware.js',
-			format: 'cjs'
+			format: 'cjs',
+			paths,
+			sourcemap: true
 		},
 		external,
-		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -67,10 +70,11 @@ export default [
 		input: 'src/runtime/index.ts',
 		output: {
 			file: 'runtime.js',
-			format: 'es'
+			format: 'es',
+			paths,
+			sourcemap: true
 		},
 		external,
-		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')
@@ -83,10 +87,11 @@ export default [
 		input: 'src/webpack/index.js',
 		output: {
 			file: 'webpack/config.js',
-			format: 'cjs'
+			format: 'cjs',
+			paths,
+			sourcemap: true
 		},
 		external,
-		paths,
 		plugins: [
 			typescript({
 				typescript: require('typescript')

@@ -1,13 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as route_manager from '../route_manager.js';
-import { src, entry, dev } from '../../config.js';
+import * as templates from '../templates.js';
 
 function posixify(file) {
 	return file.replace(/[/\\]/g, '/');
 }
 
-function create_app() {
+function create_app({ src, dev, entry }) {
+	// const { routes } = route_manager;
+	route_manager.update({ src });
 	const { routes } = route_manager;
 
 	function create_client_main() {
@@ -66,17 +68,31 @@ function create_app() {
 	create_server_routes();
 }
 
-if (dev) {
-	route_manager.onchange(create_app);
+export function start_watching({ src }) {
+	const chokidar = require('chokidar');
 
-	const watcher = require('chokidar').watch(`templates/main.js`, {
-		ignoreInitial: true,
-		persistent: false
+	const watch = (glob, callback) => {
+		const watcher = chokidar.watch(glob, {
+			ignoreInitial: true,
+			persistent: false
+		});
+
+		watcher.on('add', callback);
+		watcher.on('change', callback);
+		watcher.on('unlink', callback);
+	};
+
+	watch('templates/main.js', create_app);
+
+	watch('routes/**/*.+(html|js|mjs)', () => {
+		route_manager.update({ src });
+		create_app();
 	});
 
-	watcher.on('add', create_app);
-	watcher.on('change', create_app);
-	watcher.on('unlink', create_app);
+	watch('templates/**.html', () => {
+		templates.create_templates();
+		// TODO reload current page?
+	});
 }
 
 export default create_app;

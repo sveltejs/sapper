@@ -5,8 +5,7 @@ import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import URL from 'url-parse';
 import generate_asset_cache from './generate_asset_cache.js';
-import { dest } from '../config.js';
-import middleware from '../middleware/index.js';
+// import middleware from '../middleware/index.js';
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
 
@@ -18,14 +17,16 @@ function read_json(file) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-export default function() {
+export default function exporter({ src, dest }) { // TODO dest is a terrible name in this context
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
-	const { service_worker } = generate_asset_cache(
-		read_json(path.join(dest, 'stats.client.json')),
-		read_json(path.join(dest, 'stats.server.json'))
-	);
+	const { service_worker } = generate_asset_cache({
+		src, dest,
+		dev: false,
+		client_info: read_json(path.join(dest, 'stats.client.json')),
+		server_info: read_json(path.join(dest, 'stats.server.json'))
+	});
 
 	sander.copydirSync('assets').to(OUTPUT_DIR);
 	sander.copydirSync(dest, 'client').to(OUTPUT_DIR, 'client');
@@ -62,7 +63,7 @@ export default function() {
 		return fetch(url, opts);
 	};
 
-	app.use(middleware());
+	app.use(require('./middleware')()); // TODO this is filthy
 	const server = app.listen(PORT);
 
 	const seen = new Set();

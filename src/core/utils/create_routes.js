@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-export default function create_matchers(files) {
+export default function create_routes(files) {
 	const routes = files
 		.map(file => {
 			if (/(^|\/|\\)_/.test(file)) return;

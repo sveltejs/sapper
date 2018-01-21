@@ -4,10 +4,10 @@ import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { route_manager, templates, create_app, compilers, generate_asset_cache } from 'sapper/core.js';
 import create_watcher from './create_watcher.js';
-import { dest, dev } from '../config.js';
+import { dest, dev, entry, src } from '../config.js';
 
 function connect_dev() {
-	create_app();
+	create_app({ dev, entry, src });
 
 	const watcher = create_watcher();
 
@@ -64,10 +64,12 @@ function connect_dev() {
 }
 
 function connect_prod() {
-	const asset_cache = generate_asset_cache(
-		read_json(path.join(dest, 'stats.client.json')),
-		read_json(path.join(dest, 'stats.server.json'))
-	);
+	const asset_cache = generate_asset_cache({
+		src, dest,
+		dev: false,
+		client_info: read_json(path.join(dest, 'stats.client.json')),
+		server_info: read_json(path.join(dest, 'stats.server.json'))
+	});
 
 	const middleware = compose_handlers([
 		set_req_pathname,

@@ -99,7 +99,7 @@ function create_watcher() {
 }
 
 function connect_dev() {
-	core_js.create_app();
+	core_js.create_app({ dev, entry, src });
 
 	const watcher = create_watcher();
 
@@ -156,10 +156,12 @@ function connect_dev() {
 }
 
 function connect_prod() {
-	const asset_cache = core_js.generate_asset_cache(
-		read_json(path.join(dest, 'stats.client.json')),
-		read_json(path.join(dest, 'stats.server.json'))
-	);
+	const asset_cache = core_js.generate_asset_cache({
+		src, dest,
+		dev: false,
+		client_info: read_json(path.join(dest, 'stats.client.json')),
+		server_info: read_json(path.join(dest, 'stats.server.json'))
+	});
 
 	const middleware = compose_handlers([
 		set_req_pathname,
@@ -356,3 +358,4 @@ function try_serialize(data) {
 }
 
 module.exports = index;
+//# sourceMappingURL=middleware.js.map

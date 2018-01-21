@@ -3,7 +3,6 @@ import glob from 'glob';
 import chalk from 'chalk';
 import framer from 'code-frame';
 import { locate } from 'locate-character';
-import { dev } from '../config.js';
 
 let templates;
 
@@ -16,7 +15,7 @@ function error(e) {
 	process.exit(1);
 }
 
-function create_templates() {
+export function create_templates() {
 	templates = glob.sync('*.html', { cwd: 'templates' })
 		.map(file => {
 			const template = fs.readFileSync(`templates/${file}`, 'utf-8');
@@ -97,19 +96,6 @@ function create_templates() {
 			};
 		})
 		.sort((a, b) => b.specificity - a.specificity);
-}
-
-create_templates();
-
-if (dev) {
-	const watcher = require('chokidar').watch('templates/**.html', {
-		ignoreInitial: true,
-		persistent: false
-	});
-
-	watcher.on('add', create_templates);
-	watcher.on('change', create_templates);
-	watcher.on('unlink', create_templates);
 }
 
 export function render(status, data) {

@@ -48,6 +48,7 @@
     "npm-run-all": "^4.1.2",
     "rollup": "^0.53.0",
     "rollup-plugin-typescript": "^0.8.1",
+    "source-map-support": "^0.5.2",
     "style-loader": "^0.19.1",
     "svelte": "^1.49.1",
     "svelte-loader": "^2.3.2",

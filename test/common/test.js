@@ -1,13 +1,5 @@
-import * as path from 'path';
-import * as assert from 'assert';
-
-// import express from 'express';
-// import Nightmare from 'nightmare';
-// import serve from 'serve-static';
-// import walkSync from 'walk-sync';
-// import fetch from 'node-fetch';
-
-// TODO reintegrate these as imports
+const path = require('path');
+const assert = require('assert');
 const Nightmare = require('nightmare');
 const express = require('express');
 const serve = require('serve-static');
@@ -94,8 +86,10 @@ function run(env) {
 			}
 
 			return exec_promise.then(() => {
-				const resolved = require.resolve('../..');
+				const resolved = require.resolve('../../middleware.js');
 				delete require.cache[resolved];
+				delete require.cache[require.resolve('../../core.js')]; // TODO remove this
+
 				sapper = require(resolved);
 
 				return require('get-port')();

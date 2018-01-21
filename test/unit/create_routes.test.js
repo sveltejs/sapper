@@ -1,6 +1,5 @@
-import * as assert from 'assert';
-
-import create_routes from '../../src/core/utils/create_routes.js';
+const assert = require('assert');
+const { create_routes } = require('../../core.js');
 
 describe('create_routes', () => {
 	it('sorts routes correctly', () => {

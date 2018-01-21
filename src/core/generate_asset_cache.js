@@ -3,18 +3,19 @@ import * as path from 'path';
 import glob from 'glob';
 import * as templates from './templates.js';
 import * as route_manager from './route_manager.js';
-import { dest, dev } from '../config.js';
 
 function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
 }
 
-export default function generate_asset_cache(clientInfo, serverInfo) {
-	const main_file = `/client/${ensure_array(clientInfo.assetsByChunkName.main)[0]}`;
+export default function generate_asset_cache({ src, dest, dev, client_info, server_info }) {
+	templates.create_templates(); // TODO refactor this...
 
-	const chunk_files = clientInfo.assets.map(chunk => `/client/${chunk.name}`);
+	const main_file = `/client/${ensure_array(client_info.assetsByChunkName.main)[0]}`;
 
-	const service_worker = generate_service_worker(chunk_files);
+	const chunk_files = client_info.assets.map(chunk => `/client/${chunk.name}`);
+
+	const service_worker = generate_service_worker({ chunk_files, src });
 	const index = generate_index(main_file);
 
 	if (dev) {
@@ -34,7 +35,7 @@ export default function generate_asset_cache(clientInfo, serverInfo) {
 			}, {}),
 
 			routes: route_manager.routes.reduce((lookup, route) => {
-				lookup[route.id] = `/client/${ensure_array(clientInfo.assetsByChunkName[route.id])[0]}`;
+				lookup[route.id] = `/client/${ensure_array(client_info.assetsByChunkName[route.id])[0]}`;
 				return lookup;
 			}, {}),
 
@@ -43,15 +44,17 @@ export default function generate_asset_cache(clientInfo, serverInfo) {
 		},
 
 		server: {
-			entry: path.resolve(dest, 'server', serverInfo.assetsByChunkName.main)
+			entry: path.resolve(dest, 'server', server_info.assetsByChunkName.main)
 		},
 
 		service_worker
 	};
 }
 
-function generate_service_worker(chunk_files) {
+function generate_service_worker({ chunk_files, src }) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
+
+	route_manager.update({ src }); // TODO refactor
 
 	const route_code = `[${
 		route_manager.routes

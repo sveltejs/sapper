@@ -68,3 +68,4 @@ var index = {
 };
 
 module.exports = index;
+//# sourceMappingURL=config.js.map
