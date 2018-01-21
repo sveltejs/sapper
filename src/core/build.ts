@@ -6,7 +6,17 @@ import create_compilers from './create_compilers.js';
 import create_app from './create_app.js';
 import create_assets from './create_assets.js';
 
-export default function build({ dest, dev, entry, src }) {
+export default function build({
+	src,
+	dest,
+	dev,
+	entry
+}: {
+	src: string;
+	dest: string;
+	dev: boolean;
+	entry: { client: string, server: string }
+}) {
 	mkdirp.sync(dest);
 	rimraf.sync(path.join(dest, '**/*'));
 
@@ -31,12 +41,18 @@ export default function build({ dest, dev, entry, src }) {
 		client.run((err, client_stats) => {
 			handleErrors(err, client_stats);
 			const client_info = client_stats.toJson();
-			fs.writeFileSync(path.join(dest, 'stats.client.json'), JSON.stringify(client_info, null, '  '));
+			fs.writeFileSync(
+				path.join(dest, 'stats.client.json'),
+				JSON.stringify(client_info, null, '  ')
+			);
 
 			server.run((err, server_stats) => {
 				handleErrors(err, server_stats);
 				const server_info = server_stats.toJson();
-				fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
+				fs.writeFileSync(
+					path.join(dest, 'stats.server.json'),
+					JSON.stringify(server_info, null, '  ')
+				);
 
 				create_assets({ src, dest, dev, client_info, server_info });
 				fulfil();

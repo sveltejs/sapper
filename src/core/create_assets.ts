@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import glob from 'glob';
-import { create_templates, render } from './templates.js';
-import create_routes from './create_routes.js';
+import { create_templates, render } from './templates';
+import create_routes from './create_routes';
 
 function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing

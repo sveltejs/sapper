@@ -14,7 +14,7 @@ const paths = {
 export default [
 	// cli.js
 	{
-		input: 'src/cli/index.js',
+		input: 'src/cli/index.ts',
 		output: {
 			file: 'cli.js',
 			format: 'cjs',
@@ -32,7 +32,7 @@ export default [
 
 	// core.js
 	{
-		input: 'src/core/index.js',
+		input: 'src/core/index.ts',
 		output: {
 			file: 'core.js',
 			format: 'cjs',
@@ -50,7 +50,7 @@ export default [
 
 	// middleware.js
 	{
-		input: 'src/middleware/index.js',
+		input: 'src/middleware/index.ts',
 		output: {
 			file: 'middleware.js',
 			format: 'cjs',
@@ -84,7 +84,7 @@ export default [
 
 	// webpack/config.js
 	{
-		input: 'src/webpack/index.js',
+		input: 'src/webpack/index.ts',
 		output: {
 			file: 'webpack/config.js',
 			format: 'cjs',

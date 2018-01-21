@@ -39,6 +39,9 @@
   },
   "devDependencies": {
     "@std/esm": "^0.19.7",
+    "@types/glob": "^5.0.34",
+    "@types/mkdirp": "^0.5.2",
+    "@types/rimraf": "^2.0.2",
     "css-loader": "^0.28.7",
     "eslint": "^4.13.1",
     "eslint-plugin-import": "^2.8.0",

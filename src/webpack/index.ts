@@ -1,4 +1,4 @@
-import { dest, dev, entry } from '../config.js';
+import { dest, dev, entry } from '../config';
 
 export default {
 	dev,

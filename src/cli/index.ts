@@ -1,5 +1,5 @@
 import { build, export as exporter } from 'sapper/core.js';
-import { dest, dev, entry, src } from '../config.js';
+import { dest, dev, entry, src } from '../config';
 
 const cmd = process.argv[2];
 const start = Date.now();
