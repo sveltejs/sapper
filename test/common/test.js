@@ -242,7 +242,7 @@ function run(env) {
 			it('reuses prefetch promise', () => {
 				return nightmare
 					.goto(`${base}/blog`)
-					.init()
+					.init().wait(100)
 					.then(() => {
 						return capture(() => {
 							return nightmare
