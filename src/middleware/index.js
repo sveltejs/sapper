@@ -4,7 +4,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
-import { create_routes, templates, get_compilers, generate_asset_cache } from 'sapper/core.js';
+import { create_routes, templates, create_compilers, create_assets } from 'sapper/core.js';
 import create_watcher from './create_watcher.js';
 import { dest, dev, entry, src } from '../config.js';
 
@@ -12,7 +12,7 @@ function connect_dev() {
 	mkdirp.sync(dest);
 	rimraf.sync(path.join(dest, '**/*'));
 
-	const compilers = get_compilers();
+	const compilers = create_compilers();
 
 	let routes;
 
@@ -77,7 +77,7 @@ function connect_dev() {
 }
 
 function connect_prod() {
-	const asset_cache = generate_asset_cache({
+	const asset_cache = create_assets({
 		src, dest,
 		dev: false,
 		client_info: read_json(path.join(dest, 'stats.client.json')),

@@ -8,7 +8,7 @@ function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
 }
 
-export default function generate_asset_cache({ src, dest, dev, client_info, server_info }) {
+export default function create_assets({ src, dest, dev, client_info, server_info }) {
 	create_templates(); // TODO refactor this...
 
 	const main_file = `/client/${ensure_array(client_info.assetsByChunkName.main)[0]}`;
@@ -20,7 +20,7 @@ export default function generate_asset_cache({ src, dest, dev, client_info, serv
 
 	const routes = create_routes({ src });
 
-	if (dev) {
+	if (dev) { // TODO move this into calling code
 		fs.writeFileSync(path.join(dest, 'service-worker.js'), service_worker);
 		fs.writeFileSync(path.join(dest, 'index.html'), index);
 	}

@@ -4,7 +4,7 @@ import express from 'express';
 import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import URL from 'url-parse';
-import generate_asset_cache from './generate_asset_cache.js';
+import create_assets from './create_assets.js';
 // import middleware from '../middleware/index.js';
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
@@ -21,7 +21,7 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
-	const { service_worker } = generate_asset_cache({
+	const { service_worker } = create_assets({
 		src, dest,
 		dev: false,
 		client_info: read_json(path.join(dest, 'stats.client.json')),

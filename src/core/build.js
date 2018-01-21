@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import get_compilers from './get_compilers.js';
+import create_compilers from './create_compilers.js';
 import create_app from './create_app.js';
-import generate_asset_cache from './generate_asset_cache.js';
+import create_assets from './create_assets.js';
 
 export default function build({ dest, dev, entry, src }) {
 	mkdirp.sync(dest);
@@ -26,7 +26,7 @@ export default function build({ dest, dev, entry, src }) {
 			}
 		}
 
-		const { client, server } = get_compilers();
+		const { client, server } = create_compilers();
 
 		client.run((err, client_stats) => {
 			handleErrors(err, client_stats);
@@ -38,7 +38,7 @@ export default function build({ dest, dev, entry, src }) {
 				const server_info = server_stats.toJson();
 				fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-				generate_asset_cache({ src, dest, dev, client_info, server_info });
+				create_assets({ src, dest, dev, client_info, server_info });
 				fulfil();
 			});
 		});

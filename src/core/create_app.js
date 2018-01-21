@@ -16,8 +16,6 @@ function create_app({ src, dev, entry }) {
 	const routes = create_routes({ src });
 
 	function create_client_main() {
-		const template = fs.readFileSync('templates/main.js', 'utf-8');
-
 		const code = `[${
 			routes
 				.filter(route => route.type === 'page')
@@ -32,7 +30,7 @@ function create_app({ src, dev, entry }) {
 				.join(', ')
 		}]`;
 
-		let main = template
+		let main = fs.readFileSync('templates/main.js', 'utf-8')
 			.replace(/__app__/g, posixify(path.resolve(__dirname, '../../runtime/app.js')))
 			.replace(/__routes__/g, code)
 			.replace(/__dev__/g, String(dev));

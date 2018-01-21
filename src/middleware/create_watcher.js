@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { generate_asset_cache, create_routes, create_app } from 'sapper/core.js';
+import { create_assets, create_routes, create_app } from 'sapper/core.js';
 import { dest } from '../config.js';
 
 function deferred() {
@@ -31,7 +31,7 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 		const server_info = server_stats.toJson();
 		fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-		return generate_asset_cache({
+		return create_assets({
 			src, dest, dev,
 			client_info: client_stats.toJson(),
 			server_info: server_stats.toJson()

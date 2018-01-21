@@ -96,6 +96,8 @@ export function create_templates() {
 			};
 		})
 		.sort((a, b) => b.specificity - a.specificity);
+
+	return templates;
 }
 
 export function render(status, data) {
