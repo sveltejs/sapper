@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { generate_asset_cache, create_routes } from 'sapper/core.js';
+import { generate_asset_cache, create_routes, create_app } from 'sapper/core.js';
 import { dest } from '../config.js';
 
 function deferred() {
@@ -15,7 +15,7 @@ function deferred() {
 	return d;
 }
 
-export default function create_watcher({ compilers, src, onroutes }) {
+export default function create_watcher({ compilers, dev, entry, src, onroutes }) {
 	const deferreds = {
 		client: deferred(),
 		server: deferred()
@@ -31,10 +31,11 @@ export default function create_watcher({ compilers, src, onroutes }) {
 		const server_info = server_stats.toJson();
 		fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-		return generate_asset_cache(
-			client_stats.toJson(),
-			server_stats.toJson()
-		);
+		return generate_asset_cache({
+			src, dest, dev,
+			client_info: client_stats.toJson(),
+			server_info: server_stats.toJson()
+		});
 	});
 
 	function watch_compiler(type) {
@@ -63,20 +64,12 @@ export default function create_watcher({ compilers, src, onroutes }) {
 
 	function watch_files(pattern, callback) {
 		const watcher = chokidar.watch(pattern, {
-			ignoreInitial: true,
 			persistent: false
 		});
 
 		watcher.on('add', callback);
 		watcher.on('change', callback);
 		watcher.on('unlink', callback);
-
-		// watch('templates/main.js', create_app);
-
-		// watch('routes/**/*.+(html|js|mjs)', () => {
-		// 	route_manager.update({ src });
-		// 	create_app();
-		// });
 
 		// watch('templates/**.html', () => {
 		// 	create_templates();
@@ -87,6 +80,12 @@ export default function create_watcher({ compilers, src, onroutes }) {
 	watch_files('routes/**/*.+(html|js|mjs)', () => {
 		const routes = create_routes({ src });
 		onroutes(routes);
+
+		create_app({ dev, entry, src }); // TODO this calls `create_routes` again, we should pass `routes` to `create_app` instead
+	});
+
+	watch_files('templates/main.js', () => {
+		create_app({ dev, entry, src });
 	});
 
 	const watcher = {

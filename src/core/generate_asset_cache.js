@@ -18,7 +18,7 @@ export default function generate_asset_cache({ src, dest, dev, client_info, serv
 	const service_worker = generate_service_worker({ chunk_files, src });
 	const index = generate_index(main_file);
 
-	const routes = create_routes({ src }); // TODO rename update
+	const routes = create_routes({ src });
 
 	if (dev) {
 		fs.writeFileSync(path.join(dest, 'service-worker.js'), service_worker);

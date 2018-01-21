@@ -1,11 +1,9 @@
-process.env.NODE_ENV = 'production';
-
 import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import get_compilers from './get_compilers.js';
-import create_app from './utils/create_app.js';
+import create_app from './create_app.js';
 import generate_asset_cache from './generate_asset_cache.js';
 
 export default function build({ dest, dev, entry, src }) {

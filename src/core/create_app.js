@@ -1,10 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import create_routes from '../create_routes.js';
-// import { create_templates } from '../templates.js';
+import create_routes from './create_routes.js';
 
 function posixify(file) {
 	return file.replace(/[/\\]/g, '/');
+}
+
+function fudge_mtime(file) {
+	// need to fudge the mtime so that webpack doesn't go doolally
+	const { atime, mtime } = fs.statSync(file);
+	fs.utimesSync(file, new Date(atime.getTime() - 999999), new Date(mtime.getTime() - 999999));
 }
 
 function create_app({ src, dev, entry }) {
@@ -38,10 +43,7 @@ function create_app({ src, dev, entry }) {
 		}
 
 		fs.writeFileSync(entry.client, main);
-
-		// need to fudge the mtime, because webpack is soft in the head
-		const { atime, mtime } = fs.statSync(entry.client);
-		fs.utimesSync(entry.client, new Date(atime.getTime() - 999999), new Date(mtime.getTime() - 999999));
+		fudge_mtime(entry.client);
 	}
 
 	function create_server_routes() {
@@ -57,9 +59,7 @@ function create_app({ src, dev, entry }) {
 		const exports = `export { ${routes.map(route => route.id)} };`;
 
 		fs.writeFileSync(entry.server, `${imports}\n\n${exports}`);
-
-		const { atime, mtime } = fs.statSync(entry.server);
-		fs.utimesSync(entry.server, new Date(atime.getTime() - 999999), new Date(mtime.getTime() - 999999));
+		fudge_mtime(entry.server);
 	}
 
 	create_client_main();
