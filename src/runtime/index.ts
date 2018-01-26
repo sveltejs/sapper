@@ -28,8 +28,12 @@ function select_route(url: URL): Target {
 			const params = route.params(match);
 
 			const query: Record<string, string | true> = {};
-			for (const [key, value] of url.searchParams) query[key] = value || true;
-
+			if (url.search.length > 0) {
+			    url.search.slice(1).split('&').forEach(searchParam => {
+			        const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
+			        query[key] = value || true;
+			    })
+			}
 			return { url, route, data: { params, query } };
 		}
 	}
