@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.6.1
+
+* Fix `pkg.files` and `pkg.bin`
+
 ## 0.6.0
 
 * Hydrate on first load, and only on first load ([#93](https://github.com/sveltejs/sapper/pull/93))

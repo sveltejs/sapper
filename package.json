@@ -1,13 +1,14 @@
 {
   "name": "sapper",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "middleware.js",
   "bin": {
-    "sapper": "cli/index.js"
+    "sapper": "cli.js"
   },
   "files": [
     "cli.js",
+    "core.js",
     "middleware.js",
     "runtime",
     "runtime.js",
