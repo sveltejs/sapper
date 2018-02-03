@@ -63,7 +63,8 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 		return fetch(url, opts);
 	};
 
-	app.use(require('./middleware')()); // TODO this is filthy
+	const middleware = require('./middleware')(); // TODO this is filthy
+	app.use(middleware);
 	const server = app.listen(PORT);
 
 	const seen = new Set();
@@ -77,19 +78,21 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 		return fetch(url.href)
 			.then(r => {
 				save(r);
-				return r.text();
-			})
-			.then(body => {
-				const $ = cheerio.load(body);
-				const hrefs = [];
 
-				$('a[href]').each((i, $a) => {
-					hrefs.push($a.attribs.href);
-				});
+				if (r.headers.get('Content-Type') === 'text/html') {
+					return r.text().then(body => {
+						const $ = cheerio.load(body);
+						const hrefs = [];
 
-				return hrefs.reduce((promise, href) => {
-					return promise.then(() => handle(new URL(href, url.href)));
-				}, Promise.resolve());
+						$('a[href]').each((i, $a) => {
+							hrefs.push($a.attribs.href);
+						});
+
+						return hrefs.reduce((promise, href) => {
+							return promise.then(() => handle(new URL(href, url.href)));
+						}, Promise.resolve());
+					});
+				}
 			})
 			.catch(err => {
 				console.error(`Error rendering ${url.pathname}: ${err.message}`);
@@ -97,5 +100,8 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 	}
 
 	return handle(new URL(origin)) // TODO all static routes
-		.then(() => server.close());
+		.then(() => {
+			server.close();
+			middleware.close();
+		});
 }
