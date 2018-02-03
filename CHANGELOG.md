@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.6.2
+
+* Handle unspecified type in `sapper export`
+
 ## 0.6.1
 
 * Fix `pkg.files` and `pkg.bin`
