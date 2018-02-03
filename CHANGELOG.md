@@ -1,5 +1,16 @@
 # sapper changelog
 
+## 0.6.0
+
+* Hydrate on first load, and only on first load ([#93](https://github.com/sveltejs/sapper/pull/93))
+* Identify clashes between page and server routes ([#96](https://github.com/sveltejs/sapper/pull/96))
+* Remove Express-specific utilities, for compatbility with Polka et al ([#94](https://github.com/sveltejs/sapper/issues/94))
+* Return a promise from `init` when first page has rendered ([#99](https://github.com/sveltejs/sapper/issues/99))
+* Handle invalid hash links ([#104](https://github.com/sveltejs/sapper/pull/104))
+* Avoid `URLSearchParams` ([#107](https://github.com/sveltejs/sapper/pull/107))
+* Don't automatically set `Content-Type` for server routes ([#111](https://github.com/sveltejs/sapper/pull/111))
+* Handle empty query string routes, e.g. `/?` ([#105](https://github.com/sveltejs/sapper/pull/105))
+
 ## 0.5.1
 
 * Only write service-worker.js to filesystem in dev mode ([#90](https://github.com/sveltejs/sapper/issues/90))
