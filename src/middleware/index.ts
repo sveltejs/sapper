@@ -122,7 +122,10 @@ function connect_prod() {
 	return middleware;
 }
 
-export default dev ? connect_dev : connect_prod;
+export default function connect({ dev: _dev = dev } = {}) {
+	console.log({ dev, _dev });
+	return _dev ? connect_dev() : connect_prod();
+}
 
 function set_req_pathname(req, res, next) {
 	req.pathname = req.url.replace(/\?.*/, '');

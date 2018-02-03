@@ -63,7 +63,7 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 		return fetch(url, opts);
 	};
 
-	const middleware = require('./middleware')(); // TODO this is filthy
+	const middleware = require('./middleware')({ dev: false }); // TODO this is filthy
 	app.use(middleware);
 	const server = app.listen(PORT);
 
@@ -100,8 +100,5 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 	}
 
 	return handle(new URL(origin)) // TODO all static routes
-		.then(() => {
-			server.close();
-			middleware.close();
-		});
+		.then(() => server.close());
 }
