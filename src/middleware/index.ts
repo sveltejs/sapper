@@ -123,7 +123,6 @@ function connect_prod() {
 }
 
 export default function connect({ dev: _dev = dev } = {}) {
-	console.log({ dev, _dev });
 	return _dev ? connect_dev() : connect_prod();
 }
 
