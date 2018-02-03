@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.6.3
+
+* Ignore non-HTML responses when crawling during `export`
+* Build in prod mode for `export`
+
 ## 0.6.2
 
 * Handle unspecified type in `sapper export`
