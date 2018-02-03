@@ -1,29 +1,32 @@
-const path = require('path');
-const sander = require('sander');
-const app = require('express')();
-const cheerio = require('cheerio');
-const fetch = require('node-fetch');
-const URL = require('url-parse');
-const generate_asset_cache = require('./generate_asset_cache.js');
-const sapper = require('../index.js');
+import * as path from 'path';
+import * as sander from 'sander';
+import express from 'express';
+import cheerio from 'cheerio';
+import fetch from 'node-fetch';
+import URL from 'url-parse';
+import create_assets from './create_assets.js';
+// import middleware from '../middleware/index.js';
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
-const { dest } = require('../config.js');
 
 const origin = `http://localhost:${PORT}`;
+
+const app = express();
 
 function read_json(file) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-module.exports = function() {
+export default function exporter({ src, dest }) { // TODO dest is a terrible name in this context
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
-	const { service_worker } = generate_asset_cache(
-		read_json(path.join(dest, 'stats.client.json')),
-		read_json(path.join(dest, 'stats.server.json'))
-	);
+	const { service_worker } = create_assets({
+		src, dest,
+		dev: false,
+		client_info: read_json(path.join(dest, 'stats.client.json')),
+		server_info: read_json(path.join(dest, 'stats.server.json'))
+	});
 
 	sander.copydirSync('assets').to(OUTPUT_DIR);
 	sander.copydirSync(dest, 'client').to(OUTPUT_DIR, 'client');
@@ -60,7 +63,7 @@ module.exports = function() {
 		return fetch(url, opts);
 	};
 
-	app.use(sapper());
+	app.use(require('./middleware')()); // TODO this is filthy
 	const server = app.listen(PORT);
 
 	const seen = new Set();
@@ -95,4 +98,4 @@ module.exports = function() {
 
 	return handle(new URL(origin)) // TODO all static routes
 		.then(() => server.close());
-};
+}

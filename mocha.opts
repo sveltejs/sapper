@@ -1,3 +1,4 @@
+--require source-map-support/register
 --recursive
 test/unit/**/*.js
 test/common/test.js

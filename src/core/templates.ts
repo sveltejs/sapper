@@ -1,9 +1,8 @@
-const fs = require('fs');
-const glob = require('glob');
-const chalk = require('chalk');
-const framer = require('code-frame');
-const { locate } = require('locate-character');
-const { dev } = require('./config.js');
+import * as fs from 'fs';
+import glob from 'glob';
+import chalk from 'chalk';
+import framer from 'code-frame';
+import { locate } from 'locate-character';
 
 let templates;
 
@@ -16,7 +15,7 @@ function error(e) {
 	process.exit(1);
 }
 
-function create_templates() {
+export function create_templates() {
 	templates = glob.sync('*.html', { cwd: 'templates' })
 		.map(file => {
 			const template = fs.readFileSync(`templates/${file}`, 'utf-8');
@@ -97,31 +96,20 @@ function create_templates() {
 			};
 		})
 		.sort((a, b) => b.specificity - a.specificity);
+
+	return templates;
 }
 
-create_templates();
-
-if (dev) {
-	const watcher = require('chokidar').watch('templates/**.html', {
-		ignoreInitial: true,
-		persistent: false
-	});
-
-	watcher.on('add', create_templates);
-	watcher.on('change', create_templates);
-	watcher.on('unlink', create_templates);
-}
-
-exports.render = (status, data) => {
+export function render(status, data) {
 	const template = templates.find(template => template.test(status));
 	if (template) return template.render(data);
 
 	return `Missing template for status code ${status}`;
-};
+}
 
-exports.stream = (res, status, data) => {
+export function stream(res, status, data) {
 	const template = templates.find(template => template.test(status));
 	if (template) return template.stream(res, data);
 
 	return `Missing template for status code ${status}`;
-};
+}

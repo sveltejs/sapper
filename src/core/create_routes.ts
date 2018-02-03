@@ -1,6 +1,7 @@
-const path = require('path');
+import * as path from 'path';
+import glob from 'glob';
 
-module.exports = function create_matchers(files) {
+export default function create_routes({ src, files = glob.sync('**/*.+(html|js|mjs)', { cwd: src }) }) {
 	const routes = files
 		.map(file => {
 			if (/(^|\/|\\)_/.test(file)) return;
@@ -87,4 +88,4 @@ module.exports = function create_matchers(files) {
 		});
 
 	return routes;
-};
+}

@@ -1,6 +1,6 @@
-const { dest, dev, entry } = require('../lib/config.js');
+import { dest, dev, entry } from '../config';
 
-module.exports = {
+export default {
 	dev,
 
 	client: {

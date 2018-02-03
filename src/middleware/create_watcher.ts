@@ -1,9 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-const compilers = require('./compilers.js');
-const generate_asset_cache = require('./generate_asset_cache.js');
-const { dest } = require('../config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
+import { create_app, create_assets, create_routes, templates } from 'sapper/core.js';
+import { dest } from '../config.js';
 
 function deferred() {
 	const d = {};
@@ -16,7 +15,7 @@ function deferred() {
 	return d;
 }
 
-module.exports = function create_watcher() {
+export default function create_watcher({ compilers, dev, entry, src, onroutes }) {
 	const deferreds = {
 		client: deferred(),
 		server: deferred()
@@ -32,10 +31,11 @@ module.exports = function create_watcher() {
 		const server_info = server_stats.toJson();
 		fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-		return generate_asset_cache(
-			client_stats.toJson(),
-			server_stats.toJson()
-		);
+		return create_assets({
+			src, dest, dev,
+			client_info: client_stats.toJson(),
+			server_info: server_stats.toJson()
+		});
 	});
 
 	function watch_compiler(type) {
@@ -60,6 +60,34 @@ module.exports = function create_watcher() {
 		});
 	}
 
+	const chokidar = require('chokidar');
+
+	function watch_files(pattern, callback) {
+		const watcher = chokidar.watch(pattern, {
+			persistent: false
+		});
+
+		watcher.on('add', callback);
+		watcher.on('change', callback);
+		watcher.on('unlink', callback);
+	}
+
+	watch_files('routes/**/*.+(html|js|mjs)', () => {
+		const routes = create_routes({ src });
+		onroutes(routes);
+
+		create_app({ dev, entry, src }); // TODO this calls `create_routes` again, we should pass `routes` to `create_app` instead
+	});
+
+	watch_files('templates/main.js', () => {
+		create_app({ dev, entry, src });
+	});
+
+	watch_files('templates/**.html', () => {
+		templates.create_templates();
+		// TODO reload current page?
+	});
+
 	const watcher = {
 		ready: invalidate(),
 		client: watch_compiler('client'),
@@ -72,4 +100,4 @@ module.exports = function create_watcher() {
 	};
 
 	return watcher;
-};
+}

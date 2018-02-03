@@ -1,19 +1,28 @@
-const fs = require('fs');
-const path = require('path');
-const serialize = require('serialize-javascript');
-const route_manager = require('./route_manager.js');
-const templates = require('./templates.js');
-const create_app = require('./utils/create_app.js');
-const create_watcher = require('./utils/create_watcher.js');
-const compilers = require('./utils/compilers.js');
-const generate_asset_cache = require('./utils/generate_asset_cache.js');
-const escape_html = require('escape-html');
-const { dest, dev } = require('./config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import mkdirp from 'mkdirp';
+import rimraf from 'rimraf';
+import serialize from 'serialize-javascript';
+import escape_html from 'escape-html';
+import { create_routes, templates, create_compilers, create_assets } from 'sapper/core.js';
+import create_watcher from './create_watcher';
+import { dest, dev, entry, src } from '../config';
 
 function connect_dev() {
-	create_app();
+	mkdirp.sync(dest);
+	rimraf.sync(path.join(dest, '**/*'));
 
-	const watcher = create_watcher();
+	const compilers = create_compilers();
+
+	let routes;
+
+	const watcher = create_watcher({
+		dev, entry, src,
+		compilers,
+		onroutes: _ => {
+			routes = _;
+		}
+	});
 
 	let asset_cache;
 
@@ -54,7 +63,7 @@ function connect_dev() {
 			fn: pathname => asset_cache.client.chunks[pathname]
 		}),
 
-		get_route_handler(() => asset_cache),
+		get_route_handler(() => asset_cache, () => routes),
 
 		get_not_found_handler(() => asset_cache)
 	]);
@@ -68,10 +77,14 @@ function connect_dev() {
 }
 
 function connect_prod() {
-	const asset_cache = generate_asset_cache(
-		read_json(path.join(dest, 'stats.client.json')),
-		read_json(path.join(dest, 'stats.server.json'))
-	);
+	const asset_cache = create_assets({
+		src, dest,
+		dev: false,
+		client_info: read_json(path.join(dest, 'stats.client.json')),
+		server_info: read_json(path.join(dest, 'stats.server.json'))
+	});
+
+	const routes = create_routes({ src }); // TODO rename update
 
 	const middleware = compose_handlers([
 		set_req_pathname,
@@ -97,7 +110,7 @@ function connect_prod() {
 			fn: pathname => asset_cache.client.chunks[pathname]
 		}),
 
-		get_route_handler(() => asset_cache),
+		get_route_handler(() => asset_cache, () => routes),
 
 		get_not_found_handler(() => asset_cache)
 	]);
@@ -109,7 +122,7 @@ function connect_prod() {
 	return middleware;
 }
 
-module.exports = dev ? connect_dev : connect_prod;
+export default dev ? connect_dev : connect_prod;
 
 function set_req_pathname(req, res, next) {
 	req.pathname = req.url.replace(/\?.+/, '');
@@ -129,7 +142,7 @@ function get_asset_handler(opts) {
 
 const resolved = Promise.resolve();
 
-function get_route_handler(fn) {
+function get_route_handler(get_assets, get_routes) {
 	function handle_route(route, req, res, next, { client, server }) {
 		req.params = route.exec(req.pathname);
 
@@ -201,8 +214,9 @@ function get_route_handler(fn) {
 
 		resolved
 			.then(() => {
-				for (const route of route_manager.routes) {
-					if (route.test(url)) return handle_route(route, req, res, next, fn());
+				const routes = get_routes();
+				for (const route of routes) {
+					if (route.test(url)) return handle_route(route, req, res, next, get_assets());
 				}
 
 				// no matching route — 404

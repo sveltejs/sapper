@@ -1,23 +1,26 @@
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const templates = require('../templates.js');
-const route_manager = require('../route_manager.js');
-const { dest, dev } = require('../config.js');
+import * as fs from 'fs';
+import * as path from 'path';
+import glob from 'glob';
+import { create_templates, render } from './templates';
+import create_routes from './create_routes';
 
 function ensure_array(thing) {
 	return Array.isArray(thing) ? thing : [thing]; // omg webpack what the HELL are you doing
 }
 
-module.exports = function generate_asset_cache(clientInfo, serverInfo) {
-	const main_file = `/client/${ensure_array(clientInfo.assetsByChunkName.main)[0]}`;
+export default function create_assets({ src, dest, dev, client_info, server_info }) {
+	create_templates(); // TODO refactor this...
 
-	const chunk_files = clientInfo.assets.map(chunk => `/client/${chunk.name}`);
+	const main_file = `/client/${ensure_array(client_info.assetsByChunkName.main)[0]}`;
 
-	const service_worker = generate_service_worker(chunk_files);
+	const chunk_files = client_info.assets.map(chunk => `/client/${chunk.name}`);
+
+	const service_worker = generate_service_worker({ chunk_files, src });
 	const index = generate_index(main_file);
 
-	if (dev) {
+	const routes = create_routes({ src });
+
+	if (dev) { // TODO move this into calling code
 		fs.writeFileSync(path.join(dest, 'service-worker.js'), service_worker);
 		fs.writeFileSync(path.join(dest, 'index.html'), index);
 	}
@@ -33,8 +36,9 @@ module.exports = function generate_asset_cache(clientInfo, serverInfo) {
 				return lookup;
 			}, {}),
 
-			routes: route_manager.routes.reduce((lookup, route) => {
-				lookup[route.id] = `/client/${ensure_array(clientInfo.assetsByChunkName[route.id])[0]}`;
+			// TODO confusing that `routes` refers to an array *and* a lookup
+			routes: routes.reduce((lookup, route) => {
+				lookup[route.id] = `/client/${ensure_array(client_info.assetsByChunkName[route.id])[0]}`;
 				return lookup;
 			}, {}),
 
@@ -43,18 +47,20 @@ module.exports = function generate_asset_cache(clientInfo, serverInfo) {
 		},
 
 		server: {
-			entry: path.resolve(dest, 'server', serverInfo.assetsByChunkName.main)
+			entry: path.resolve(dest, 'server', server_info.assetsByChunkName.main)
 		},
 
 		service_worker
 	};
-};
+}
 
-function generate_service_worker(chunk_files) {
+function generate_service_worker({ chunk_files, src }) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
 
+	const routes = create_routes({ src });
+
 	const route_code = `[${
-		route_manager.routes
+		routes
 			.filter(route => route.type === 'page')
 			.map(route => `{ pattern: ${route.pattern} }`)
 			.join(', ')
@@ -68,7 +74,7 @@ function generate_service_worker(chunk_files) {
 }
 
 function generate_index(main_file) {
-	return templates.render(200, {
+	return render(200, {
 		styles: '',
 		head: '',
 		html: '<noscript>Please enable JavaScript!</noscript>',

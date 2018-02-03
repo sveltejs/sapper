@@ -1,0 +1,1 @@
+This directory exists for legacy reasons and should be deleted before releasing version 1.

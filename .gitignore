@@ -4,3 +4,11 @@ cypress/screenshots
 test/app/.sapper
 runtime.js
 yarn.lock
+cli.js
+cli.js.map
+middleware.js
+middleware.js.map
+core.js
+core.js.map
+webpack/config.js
+webpack/config.js.map

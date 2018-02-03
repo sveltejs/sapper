@@ -1,12 +1,11 @@
-#!/usr/bin/env node
-
-const build = require('../lib/build.js');
+import { build, export as exporter } from 'sapper/core.js';
+import { dest, dev, entry, src } from '../config';
 
 const cmd = process.argv[2];
 const start = Date.now();
 
 if (cmd === 'build') {
-	build()
+	build({ dest, dev, entry, src })
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`built in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
@@ -17,8 +16,8 @@ if (cmd === 'build') {
 } else if (cmd === 'export') {
 	const start = Date.now();
 
-	build()
-		.then(() => require('../lib/utils/export.js')())
+	build({ dest, dev, entry, src })
+		.then(() => exporter({ src, dest }))
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'

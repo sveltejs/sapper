@@ -1,11 +1,10 @@
 const path = require('path');
 const assert = require('assert');
+const Nightmare = require('nightmare');
 const express = require('express');
 const serve = require('serve-static');
-const Nightmare = require('nightmare');
-const getPort = require('get-port');
-const fetch = require('node-fetch');
 const walkSync = require('walk-sync');
+const fetch = require('node-fetch');
 
 run('production');
 run('development');
@@ -82,16 +81,18 @@ function run(env) {
 			let sapper;
 
 			if (env === 'production') {
-				const cli = path.resolve(__dirname, '../../cli/index.js');
+				const cli = path.resolve(__dirname, '../../cli.js');
 				exec_promise = exec(`node ${cli} export`);
 			}
 
 			return exec_promise.then(() => {
-				const resolved = require.resolve('../..');
+				const resolved = require.resolve('../../middleware.js');
 				delete require.cache[resolved];
+				delete require.cache[require.resolve('../../core.js')]; // TODO remove this
+
 				sapper = require(resolved);
 
-				return getPort();
+				return require('get-port')();
 			}).then(port => {
 				PORT = port;
 				base = `http://localhost:${PORT}`;
