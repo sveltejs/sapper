@@ -125,7 +125,7 @@ function connect_prod() {
 export default dev ? connect_dev : connect_prod;
 
 function set_req_pathname(req, res, next) {
-	req.pathname = req.url.replace(/\?.+/, '');
+	req.pathname = req.url.replace(/\?.*/, '');
 	next();
 }
 
