@@ -171,6 +171,12 @@ function run(env) {
 				});
 			});
 
+			it('serves /?', () => {
+				return nightmare.goto(`${base}?`).page.title().then(title => {
+					assert.equal(title, 'Great success!');
+				});
+			});
+
 			it('serves static route', () => {
 				return nightmare.goto(`${base}/about`).page.title().then(title => {
 					assert.equal(title, 'About this site');
