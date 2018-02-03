@@ -208,7 +208,7 @@ export function init(_target: Node, _routes: Route[]) {
 	return Promise.resolve().then(() => {
 		const { hash, href } = window.location;
 
-		const deep_linked = hash && document.querySelector(hash);
+		const deep_linked = hash && document.getElementById(hash.slice(1));
 		scroll_history[uid] = deep_linked ?
 			{ x: 0, y: deep_linked.getBoundingClientRect().top } :
 			scroll_state();
