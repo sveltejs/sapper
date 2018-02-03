@@ -149,6 +149,9 @@ function get_route_handler(get_assets, get_routes) {
 		const mod = require(server.entry)[route.id];
 
 		if (route.type === 'page') {
+			// for page routes, we're going to serve some HTML
+			res.setHeader('Content-Type', 'text/html');
+			
 			// preload main.js and current route
 			// TODO detect other stuff we can preload? images, CSS, fonts?
 			res.setHeader('Link', `<${client.main_file}>;rel="preload";as="script", <${client.routes[route.id]}>;rel="preload";as="script"`);
@@ -208,9 +211,6 @@ function get_route_handler(get_assets, get_routes) {
 
 	return function find_route(req, res, next) {
 		const url = req.pathname;
-
-		// whatever happens, we're going to serve some HTML
-		res.setHeader('Content-Type', 'text/html');
 
 		resolved
 			.then(() => {
