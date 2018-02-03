@@ -41,7 +41,7 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 			let dest = OUTPUT_DIR + pathname;
 
 			const type = res.headers.get('Content-Type');
-			if (type.startsWith('text/html')) dest += '/index.html';
+			if (type && type.startsWith('text/html')) dest += '/index.html';
 
 			sander.writeFileSync(dest, body);
 
