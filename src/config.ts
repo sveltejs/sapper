@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-export const dev = process.env.NODE_ENV !== 'production';
+export const isDev = () => process.env.NODE_ENV !== 'production';
 
 export const templates = path.resolve(process.env.SAPPER_TEMPLATES || 'templates');
 export const src = path.resolve(process.env.SAPPER_ROUTES || 'routes');
