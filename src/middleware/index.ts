@@ -5,8 +5,10 @@ import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { create_routes, templates, create_compilers, create_assets } from 'sapper/core.js';
+import { dest, entry, isDev, src } from '../config';
 import create_watcher from './create_watcher';
-import { dest, dev, entry, src } from '../config';
+
+const dev = isDev();
 
 function connect_dev() {
 	mkdirp.sync(dest);

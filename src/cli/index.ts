@@ -1,10 +1,11 @@
 import { build, export as exporter } from 'sapper/core.js';
-import { dest, dev, entry, src } from '../config';
+import { dest, entry, isDev, src } from '../config';
 
 process.env.NODE_ENV = 'production';
 
 const cmd = process.argv[2];
 const start = Date.now();
+const dev = isDev();
 
 if (cmd === 'build') {
 	build({ dest, dev, entry, src })

@@ -1,7 +1,7 @@
-import { dest, dev, entry } from '../config';
+import { dest, isDev, entry } from '../config';
 
 export default {
-	dev,
+	dev: isDev(),
 
 	client: {
 		entry: () => {
