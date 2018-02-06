@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.6.4
+
+* Prevent phantom HMR requests in production mode ([#114](https://github.com/sveltejs/sapper/pull/114))
+
 ## 0.6.3
 
 * Ignore non-HTML responses when crawling during `export`
