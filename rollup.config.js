@@ -1,4 +1,6 @@
 import typescript from 'rollup-plugin-typescript';
+import string from 'rollup-plugin-string';
+import json from 'rollup-plugin-json';
 import pkg from './package.json';
 
 const external = [].concat(
@@ -12,6 +14,10 @@ const paths = {
 };
 
 const plugins = [
+	string({
+		include: '**/*.md'
+	}),
+	json(),
 	typescript({
 		typescript: require('typescript')
 	})
