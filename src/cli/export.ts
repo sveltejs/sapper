@@ -4,8 +4,10 @@ import express from 'express';
 import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import URL from 'url-parse';
-import create_assets from './create_assets.js';
+import { create_assets } from 'sapper/core.js';
 // import middleware from '../middleware/index.js';
+
+console.log('>>> in export.ts');
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
 
