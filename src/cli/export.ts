@@ -5,7 +5,6 @@ import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import URL from 'url-parse';
 import { create_assets } from 'sapper/core.js';
-// import middleware from '../middleware/index.js';
 
 const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
 

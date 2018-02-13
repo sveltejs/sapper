@@ -2,9 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import create_compilers from './create_compilers.js';
-import create_app from './create_app.js';
-import create_assets from './create_assets.js';
+import { create_compilers, create_app, create_assets } from 'sapper/core.js';
 
 export default function build({
 	src,
