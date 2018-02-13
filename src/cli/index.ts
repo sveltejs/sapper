@@ -1,8 +1,9 @@
 import mri from 'mri';
 import chalk from 'chalk';
 import help from './help.md';
-import build from './build.js';
-import exporter from './export.js';
+import build from './build';
+import exporter from './export';
+import upgrade from './upgrade';
 import { dest, entry, src } from '../config';
 import * as pkg from '../../package.json';
 
@@ -46,4 +47,8 @@ if (cmd === 'build') {
 		.catch(err => {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 		});
+} else if (cmd === 'upgrade') {
+	upgrade();
+} else {
+	console.log(`unrecognized command ${cmd} — try \`sapper --help\` for more information`);
 }
