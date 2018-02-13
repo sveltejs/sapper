@@ -1,4 +1,5 @@
-import { build, export as exporter } from 'sapper/core.js';
+import build from './build.js';
+import exporter from './export.js';
 import { dest, entry, isDev, src } from '../config';
 
 process.env.NODE_ENV = 'production';
