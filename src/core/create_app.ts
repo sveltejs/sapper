@@ -16,11 +16,7 @@ function fudge_mtime(file: string) {
 	);
 }
 
-function create_app({
-	src,
-	dev,
-	entry
-}: {
+function create_app({ src, dev, entry }: {
 	src: string;
 	dev: boolean;
 	entry: { client: string; server: string };
