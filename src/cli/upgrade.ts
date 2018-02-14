@@ -3,9 +3,9 @@ import chalk from 'chalk';
 
 export default async function upgrade() {
 	const upgraded = [
-
-	].filter(Boolean);
 		await upgrade_sapper_main()
+	].filter(Boolean);
+
 	if (upgraded.length === 0) {
 		console.log(`No changes!`);
 	}
