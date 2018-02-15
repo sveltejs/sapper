@@ -1,9 +1,10 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Target } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Route, InitOpts, RouteData, ScrollPosition, Target } from './interfaces';
 
 export let component: Component;
 let target: Node;
 let routes: Route[];
+let initOpts: InitOpts;
 
 const history = typeof window !== 'undefined' ? window.history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -58,7 +59,9 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 		}
 
 		// preload additional routes
-		routes.reduce((promise: Promise<any>, route) => promise.then(route.load), Promise.resolve());
+		if (initOpts.preloadRoutes) {
+			routes.reduce((promise: Promise<any>, route) => promise.then(route.load), Promise.resolve());
+		}
 	}
 
 	component = new Component({
@@ -194,9 +197,10 @@ function handle_touchstart_mouseover(event: MouseEvent | TouchEvent) {
 
 let inited: boolean;
 
-export function init(_target: Node, _routes: Route[]) {
+export function init(_target: Node, _routes: Route[], _initOpts: InitOpts = { preloadRoutes: true }) {
 	target = _target;
 	routes = _routes;
+	initOpts = _initOpts;
 
 	if (!inited) { // this check makes HMR possible
 		window.addEventListener('click', handle_click);
