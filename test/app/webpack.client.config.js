@@ -5,7 +5,8 @@ module.exports = {
 	entry: config.client.entry(),
 	output: config.client.output(),
 	resolve: {
-		extensions: ['.js', '.html']
+		extensions: ['.js', '.html'],
+		modules: ['routes', 'node_modules'],
 	},
 	module: {
 		rules: [
