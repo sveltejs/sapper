@@ -112,7 +112,7 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 					return { rendered: mod.render(data), serialized };
 				});
 
-				return template.stream(res, {
+				return template.stream(req, res, {
 					scripts: promise.then(({ serialized }) => {
 						const main = `<script src='/client/${chunks.main}'></script>`;
 
@@ -137,6 +137,17 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 				});
 
 				res.end(page);
+
+				if (process.send) {
+					process.send({
+						__sapper__: true,
+						url: req.url,
+						method: req.method,
+						status: 200,
+						type: 'text/html',
+						body: page
+					});
+				}
 			}
 		}
 
@@ -147,6 +158,37 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 			const method_export = method === 'delete' ? 'del' : method;
 			const handler = mod[method_export];
 			if (handler) {
+				if (process.env.SAPPER_EXPORT) {
+					const { write, end, setHeader } = res;
+					const chunks: any[] = [];
+					const headers: Record<string, string> = {};
+
+					// intercept data so that it can be exported
+					res.write = function(chunk: any) {
+						chunks.push(new Buffer(chunk));
+						write.apply(res, arguments);
+					};
+
+					res.setHeader = function(name: string, value: string) {
+						headers[name.toLowerCase()] = value;
+						setHeader.apply(res, arguments);
+					};
+
+					res.end = function(chunk?: any) {
+						if (chunk) chunks.push(new Buffer(chunk));
+						end.apply(res, arguments);
+
+						process.send({
+							__sapper__: true,
+							url: req.url,
+							method: req.method,
+							status: res.statusCode,
+							type: headers['content-type'],
+							body: Buffer.concat(chunks).toString()
+						});
+					};
+				}
+
 				handler(req, res, next);
 			} else {
 				// no matching handler for method — 404
@@ -168,6 +210,8 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 			// no matching route — 404
 			next();
 		} catch (error) {
+			console.error(error);
+
 			res.statusCode = 500;
 			res.setHeader('Content-Type', 'text/html');
 

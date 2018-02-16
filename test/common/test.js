@@ -60,6 +60,7 @@ function run(env) {
 				let handler;
 
 				proc.on('message', message => {
+					if (message.__sapper__) return;
 					if (handler) handler(message);
 				});
 

@@ -35,8 +35,10 @@ export default function create_templates() {
 				return key in data ? data[key] : '';
 			});
 		},
-		stream: (res: any, data: Record<string, string | Promise<string>>) => {
+		stream: (req: any, res: any, data: Record<string, string | Promise<string>>) => {
 			let i = 0;
+
+			let body = '';
 
 			function stream_inner(): Promise<void> {
 				if (i >= template.length) {
@@ -46,11 +48,26 @@ export default function create_templates() {
 				const start = template.indexOf('%sapper', i);
 
 				if (start === -1) {
-					res.end(template.slice(i));
+					const chunk = template.slice(i);
+					body += chunk;
+					res.end(chunk);
+
+					if (process.send) {
+						process.send({
+							__sapper__: true,
+							url: req.url,
+							method: req.method,
+							type: 'text/html',
+							body
+						});
+					}
+
 					return;
 				}
 
-				res.write(template.slice(i, start));
+				const chunk = template.slice(i, start);
+				body += chunk;
+				res.write(chunk);
 
 				const end = template.indexOf('%', start + 1);
 				if (end === -1) {
@@ -61,8 +78,9 @@ export default function create_templates() {
 				const match = /sapper\.(\w+)/.exec(tag);
 				if (!match || !(match[1] in data)) throw new Error(`Bad template`); // TODO ditto
 
-				return Promise.resolve(data[match[1]]).then(datamatch => {
-					res.write(datamatch);
+				return Promise.resolve(data[match[1]]).then(chunk => {
+					body += chunk;
+					res.write(chunk);
 					i = end + 1;
 					return stream_inner();
 				});

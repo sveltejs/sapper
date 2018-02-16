@@ -3,9 +3,7 @@ import * as path from 'path';
 import * as sander from 'sander';
 import express from 'express';
 import cheerio from 'cheerio';
-import fetch from 'node-fetch';
 import URL from 'url-parse';
-import { create_assets } from 'sapper/core.js';
 
 const { OUTPUT_DIR = 'dist' } = process.env;
 
@@ -15,61 +13,50 @@ function read_json(file: string) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-export default async function exporter({ src, dest }) { // TODO dest is a terrible name in this context
+export default async function exporter(dir: string) { // dir === '.sapper'
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
 	sander.copydirSync('assets').to(OUTPUT_DIR);
-	sander.copydirSync(dest, 'client').to(OUTPUT_DIR, 'client');
-
-	// Intercept server route fetches
-	function save(res) {
-		res = res.clone();
-
-		return res.text().then(body => {
-			const { pathname } = new URL(res.url);
-			let dest = OUTPUT_DIR + pathname;
-
-			const type = res.headers.get('Content-Type');
-			if (type && type.startsWith('text/html')) dest += '/index.html';
-
-			sander.writeFileSync(dest, body);
-
-			return body;
-		});
-	}
+	sander.copydirSync(dir, 'client').to(OUTPUT_DIR, 'client');
+	sander.copyFileSync(dir, 'service-worker.js').to(OUTPUT_DIR, 'service-worker.js');
 
 	const port = await require('get-port')(3000);
 
 	const origin = `http://localhost:${port}`;
 
-	global.fetch = (url, opts) => {
-		if (url[0] === '/') {
-			url = `http://localhost:${port}${url}`;
-
-			return fetch(url, opts)
-				.then(r => {
-					save(r);
-					return r;
-				});
-		}
-
-		return fetch(url, opts);
-	};
-
-	const proc = child_process.fork(path.resolve(`${dest}/server.js`), [], {
+	const proc = child_process.fork(path.resolve(`${dir}/server.js`), [], {
 		cwd: process.cwd(),
 		env: {
 			PORT: port,
-			NODE_ENV: 'production'
+			NODE_ENV: 'production',
+			SAPPER_EXPORT: 'true'
+		}
+	});
+
+	const seen = new Set();
+	const saved = new Set();
+
+	proc.on('message', message => {
+		if (!message.__sapper__) return;
+
+		const url = new URL(message.url, origin);
+
+		if (saved.has(url.pathname)) return;
+		saved.add(url.pathname);
+
+		if (message.type === 'text/html') {
+			const dest = `${OUTPUT_DIR}/${url.pathname}/index.html`;
+			sander.writeFileSync(dest, message.body);
+		} else {
+			const dest = `${OUTPUT_DIR}/${url.pathname}`;
+			sander.writeFileSync(dest, message.body);
 		}
 	});
 
 	await require('wait-port')({ port });
 
-	const seen = new Set();
-
-	function handle(url) {
+	function handle(url: URL) {
 		if (url.origin !== origin) return;
 
 		if (seen.has(url.pathname)) return;
@@ -77,14 +64,12 @@ export default async function exporter({ src, dest }) { // TODO dest is a terrib
 
 		return fetch(url.href)
 			.then(r => {
-				save(r);
-
 				if (r.headers.get('Content-Type') === 'text/html') {
-					return r.text().then(body => {
+					return r.text().then((body: string) => {
 						const $ = cheerio.load(body);
-						const hrefs = [];
+						const hrefs: string[] = [];
 
-						$('a[href]').each((i, $a) => {
+						$('a[href]').each((i: number, $a) => {
 							hrefs.push($a.attribs.href);
 						});
 
@@ -94,7 +79,7 @@ export default async function exporter({ src, dest }) { // TODO dest is a terrib
 					});
 				}
 			})
-			.catch(err => {
+			.catch((err: Error) => {
 				console.error(`Error rendering ${url.pathname}: ${err.message}`);
 			});
 	}

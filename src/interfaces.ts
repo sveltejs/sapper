@@ -11,5 +11,5 @@ export type Route = {
 
 export type Template = {
 	render: (data: Record<string, string>) => string;
-	stream: (res, data: Record<string, string | Promise<string>>) => void;
+	stream: (req, res, data: Record<string, string | Promise<string>>) => void;
 };
