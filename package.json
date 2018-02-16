@@ -63,7 +63,8 @@
     "ts-node": "^4.1.0",
     "tslib": "^1.8.1",
     "typescript": "^2.6.2",
-    "wait-on": "^2.0.2"
+    "wait-on": "^2.0.2",
+    "wait-port": "^0.2.2"
   },
   "scripts": {
     "cy:open": "cypress open",

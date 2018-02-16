@@ -15,70 +15,25 @@ Nightmare.action('page', {
 	}
 });
 
+Nightmare.action('init', function(done) {
+	this.evaluate_now(() => window.init(), done);
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
 		this.timeout(20000);
 
 		let PORT;
-		let server;
+		let proc;
 		let nightmare;
-		let middleware;
 		let capture;
 
 		let base;
 
-		function get(url) {
-			return new Promise(fulfil => {
-				const req = {
-					url,
-					method: 'GET'
-				};
-
-				const result = {
-					headers: {},
-					body: ''
-				};
-
-				const res = {
-					setHeader(header, value) {
-						result.headers[header] = value;
-					},
-
-					set(headers, value) {
-						if (typeof headers === 'string') {
-							return res.set({ [headers]: value });
-						}
-
-						Object.assign(result.headers, headers);
-					},
-
-					status(code) {
-						result.status = code;
-					},
-
-					write(data) {
-						result.body += data;
-					},
-
-					end(data) {
-						result.body += data;
-						fulfil(result);
-					}
-				};
-
-				middleware(req, res, () => {
-					fulfil(result);
-				});
-			});
-		}
-
 		before(() => {
 			process.chdir(path.resolve(__dirname, '../app'));
 
-			process.env.NODE_ENV = env;
-
 			let exec_promise = Promise.resolve();
-			let sapper;
 
 			if (env === 'production') {
 				const cli = path.resolve(__dirname, '../../cli.js');
@@ -90,81 +45,85 @@ function run(env) {
 				delete require.cache[resolved];
 				delete require.cache[require.resolve('../../core.js')]; // TODO remove this
 
-				sapper = require(resolved);
-
 				return require('get-port')();
 			}).then(port => {
-				PORT = port;
-				base = `http://localhost:${PORT}`;
+				base = `http://localhost:${port}`;
 
-				Nightmare.action('init', function(done) {
-					this.evaluate_now(() => window.init(), done);
+				proc = require('child_process').fork('.sapper/server.js', {
+					cwd: process.cwd(),
+					env: {
+						NODE_ENV: env,
+						PORT: port
+					}
 				});
 
-				global.fetch = (url, opts) => {
-					if (url[0] === '/') url = `${base}${url}`;
-					return fetch(url, opts);
-				};
+				let handler;
 
-				let captured;
+				proc.on('message', message => {
+					if (handler) handler(message);
+				});
+
 				capture = fn => {
-					const result = captured = [];
-					return fn().then(() => {
-						captured = null;
-						return result;
+					return new Promise((fulfil, reject) => {
+						const captured = [];
+
+						let start = Date.now();
+
+						handler = message => {
+							if (message.type === 'ready') {
+								fn().then(() => {
+									proc.send({
+										action: 'end'
+									});
+								}, reject);
+							}
+
+							else if (message.type === 'done') {
+								fulfil(captured);
+								handler = null;
+							}
+
+							else {
+								captured.push(message);
+							}
+						};
+
+						proc.send({
+							action: 'start'
+						});
 					});
 				};
-
-				const app = express();
-
-				app.use(serve('assets'));
-
-				app.use((req, res, next) => {
-					if (captured) captured.push(req);
-					next();
-				});
-
-				middleware = sapper();
-				app.use(middleware);
-
-				return new Promise((fulfil, reject) => {
-					server = app.listen(PORT, err => {
-						if (err) reject(err);
-						else fulfil();
-					});
-				});
 			});
 		});
 
 		after(() => {
-			server.close();
-			middleware.close();
+			proc.kill();
 
 			// give a chance to clean up
 			return new Promise(fulfil => setTimeout(fulfil, 500));
 		});
 
+		beforeEach(() => {
+			nightmare = new Nightmare();
+
+			nightmare.on('console', (type, ...args) => {
+				console[type](...args);
+			});
+
+			nightmare.on('page', (type, ...args) => {
+				if (type === 'error') {
+					console.error(args[1]);
+				} else {
+					console.warn(type, args);
+				}
+			});
+		});
+
+		afterEach(() => {
+			return nightmare.end();
+		});
+
 		describe('basic functionality', () => {
-			beforeEach(() => {
-				nightmare = new Nightmare();
-
-				nightmare.on('console', (type, ...args) => {
-					console[type](...args);
-				});
-
-				nightmare.on('page', (type, ...args) => {
-					if (type === 'error') {
-						console.error(args[1]);
-					} else {
-						console.warn(type, args);
-					}
-				});
-			});
-
-			afterEach(() => {
-				return nightmare.end();
-			});
-
 			it('serves /', () => {
 				return nightmare.goto(base).page.title().then(title => {
 					assert.equal(title, 'Great success!');
@@ -190,7 +149,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return nightmare.goto(base).init().wait(100)
+				return capture(() => nightmare.goto(base).init().wait(200))
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
@@ -224,6 +183,7 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
+					.wait(100)
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -340,15 +300,17 @@ function run(env) {
 
 		describe('headers', () => {
 			it('sets Content-Type and Link...preload headers', () => {
-				return get('/').then(({ headers }) => {
+				return capture(() => nightmare.goto(base).end()).then(requests => {
+					const { headers } = requests[0];
+
 					assert.equal(
-						headers['Content-Type'],
+						headers['content-type'],
 						'text/html'
 					);
 
 					assert.ok(
-						/<\/client\/main.\w+\.js>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['Link']),
-						headers['Link']
+						/<\/client\/main.\w+\.js>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['link']),
+						headers['link']
 					);
 				});
 			});
@@ -402,9 +364,9 @@ function run(env) {
 					const allPages = walkSync(dest);
 
 					expectedPages.forEach((expectedPage) => {
-						assert.ok(allPages.includes(expectedPage),
-						    `Could not find page matching ${expectedPage}`);
+						assert.ok(allPages.includes(expectedPage),`Could not find page matching ${expectedPage}`);
 					});
+
 					expectedClientRegexes.forEach((expectedRegex) => {
 						// Ensure each client page regular expression matches at least one
 						// generated page.
@@ -415,8 +377,7 @@ function run(env) {
 								break;
 							}
 						}
-						assert.ok(matched,
-							  `Could not find client page matching ${expectedRegex}`);
+						assert.ok(matched, `Could not find client page matching ${expectedRegex}`);
 					});
 				});
 			});

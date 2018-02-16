@@ -1,11 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { create_app, create_assets, create_routes, templates } from 'sapper/core.js';
+import { create_app, create_serviceworker, create_routes, create_template } from 'sapper/core.js';
 import { dest } from '../config.js';
 
+type Deferred = {
+	promise?: Promise<any>;
+	fulfil?: (value: any) => void;
+	reject?: (err: Error) => void;
+}
+
 function deferred() {
-	const d = {};
+	const d: Deferred = {};
 
 	d.promise = new Promise((fulfil, reject) => {
 		d.fulfil = fulfil;
@@ -15,7 +21,7 @@ function deferred() {
 	return d;
 }
 
-export default function create_watcher({ compilers, dev, entry, src, onroutes }) {
+export default function create_watcher({ compilers, dev, entry, src, onroutes, ontemplate }) {
 	const deferreds = {
 		client: deferred(),
 		server: deferred()
@@ -31,27 +37,29 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 		const server_info = server_stats.toJson();
 		fs.writeFileSync(path.join(dest, 'stats.server.json'), JSON.stringify(server_info, null, '  '));
 
-		return create_assets({
-			src, dest, dev,
-			client_info: client_stats.toJson(),
-			server_info: server_stats.toJson()
+		const client_files = client_info.assets.map((chunk: { name: string }) => `/client/${chunk.name}`);
+
+		return create_serviceworker({
+			routes: create_routes({ src }),
+			client_files,
+			src
 		});
 	});
 
-	function watch_compiler(type) {
+	function watch_compiler(type: 'client' | 'server') {
 		const compiler = compilers[type];
 
-		compiler.plugin('invalid', filename => {
+		compiler.plugin('invalid', (filename: string) => {
 			console.log(chalk.cyan(`${type} bundle invalidated, file changed: ${chalk.bold(filename)}`));
 			deferreds[type] = deferred();
 			watcher.ready = invalidate();
 		});
 
-		compiler.plugin('failed', err => {
+		compiler.plugin('failed', (err: Error) => {
 			deferreds[type].reject(err);
 		});
 
-		return compiler.watch({}, (err, stats) => {
+		return compiler.watch({}, (err: Error, stats: any) => {
 			if (stats.hasErrors()) {
 				deferreds[type].reject(stats.toJson().errors[0]);
 			} else {
@@ -62,7 +70,7 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 
 	const chokidar = require('chokidar');
 
-	function watch_files(pattern, callback) {
+	function watch_files(pattern: string, callback: () => void) {
 		const watcher = chokidar.watch(pattern, {
 			persistent: false
 		});
@@ -76,15 +84,13 @@ export default function create_watcher({ compilers, dev, entry, src, onroutes })
 		const routes = create_routes({ src });
 		onroutes(routes);
 
-		create_app({ dev, entry, src }); // TODO this calls `create_routes` again, we should pass `routes` to `create_app` instead
+		create_app({ routes, src, dev });
 	});
 
-	watch_files('templates/main.js', () => {
-		create_app({ dev, entry, src });
-	});
+	watch_files('app/template.html', () => {
+		const template = create_template();
+		ontemplate(template);
 
-	watch_files('templates/**.html', () => {
-		templates.create_templates();
 		// TODO reload current page?
 	});
 

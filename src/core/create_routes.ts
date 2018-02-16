@@ -1,16 +1,6 @@
 import * as path from 'path';
 import glob from 'glob';
-
-type Route = {
-	id: string;
-	type: 'page' | 'route';
-	file: string;
-	pattern: RegExp;
-	test: (url: string) => boolean;
-	exec: (url: string) => Record<string, string>;
-	parts: string[];
-	dynamic: string[];
-}
+import { Route } from '../interfaces';
 
 export default function create_routes({ src, files = glob.sync('**/*.+(html|js|mjs)', { cwd: src }) }: {
 	src: string;

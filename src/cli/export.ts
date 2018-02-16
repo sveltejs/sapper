@@ -1,3 +1,4 @@
+import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
 import express from 'express';
@@ -6,30 +7,20 @@ import fetch from 'node-fetch';
 import URL from 'url-parse';
 import { create_assets } from 'sapper/core.js';
 
-const { PORT = 3000, OUTPUT_DIR = 'dist' } = process.env;
-
-const origin = `http://localhost:${PORT}`;
+const { OUTPUT_DIR = 'dist' } = process.env;
 
 const app = express();
 
-function read_json(file) {
+function read_json(file: string) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-export default function exporter({ src, dest }) { // TODO dest is a terrible name in this context
+export default async function exporter({ src, dest }) { // TODO dest is a terrible name in this context
 	// Prep output directory
 	sander.rimrafSync(OUTPUT_DIR);
 
-	const { service_worker } = create_assets({
-		src, dest,
-		dev: false,
-		client_info: read_json(path.join(dest, 'stats.client.json')),
-		server_info: read_json(path.join(dest, 'stats.server.json'))
-	});
-
 	sander.copydirSync('assets').to(OUTPUT_DIR);
 	sander.copydirSync(dest, 'client').to(OUTPUT_DIR, 'client');
-	sander.writeFileSync(OUTPUT_DIR, 'service-worker.js', service_worker);
 
 	// Intercept server route fetches
 	function save(res) {
@@ -48,9 +39,13 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 		});
 	}
 
+	const port = await require('get-port')(3000);
+
+	const origin = `http://localhost:${port}`;
+
 	global.fetch = (url, opts) => {
 		if (url[0] === '/') {
-			url = `http://localhost:${PORT}${url}`;
+			url = `http://localhost:${port}${url}`;
 
 			return fetch(url, opts)
 				.then(r => {
@@ -62,9 +57,15 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 		return fetch(url, opts);
 	};
 
-	const middleware = require('./middleware')({ dev: false }); // TODO this is filthy
-	app.use(middleware);
-	const server = app.listen(PORT);
+	const proc = child_process.fork(path.resolve(`${dest}/server.js`), [], {
+		cwd: process.cwd(),
+		env: {
+			PORT: port,
+			NODE_ENV: 'production'
+		}
+	});
+
+	await require('wait-port')({ port });
 
 	const seen = new Set();
 
@@ -99,5 +100,5 @@ export default function exporter({ src, dest }) { // TODO dest is a terrible nam
 	}
 
 	return handle(new URL(origin)) // TODO all static routes
-		.then(() => server.close());
+		.then(() => proc.kill());
 }

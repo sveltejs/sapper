@@ -1,12 +1,17 @@
-const config = require('../../webpack/config.js');
+const config = require('../../../webpack/config.js');
+const pkg = require('../package.json');
+const sapper_pkg = require('../../../package.json');
 
 module.exports = {
-	entry: config.server.entry(),
+	entry: {
+		'server': './app/server.js'
+	},
 	output: config.server.output(),
 	target: 'node',
 	resolve: {
 		extensions: ['.js', '.html']
 	},
+	externals: Object.keys(pkg.dependencies).concat(Object.keys(sapper_pkg.dependencies)),
 	module: {
 		rules: [
 			{
