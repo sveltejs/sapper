@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+// import * as mime from 'mime';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
@@ -49,12 +50,26 @@ export default function middleware({ routes }: {
 			fn: () => assets.service_worker
 		}),
 
-		get_asset_handler({
-			filter: (pathname: string) => pathname.startsWith('/client/'),
-			type: 'application/javascript',
-			cache: 'max-age=31536000',
-			fn: (pathname: string) => assets.client[pathname.replace('/client/', '')]
-		}),
+		(req, res, next) => {
+			if (req.pathname.startsWith('/client/')) {
+				// const type = mime.getType(req.pathname);
+				const type = 'application/javascript'; // TODO might not be, if using e.g. CSS plugin
+
+				// TODO cache?
+				const rs = fs.createReadStream(path.join(dest, req.pathname.slice(1)));
+
+				rs.on('error', error => {
+					res.statusCode = 404;
+					res.end('not found');
+				});
+
+				res.setHeader('Content-Type', type);
+				res.setHeader('Cache-Control', 'max-age=31536000');
+				rs.pipe(res);
+			} else {
+				next();
+			}
+		},
 
 		get_route_handler(client_info.assetsByChunkName, () => assets, () => routes, () => template),
 

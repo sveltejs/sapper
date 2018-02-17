@@ -5,6 +5,7 @@ import express from 'express';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
+import { wait_for_port } from './utils';
 
 const { OUTPUT_DIR = 'dist' } = process.env;
 
@@ -55,8 +56,6 @@ export default async function exporter(dir: string) { // dir === '.sapper'
 		}
 	});
 
-	await require('wait-port')({ port });
-
 	function handle(url: URL) {
 		if (url.origin !== origin) return;
 
@@ -85,6 +84,8 @@ export default async function exporter(dir: string) { // dir === '.sapper'
 			});
 	}
 
-	return handle(new URL(origin)) // TODO all static routes
-		.then(() => proc.kill());
+	wait_for_port(port, () => {
+		handle(new URL(origin)) // TODO all static routes
+			.then(() => proc.kill())
+	});
 }
