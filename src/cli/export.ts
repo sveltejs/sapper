@@ -4,6 +4,7 @@ import * as sander from 'sander';
 import express from 'express';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
+import fetch from 'node-fetch';
 
 const { OUTPUT_DIR = 'dist' } = process.env;
 
