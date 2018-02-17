@@ -23,11 +23,16 @@ function generate_client(routes: Route[], src: string, dev: boolean) {
 			${routes
 				.filter(route => route.type === 'page')
 				.map(route => {
+					const file = posixify(`../../routes/${route.file}`);
+
+					if (route.id === '_4xx' || route.id === '_5xx') {
+						return `{ error: '${route.id.slice(1)}', load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
+					}
+
 					const params = route.dynamic.length === 0
 						? '{}'
 						: `{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
 
-					const file = posixify(`../../routes/${route.file}`);
 					return `{ pattern: ${route.pattern}, params: ${route.dynamic.length > 0 ? `match` : `()`} => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
 				})
 				.join(',\n\t')}
@@ -67,11 +72,16 @@ function generate_server(routes: Route[], src: string) {
 		export const routes = [
 			${routes
 				.map(route => {
+					const file = posixify(`${src}/${route.file}`);
+
+					if (route.id === '_4xx' || route.id === '_5xx') {
+						return `{ error: '${route.id.slice(1)}', module: ${route.id} }`;
+					}
+
 					const params = route.dynamic.length === 0
 						? '{}'
 						: `{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
 
-					const file = posixify(`${src}/${route.file}`);
 					return `{ id: '${route.id}', type: '${route.type}', pattern: ${route.pattern}, params: ${route.dynamic.length > 0 ? `match` : `()`} => (${params}), module: ${route.id} }`;
 				})
 				.join(',\n\t')

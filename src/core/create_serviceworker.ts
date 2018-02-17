@@ -20,7 +20,7 @@ export default function create_serviceworker({ routes, client_files, src }: {
 
 		export const shell = [\n\t${client_files.map((x: string) => `"${x}"`).join(',\n\t')}\n];
 
-		export const routes = [\n\t${routes.filter((r: Route) => r.type === 'page').map((r: Route) => `{ pattern: ${r.pattern} }`).join(',\n\t')}\n];
+		export const routes = [\n\t${routes.filter((r: Route) => r.type === 'page' && !/^_[45]xx$/.test(r.id)).map((r: Route) => `{ pattern: ${r.pattern} }`).join(',\n\t')}\n];
 	`.replace(/^\t\t/gm, '').trim();
 
 	write('app/manifest/service-worker.js', code);

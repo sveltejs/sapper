@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ClientRequest, ServerResponse } from 'http';
 // import * as mime from 'mime';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
@@ -17,40 +18,61 @@ type Assets = {
 	client: Record<string, string>;
 }
 
+type RouteObject = {
+	type: 'page' | 'route';
+	pattern: RegExp;
+	params: (match: RegExpMatchArray) => Record<string, string>;
+	module: {
+		render: (data: any) => {
+			head: string;
+			css: { code: string, map: any };
+			html: string
+		},
+		preload: (data: any) => any | Promise<any>
+	};
+	error?: string;
+}
+
+type Handler = (req: Req, res: ServerResponse, next: () => void) => void;
+
+interface Req extends ClientRequest {
+	url: string;
+	method: string;
+	pathname: string;
+	params: Record<string, string>;
+}
+
 export default function middleware({ routes }: {
-	routes: Route[]
+	routes: RouteObject[]
 }) {
 	const client_info = JSON.parse(fs.readFileSync(path.join(dest, 'client_info.json'), 'utf-8'));
 
-	const assets: Assets = {
-		index: try_read(path.join(dest, 'index.html')),
-		service_worker: try_read(path.join(dest, 'service-worker.js')),
-		client: fs.readdirSync(path.join(dest, 'client')).reduce((lookup: Record<string, string>, file: string) => {
-			lookup[file] = try_read(path.join(dest, 'client', file));
-			return lookup;
-		}, {})
-	};
-
 	const template = create_template();
 
-	const middleware = compose_handlers([
-		set_req_pathname,
+	const shell = try_read(path.join(dest, 'index.html'));
+	const serviceworker = try_read(path.join(dest, 'service-worker.js'));
 
-		get_asset_handler({
-			filter: (pathname: string) => pathname === '/index.html',
+	const middleware = compose_handlers([
+		(req: Req, res: ServerResponse, next: () => void) => {
+			req.pathname = req.url.replace(/\?.*/, '');
+			next();
+		},
+
+		shell && get_asset_handler({
+			pathname: '/index.html',
 			type: 'text/html',
 			cache: 'max-age=600',
-			fn: () => assets.index
+			body: shell
 		}),
 
-		get_asset_handler({
-			filter: (pathname: string) => pathname === '/service-worker.js',
+		serviceworker && get_asset_handler({
+			pathname: '/service-worker.js',
 			type: 'application/javascript',
 			cache: 'max-age=600',
-			fn: () => assets.service_worker
+			body: serviceworker
 		}),
 
-		(req, res, next) => {
+		(req: Req, res: ServerResponse, next: () => void) => {
 			if (req.pathname.startsWith('/client/')) {
 				// const type = mime.getType(req.pathname);
 				const type = 'application/javascript'; // TODO might not be, if using e.g. CSS plugin
@@ -71,38 +93,33 @@ export default function middleware({ routes }: {
 			}
 		},
 
-		get_route_handler(client_info.assetsByChunkName, () => assets, () => routes, () => template),
+		get_route_handler(client_info.assetsByChunkName, routes, template),
 
-		get_not_found_handler(client_info.assetsByChunkName, () => routes, () => template)
-	]);
-
-	// here for API consistency between dev, and prod, but
-	// doesn't actually need to do anything
-	middleware.close = () => {};
+		get_not_found_handler(client_info.assetsByChunkName, routes, template)
+	].filter(Boolean));
 
 	return middleware;
 }
 
-function set_req_pathname(req, res, next) {
-	req.pathname = req.url.replace(/\?.*/, '');
-	next();
-}
+function get_asset_handler({ pathname, type, cache, body }: {
+	pathname: string;
+	type: string;
+	cache: string;
+	body: string;
+}) {
+	return (req: Req, res: ServerResponse, next: () => void) => {
+		if (req.pathname !== pathname) return next();
 
-function get_asset_handler(opts) {
-	return (req, res, next) => {
-		if (!opts.filter(req.pathname)) return next();
-
-		res.setHeader('Content-Type', opts.type);
-		res.setHeader('Cache-Control', opts.cache);
-
-		res.end(opts.fn(req.pathname));
+		res.setHeader('Content-Type', type);
+		res.setHeader('Cache-Control', cache);
+		res.end(body);
 	};
 }
 
 const resolved = Promise.resolve();
 
-function get_route_handler(chunks: Record<string, string>, get_assets: () => Assets, get_routes: () => Route[], get_template: () => Template) {
-	function handle_route(route, req, res, next, { client }) {
+function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
+	function handle_route(route: RouteObject, req: Req, res: ServerResponse, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.pathname));
 
 		const mod = route.module;
@@ -116,8 +133,6 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 			res.setHeader('Link', `</client/${chunks.main}>;rel="preload";as="script", </client/${chunks[route.id]}>;rel="preload";as="script"`);
 
 			const data = { params: req.params, query: req.query };
-
-			const template = get_template();
 
 			if (mod.preload) {
 				const promise = Promise.resolve(mod.preload(req)).then(preloaded => {
@@ -212,14 +227,14 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 		}
 	}
 
-	return function find_route(req, res, next) {
-		const url = req.pathname;
+	const error_route = routes.find((route: RouteObject) => route.error === '5xx')
 
-		const routes = get_routes();
+	return function find_route(req: Req, res: ServerResponse, next: () => void) {
+		const url = req.pathname;
 
 		try {
 			for (const route of routes) {
-				if (route.pattern.test(url)) return handle_route(route, req, res, next, get_assets());
+				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res, next);
 			}
 
 			// no matching route — 404
@@ -230,15 +245,14 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 			res.statusCode = 500;
 			res.setHeader('Content-Type', 'text/html');
 
-			const route = get_routes().find((route: Route) => route.pattern.test('/5xx'));
-			const rendered = route ? route.module.render({
+			const rendered = error_route ? error_route.module.render({
 				status: 500,
 				error
-			}) : { head: '', css: '', html: 'Not found' };
+			}) : { head: '', css: null, html: 'Not found' };
 
 			const { head, css, html } = rendered;
 
-			res.end(get_template().render({
+			res.end(template.render({
 				scripts: `<script src='/client/${chunks.main}'></script>`,
 				html,
 				head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
@@ -248,20 +262,21 @@ function get_route_handler(chunks: Record<string, string>, get_assets: () => Ass
 	};
 }
 
-function get_not_found_handler(chunks: Record<string, string>, get_routes: () => Route[], get_template: () => Template) {
-	return function handle_not_found(req, res) {
+function get_not_found_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
+	const route = routes.find((route: RouteObject) => route.error === '4xx');
+
+	return function handle_not_found(req: Req, res: ServerResponse) {
 		res.statusCode = 404;
 		res.setHeader('Content-Type', 'text/html');
 
-		const route = get_routes().find((route: Route) => route.pattern.test('/4xx')); // TODO separate 4xx and 5xx out
 		const rendered = route ? route.module.render({
 			status: 404,
 			message: 'Not found'
-		}) : { head: '', css: '', html: 'Not found' };
+		}) : { head: '', css: null, html: 'Not found' };
 
 		const { head, css, html } = rendered;
 
-		res.end(get_template().render({
+		res.end(template.render({
 			scripts: `<script src='/client/${chunks.main}'></script>`,
 			html,
 			head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
@@ -270,8 +285,8 @@ function get_not_found_handler(chunks: Record<string, string>, get_routes: () =>
 	};
 }
 
-function compose_handlers(handlers) {
-	return (req, res, next) => {
+function compose_handlers(handlers: Handler[]) {
+	return (req: Req, res: ServerResponse, next: () => void) => {
 		let i = 0;
 		function go() {
 			const handler = handlers[i];
