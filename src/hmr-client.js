@@ -1,5 +1,7 @@
 let source;
 
+console.log('!!!! hmr client');
+
 function check() {
 	if (module.hot.status() === 'idle') {
 		module.hot.check(true).then(modules => {

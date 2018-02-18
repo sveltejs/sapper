@@ -154,10 +154,9 @@ export default async function dev(src: string, dir: string) {
 
 		deferreds.client = deferred();
 
-		// TODO print message
-		fs.readdirSync(path.join(dir, 'client')).forEach(file => {
-			fs.unlinkSync(path.join(dir, 'client', file));
-		});
+		// TODO we should delete old assets. due to a webpack bug
+		// i don't even begin to comprehend, this is apparently
+		// quite difficult
 	});
 
 	compilers.client.watch({}, (err: Error, stats: any) => {
@@ -196,7 +195,7 @@ export default async function dev(src: string, dir: string) {
 			times.serviceworker_start = Date.now();
 		});
 
-		compilers.client.watch({}, (err: Error, stats: any) => {
+		compilers.serviceworker.watch({}, (err: Error, stats: any) => {
 			if (err) {
 				// TODO notify client
 			} else if (stats.hasErrors()) {
@@ -209,7 +208,6 @@ export default async function dev(src: string, dir: string) {
 
 				const serviceworker_info = stats.toJson();
 				fs.writeFileSync(path.join(dir, 'serviceworker_info.json'), JSON.stringify(serviceworker_info, null, '  '));
-				// TODO trigger reload?
 			}
 		});
 	}

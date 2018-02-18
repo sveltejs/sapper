@@ -12,12 +12,6 @@ import { Route, Template } from '../interfaces';
 
 const dev = isDev();
 
-type Assets = {
-	index: string;
-	service_worker: string;
-	client: Record<string, string>;
-}
-
 type RouteObject = {
 	id: string;
 	type: 'page' | 'route';
