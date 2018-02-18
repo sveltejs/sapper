@@ -150,7 +150,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return capture(() => nightmare.goto(base).init().wait(200))
+				return capture(() => nightmare.goto(base).init().wait(400))
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
