@@ -36,6 +36,7 @@
     "sander": "^0.6.0",
     "serialize-javascript": "^1.4.0",
     "url-parse": "^1.2.0",
+    "wait-port": "^0.2.2",
     "walk-sync": "^0.3.2",
     "webpack": "^3.10.0"
   },
