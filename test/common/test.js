@@ -219,9 +219,7 @@ function run(env) {
 						});
 					})
 					.then(mouseover_requests => {
-						assert.deepEqual(mouseover_requests.map(r => r.url), [
-							'/api/blog/what-is-sapper'
-						]);
+						assert.ok(mouseover_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') !== -1);
 
 						return capture(() => {
 							return nightmare
@@ -230,7 +228,7 @@ function run(env) {
 						});
 					})
 					.then(click_requests => {
-						assert.deepEqual(click_requests.map(r => r.url), []);
+						assert.ok(click_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') === -1);
 					});
 			});
 
@@ -295,6 +293,87 @@ function run(env) {
 					})
 					.then(matches => {
 						assert.ok(matches);
+					});
+			});
+
+			it('redirects on server', () => {
+				return nightmare.goto(`${base}/redirect-from`)
+					.path()
+					.then(path => {
+						assert.equal(path, '/redirect-to');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'redirected');
+					});
+			});
+
+			it('redirects in client', () => {
+				return nightmare.goto(base)
+					.wait('[href="/redirect-from"]')
+					.click('[href="/redirect-from"]')
+					.wait(200)
+					.path()
+					.then(path => {
+						assert.equal(path, '/redirect-to');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'redirected');
+					});
+			});
+
+			it('handles 4xx error on server', () => {
+				return nightmare.goto(`${base}/blog/nope`)
+					.path()
+					.then(path => {
+						assert.equal(path, '/blog/nope');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Not found')
+					});
+			});
+
+			it('handles 4xx error in client', () => {
+				return nightmare.goto(base)
+					.init()
+					.click('[href="/blog/nope"]')
+					.wait(200)
+					.path()
+					.then(path => {
+						assert.equal(path, '/blog/nope');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Not found');
+					});
+			});
+
+			it('handles non-4xx error on server', () => {
+				return nightmare.goto(`${base}/blog/throw-an-error`)
+					.path()
+					.then(path => {
+						assert.equal(path, '/blog/throw-an-error');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Internal server error')
+					});
+			});
+
+			it('handles non-4xx error in client', () => {
+				return nightmare.goto(base)
+					.init()
+					.click('[href="/blog/throw-an-error"]')
+					.wait(200)
+					.path()
+					.then(path => {
+						assert.equal(path, '/blog/throw-an-error');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Internal server error');
 					});
 			});
 		});

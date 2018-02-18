@@ -74,17 +74,41 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 }
 
 function prepare_route(Component: ComponentConstructor, data: RouteData) {
+	let redirect: { statusCode: number, location: string } = null;
+	let error: { statusCode: number, message: Error | string } = null;
+
 	if (!Component.preload) {
-		return { Component, data };
+		return { Component, data, redirect, error };
 	}
 
 	if (!component && window.__SAPPER__ && window.__SAPPER__.preloaded) {
-		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded) };
+		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded), redirect, error };
 	}
 
-	return Promise.resolve(Component.preload(data)).then(preloaded => {
+	return Promise.resolve(Component.preload.call({
+		redirect: (statusCode: number, location: string) => {
+			redirect = { statusCode, location };
+		},
+		error: (statusCode: number, message: Error | string) => {
+			error = { statusCode, message };
+		}
+	}, data)).catch(err => {
+		error = { statusCode: 500, message: err };
+	}).then(preloaded => {
+		if (error) {
+			const route = error.statusCode >= 400 && error.statusCode < 500
+				? errors['4xx']
+				: errors['5xx'];
+
+			return route.load().then(({ default: Component }: { default: ComponentConstructor }) => {
+				const err = error.message instanceof Error ? error.message : new Error(error.message);
+				Object.assign(data, { status: error.statusCode, error: err });
+				return { Component, data, redirect: null };
+			});
+		}
+
 		Object.assign(data, preloaded)
-		return { Component, data };
+		return { Component, data, redirect };
 	});
 }
 
@@ -110,7 +134,11 @@ function navigate(target: Target, id: number) {
 
 	const token = current_token = {};
 
-	return loaded.then(({ Component, data }) => {
+	return loaded.then(({ Component, data, redirect }) => {
+		if (redirect) {
+			return goto(redirect.location, { replaceState: true });
+		}
+
 		render(Component, data, scroll_history[id], token);
 	});
 }

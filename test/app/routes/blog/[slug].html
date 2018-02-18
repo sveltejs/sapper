@@ -59,8 +59,21 @@
 			// is called [slug].html
 			const { slug } = params;
 
-			return fetch(`/api/blog/${slug}`).then(r => r.json()).then(post => {
-				return { post };
+			if (slug === 'throw-an-error') {
+				return this.error(500, 'something went wrong');
+			}
+
+			return fetch(`/api/blog/${slug}`).then(r => {
+				if (r.status === 200) {
+					return r.json().then(post => ({ post }));
+					this.error(r.status, '')
+				}
+
+				if (r.status === 404) {
+					this.error(404, 'Not found');
+				} else {
+					throw new Error('Something went wrong');
+				}
 			});
 		}
 	};
