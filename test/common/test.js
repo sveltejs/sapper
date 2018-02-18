@@ -219,9 +219,7 @@ function run(env) {
 						});
 					})
 					.then(mouseover_requests => {
-						assert.deepEqual(mouseover_requests.map(r => r.url), [
-							'/api/blog/what-is-sapper'
-						]);
+						assert.ok(mouseover_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') !== -1);
 
 						return capture(() => {
 							return nightmare
@@ -230,7 +228,7 @@ function run(env) {
 						});
 					})
 					.then(click_requests => {
-						assert.deepEqual(click_requests.map(r => r.url), []);
+						assert.ok(click_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') === -1);
 					});
 			});
 
