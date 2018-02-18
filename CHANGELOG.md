@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.7.1
+
+* Add missing `tslib` dependency
+
 ## 0.7.0
 
 * Restructure app layout (see [migration guide](https://sapper.svelte.technology/guide#0-6-to-0-7)) ([#126](https://github.com/sveltejs/sapper/pull/126))

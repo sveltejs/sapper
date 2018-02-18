@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "middleware.js",
   "bin": {
@@ -35,6 +35,7 @@
     "rimraf": "^2.6.2",
     "sander": "^0.6.0",
     "serialize-javascript": "^1.4.0",
+    "tslib": "^1.8.1",
     "url-parse": "^1.2.0",
     "wait-port": "^0.2.2",
     "walk-sync": "^0.3.2",
@@ -63,7 +64,6 @@
     "svelte": "^1.49.1",
     "svelte-loader": "^2.3.2",
     "ts-node": "^4.1.0",
-    "tslib": "^1.8.1",
     "typescript": "^2.6.2"
   },
   "scripts": {
