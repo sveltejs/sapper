@@ -94,9 +94,7 @@ export default function middleware({ routes }: {
 			}
 		},
 
-		get_route_handler(client_info.assetsByChunkName, routes, template),
-
-		get_not_found_handler(client_info.assetsByChunkName, routes, template)
+		get_route_handler(client_info.assetsByChunkName, routes, template)
 	].filter(Boolean));
 
 	return middleware;
@@ -120,7 +118,7 @@ function get_asset_handler({ pathname, type, cache, body }: {
 const resolved = Promise.resolve();
 
 function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
-	function handle_route(route: RouteObject, req: Req, res: ServerResponse, next: () => void) {
+	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
 		req.params = route.params(route.pattern.exec(req.pathname));
 
 		const mod = route.module;
@@ -135,20 +133,30 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			const data = { params: req.params, query: req.query };
 
 			let redirect: { statusCode: number, location: string };
-			let error;
+			let error: { statusCode: number, message: Error | string };
 
 			Promise.resolve(
 				mod.preload ? mod.preload.call({
 					redirect: (statusCode: number, location: string) => {
 						redirect = { statusCode, location };
+					},
+					error: (statusCode: number, message: Error | string) => {
+						error = { statusCode, message };
 					}
 				}, req) : {}
-			).then(preloaded => {
+			).catch(err => {
+				error = { statusCode: 500, message: err };
+			}).then(preloaded => {
 				if (redirect) {
 					res.statusCode = redirect.statusCode;
 					res.setHeader('Location', redirect.location);
 					res.end();
 
+					return;
+				}
+
+				if (error) {
+					handle_error(req, res, error.statusCode, error.message);
 					return;
 				}
 
@@ -220,60 +228,28 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					};
 				}
 
-				handler(req, res, next);
+				handler(req, res, () => {
+					handle_not_found(req, res, 404, 'Not found');
+				});
 			} else {
 				// no matching handler for method — 404
-				next();
+				handle_not_found(req, res, 404, 'Not found');
 			}
 		}
 	}
 
-	const error_route = routes.find((route: RouteObject) => route.error === '5xx')
+	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
 
-	return function find_route(req: Req, res: ServerResponse, next: () => void) {
-		const url = req.pathname;
-
-		try {
-			for (const route of routes) {
-				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res, next);
-			}
-
-			// no matching route — 404
-			next();
-		} catch (error) {
-			console.error(error);
-
-			res.statusCode = 500;
-			res.setHeader('Content-Type', 'text/html');
-
-			const rendered = error_route ? error_route.module.render({
-				status: 500,
-				error
-			}) : { head: '', css: null, html: 'Not found' };
-
-			const { head, css, html } = rendered;
-
-			res.end(template.render({
-				scripts: `<script src='/client/${chunks.main}'></script>`,
-				html,
-				head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
-				styles: (css && css.code ? `<style>${css.code}</style>` : '')
-			}));
-		}
-	};
-}
-
-function get_not_found_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
-	const route = routes.find((route: RouteObject) => route.error === '4xx');
-
-	return function handle_not_found(req: Req, res: ServerResponse) {
-		res.statusCode = 404;
+	function handle_not_found(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
+		res.statusCode = statusCode;
 		res.setHeader('Content-Type', 'text/html');
 
-		const rendered = route ? route.module.render({
+		const error = message instanceof Error ? message : new Error(message);
+
+		const rendered = not_found_route ? not_found_route.module.render({
 			status: 404,
-			message: 'Not found'
-		}) : { head: '', css: null, html: 'Not found' };
+			error
+		}) : { head: '', css: null, html: error.message };
 
 		const { head, css, html } = rendered;
 
@@ -283,6 +259,47 @@ function get_not_found_handler(chunks: Record<string, string>, routes: RouteObje
 			head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
 			styles: (css && css.code ? `<style>${css.code}</style>` : '')
 		}));
+	}
+
+	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
+
+	function handle_error(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
+		if (statusCode >= 400 && statusCode < 500) {
+			return handle_not_found(req, res, statusCode, message);
+		}
+
+		res.statusCode = statusCode;
+		res.setHeader('Content-Type', 'text/html');
+
+		const error = message instanceof Error ? message : new Error(message);
+
+		const rendered = error_route ? error_route.module.render({
+			status: 500,
+			error
+		}) : { head: '', css: null, html: `Internal server error: ${error.message}` };
+
+		const { head, css, html } = rendered;
+
+		res.end(template.render({
+			scripts: `<script src='/client/${chunks.main}'></script>`,
+			html,
+			head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
+			styles: (css && css.code ? `<style>${css.code}</style>` : '')
+		}));
+	}
+
+	return function find_route(req: Req, res: ServerResponse, next: () => void) {
+		const url = req.pathname;
+
+		try {
+			for (const route of routes) {
+				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
+			}
+
+			handle_not_found(req, res, 404, 'Not found');
+		} catch (error) {
+			handle_error(req, res, 500, error);
+		}
 	};
 }
 
