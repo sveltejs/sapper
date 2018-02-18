@@ -66,17 +66,19 @@ function create_hot_update_server(port: number, interval = 10000) {
 	return { send };
 }
 
-export default function create_watcher(src: string, dir: string) {
+export default async function dev(src: string, dir: string) {
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
 
 	const chokidar = require('chokidar');
 
 	// initial build
-	const routes = create_routes({ src });
-	create_app({ routes, src, dev: true });
+	const dev_port = await require('get-port')(10000);
 
-	const hot_update_server = create_hot_update_server(23456); // TODO robustify port selection
+	const routes = create_routes({ src });
+	create_app({ routes, src, dev: true, dev_port });
+
+	const hot_update_server = create_hot_update_server(dev_port);
 
 	// TODO watch the configs themselves?
 	const compilers = create_compilers();
@@ -93,7 +95,7 @@ export default function create_watcher(src: string, dir: string) {
 
 	watch_files('routes/**/*.+(html|js|mjs)', () => {
 		const routes = create_routes({ src });
-		create_app({ routes, src, dev: true });
+		create_app({ routes, src, dev: true, dev_port });
 	});
 
 	watch_files('app/template.html', () => {
