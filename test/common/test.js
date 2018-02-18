@@ -184,12 +184,12 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.wait(100)
+					.wait(200)
 					.then(() => {
 						return capture(() => {
 							return nightmare
 								.click('.prefetch')
-								.wait(100);
+								.wait(200);
 						});
 					})
 					.then(requests => {
