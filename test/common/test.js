@@ -389,7 +389,7 @@ function run(env) {
 					);
 
 					assert.ok(
-						/<\/client\/main.\w+\.js>;rel="preload";as="script", <\/client\/_.\d+.\w+.js>;rel="preload";as="script"/.test(headers['link']),
+						/<\/client\/[^/]+\/main\.js>;rel="preload";as="script", <\/client\/[^/]+\/_\.0\.js>;rel="preload";as="script"/.test(headers['link']),
 						headers['link']
 					);
 				});
@@ -433,13 +433,13 @@ function run(env) {
 					];
 					// Client scripts that should show up in the extraction directory.
 					const expectedClientRegexes = [
-						/client\/_\..*?\.js/,
-						/client\/about\..*?\.js/,
-						/client\/blog_\$slug\$\..*?\.js/,
-						/client\/blog\..*?\.js/,
-						/client\/main\..*?\.js/,
-						/client\/show_url\..*?\.js/,
-						/client\/slow_preload\..*?\.js/,
+						/client\/[^/]+\/_(\.\d+)?\.js/,
+						/client\/[^/]+\/about(\.\d+)?\.js/,
+						/client\/[^/]+\/blog_\$slug\$(\.\d+)?\.js/,
+						/client\/[^/]+\/blog(\.\d+)?\.js/,
+						/client\/[^/]+\/main(\.\d+)?\.js/,
+						/client\/[^/]+\/show_url(\.\d+)?\.js/,
+						/client\/[^/]+\/slow_preload(\.\d+)?\.js/,
 					];
 					const allPages = walkSync(dest);
 
