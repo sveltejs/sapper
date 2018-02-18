@@ -1,5 +1,12 @@
 # sapper changelog
 
+## 0.7.0
+
+* Restructure app layout (see [migration guide](https://sapper.svelte.technology/guide#0-6-to-0-7)) ([#126](https://github.com/sveltejs/sapper/pull/126))
+* Support `this.redirect(status, location)` and `this.error(status, error)` in `preload` functions ([#127](https://github.com/sveltejs/sapper/pull/127))
+* Add `sapper dev` command
+* Add `sapper --help` command
+
 ## 0.6.4
 
 * Prevent phantom HMR requests in production mode ([#114](https://github.com/sveltejs/sapper/pull/114))

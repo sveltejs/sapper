@@ -2,6 +2,10 @@
 
 https://sapper.svelte.technology
 
+> sapper dev
+
+Start a development server
+
 > sapper build
 
 Creates a production-ready version of your app
