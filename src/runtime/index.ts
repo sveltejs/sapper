@@ -74,17 +74,23 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 }
 
 function prepare_route(Component: ComponentConstructor, data: RouteData) {
+	let redirect: { statusCode: number, location: string } = null;
+
 	if (!Component.preload) {
-		return { Component, data };
+		return { Component, data, redirect };
 	}
 
 	if (!component && window.__SAPPER__ && window.__SAPPER__.preloaded) {
-		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded) };
+		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded), redirect };
 	}
 
-	return Promise.resolve(Component.preload(data)).then(preloaded => {
+	return Promise.resolve(Component.preload.call({
+		redirect: (statusCode: number, location: string) => {
+			redirect = { statusCode, location };
+		}
+	}, data)).then(preloaded => {
 		Object.assign(data, preloaded)
-		return { Component, data };
+		return { Component, data, redirect };
 	});
 }
 
@@ -110,7 +116,8 @@ function navigate(target: Target, id: number) {
 
 	const token = current_token = {};
 
-	return loaded.then(({ Component, data }) => {
+	return loaded.then(({ Component, data, redirect }) => {
+		if (redirect) return goto(redirect.location, { replaceState: true });
 		render(Component, data, scroll_history[id], token);
 	});
 }

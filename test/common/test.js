@@ -297,6 +297,33 @@ function run(env) {
 						assert.ok(matches);
 					});
 			});
+
+			it('redirects on server', () => {
+				return nightmare.goto(`${base}/redirect-from`)
+					.path()
+					.then(path => {
+						assert.equal(path, '/redirect-to');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'redirected');
+					});
+			});
+
+			it('redirects on client', () => {
+				return nightmare.goto(base)
+					.wait('[href="/redirect-from"]')
+					.click('[href="/redirect-from"]')
+					.wait(200)
+					.path()
+					.then(path => {
+						assert.equal(path, '/redirect-to');
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'redirected');
+					});
+			});
 		});
 
 		describe('headers', () => {

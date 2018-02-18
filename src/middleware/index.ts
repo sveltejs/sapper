@@ -19,6 +19,7 @@ type Assets = {
 }
 
 type RouteObject = {
+	id: string;
 	type: 'page' | 'route';
 	pattern: RegExp;
 	params: (match: RegExpMatchArray) => Record<string, string>;
@@ -125,7 +126,6 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		const mod = route.module;
 
 		if (route.type === 'page') {
-			// for page routes, we're going to serve some HTML
 			res.setHeader('Content-Type', 'text/html');
 
 			// preload main.js and current route
@@ -134,33 +134,34 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 			const data = { params: req.params, query: req.query };
 
-			if (mod.preload) {
-				const promise = Promise.resolve(mod.preload(req)).then(preloaded => {
-					const serialized = try_serialize(preloaded);
-					Object.assign(data, preloaded);
+			let redirect: { statusCode: number, location: string };
+			let error;
 
-					return { rendered: mod.render(data), serialized };
-				});
+			Promise.resolve(
+				mod.preload ? mod.preload.call({
+					redirect: (statusCode: number, location: string) => {
+						redirect = { statusCode, location };
+					}
+				}, req) : {}
+			).then(preloaded => {
+				if (redirect) {
+					res.statusCode = redirect.statusCode;
+					res.setHeader('Location', redirect.location);
+					res.end();
 
-				return template.stream(req, res, {
-					scripts: promise.then(({ serialized }) => {
-						const main = `<script src='/client/${chunks.main}'></script>`;
+					return;
+				}
 
-						if (serialized) {
-							return `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${main}`;
-						}
+				const serialized = try_serialize(preloaded); // TODO bail on non-POJOs
+				Object.assign(data, preloaded);
 
-						return main;
-					}),
-					html: promise.then(({ rendered }) => rendered.html),
-					head: promise.then(({ rendered }) => `<noscript id='sapper-head-start'></noscript>${rendered.head}<noscript id='sapper-head-end'></noscript>`),
-					styles: promise.then(({ rendered }) => (rendered.css && rendered.css.code ? `<style>${rendered.css.code}</style>` : ''))
-				});
-			} else {
 				const { html, head, css } = mod.render(data);
 
+				let scripts = `<script src='/client/${chunks.main}'></script>`;
+				scripts = `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${scripts}`;
+
 				const page = template.render({
-					scripts: `<script src='/client/${chunks.main}'></script>`,
+					scripts,
 					html,
 					head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
 					styles: (css && css.code ? `<style>${css.code}</style>` : '')
@@ -178,7 +179,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 						body: page
 					});
 				}
-			}
+			});
 		}
 
 		else {
