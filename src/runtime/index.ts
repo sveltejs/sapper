@@ -4,6 +4,7 @@ import { Component, ComponentConstructor, Params, Query, Route, RouteData, Scrol
 export let component: Component;
 let target: Node;
 let routes: Route[];
+let errors: { '4xx': Route, '5xx': Route };
 
 const history = typeof window !== 'undefined' ? window.history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -29,10 +30,10 @@ function select_route(url: URL): Target {
 
 			const query: Record<string, string | true> = {};
 			if (url.search.length > 0) {
-			    url.search.slice(1).split('&').forEach(searchParam => {
-			        const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
-			        query[key] = value || true;
-			    })
+				url.search.slice(1).split('&').forEach(searchParam => {
+					const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
+					query[key] = value || true;
+				})
 			}
 			return { url, route, data: { params, query } };
 		}
@@ -196,7 +197,11 @@ let inited: boolean;
 
 export function init(_target: Node, _routes: Route[]) {
 	target = _target;
-	routes = _routes;
+	routes = _routes.filter(r => !r.error);
+	errors = {
+		'4xx': _routes.find(r => r.error === '4xx'),
+		'5xx': _routes.find(r => r.error === '5xx')
+	};
 
 	if (!inited) { // this check makes HMR possible
 		window.addEventListener('click', handle_click);
