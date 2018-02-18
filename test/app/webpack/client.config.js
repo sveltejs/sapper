@@ -1,8 +1,8 @@
-const config = require('../../webpack/config.js');
+const config = require('../../../webpack/config.js');
 const webpack = require('webpack');
 
 module.exports = {
-	entry: config.client.entry(),
+	entry: './app/client.js',
 	output: config.client.output(),
 	resolve: {
 		extensions: ['.js', '.html']

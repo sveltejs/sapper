@@ -26,6 +26,7 @@
     "express": "^4.16.2",
     "glob": "^7.1.2",
     "locate-character": "^2.0.5",
+    "mime": "^2.2.0",
     "mkdirp": "^0.5.1",
     "mri": "^1.1.0",
     "node-fetch": "^1.7.3",
@@ -36,14 +37,14 @@
     "serialize-javascript": "^1.4.0",
     "url-parse": "^1.2.0",
     "walk-sync": "^0.3.2",
-    "webpack": "^3.10.0",
-    "webpack-hot-middleware": "^2.21.0"
+    "webpack": "^3.10.0"
   },
   "devDependencies": {
     "@std/esm": "^0.19.7",
     "@types/glob": "^5.0.34",
     "@types/mkdirp": "^0.5.2",
     "@types/rimraf": "^2.0.2",
+    "compression": "^1.7.1",
     "css-loader": "^0.28.7",
     "electron": "^1.8.2",
     "eslint": "^4.13.1",
@@ -62,8 +63,7 @@
     "svelte-loader": "^2.3.2",
     "ts-node": "^4.1.0",
     "tslib": "^1.8.1",
-    "typescript": "^2.6.2",
-    "wait-on": "^2.0.2"
+    "typescript": "^2.6.2"
   },
   "scripts": {
     "cy:open": "cypress open",

@@ -7,7 +7,7 @@ export default {
 		entry: () => {
 			return {
 				main: [
-					entry.client,
+					'./app/client.js',
 					// workaround for https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/456
 					'style-loader/lib/addStyles',
 					'css-loader/lib/css-base'
@@ -28,14 +28,14 @@ export default {
 	server: {
 		entry: () => {
 			return {
-				main: entry.server
+				server: './app/server.js'
 			};
 		},
 
 		output: () => {
 			return {
-				path: `${dest}/server`,
-				filename: '[name].[hash].js',
+				path: `${dest}`,
+				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js',
 				libraryTarget: 'commonjs2'
 			};

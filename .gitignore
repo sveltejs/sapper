@@ -3,6 +3,7 @@ yarn.lock
 node_modules
 cypress/screenshots
 test/app/.sapper
+test/app/app/manifest
 runtime.js
 runtime.js.map
 cli.js

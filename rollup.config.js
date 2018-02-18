@@ -25,7 +25,7 @@ const plugins = [
 
 export default [
 	{ name: 'cli', banner: true },
-	{ name: 'core', banner: true },
+	{ name: 'core' },
 	{ name: 'middleware' },
 	{ name: 'runtime', format: 'es' },
 	{ name: 'webpack', file: 'webpack/config' }

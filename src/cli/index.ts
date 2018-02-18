@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import help from './help.md';
 import build from './build';
 import exporter from './export';
+import dev from './dev';
 import upgrade from './upgrade';
 import { dest, entry, src } from '../config';
 import * as pkg from '../../package.json';
@@ -39,7 +40,7 @@ if (cmd === 'build') {
 		});
 } else if (cmd === 'export') {
 	build({ dest, dev: false, entry, src })
-		.then(() => exporter({ src, dest }))
+		.then(() => exporter(dest))
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
@@ -47,6 +48,8 @@ if (cmd === 'build') {
 		.catch(err => {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 		});
+} else if (cmd === 'dev') {
+	dev(src, dest);
 } else if (cmd === 'upgrade') {
 	upgrade();
 } else {

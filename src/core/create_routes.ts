@@ -1,9 +1,13 @@
 import * as path from 'path';
 import glob from 'glob';
+import { Route } from '../interfaces';
 
-export default function create_routes({ src, files = glob.sync('**/*.+(html|js|mjs)', { cwd: src }) }) {
-	const routes = files
-		.map(file => {
+export default function create_routes({ src, files = glob.sync('**/*.+(html|js|mjs)', { cwd: src }) }: {
+	src: string;
+	files?: string[];
+}) {
+	const routes: Route[] = files
+		.map((file: string) => {
 			if (/(^|\/|\\)_/.test(file)) return;
 
 			const parts = file.replace(/\.(html|js|mjs)$/, '').split('/'); // glob output is always posix-style
@@ -34,13 +38,13 @@ export default function create_routes({ src, files = glob.sync('**/*.+(html|js|m
 
 			const pattern = new RegExp(`^${pattern_string}\\/?$`);
 
-			const test = url => pattern.test(url);
+			const test = (url: string) => pattern.test(url);
 
-			const exec = url => {
+			const exec = (url: string) => {
 				const match = pattern.exec(url);
 				if (!match) return;
 
-				const params = {};
+				const params: Record<string, string> = {};
 				dynamic.forEach((param, i) => {
 					params[param] = match[i + 1];
 				});
@@ -60,7 +64,7 @@ export default function create_routes({ src, files = glob.sync('**/*.+(html|js|m
 			};
 		})
 		.filter(Boolean)
-		.sort((a, b) => {
+		.sort((a: Route, b: Route) => {
 			let same = true;
 
 			for (let i = 0; true; i += 1) {
