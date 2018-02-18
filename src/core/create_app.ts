@@ -41,7 +41,7 @@ function generate_client(routes: Route[], src: string, dev: boolean, dev_port?: 
 
 	if (dev) {
 		const hmr_client = posixify(
-			path.resolve(__dirname, 'src/hmr-client.js')
+			path.resolve(__dirname, 'hmr-client.js')
 		);
 
 		code += `

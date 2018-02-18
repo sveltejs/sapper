@@ -182,33 +182,41 @@ export default async function dev(src: string, dir: string) {
 				});
 			});
 
-			return create_serviceworker({
+			create_serviceworker({
 				routes: create_routes({ src }),
 				client_files,
 				src
 			});
+
+			watch_serviceworker();
 		}
 	});
 
-	if (compilers.serviceworker) {
-		compilers.serviceworker.plugin('invalid', (filename: string) => {
-			times.serviceworker_start = Date.now();
-		});
+	let watch_serviceworker = compilers.serviceworker
+		? function() {
+			watch_serviceworker = noop;
 
-		compilers.serviceworker.watch({}, (err: Error, stats: any) => {
-			if (err) {
-				// TODO notify client
-			} else if (stats.hasErrors()) {
-				// print errors. TODO notify client
-				stats.toJson().errors.forEach((error: Error) => {
-					console.error(error); // TODO make this look nice
-				});
-			} else {
-				console.log(`built service worker in ${Date.now() - times.serviceworker_start}ms`); // TODO prettify
+			compilers.serviceworker.plugin('invalid', (filename: string) => {
+				times.serviceworker_start = Date.now();
+			});
 
-				const serviceworker_info = stats.toJson();
-				fs.writeFileSync(path.join(dir, 'serviceworker_info.json'), JSON.stringify(serviceworker_info, null, '  '));
-			}
-		});
-	}
+			compilers.serviceworker.watch({}, (err: Error, stats: any) => {
+				if (err) {
+					// TODO notify client
+				} else if (stats.hasErrors()) {
+					// print errors. TODO notify client
+					stats.toJson().errors.forEach((error: Error) => {
+						console.error(error); // TODO make this look nice
+					});
+				} else {
+					console.log(`built service worker in ${Date.now() - times.serviceworker_start}ms`); // TODO prettify
+
+					const serviceworker_info = stats.toJson();
+					fs.writeFileSync(path.join(dir, 'serviceworker_info.json'), JSON.stringify(serviceworker_info, null, '  '));
+				}
+			});
+		}
+		: noop;
 }
+
+function noop() {}

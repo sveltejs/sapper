@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.7.2
+
+* Add `hmr-client.js` to package
+* Wait until first successful client build before creating service-worker.js
+
 ## 0.7.1
 
 * Add missing `tslib` dependency
