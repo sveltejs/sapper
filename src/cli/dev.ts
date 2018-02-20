@@ -137,14 +137,21 @@ export default async function dev(src: string, dir: string) {
 			fs.writeFileSync(path.join(dir, 'server_info.json'), JSON.stringify(server_info, null, '  '));
 
 			deferreds.client.promise.then(() => {
-				if (proc) proc.kill();
+				function restart() {
+					wait_for_port(3000, deferreds.server.fulfil); // TODO control port
+				}
+
+				if (proc) {
+					proc.kill();
+					proc.on('exit', restart);
+				} else {
+					restart();
+				}
 
 				proc = child_process.fork(`${dir}/server.js`, [], {
 					cwd: process.cwd(),
 					env: Object.assign({}, process.env)
 				});
-
-				wait_for_port(3000, deferreds.server.fulfil); // TODO control port
 			});
 		}
 	});
