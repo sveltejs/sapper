@@ -122,7 +122,12 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 			// preload main.js and current route
 			// TODO detect other stuff we can preload? images, CSS, fonts?
-			res.setHeader('Link', `</client/${chunks.main}>;rel="preload";as="script", </client/${chunks[route.id]}>;rel="preload";as="script"`);
+			const link = []
+				.concat(chunks.main, chunks[route.id])
+				.map(file => `</client/${file}>;rel="preload";as="script"`)
+				.join(', ');
+
+			res.setHeader('Link', link);
 
 			const data = { params: req.params, query: req.query };
 
@@ -159,7 +164,11 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				const { html, head, css } = mod.render(data);
 
-				let scripts = `<script src='/client/${chunks.main}'></script>`;
+				let scripts = []
+					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
+					.map(file => `<script src='/client/${file}'></script>`)
+					.join('');
+
 				scripts = `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${scripts}`;
 
 				const page = template.render({
