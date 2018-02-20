@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.7.3
+
+* Handle webpack assets that are arrays instead of strings ([#131](https://github.com/sveltejs/sapper/pull/131))
+* Wait for new server to start before broadcasting HMR update ([#129](https://github.com/sveltejs/sapper/pull/129))
+
 ## 0.7.2
 
 * Add `hmr-client.js` to package
