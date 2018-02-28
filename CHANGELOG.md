@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.7.5
+
+* Allow dynamic parameters inside route parts ([#139](https://github.com/sveltejs/sapper/issues/139))
+
 ## 0.7.4
 
 * Force `NODE_ENV='production'` when running `build` or `export` ([#141](https://github.com/sveltejs/sapper/issues/141))
