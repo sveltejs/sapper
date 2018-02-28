@@ -115,7 +115,7 @@ function get_asset_handler({ pathname, type, cache, body }: {
 const resolved = Promise.resolve();
 
 function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
-	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
+	function handle_route(route: RouteObject, req: Req, res: ServerResponse, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.pathname));
 
 		const mod = route.module;
@@ -234,9 +234,21 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					};
 				}
 
-				handler(req, res, () => {
-					handle_not_found(req, res, 404, 'Not found');
-				});
+				const handle_error = err => {
+					if (err) {
+						console.error(err.stack);
+						res.statusCode = 500;
+						res.end(err.message);
+					} else {
+						handle_not_found(req, res, 404, 'Not found');
+					}
+				};
+
+				try {
+					handler(req, res, handle_error);
+				} catch (err) {
+					handle_error(err);
+				}
 			} else {
 				// no matching handler for method — 404
 				handle_not_found(req, res, 404, 'Not found');
@@ -299,7 +311,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 		try {
 			for (const route of routes) {
-				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
+				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res, next);
 			}
 
 			handle_not_found(req, res, 404, 'Not found');
