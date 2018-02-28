@@ -9,6 +9,9 @@ import escape_html from 'escape-html';
 import { create_routes, templates, create_compilers, create_template } from 'sapper/core.js';
 import { dest, entry, isDev, src } from '../config';
 import { Route, Template } from '../interfaces';
+import sourceMapSupport from 'source-map-support';
+
+sourceMapSupport.install();
 
 const dev = isDev();
 
