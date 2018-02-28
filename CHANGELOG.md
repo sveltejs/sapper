@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.7.6
+
+* Prevent client-side navigation to server route ([#145](https://github.com/sveltejs/sapper/issues/145))
+* Don't serve error page for server route errors ([#138](https://github.com/sveltejs/sapper/issues/138))
+
 ## 0.7.5
 
 * Allow dynamic parameters inside route parts ([#139](https://github.com/sveltejs/sapper/issues/139))
