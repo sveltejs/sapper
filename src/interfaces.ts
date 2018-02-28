@@ -6,7 +6,7 @@ export type Route = {
 	test: (url: string) => boolean;
 	exec: (url: string) => Record<string, string>;
 	parts: string[];
-	dynamic: string[];
+	params: string[];
 };
 
 export type Template = {
