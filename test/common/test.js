@@ -391,6 +391,14 @@ function run(env) {
 						JSON.parse(text);
 					});
 			});
+
+			it('does not serve error page for non-page errors', () => {
+				return nightmare.goto(`${base}/throw-an-error`)
+					.page.text()
+					.then(text => {
+						assert.equal(text, 'nope');
+					});
+			});
 		});
 
 		describe('headers', () => {
