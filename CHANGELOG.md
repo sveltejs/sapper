@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.7.4
+
+* Force `NODE_ENV='production'` when running `build` or `export` ([#141](https://github.com/sveltejs/sapper/issues/141))
+* Use source-map-support ([#134](https://github.com/sveltejs/sapper/pull/134))
+
 ## 0.7.3
 
 * Handle webpack assets that are arrays instead of strings ([#131](https://github.com/sveltejs/sapper/pull/131))
