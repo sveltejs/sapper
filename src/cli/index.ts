@@ -30,6 +30,8 @@ const [cmd] = opts._;
 const start = Date.now();
 
 if (cmd === 'build') {
+	process.env.NODE_ENV = 'production';
+
 	build({ dest, dev: false, entry, src })
 		.then(() => {
 			const elapsed = Date.now() - start;
@@ -39,6 +41,8 @@ if (cmd === 'build') {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 		});
 } else if (cmd === 'export') {
+	process.env.NODE_ENV = 'production';
+
 	build({ dest, dev: false, entry, src })
 		.then(() => exporter(dest))
 		.then(() => {
