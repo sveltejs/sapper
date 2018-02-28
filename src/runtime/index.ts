@@ -26,6 +26,8 @@ function select_route(url: URL): Target {
 	for (const route of routes) {
 		const match = route.pattern.exec(url.pathname);
 		if (match) {
+			if (route.ignore) return null;
+
 			const params = route.params(match);
 
 			const query: Record<string, string | true> = {};

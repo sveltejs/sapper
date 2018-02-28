@@ -63,7 +63,7 @@
 				return this.error(500, 'something went wrong');
 			}
 
-			return fetch(`/api/blog/${slug}`).then(r => {
+			return fetch(`/blog/${slug}.json`).then(r => {
 				if (r.status === 200) {
 					return r.json().then(post => ({ post }));
 					this.error(r.status, '')
