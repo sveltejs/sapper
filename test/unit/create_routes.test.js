@@ -4,7 +4,7 @@ const { create_routes } = require('../../core.js');
 describe('create_routes', () => {
 	it('sorts routes correctly', () => {
 		const routes = create_routes({
-			files: ['index.html', 'about.html', '[wildcard].html', 'post/foo.html', 'post/[id].html', 'post/bar.html']
+			files: ['index.html', 'about.html', 'post/f[xx].html', '[wildcard].html', 'post/foo.html', 'post/[id].html', 'post/bar.html', 'post/[id].json.js']
 		});
 
 		assert.deepEqual(
@@ -14,6 +14,8 @@ describe('create_routes', () => {
 				'about.html',
 				'post/foo.html',
 				'post/bar.html',
+				'post/f[xx].html',
+				'post/[id].json.js',
 				'post/[id].html',
 				'[wildcard].html'
 			]
@@ -132,5 +134,34 @@ describe('create_routes', () => {
 			a: null,
 			b: null
 		});
+	});
+
+	it('matches a dynamic part within a part', () => {
+		const route = create_routes({
+			files: ['things/[slug].json.js']
+		})[0];
+
+		assert.deepEqual(route.exec('/things/foo.json'), {
+			slug: 'foo'
+		});
+	});
+
+	it('matches multiple dynamic parts within a part', () => {
+		const route = create_routes({
+			files: ['things/[id]_[slug].json.js']
+		})[0];
+
+		assert.deepEqual(route.exec('/things/someid_someslug.json'), {
+			id: 'someid',
+			slug: 'someslug'
+		});
+	});
+
+	it('fails if dynamic params are not separated', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['[foo][bar].js']
+			});
+		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
 	});
 });

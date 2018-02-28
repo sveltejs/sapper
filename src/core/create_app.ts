@@ -30,11 +30,11 @@ function generate_client(routes: Route[], src: string, dev: boolean, dev_port?: 
 						return `{ error: '${route.id.slice(1)}', load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
 					}
 
-					const params = route.dynamic.length === 0
+					const params = route.params.length === 0
 						? '{}'
-						: `{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
+						: `{ ${route.params.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
 
-					return `{ pattern: ${route.pattern}, params: ${route.dynamic.length > 0 ? `match` : `()`} => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
+					return `{ pattern: ${route.pattern}, params: ${route.params.length > 0 ? `match` : `()`} => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
 				})
 				.join(',\n\t')}
 		];`.replace(/^\t\t/gm, '').trim();
@@ -77,11 +77,11 @@ function generate_server(routes: Route[], src: string) {
 						return `{ error: '${route.id.slice(1)}', module: ${route.id} }`;
 					}
 
-					const params = route.dynamic.length === 0
+					const params = route.params.length === 0
 						? '{}'
-						: `{ ${route.dynamic.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
+						: `{ ${route.params.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
 
-					return `{ id: '${route.id}', type: '${route.type}', pattern: ${route.pattern}, params: ${route.dynamic.length > 0 ? `match` : `()`} => (${params}), module: ${route.id} }`;
+					return `{ id: '${route.id}', type: '${route.type}', pattern: ${route.pattern}, params: ${route.params.length > 0 ? `match` : `()`} => (${params}), module: ${route.id} }`;
 				})
 				.join(',\n\t')
 			}
