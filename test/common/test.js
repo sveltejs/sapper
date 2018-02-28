@@ -389,7 +389,7 @@ function run(env) {
 					);
 
 					assert.ok(
-						/<\/client\/[^/]+\/main\.js>;rel="preload";as="script", <\/client\/[^/]+\/_\.0\.js>;rel="preload";as="script"/.test(headers['link']),
+						/<\/client\/[^/]+\/main\.js>;rel="preload";as="script", <\/client\/[^/]+\/_\.\d+\.js>;rel="preload";as="script"/.test(headers['link']),
 						headers['link']
 					);
 				});
