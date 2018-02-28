@@ -14,7 +14,8 @@ export interface Component {
 export type Route = {
 	pattern: RegExp;
 	params: (match: RegExpExecArray) => Record<string, string>;
-	load: () => Promise<{ default: ComponentConstructor }>
+	load: () => Promise<{ default: ComponentConstructor }>;
+	ignore?: boolean;
 };
 
 export type ScrollPosition = {

@@ -12,6 +12,10 @@ run('development');
 Nightmare.action('page', {
 	title(done) {
 		this.evaluate_now(() => document.querySelector('h1').textContent, done);
+	},
+
+	text(done) {
+		this.evaluate_now(() => document.body.textContent, done);
 	}
 });
 
@@ -193,7 +197,7 @@ function run(env) {
 						});
 					})
 					.then(requests => {
-						assert.ok(!!requests.find(r => r.url === '/api/blog/why-the-name'));
+						assert.ok(!!requests.find(r => r.url === '/blog/why-the-name.json'));
 					});
 			});
 
@@ -219,7 +223,7 @@ function run(env) {
 						});
 					})
 					.then(mouseover_requests => {
-						assert.ok(mouseover_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') !== -1);
+						assert.ok(mouseover_requests.findIndex(r => r.url === '/blog/what-is-sapper.json') !== -1);
 
 						return capture(() => {
 							return nightmare
@@ -228,7 +232,7 @@ function run(env) {
 						});
 					})
 					.then(click_requests => {
-						assert.ok(click_requests.findIndex(r => r.url === '/api/blog/what-is-sapper') === -1);
+						assert.ok(click_requests.findIndex(r => r.url === '/blog/what-is-sapper.json') === -1);
 					});
 			});
 
@@ -376,6 +380,17 @@ function run(env) {
 						assert.equal(title, 'Internal server error');
 					});
 			});
+
+			it('does not attempt client-side navigation to server routes', () => {
+				return nightmare.goto(`${base}/blog/how-is-sapper-different-from-next`)
+					.init()
+					.click(`[href="/blog/how-is-sapper-different-from-next.json"]`)
+					.wait(200)
+					.page.text()
+					.then(text => {
+						JSON.parse(text);
+					});
+			});
 		});
 
 		describe('headers', () => {
@@ -415,13 +430,13 @@ function run(env) {
 						'blog/what-is-sapper/index.html',
 						'blog/why-the-name/index.html',
 
-						'api/blog/contents',
-						'api/blog/a-very-long-post',
-						'api/blog/how-can-i-get-involved',
-						'api/blog/how-is-sapper-different-from-next',
-						'api/blog/how-to-use-sapper',
-						'api/blog/what-is-sapper',
-						'api/blog/why-the-name',
+						'blog/list.json',
+						'blog/a-very-long-post.json',
+						'blog/how-can-i-get-involved.json',
+						'blog/how-is-sapper-different-from-next.json',
+						'blog/how-to-use-sapper.json',
+						'blog/what-is-sapper.json',
+						'blog/why-the-name.json',
 
 						'favicon.png',
 						'global.css',
