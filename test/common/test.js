@@ -430,7 +430,7 @@ function run(env) {
 						'blog/what-is-sapper/index.html',
 						'blog/why-the-name/index.html',
 
-						'blog/list.json',
+						'blog.json',
 						'blog/a-very-long-post.json',
 						'blog/how-can-i-get-involved.json',
 						'blog/how-is-sapper-different-from-next.json',

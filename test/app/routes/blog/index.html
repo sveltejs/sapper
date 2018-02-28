@@ -32,7 +32,7 @@
 		},
 
 		preload({ params, query }) {
-			return fetch(`/blog/list.json`).then(r => r.json()).then(posts => {
+			return fetch(`/blog.json`).then(r => r.json()).then(posts => {
 				return { posts };
 			});
 		}
