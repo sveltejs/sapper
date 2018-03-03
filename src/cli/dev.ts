@@ -7,6 +7,7 @@ import * as http from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { wait_for_port } from './utils';
+import { dest } from '../config';
 import { create_compilers, create_app, create_routes, create_serviceworker, create_template } from 'sapper/core.js';
 
 type Deferred = {
@@ -66,7 +67,9 @@ function create_hot_update_server(port: number, interval = 10000) {
 	return { send };
 }
 
-export default async function dev(src: string, dir: string) {
+export default async function dev() {
+	const dir = dest();
+
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
 
@@ -75,8 +78,8 @@ export default async function dev(src: string, dir: string) {
 	// initial build
 	const dev_port = await require('get-port')(10000);
 
-	const routes = create_routes({ src });
-	create_app({ routes, src, dev: true, dev_port });
+	const routes = create_routes();
+	create_app({ routes, dev_port });
 
 	const hot_update_server = create_hot_update_server(dev_port);
 
@@ -94,8 +97,8 @@ export default async function dev(src: string, dir: string) {
 	}
 
 	watch_files('routes/**/*.+(html|js|mjs)', () => {
-		const routes = create_routes({ src });
-		create_app({ routes, src, dev: true, dev_port });
+		const routes = create_routes();
+		create_app({ routes, dev_port });
 	});
 
 	watch_files('app/template.html', () => {
@@ -190,9 +193,8 @@ export default async function dev(src: string, dir: string) {
 			});
 
 			create_serviceworker({
-				routes: create_routes({ src }),
-				client_files,
-				src
+				routes: create_routes(),
+				client_files
 			});
 
 			watch_serviceworker();

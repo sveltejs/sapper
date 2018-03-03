@@ -5,10 +5,9 @@ import create_routes from './create_routes';
 import { fudge_mtime, posixify, write } from './utils';
 import { Route } from '../interfaces';
 
-export default function create_serviceworker({ routes, client_files, src }: {
+export default function create_serviceworker({ routes, client_files }: {
 	routes: Route[];
 	client_files: string[];
-	src: string;
 }) {
 	const assets = glob.sync('**', { cwd: 'assets', nodir: true });
 

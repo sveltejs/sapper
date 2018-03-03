@@ -1,7 +1,7 @@
-import { dest, isDev, entry } from '../config';
+import { dest, dev } from '../config';
 
 export default {
-	dev: isDev(),
+	dev: dev(),
 
 	client: {
 		entry: () => {
@@ -17,7 +17,7 @@ export default {
 
 		output: () => {
 			return {
-				path: `${dest}/client`,
+				path: `${dest()}/client`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				publicPath: '/client/'
@@ -34,7 +34,7 @@ export default {
 
 		output: () => {
 			return {
-				path: `${dest}`,
+				path: `${dest()}`,
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'

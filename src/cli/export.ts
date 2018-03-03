@@ -6,8 +6,7 @@ import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import { wait_for_port } from './utils';
-
-const { OUTPUT_DIR = 'dist' } = process.env;
+import { dest } from '../config';
 
 const app = express();
 
@@ -15,19 +14,24 @@ function read_json(file: string) {
 	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
 }
 
-export default async function exporter(dir: string) { // dir === '.sapper'
-	// Prep output directory
-	sander.rimrafSync(OUTPUT_DIR);
+export default async function exporter(export_dir: string) {
+	const build_dir = dest();
 
-	sander.copydirSync('assets').to(OUTPUT_DIR);
-	sander.copydirSync(dir, 'client').to(OUTPUT_DIR, 'client');
-	sander.copyFileSync(dir, 'service-worker.js').to(OUTPUT_DIR, 'service-worker.js');
+	// Prep output directory
+	sander.rimrafSync(export_dir);
+
+	sander.copydirSync('assets').to(export_dir);
+	sander.copydirSync(build_dir, 'client').to(export_dir, 'client');
+
+	if (sander.existsSync(build_dir, 'service-worker.js')) {
+		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
+	}
 
 	const port = await require('get-port')(3000);
 
 	const origin = `http://localhost:${port}`;
 
-	const proc = child_process.fork(path.resolve(`${dir}/server.js`), [], {
+	const proc = child_process.fork(path.resolve(`${build_dir}/server.js`), [], {
 		cwd: process.cwd(),
 		env: {
 			PORT: port,
@@ -48,11 +52,11 @@ export default async function exporter(dir: string) { // dir === '.sapper'
 		saved.add(url.pathname);
 
 		if (message.type === 'text/html') {
-			const dest = `${OUTPUT_DIR}/${url.pathname}/index.html`;
-			sander.writeFileSync(dest, message.body);
+			const file = `${export_dir}/${url.pathname}/index.html`;
+			sander.writeFileSync(file, message.body);
 		} else {
-			const dest = `${OUTPUT_DIR}/${url.pathname}`;
-			sander.writeFileSync(dest, message.body);
+			const file = `${export_dir}/${url.pathname}`;
+			sander.writeFileSync(file, message.body);
 		}
 	});
 
