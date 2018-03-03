@@ -1,0 +1,68 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<script>
+		// if ('serviceWorker' in navigator) {
+		// 	navigator.serviceWorker.register('/service-worker.js');
+		// }
+	</script>
+
+	<!-- Sapper generates a <style> tag containing critical CSS
+	     for the current page. CSS for the rest of the app is
+	     lazily loaded when it precaches secondary pages -->
+	<style>ul[svelte-2554929200]{margin:0 0 1em 0;line-height:1.5}
+nav[svelte-2882498094]{border-bottom:1px solid rgba(170,30,30,0.1);font-weight:300;padding:0 1em}ul[svelte-2882498094]{margin:0;padding:0}ul[svelte-2882498094]::after{content:'';display:block;clear:both}li[svelte-2882498094]{display:block;float:left}.selected[svelte-2882498094]{position:relative;display:inline-block}.selected[svelte-2882498094]::after{position:absolute;content:'';width:calc(100% - 1em);height:2px;background-color:rgb(170,30,30);display:block;bottom:-1px}a[svelte-2882498094]{text-decoration:none;padding:1em 0.5em;display:block}</style>
+
+	<!-- This contains the contents of the <:Head> component, if
+	     the current page has one -->
+	<noscript id='sapper-head-start'></noscript>
+	<title>Blog</title>
+<noscript id='sapper-head-end'></noscript>
+</head>
+<body>
+	<!-- The application will be rendered inside this element,
+	     because `templates/main.js` references it -->
+	<div id='sapper'>
+
+<nav svelte-2882498094>
+	<ul svelte-2882498094>
+		<li svelte-2882498094><a href="/" svelte-2882498094>home</a></li>
+		<li svelte-2882498094><a href="/about" svelte-2882498094>about</a></li>
+		<li svelte-2882498094><a href="/slow-preload" svelte-2882498094>slow preload</a></li>
+		<li svelte-2882498094><a href="/redirect-from" svelte-2882498094>redirect</a></li>
+		<li svelte-2882498094><a href="/blog/nope" svelte-2882498094>broken link</a></li>
+		<li svelte-2882498094><a href="/blog/throw-an-error" svelte-2882498094>error link</a></li>
+		<li svelte-2882498094><a rel="prefetch" class="selected" href="/blog" svelte-2882498094>blog</a></li>
+	</ul>
+</nav>
+
+<main>
+	
+	<h1>Recent posts</h1>
+
+	<ul svelte-2554929200>
+		
+			<li><a rel="prefetch" href="/blog/what-is-sapper">What is Sapper?</a></li>
+			<li><a rel="prefetch" href="/blog/how-to-use-sapper">How to use Sapper</a></li>
+			<li><a rel="prefetch" href="/blog/why-the-name">Why the name?</a></li>
+			<li><a rel="prefetch" href="/blog/how-is-sapper-different-from-next">How is Sapper different from Next.js?</a></li>
+			<li><a rel="prefetch" href="/blog/how-can-i-get-involved">How can I get involved?</a></li>
+			<li><a rel="prefetch" href="/blog/a-very-long-post">A very long post with deep links</a></li>
+	</ul>
+
+</main></div>
+
+	<!-- Sapper creates a <script> tag containing `templates/main.js`
+	     and anything else it needs to hydrate the app and
+	     initialise the router -->
+	<script>__SAPPER__ = { preloaded: {"posts":[{"title":"What is Sapper?","slug":"what-is-sapper"},{"title":"How to use Sapper","slug":"how-to-use-sapper"},{"title":"Why the name?","slug":"why-the-name"},{"title":"How is Sapper different from Next.js?","slug":"how-is-sapper-different-from-next"},{"title":"How can I get involved?","slug":"how-can-i-get-involved"},{"title":"A very long post with deep links","slug":"a-very-long-post"}]} };</script><script src='/client/48bd936692082e9009f3/main.js'></script>
+</body>
+</html>

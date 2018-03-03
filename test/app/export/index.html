@@ -1,0 +1,67 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<script>
+		// if ('serviceWorker' in navigator) {
+		// 	navigator.serviceWorker.register('/service-worker.js');
+		// }
+	</script>
+
+	<!-- Sapper generates a <style> tag containing critical CSS
+	     for the current page. CSS for the rest of the app is
+	     lazily loaded when it precaches secondary pages -->
+	<style>h1[svelte-3398619790],figure[svelte-3398619790],p[svelte-3398619790]{text-align:center;margin:0 auto}h1[svelte-3398619790]{font-size:2.8em;text-transform:uppercase;font-weight:700;margin:0 0 0.5em 0}figure[svelte-3398619790]{margin:0 0 1em 0}img[svelte-3398619790]{width:100%;max-width:400px;margin:0 0 1em 0}p[svelte-3398619790]{margin:1em auto}@media(min-width: 480px){h1[svelte-3398619790]{font-size:4em}}
+nav[svelte-2882498094]{border-bottom:1px solid rgba(170,30,30,0.1);font-weight:300;padding:0 1em}ul[svelte-2882498094]{margin:0;padding:0}ul[svelte-2882498094]::after{content:'';display:block;clear:both}li[svelte-2882498094]{display:block;float:left}.selected[svelte-2882498094]{position:relative;display:inline-block}.selected[svelte-2882498094]::after{position:absolute;content:'';width:calc(100% - 1em);height:2px;background-color:rgb(170,30,30);display:block;bottom:-1px}a[svelte-2882498094]{text-decoration:none;padding:1em 0.5em;display:block}</style>
+
+	<!-- This contains the contents of the <:Head> component, if
+	     the current page has one -->
+	<noscript id='sapper-head-start'></noscript>
+	<title>Sapper project template</title>
+<noscript id='sapper-head-end'></noscript>
+</head>
+<body>
+	<!-- The application will be rendered inside this element,
+	     because `templates/main.js` references it -->
+	<div id='sapper'>
+
+<nav svelte-2882498094>
+	<ul svelte-2882498094>
+		<li svelte-2882498094><a href="/" svelte-2882498094>home</a></li>
+		<li svelte-2882498094><a href="/about" svelte-2882498094>about</a></li>
+		<li svelte-2882498094><a href="/slow-preload" svelte-2882498094>slow preload</a></li>
+		<li svelte-2882498094><a href="/redirect-from" svelte-2882498094>redirect</a></li>
+		<li svelte-2882498094><a href="/blog/nope" svelte-2882498094>broken link</a></li>
+		<li svelte-2882498094><a href="/blog/throw-an-error" svelte-2882498094>error link</a></li>
+		<li svelte-2882498094><a rel="prefetch" class="" href="/blog" svelte-2882498094>blog</a></li>
+	</ul>
+</nav>
+
+<main>
+	
+	<h1 svelte-3398619790>Great success!</h1>
+
+	<figure svelte-3398619790>
+		<img alt="borat" src="/great-success.png" svelte-3398619790>
+		<figcaption>HIGH FIVE!</figcaption>
+	</figure>
+
+	<p svelte-3398619790><strong>Try editing this file (routes/index.html) to test hot module reloading.</strong></p>
+
+</main>
+
+<div class="hydrate-test"></div></div>
+
+	<!-- Sapper creates a <script> tag containing `templates/main.js`
+	     and anything else it needs to hydrate the app and
+	     initialise the router -->
+	<script>__SAPPER__ = { preloaded: {} };</script><script src='/client/48bd936692082e9009f3/main.js'></script>
+</body>
+</html>

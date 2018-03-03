@@ -1,0 +1,75 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<script>
+		// if ('serviceWorker' in navigator) {
+		// 	navigator.serviceWorker.register('/service-worker.js');
+		// }
+	</script>
+
+	<!-- Sapper generates a <style> tag containing critical CSS
+	     for the current page. CSS for the rest of the app is
+	     lazily loaded when it precaches secondary pages -->
+	<style>.content[svelte-2385599062] h2{font-size:1.4em;font-weight:500}.content[svelte-2385599062] pre{background-color:#f9f9f9;box-shadow:inset 1px 1px 5px rgba(0,0,0,0.05);padding:0.5em;border-radius:2px;overflow-x:auto}.content[svelte-2385599062] pre code{background-color:transparent;padding:0}.content[svelte-2385599062] ul{line-height:1.5}.content[svelte-2385599062] li{margin:0 0 0.5em 0}
+nav[svelte-2882498094]{border-bottom:1px solid rgba(170,30,30,0.1);font-weight:300;padding:0 1em}ul[svelte-2882498094]{margin:0;padding:0}ul[svelte-2882498094]::after{content:'';display:block;clear:both}li[svelte-2882498094]{display:block;float:left}.selected[svelte-2882498094]{position:relative;display:inline-block}.selected[svelte-2882498094]::after{position:absolute;content:'';width:calc(100% - 1em);height:2px;background-color:rgb(170,30,30);display:block;bottom:-1px}a[svelte-2882498094]{text-decoration:none;padding:1em 0.5em;display:block}</style>
+
+	<!-- This contains the contents of the <:Head> component, if
+	     the current page has one -->
+	<noscript id='sapper-head-start'></noscript>
+	<title>What is Sapper?</title>
+<noscript id='sapper-head-end'></noscript>
+</head>
+<body>
+	<!-- The application will be rendered inside this element,
+	     because `templates/main.js` references it -->
+	<div id='sapper'>
+
+<nav svelte-2882498094>
+	<ul svelte-2882498094>
+		<li svelte-2882498094><a href="/" svelte-2882498094>home</a></li>
+		<li svelte-2882498094><a href="/about" svelte-2882498094>about</a></li>
+		<li svelte-2882498094><a href="/slow-preload" svelte-2882498094>slow preload</a></li>
+		<li svelte-2882498094><a href="/redirect-from" svelte-2882498094>redirect</a></li>
+		<li svelte-2882498094><a href="/blog/nope" svelte-2882498094>broken link</a></li>
+		<li svelte-2882498094><a href="/blog/throw-an-error" svelte-2882498094>error link</a></li>
+		<li svelte-2882498094><a rel="prefetch" class="selected" href="/blog" svelte-2882498094>blog</a></li>
+	</ul>
+</nav>
+
+<main>
+	
+	<h1>What is Sapper?</h1>
+
+	<div class="content" svelte-2385599062>
+		
+<p>First, you have to know what <a href='https://svelte.technology'>Svelte</a> is. Svelte is a UI framework with a bold new idea: rather than providing a library that you write code with (like React or Vue, for example), it's a compiler that turns your components into highly optimized vanilla JavaScript. If you haven't already read the <a href='https://svelte.technology/blog/frameworks-without-the-framework'>introductory blog post</a>, you should!</p>
+
+<p>Sapper is a Next.js-style framework (<a href='/blog/how-is-sapper-different-from-next'>more on that here</a>) built around Svelte. It makes it embarrassingly easy to create extremely high performance web apps. Out of the box, you get:</p>
+
+<ul>
+	<li>Code-splitting, dynamic imports and hot module replacement, powered by webpack</li>
+	<li>Server-side rendering (SSR) with client-side hydration</li>
+	<li>Service worker for offline support, and all the PWA bells and whistles</li>
+	<li>The nicest development experience you've ever had, or your money back</li>
+</ul>
+
+<p>It's implemented as Express middleware. Everything is set up and waiting for you to get started, but you keep complete control over the server, service worker, webpack config and everything else, so it's as flexible as you need it to be.</p>
+		
+	</div>
+
+</main></div>
+
+	<!-- Sapper creates a <script> tag containing `templates/main.js`
+	     and anything else it needs to hydrate the app and
+	     initialise the router -->
+	<script>__SAPPER__ = { preloaded: {"post":{"title":"What is Sapper?","slug":"what-is-sapper","html":"\n\u003Cp\u003EFirst, you have to know what \u003Ca href='https:\u002F\u002Fsvelte.technology'\u003ESvelte\u003C\u002Fa\u003E is. Svelte is a UI framework with a bold new idea: rather than providing a library that you write code with (like React or Vue, for example), it's a compiler that turns your components into highly optimized vanilla JavaScript. If you haven't already read the \u003Ca href='https:\u002F\u002Fsvelte.technology\u002Fblog\u002Fframeworks-without-the-framework'\u003Eintroductory blog post\u003C\u002Fa\u003E, you should!\u003C\u002Fp\u003E\n\n\u003Cp\u003ESapper is a Next.js-style framework (\u003Ca href='\u002Fblog\u002Fhow-is-sapper-different-from-next'\u003Emore on that here\u003C\u002Fa\u003E) built around Svelte. It makes it embarrassingly easy to create extremely high performance web apps. Out of the box, you get:\u003C\u002Fp\u003E\n\n\u003Cul\u003E\n\t\u003Cli\u003ECode-splitting, dynamic imports and hot module replacement, powered by webpack\u003C\u002Fli\u003E\n\t\u003Cli\u003EServer-side rendering (SSR) with client-side hydration\u003C\u002Fli\u003E\n\t\u003Cli\u003EService worker for offline support, and all the PWA bells and whistles\u003C\u002Fli\u003E\n\t\u003Cli\u003EThe nicest development experience you've ever had, or your money back\u003C\u002Fli\u003E\n\u003C\u002Ful\u003E\n\n\u003Cp\u003EIt's implemented as Express middleware. Everything is set up and waiting for you to get started, but you keep complete control over the server, service worker, webpack config and everything else, so it's as flexible as you need it to be.\u003C\u002Fp\u003E\n\t\t"}} };</script><script src='/client/48bd936692082e9009f3/main.js'></script>
+</body>
+</html>

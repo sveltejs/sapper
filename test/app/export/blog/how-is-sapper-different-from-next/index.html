@@ -1,0 +1,71 @@
+<!doctype>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<meta name='theme-color' content='#aa1e1e'>
+
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='manifest' href='/manifest.json'>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+
+	<script>
+		// if ('serviceWorker' in navigator) {
+		// 	navigator.serviceWorker.register('/service-worker.js');
+		// }
+	</script>
+
+	<!-- Sapper generates a <style> tag containing critical CSS
+	     for the current page. CSS for the rest of the app is
+	     lazily loaded when it precaches secondary pages -->
+	<style>.content[svelte-2385599062] h2{font-size:1.4em;font-weight:500}.content[svelte-2385599062] pre{background-color:#f9f9f9;box-shadow:inset 1px 1px 5px rgba(0,0,0,0.05);padding:0.5em;border-radius:2px;overflow-x:auto}.content[svelte-2385599062] pre code{background-color:transparent;padding:0}.content[svelte-2385599062] ul{line-height:1.5}.content[svelte-2385599062] li{margin:0 0 0.5em 0}
+nav[svelte-2882498094]{border-bottom:1px solid rgba(170,30,30,0.1);font-weight:300;padding:0 1em}ul[svelte-2882498094]{margin:0;padding:0}ul[svelte-2882498094]::after{content:'';display:block;clear:both}li[svelte-2882498094]{display:block;float:left}.selected[svelte-2882498094]{position:relative;display:inline-block}.selected[svelte-2882498094]::after{position:absolute;content:'';width:calc(100% - 1em);height:2px;background-color:rgb(170,30,30);display:block;bottom:-1px}a[svelte-2882498094]{text-decoration:none;padding:1em 0.5em;display:block}</style>
+
+	<!-- This contains the contents of the <:Head> component, if
+	     the current page has one -->
+	<noscript id='sapper-head-start'></noscript>
+	<title>How is Sapper different from Next.js?</title>
+<noscript id='sapper-head-end'></noscript>
+</head>
+<body>
+	<!-- The application will be rendered inside this element,
+	     because `templates/main.js` references it -->
+	<div id='sapper'>
+
+<nav svelte-2882498094>
+	<ul svelte-2882498094>
+		<li svelte-2882498094><a href="/" svelte-2882498094>home</a></li>
+		<li svelte-2882498094><a href="/about" svelte-2882498094>about</a></li>
+		<li svelte-2882498094><a href="/slow-preload" svelte-2882498094>slow preload</a></li>
+		<li svelte-2882498094><a href="/redirect-from" svelte-2882498094>redirect</a></li>
+		<li svelte-2882498094><a href="/blog/nope" svelte-2882498094>broken link</a></li>
+		<li svelte-2882498094><a href="/blog/throw-an-error" svelte-2882498094>error link</a></li>
+		<li svelte-2882498094><a rel="prefetch" class="selected" href="/blog" svelte-2882498094>blog</a></li>
+	</ul>
+</nav>
+
+<main>
+	
+	<h1>How is Sapper different from Next.js?</h1>
+
+	<div class="content" svelte-2385599062>
+		
+<p><a href='https://github.com/zeit/next.js/'>Next.js</a> is a React framework from <a href='https://zeit.co'>Zeit</a>, and is the inspiration for Sapper. There are a few notable differences, however:</p>
+
+<ul>
+	<li>It's powered by <a href='https://svelte.technology'>Svelte</a> instead of React, so it's faster and your apps are smaller</li>
+	<li>Instead of route masking, we encode route parameters in filenames. For example, the page you're looking at right now is <code>routes/blog/[slug].html</code></li>
+	<li>As well as pages (Svelte components, which render on server or client), you can create <em>server routes</em> in your <code>routes</code> directory. These are just <code>.js</code> files that export functions corresponding to HTTP methods, and receive Express <code>request</code> and <code>response</code> objects as arguments. This makes it very easy to, for example, add a JSON API such as the one <a href='/blog/how-is-sapper-different-from-next.json'>powering this very page</a></li>
+	<li>Links are just <code>&lt;a&gt;</code> elements, rather than framework-specific <code>&lt;Link&gt;</code> components. That means, for example, that <a href='/blog/how-can-i-get-involved'>this link right here</a>, despite being inside a blob of HTML, works with the router as you'd expect.</li>
+</ul>
+		
+	</div>
+
+</main></div>
+
+	<!-- Sapper creates a <script> tag containing `templates/main.js`
+	     and anything else it needs to hydrate the app and
+	     initialise the router -->
+	<script>__SAPPER__ = { preloaded: {"post":{"title":"How is Sapper different from Next.js?","slug":"how-is-sapper-different-from-next","html":"\n\u003Cp\u003E\u003Ca href='https:\u002F\u002Fgithub.com\u002Fzeit\u002Fnext.js\u002F'\u003ENext.js\u003C\u002Fa\u003E is a React framework from \u003Ca href='https:\u002F\u002Fzeit.co'\u003EZeit\u003C\u002Fa\u003E, and is the inspiration for Sapper. There are a few notable differences, however:\u003C\u002Fp\u003E\n\n\u003Cul\u003E\n\t\u003Cli\u003EIt's powered by \u003Ca href='https:\u002F\u002Fsvelte.technology'\u003ESvelte\u003C\u002Fa\u003E instead of React, so it's faster and your apps are smaller\u003C\u002Fli\u003E\n\t\u003Cli\u003EInstead of route masking, we encode route parameters in filenames. For example, the page you're looking at right now is \u003Ccode\u003Eroutes\u002Fblog\u002F[slug].html\u003C\u002Fcode\u003E\u003C\u002Fli\u003E\n\t\u003Cli\u003EAs well as pages (Svelte components, which render on server or client), you can create \u003Cem\u003Eserver routes\u003C\u002Fem\u003E in your \u003Ccode\u003Eroutes\u003C\u002Fcode\u003E directory. These are just \u003Ccode\u003E.js\u003C\u002Fcode\u003E files that export functions corresponding to HTTP methods, and receive Express \u003Ccode\u003Erequest\u003C\u002Fcode\u003E and \u003Ccode\u003Eresponse\u003C\u002Fcode\u003E objects as arguments. This makes it very easy to, for example, add a JSON API such as the one \u003Ca href='\u002Fblog\u002Fhow-is-sapper-different-from-next.json'\u003Epowering this very page\u003C\u002Fa\u003E\u003C\u002Fli\u003E\n\t\u003Cli\u003ELinks are just \u003Ccode\u003E&lt;a&gt;\u003C\u002Fcode\u003E elements, rather than framework-specific \u003Ccode\u003E&lt;Link&gt;\u003C\u002Fcode\u003E components. That means, for example, that \u003Ca href='\u002Fblog\u002Fhow-can-i-get-involved'\u003Ethis link right here\u003C\u002Fa\u003E, despite being inside a blob of HTML, works with the router as you'd expect.\u003C\u002Fli\u003E\n\u003C\u002Ful\u003E\n\t\t"}} };</script><script src='/client/48bd936692082e9009f3/main.js'></script>
+</body>
+</html>

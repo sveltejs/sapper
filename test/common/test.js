@@ -75,6 +75,8 @@ function run(env) {
 						let start = Date.now();
 
 						handler = message => {
+							console.log(message);
+
 							if (message.type === 'ready') {
 								fn().then(() => {
 									proc.send({
@@ -92,6 +94,8 @@ function run(env) {
 								captured.push(message);
 							}
 						};
+
+						console.log('sending start message');
 
 						proc.send({
 							action: 'start'
@@ -184,7 +188,7 @@ function run(env) {
 					});
 			});
 
-			it('prefetches programmatically', () => {
+			it.only('prefetches programmatically', () => {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
