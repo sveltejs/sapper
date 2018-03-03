@@ -5,7 +5,6 @@ import build from './build';
 import exporter from './export';
 import dev from './dev';
 import upgrade from './upgrade';
-import { dest, entry, src } from '../config';
 import * as pkg from '../../package.json';
 
 const opts = mri(process.argv.slice(2), {
@@ -31,8 +30,9 @@ const start = Date.now();
 
 if (cmd === 'build') {
 	process.env.NODE_ENV = 'production';
+	process.env.SAPPER_DEST = opts._[1] || 'build';
 
-	build({ dest, dev: false, entry, src })
+	build()
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`built in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
@@ -43,8 +43,10 @@ if (cmd === 'build') {
 } else if (cmd === 'export') {
 	process.env.NODE_ENV = 'production';
 
-	build({ dest, dev: false, entry, src })
-		.then(() => exporter(dest))
+	const export_dir = opts._[1] || 'export';
+
+	build()
+		.then(() => exporter(export_dir))
 		.then(() => {
 			const elapsed = Date.now() - start;
 			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
@@ -53,7 +55,7 @@ if (cmd === 'build') {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 		});
 } else if (cmd === 'dev') {
-	dev(src, dest);
+	dev();
 } else if (cmd === 'upgrade') {
 	upgrade();
 } else {

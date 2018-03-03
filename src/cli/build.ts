@@ -2,18 +2,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
+import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js'
+import { src, dest, dev } from '../config';
 
-export default async function build({ src, dest, dev, entry }: {
-	src: string;
-	dest: string;
-	dev: boolean;
-	entry: { client: string, server: string }
-}) {
-	mkdirp.sync(dest);
-	rimraf.sync(path.join(dest, '**/*'));
+export default async function build() {
+	const output = dest();
 
-	const routes = create_routes({ src });
+	mkdirp.sync(output);
+	rimraf.sync(path.join(output, '**/*'));
+
+	const routes = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
 	create_app({ routes, src, dev });
@@ -21,7 +19,7 @@ export default async function build({ src, dest, dev, entry }: {
 	const { client, server, serviceworker } = create_compilers();
 
 	const client_stats = await compile(client);
-	fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(client_stats.toJson()));
+	fs.writeFileSync(path.join(output, 'client_info.json'), JSON.stringify(client_stats.toJson()));
 
 	await compile(server);
 

@@ -7,13 +7,11 @@ import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { create_routes, templates, create_compilers, create_template } from 'sapper/core.js';
-import { dest, entry, isDev, src } from '../config';
+import { dest } from '../config';
 import { Route, Template } from '../interfaces';
 import sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();
-
-const dev = isDev();
 
 type RouteObject = {
 	id: string;
@@ -43,12 +41,14 @@ interface Req extends ClientRequest {
 export default function middleware({ routes }: {
 	routes: RouteObject[]
 }) {
-	const client_info = JSON.parse(fs.readFileSync(path.join(dest, 'client_info.json'), 'utf-8'));
+	const output = dest();
+
+	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
 
 	const template = create_template();
 
-	const shell = try_read(path.join(dest, 'index.html'));
-	const serviceworker = try_read(path.join(dest, 'service-worker.js'));
+	const shell = try_read(path.join(output, 'index.html'));
+	const serviceworker = try_read(path.join(output, 'service-worker.js'));
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
@@ -76,7 +76,7 @@ export default function middleware({ routes }: {
 				const type = 'application/javascript'; // TODO might not be, if using e.g. CSS plugin
 
 				// TODO cache?
-				const rs = fs.createReadStream(path.join(dest, req.pathname.slice(1)));
+				const rs = fs.createReadStream(path.join(output, req.pathname.slice(1)));
 
 				rs.on('error', error => {
 					res.statusCode = 404;

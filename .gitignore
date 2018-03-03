@@ -4,6 +4,7 @@ node_modules
 cypress/screenshots
 test/app/.sapper
 test/app/app/manifest
+test/app/export
 runtime.js
 runtime.js.map
 cli.js
@@ -14,3 +15,4 @@ core.js
 core.js.map
 webpack/config.js
 webpack/config.js.map
+yarn-error.log
