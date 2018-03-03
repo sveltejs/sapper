@@ -10,12 +10,14 @@ let ended;
 
 process.on('message', message => {
 	if (message.action === 'start') {
+		console.log('process received start action');
 		count = 0;
 		ended = false;
 		process.send({ type: 'ready' });
 	}
 
 	if (message.action === 'end') {
+		console.log('process received end action', count);
 		ended = true;
 		if (count === 0) process.send({ type: 'done' });
 	}

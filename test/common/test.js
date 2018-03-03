@@ -75,11 +75,14 @@ function run(env) {
 						let start = Date.now();
 
 						handler = message => {
-							const { body, ...rest } = message;
+							const rest = Object.assign({}, message);
+							delete rest.body;
 							console.log(rest);
 
 							if (message.type === 'ready') {
 								fn().then(() => {
+									console.log('sending end message');
+
 									proc.send({
 										action: 'end'
 									});
