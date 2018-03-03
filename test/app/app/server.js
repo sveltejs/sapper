@@ -5,21 +5,27 @@ import serve from 'serve-static';
 import sapper from '../../../middleware';
 import { routes } from './manifest/server.js';
 
-let count;
+let pending;
 let ended;
 
 process.on('message', message => {
 	if (message.action === 'start') {
+		if (pending) {
+			throw new Error(`Already capturing`);
+		}
 		console.log('process received start action');
-		count = 0;
+		pending = new Set();
 		ended = false;
 		process.send({ type: 'ready' });
 	}
 
 	if (message.action === 'end') {
-		console.log('process received end action', count);
+		console.log('process received end action');
 		ended = true;
-		if (count === 0) process.send({ type: 'done' });
+		if (pending.size === 0) {
+			process.send({ type: 'done' });
+			pending = null;
+		}
 	}
 });
 
@@ -27,7 +33,7 @@ const app = express();
 
 app.use((req, res, next) => {
 	console.log(`received ${req.method} request for ${req.url}`);
-	count += 1;
+	if (pending) pending.add(req.url);
 
 	const { write, end } = res;
 	const chunks = [];
@@ -41,9 +47,9 @@ app.use((req, res, next) => {
 		if (chunk) chunks.push(new Buffer(chunk));
 		end.apply(res, arguments);
 
-		count -= 1;
+		if (pending) pending.delete(req.url);
 
-		console.log(`served ${req.url}`, count);
+		console.log(`served ${req.url}`);
 
 		process.send({
 			method: req.method,
@@ -53,7 +59,7 @@ app.use((req, res, next) => {
 			body: Buffer.concat(chunks).toString()
 		});
 
-		if (count === 0 && ended) {
+		if (pending && pending.size === 0 && ended) {
 			process.send({ type: 'done' });
 		}
 	};
