@@ -422,7 +422,7 @@ function run(env) {
 		if (env === 'production') {
 			describe('export', () => {
 				it('export all pages', () => {
-					const dest = path.resolve(__dirname, '../app/dist');
+					const dest = path.resolve(__dirname, '../app/export');
 
 					// Pages that should show up in the extraction directory.
 					const expectedPages = [
