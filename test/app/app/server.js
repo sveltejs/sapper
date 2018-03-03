@@ -13,14 +13,13 @@ process.on('message', message => {
 		if (pending) {
 			throw new Error(`Already capturing`);
 		}
-		console.log('process received start action');
+
 		pending = new Set();
 		ended = false;
 		process.send({ type: 'ready' });
 	}
 
 	if (message.action === 'end') {
-		console.log('process received end action');
 		ended = true;
 		if (pending.size === 0) {
 			process.send({ type: 'done' });
@@ -32,7 +31,6 @@ process.on('message', message => {
 const app = express();
 
 app.use((req, res, next) => {
-	console.log(`received ${req.method} request for ${req.url}`);
 	if (pending) pending.add(req.url);
 
 	const { write, end } = res;
@@ -48,8 +46,6 @@ app.use((req, res, next) => {
 		end.apply(res, arguments);
 
 		if (pending) pending.delete(req.url);
-
-		console.log(`served ${req.url}`);
 
 		process.send({
 			method: req.method,

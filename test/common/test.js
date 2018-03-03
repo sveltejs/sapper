@@ -75,14 +75,8 @@ function run(env) {
 						let start = Date.now();
 
 						handler = message => {
-							const rest = Object.assign({}, message);
-							delete rest.body;
-							console.log(rest);
-
 							if (message.type === 'ready') {
 								fn().then(() => {
-									console.log('sending end message');
-
 									proc.send({
 										action: 'end'
 									});
@@ -98,8 +92,6 @@ function run(env) {
 								captured.push(message);
 							}
 						};
-
-						console.log('sending start message');
 
 						proc.send({
 							action: 'start'
