@@ -26,6 +26,7 @@ process.on('message', message => {
 const app = express();
 
 app.use((req, res, next) => {
+	console.log(`received ${req.method} request for ${req.url}`);
 	count += 1;
 
 	const { write, end } = res;
@@ -41,6 +42,8 @@ app.use((req, res, next) => {
 		end.apply(res, arguments);
 
 		count -= 1;
+
+		console.log(`served ${req.url}`, count);
 
 		process.send({
 			method: req.method,
