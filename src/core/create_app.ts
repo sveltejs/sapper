@@ -6,14 +6,28 @@ import { fudge_mtime, posixify, write } from './utils';
 import { dev } from '../config';
 import { Route } from '../interfaces';
 
+// in dev mode, we avoid touching the fs unnecessarily
+let last_client_manifest: string = null;
+let last_server_manifest: string = null;
+
 export default function create_app({ routes, dev_port }: {
 	routes: Route[];
 	dev_port: number;
 }) {
 	mkdirp.sync('app/manifest');
 
-	write('app/manifest/client.js', generate_client(routes, dev_port));
-	write('app/manifest/server.js', generate_server(routes));
+	const client_manifest = generate_client(routes, dev_port);
+	const server_manifest = generate_server(routes);
+
+	if (client_manifest !== last_client_manifest) {
+		write(`app/manifest/client.js`, client_manifest);
+		last_client_manifest = client_manifest;
+	}
+
+	if (server_manifest !== last_server_manifest) {
+		write(`app/manifest/server.js`, server_manifest);
+		last_server_manifest = server_manifest;
+	}
 }
 
 function generate_client(routes: Route[], dev_port?: number) {
