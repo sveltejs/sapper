@@ -86,22 +86,23 @@ export default async function dev() {
 	// TODO watch the configs themselves?
 	const compilers = create_compilers();
 
-	function watch_files(pattern: string, callback: () => void) {
+	function watch_files(pattern: string, events: string[], callback: () => void) {
 		const watcher = chokidar.watch(pattern, {
-			persistent: false
+			persistent: true,
+			ignoreInitial: true
 		});
 
-		watcher.on('add', callback);
-		watcher.on('change', callback);
-		watcher.on('unlink', callback);
+		events.forEach(event => {
+			watcher.on(event, callback);
+		});
 	}
 
-	watch_files('routes/**/*.+(html|js|mjs)', () => {
+	watch_files('routes/**/*', ['add', 'unlink'], () => {
 		const routes = create_routes();
 		create_app({ routes, dev_port });
 	});
 
-	watch_files('app/template.html', () => {
+	watch_files('app/template.html', ['change'], () => {
 		const template = create_template();
 		// TODO reload current page?
 	});
