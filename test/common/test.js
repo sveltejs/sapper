@@ -75,7 +75,8 @@ function run(env) {
 						let start = Date.now();
 
 						handler = message => {
-							console.log(message);
+							const { body, ...rest } = message;
+							console.log(rest);
 
 							if (message.type === 'ready') {
 								fn().then(() => {
@@ -188,7 +189,7 @@ function run(env) {
 					});
 			});
 
-			it.only('prefetches programmatically', () => {
+			it('prefetches programmatically', () => {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
