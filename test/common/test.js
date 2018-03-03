@@ -102,10 +102,11 @@ function run(env) {
 		});
 
 		after(() => {
-			proc.kill();
-
 			// give a chance to clean up
-			return new Promise(fulfil => setTimeout(fulfil, 500));
+			return new Promise(fulfil => {
+				proc.on('exit', fulfil);
+				proc.kill();
+			});
 		});
 
 		beforeEach(() => {
