@@ -88,8 +88,7 @@ export default async function exporter(export_dir: string) {
 			});
 	}
 
-	wait_for_port(port, () => {
-		handle(new URL(origin)) // TODO all static routes
-			.then(() => proc.kill())
-	});
+	wait_for_port(port)
+		.then(() => handle(new URL(origin))) // TODO all static routes
+		.then(() => proc.kill());
 }

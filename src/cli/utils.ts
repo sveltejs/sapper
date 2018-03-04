@@ -6,7 +6,14 @@
 
 import * as net from 'net';
 
-export function wait_for_port(port: number, cb: () => void) {
+export function wait_for_port(port: number, timeout = 5000) {
+	return new Promise((fulfil, reject) => {
+		get_connection(port, fulfil);
+		setTimeout(() => reject(new Error(`timed out waiting for connection`)), timeout);
+	});
+}
+
+export function get_connection(port: number, cb: () => void) {
 	const socket = net.createConnection(port, 'localhost', () => {
 		cb();
 		socket.destroy();
@@ -15,11 +22,11 @@ export function wait_for_port(port: number, cb: () => void) {
 	socket.on('error', err => {
 		console.error(err.code, err);
 		setTimeout(() => {
-			wait_for_port(port, cb);
-		}, 100);
+			get_connection(port, cb);
+		}, 10);
 	});
 
 	setTimeout(() => {
 		socket.destroy();
-	}, 100);
+	}, 1000);
 }
