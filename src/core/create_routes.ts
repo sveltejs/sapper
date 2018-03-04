@@ -33,8 +33,8 @@ export default function create_routes({ files } = { files: glob.sync('**/*.+(htm
 			let i = parts.length;
 			let nested = true;
 			while (i--) {
-				const part = parts[i];
-				const dynamic = part[0] === '[';
+				const part = encodeURIComponent(parts[i].normalize()).replace(/%5B/g, '[').replace(/%5D/g, ']');
+				const dynamic = ~part.indexOf('[');
 
 				if (dynamic) {
 					const matcher = part.replace(param_pattern, `([^\/]+?)`);
