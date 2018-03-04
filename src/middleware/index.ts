@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ClientRequest, ServerResponse } from 'http';
-import * as mime from 'mime';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
+import { lookup } from './mime';
 import { create_routes, templates, create_compilers } from 'sapper/core.js';
 import { dest, dev } from '../config';
 import { Route, Template } from '../interfaces';
@@ -91,7 +91,7 @@ function serve({ prefix, pathname, cache_control }: {
 
 	return (req: Req, res: ServerResponse, next: () => void) => {
 		if (filter(req)) {
-			const type = mime.getType(req.pathname);
+			const type = lookup(req.pathname);
 
 			try {
 				const data = read(req.pathname.slice(1));
@@ -234,69 +234,51 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					};
 				}
 
-				const handle_error = (err?: Error) => {
+				const handle_bad_result = (err?: Error) => {
 					if (err) {
 						console.error(err.stack);
 						res.statusCode = 500;
 						res.end(err.message);
 					} else {
-						handle_not_found(req, res, 404, 'Not found');
+						handle_error(req, res, 404, 'Not found');
 					}
 				};
 
 				try {
-					handler(req, res, handle_error);
+					handler(req, res, handle_bad_result);
 				} catch (err) {
-					handle_error(err);
+					handle_bad_result(err);
 				}
 			} else {
 				// no matching handler for method — 404
-				handle_not_found(req, res, 404, 'Not found');
+				handle_error(req, res, 404, 'Not found');
 			}
 		}
 	}
 
 	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
-
-	function handle_not_found(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
-		res.statusCode = statusCode;
-		res.setHeader('Content-Type', 'text/html');
-
-		const error = message instanceof Error ? message : new Error(message);
-
-		const rendered = not_found_route ? not_found_route.module.render({
-			status: 404,
-			error
-		}) : { head: '', css: null, html: error.message };
-
-		const { head, css, html } = rendered;
-
-		const page = template()
-			.replace('%sapper.scripts%', `<script src='/client/${chunks.main}'></script>`)
-			.replace('%sapper.html%', html)
-			.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-			.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
-
-		res.end(page);
-	}
-
 	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
 
 	function handle_error(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
-		// TODO lot of repetition between this and handle_not_found
-		if (statusCode >= 400 && statusCode < 500) {
-			return handle_not_found(req, res, statusCode, message);
-		}
-
 		res.statusCode = statusCode;
 		res.setHeader('Content-Type', 'text/html');
 
 		const error = message instanceof Error ? message : new Error(message);
 
-		const rendered = error_route ? error_route.module.render({
-			status: 500,
+		const not_found = statusCode >= 400 && statusCode < 500;
+
+		const route = not_found
+			? not_found_route
+			: error_route;
+
+		const title: string = not_found
+			? 'Not found'
+			: `Internal server error: ${error.message}`;
+
+		const rendered = route ? route.module.render({
+			status: statusCode,
 			error
-		}) : { head: '', css: null, html: `Internal server error: ${error.message}` };
+		}) : { head: '', css: null, html: title };
 
 		const { head, css, html } = rendered;
 
@@ -317,7 +299,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
 			}
 
-			handle_not_found(req, res, 404, 'Not found');
+			handle_error(req, res, 404, 'Not found');
 		} catch (error) {
 			handle_error(req, res, 500, error);
 		}
