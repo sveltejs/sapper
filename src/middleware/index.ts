@@ -109,21 +109,6 @@ function serve({ prefix, pathname, cache_control }: {
 	};
 }
 
-function get_asset_handler({ pathname, type, cache, body }: {
-	pathname: string;
-	type: string;
-	cache: string;
-	body: string;
-}) {
-	return (req: Req, res: ServerResponse, next: () => void) => {
-		if (req.pathname !== pathname) return next();
-
-		res.setHeader('Content-Type', type);
-		res.setHeader('Cache-Control', cache);
-		res.end(body);
-	};
-}
-
 const resolved = Promise.resolve();
 
 function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
