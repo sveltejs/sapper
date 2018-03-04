@@ -3,9 +3,7 @@ const pkg = require('../package.json');
 const sapper_pkg = require('../../../package.json');
 
 module.exports = {
-	entry: {
-		'server': './app/server.js'
-	},
+	entry: config.server.entry(),
 	output: config.server.output(),
 	target: 'node',
 	resolve: {
@@ -28,5 +26,9 @@ module.exports = {
 				}
 			}
 		]
+	},
+	mode: process.env.NODE_ENV,
+	performance: {
+		hints: false // it doesn't matter if server.js is large
 	}
 };

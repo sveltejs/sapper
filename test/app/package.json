@@ -23,6 +23,6 @@
     "svelte": "^1.56.0",
     "svelte-loader": "^2.3.3",
     "uglifyjs-webpack-plugin": "^1.2.2",
-    "webpack": "^3.11.0"
+    "webpack": "^4.1.0"
   }
 }
