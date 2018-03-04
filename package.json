@@ -39,7 +39,6 @@
     "source-map-support": "^0.5.3",
     "tslib": "^1.8.1",
     "url-parse": "^1.2.0",
-    "wait-port": "^0.2.2",
     "walk-sync": "^0.3.2",
     "webpack": "^3.10.0"
   },
@@ -72,7 +71,7 @@
     "pretest": "npm run build",
     "build": "rollup -c",
     "dev": "rollup -cw",
-    "prepublish": "npm test",
+    "prepublishOnly": "npm test",
     "update_mime_types": "curl http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types | grep -e \"^[^#]\" > src/middleware/mime-types.md"
   },
   "repository": "https://github.com/sveltejs/sapper",
