@@ -59,9 +59,6 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 			detach(start);
 			detach(end);
 		}
-
-		// preload additional routes
-		routes.reduce((promise: Promise<any>, route) => promise.then(route.load), Promise.resolve());
 	}
 
 	component = new Component({
@@ -267,4 +264,16 @@ export function goto(href: string, opts = { replaceState: false }) {
 	} else {
 		window.location.href = href;
 	}
+}
+
+export function preloadRoutes(pathnames: string[]) {
+	if (!routes) throw new Error(`You must call init() first`);
+
+	return routes
+		.filter(route => {
+			return !pathnames || pathnames.some(pathname => route.pattern.test(pathname));
+		})
+		.reduce((promise: Promise<any>, route) => {
+			return promise.then(route.load);
+		}, Promise.resolve());
 }
