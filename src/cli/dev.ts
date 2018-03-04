@@ -8,7 +8,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { wait_for_port } from './utils';
 import { dest } from '../config';
-import { create_compilers, create_app, create_routes, create_serviceworker, create_template } from 'sapper/core.js';
+import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
 
 type Deferred = {
 	promise?: Promise<any>;
@@ -31,11 +31,12 @@ function create_hot_update_server(port: number, interval = 10000) {
 	const clients = new Set();
 
 	const server = http.createServer((req, res) => {
-		if (req.url !== '/hmr') return;
+		if (req.url !== '/__sapper__') return;
 
 		req.socket.setKeepAlive(true);
 		res.writeHead(200, {
 			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'Cache-Control',
 			'Content-Type': 'text/event-stream;charset=utf-8',
 			'Cache-Control': 'no-cache, no-transform',
 			'Connection': 'keep-alive',
@@ -103,8 +104,9 @@ export default async function dev() {
 	});
 
 	watch_files('app/template.html', ['change'], () => {
-		const template = create_template();
-		// TODO reload current page?
+		hot_update_server.send({
+			action: 'reload'
+		});
 	});
 
 	let proc: child_process.ChildProcess;

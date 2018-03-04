@@ -12,7 +12,7 @@
     "middleware.js",
     "runtime",
     "runtime.js",
-    "hmr-client.js",
+    "sapper-dev-client.js",
     "webpack"
   ],
   "directories": {
