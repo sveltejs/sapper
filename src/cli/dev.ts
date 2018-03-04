@@ -6,6 +6,8 @@ import * as child_process from 'child_process';
 import * as http from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
+import format_messages from 'webpack-format-messages';
+import prettyMs from 'pretty-ms';
 import { wait_for_port } from './utils';
 import { dest } from '../config';
 import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
@@ -69,12 +71,11 @@ function create_hot_update_server(port: number, interval = 10000) {
 }
 
 export default async function dev() {
-	const dir = dest();
+	process.env.NODE_ENV = 'development';
 
+	const dir = dest();
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
-
-	const chokidar = require('chokidar');
 
 	// initial build
 	const dev_port = await require('get-port')(10000);
@@ -83,20 +84,6 @@ export default async function dev() {
 	create_app({ routes, dev_port });
 
 	const hot_update_server = create_hot_update_server(dev_port);
-
-	// TODO watch the configs themselves?
-	const compilers = create_compilers();
-
-	function watch_files(pattern: string, events: string[], callback: () => void) {
-		const watcher = chokidar.watch(pattern, {
-			persistent: true,
-			ignoreInitial: true
-		});
-
-		events.forEach(event => {
-			watcher.on(event, callback);
-		});
-	}
 
 	watch_files('routes/**/*', ['add', 'unlink'], () => {
 		const routes = create_routes();
@@ -116,31 +103,106 @@ export default async function dev() {
 		client: deferred()
 	};
 
-	const times = {
-		client_start: Date.now(),
-		server_start: Date.now(),
-		serviceworker_start: Date.now()
+	let restarting = false;
+	let build = {
+		unique_warnings: new Set(),
+		unique_errors: new Set()
 	};
 
-	compilers.server.plugin('invalid', () => {
-		times.server_start = Date.now();
-		// TODO print message
-		deferreds.server = deferred();
-	});
+	function restart_build(filename) {
+		if (restarting) return;
 
-	compilers.server.watch({}, (err: Error, stats: any) => {
-		if (err) {
-			console.error(chalk.red(err.message));
-		} else if (stats.hasErrors()) {
-			// print errors. TODO notify client
-			stats.toJson().errors.forEach((error: Error) => {
-				console.error(error); // TODO make this look nice
-			});
-		} else {
-			console.log(`built server in ${Date.now() - times.server_start}ms`); // TODO prettify
+		restarting = true;
+		build = {
+			unique_warnings: new Set(),
+			unique_errors: new Set()
+		};
 
-			const server_info = stats.toJson();
-			fs.writeFileSync(path.join(dir, 'server_info.json'), JSON.stringify(server_info, null, '  '));
+		process.nextTick(() => {
+			restarting = false;
+		});
+
+		console.log(`\n${chalk.bold.cyan(path.relative(process.cwd(), filename))} changed. rebuilding...`);
+	}
+
+	// TODO watch the configs themselves?
+	const compilers = create_compilers();
+
+	function watch(compiler: any, { name, invalid = noop, error = noop, result }: {
+		name: string,
+		invalid?: (filename: string) => void;
+		error?: (error: Error) => void;
+		result: (stats: any) => void;
+	}) {
+		compiler.plugin('invalid', (filename: string) => {
+			invalid(filename);
+		});
+
+		compiler.watch({}, (err: Error, stats: any) => {
+			if (err) {
+				console.error(chalk.red(`✗ ${name}`));
+				console.error(chalk.red(err.message));
+				error(err);
+			} else {
+				const messages = format_messages(stats);
+				const info = stats.toJson();
+
+				if (messages.errors.length > 0) {
+					console.log(chalk.bold.red(`✗ ${name}`));
+
+					const filtered = messages.errors.filter((message: string) => {
+						return !build.unique_errors.has(message);
+					});
+
+					filtered.forEach((message: string) => {
+						build.unique_errors.add(message);
+						console.log(message);
+					});
+
+					const hidden = messages.errors.length - filtered.length;
+					if (hidden > 0) {
+						console.log(`${hidden} duplicate ${hidden === 1 ? 'error' : 'errors'} hidden\n`);
+					}
+				} else {
+					if (messages.warnings.length > 0) {
+						console.log(chalk.bold.yellow(`• ${name}`));
+
+						const filtered = messages.warnings.filter((message: string) => {
+							return !build.unique_warnings.has(message);
+						});
+
+						filtered.forEach((message: string) => {
+							build.unique_warnings.add(message);
+							console.log(`${message}\n`);
+						});
+
+						const hidden = messages.warnings.length - filtered.length;
+						if (hidden > 0) {
+							console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
+						}
+					} else {
+						console.log(`${chalk.bold.green(`✔ ${name}`)} ${chalk.grey(`(${prettyMs(info.time)})`)}`);
+					}
+
+					result(info);
+				}
+			}
+		});
+	}
+
+	watch(compilers.server, {
+		name: 'server',
+
+		invalid: filename => {
+			restart_build(filename);
+			// TODO print message
+			deferreds.server = deferred();
+		},
+
+		result: info => {
+			// TODO log compile errors/warnings
+
+			fs.writeFileSync(path.join(dir, 'server_info.json'), JSON.stringify(info, null, '  '));
 
 			deferreds.client.promise.then(() => {
 				function restart() {
@@ -162,32 +224,23 @@ export default async function dev() {
 		}
 	});
 
-	compilers.client.plugin('invalid', (filename: string) => {
-		times.client_start = Date.now();
+	watch(compilers.client, {
+		name: 'client',
 
-		deferreds.client = deferred();
+		invalid: filename => {
+			restart_build(filename);
+			deferreds.client = deferred();
 
-		// TODO we should delete old assets. due to a webpack bug
-		// i don't even begin to comprehend, this is apparently
-		// quite difficult
-	});
+			// TODO we should delete old assets. due to a webpack bug
+			// i don't even begin to comprehend, this is apparently
+			// quite difficult
+		},
 
-	compilers.client.watch({}, (err: Error, stats: any) => {
-		if (err) {
-			console.error(chalk.red(err.message));
-		} else if (stats.hasErrors()) {
-			// print errors. TODO notify client
-			stats.toJson().errors.forEach((error: Error) => {
-				console.error(error); // TODO make this look nice
-			});
-		} else {
-			console.log(`built client in ${Date.now() - times.client_start}ms`); // TODO prettify
-
-			const client_info = stats.toJson();
-			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify(client_info, null, '  '));
+		result: info => {
+			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify(info, null, '  '));
 			deferreds.client.fulfil();
 
-			const client_files = client_info.assets.map((chunk: { name: string }) => `/client/${chunk.name}`);
+			const client_files = info.assets.map((chunk: { name: string }) => `/client/${chunk.name}`);
 
 			deferreds.server.promise.then(() => {
 				hot_update_server.send({
@@ -208,23 +261,11 @@ export default async function dev() {
 		? function() {
 			watch_serviceworker = noop;
 
-			compilers.serviceworker.plugin('invalid', (filename: string) => {
-				times.serviceworker_start = Date.now();
-			});
+			watch(compilers.serviceworker, {
+				name: 'service worker',
 
-			compilers.serviceworker.watch({}, (err: Error, stats: any) => {
-				if (err) {
-					// TODO notify client
-				} else if (stats.hasErrors()) {
-					// print errors. TODO notify client
-					stats.toJson().errors.forEach((error: Error) => {
-						console.error(error); // TODO make this look nice
-					});
-				} else {
-					console.log(`built service worker in ${Date.now() - times.serviceworker_start}ms`); // TODO prettify
-
-					const serviceworker_info = stats.toJson();
-					fs.writeFileSync(path.join(dir, 'serviceworker_info.json'), JSON.stringify(serviceworker_info, null, '  '));
+				result: info => {
+					fs.writeFileSync(path.join(dir, 'serviceworker_info.json'), JSON.stringify(info, null, '  '));
 				}
 			});
 		}
@@ -232,3 +273,16 @@ export default async function dev() {
 }
 
 function noop() {}
+
+function watch_files(pattern: string, events: string[], callback: () => void) {
+	const chokidar = require('chokidar');
+
+	const watcher = chokidar.watch(pattern, {
+		persistent: true,
+		ignoreInitial: true
+	});
+
+	events.forEach(event => {
+		watcher.on(event, callback);
+	});
+}
