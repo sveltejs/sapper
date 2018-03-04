@@ -56,14 +56,14 @@ function generate_client(routes: Route[], dev_port?: number) {
 		];`.replace(/^\t\t/gm, '').trim();
 
 	if (dev()) {
-		const hmr_client = posixify(
-			path.resolve(__dirname, 'hmr-client.js')
+		const sapper_dev_client = posixify(
+			path.resolve(__dirname, 'sapper-dev-client.js')
 		);
 
 		code += `
 
 			if (module.hot) {
-				import('${hmr_client}').then(client => {
+				import('${sapper_dev_client}').then(client => {
 					client.connect(${dev_port});
 				});
 			}`.replace(/^\t{3}/gm, '');

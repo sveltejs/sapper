@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ClientRequest, ServerResponse } from 'http';
-// import * as mime from 'mime';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
-import { create_routes, templates, create_compilers, create_template } from 'sapper/core.js';
-import { dest } from '../config';
+import { lookup } from './mime';
+import { create_routes, templates, create_compilers } from 'sapper/core.js';
+import { dest, dev } from '../config';
 import { Route, Template } from '../interfaces';
 import sourceMapSupport from 'source-map-support';
 
@@ -45,76 +45,77 @@ export default function middleware({ routes }: {
 
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
 
-	const template = create_template();
-
-	const shell = try_read(path.join(output, 'index.html'));
-	const serviceworker = try_read(path.join(output, 'service-worker.js'));
-
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
 			req.pathname = req.url.replace(/\?.*/, '');
 			next();
 		},
 
-		shell && get_asset_handler({
+		exists(path.join(output, 'index.html')) && serve({
 			pathname: '/index.html',
-			type: 'text/html',
-			cache: 'max-age=600',
-			body: shell
+			cache_control: 'max-age=600'
 		}),
 
-		serviceworker && get_asset_handler({
+		exists(path.join(output, 'service-worker.js')) && serve({
 			pathname: '/service-worker.js',
-			type: 'application/javascript',
-			cache: 'max-age=600',
-			body: serviceworker
+			cache_control: 'max-age=600'
 		}),
 
-		(req: Req, res: ServerResponse, next: () => void) => {
-			if (req.pathname.startsWith('/client/')) {
-				// const type = mime.getType(req.pathname);
-				const type = 'application/javascript'; // TODO might not be, if using e.g. CSS plugin
+		serve({
+			prefix: '/client/',
+			cache_control: 'max-age=31536000'
+		}),
 
-				// TODO cache?
-				const rs = fs.createReadStream(path.join(output, req.pathname.slice(1)));
-
-				rs.on('error', error => {
-					res.statusCode = 404;
-					res.end('not found');
-				});
-
-				res.setHeader('Content-Type', type);
-				res.setHeader('Cache-Control', 'max-age=31536000');
-				rs.pipe(res);
-			} else {
-				next();
-			}
-		},
-
-		get_route_handler(client_info.assetsByChunkName, routes, template)
+		get_route_handler(client_info.assetsByChunkName, routes)
 	].filter(Boolean));
 
 	return middleware;
 }
 
-function get_asset_handler({ pathname, type, cache, body }: {
-	pathname: string;
-	type: string;
-	cache: string;
-	body: string;
+function serve({ prefix, pathname, cache_control }: {
+	prefix?: string,
+	pathname?: string,
+	cache_control: string
 }) {
-	return (req: Req, res: ServerResponse, next: () => void) => {
-		if (req.pathname !== pathname) return next();
+	const filter = pathname
+		? (req: Req) => req.pathname === pathname
+		: (req: Req) => req.pathname.startsWith(prefix);
 
-		res.setHeader('Content-Type', type);
-		res.setHeader('Cache-Control', cache);
-		res.end(body);
+	const output = dest();
+
+	const cache: Map<string, Buffer> = new Map();
+
+	const read = dev()
+		? (file: string) => fs.readFileSync(path.resolve(output, file))
+		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(output, file)))).get(file)
+
+	return (req: Req, res: ServerResponse, next: () => void) => {
+		if (filter(req)) {
+			const type = lookup(req.pathname);
+
+			try {
+				const data = read(req.pathname.slice(1));
+
+				res.setHeader('Content-Type', type);
+				res.setHeader('Cache-Control', cache_control);
+				res.end(data);
+			} catch (err) {
+				res.statusCode = 404;
+				res.end('not found');
+			}
+		} else {
+			next();
+		}
 	};
 }
 
 const resolved = Promise.resolve();
 
-function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], template: Template) {
+function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
+	const template = dev()
+		? () => fs.readFileSync('app/template.html', 'utf-8')
+		: (str => () => str)(fs.readFileSync('app/template.html', 'utf-8'));
+
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
 		req.params = route.params(route.pattern.exec(req.pathname));
 
@@ -174,12 +175,11 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				scripts = `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${scripts}`;
 
-				const page = template.render({
-					scripts,
-					html,
-					head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
-					styles: (css && css.code ? `<style>${css.code}</style>` : '')
-				});
+				const page = template()
+					.replace('%sapper.scripts%', scripts)
+					.replace('%sapper.html%', html)
+					.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
+					.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
 
 				res.end(page);
 
@@ -234,76 +234,61 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					};
 				}
 
-				const handle_error = (err?: Error) => {
+				const handle_bad_result = (err?: Error) => {
 					if (err) {
 						console.error(err.stack);
 						res.statusCode = 500;
 						res.end(err.message);
 					} else {
-						handle_not_found(req, res, 404, 'Not found');
+						handle_error(req, res, 404, 'Not found');
 					}
 				};
 
 				try {
-					handler(req, res, handle_error);
+					handler(req, res, handle_bad_result);
 				} catch (err) {
-					handle_error(err);
+					handle_bad_result(err);
 				}
 			} else {
 				// no matching handler for method — 404
-				handle_not_found(req, res, 404, 'Not found');
+				handle_error(req, res, 404, 'Not found');
 			}
 		}
 	}
 
 	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
-
-	function handle_not_found(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
-		res.statusCode = statusCode;
-		res.setHeader('Content-Type', 'text/html');
-
-		const error = message instanceof Error ? message : new Error(message);
-
-		const rendered = not_found_route ? not_found_route.module.render({
-			status: 404,
-			error
-		}) : { head: '', css: null, html: error.message };
-
-		const { head, css, html } = rendered;
-
-		res.end(template.render({
-			scripts: `<script src='/client/${chunks.main}'></script>`,
-			html,
-			head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
-			styles: (css && css.code ? `<style>${css.code}</style>` : '')
-		}));
-	}
-
 	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
 
 	function handle_error(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
-		if (statusCode >= 400 && statusCode < 500) {
-			return handle_not_found(req, res, statusCode, message);
-		}
-
 		res.statusCode = statusCode;
 		res.setHeader('Content-Type', 'text/html');
 
 		const error = message instanceof Error ? message : new Error(message);
 
-		const rendered = error_route ? error_route.module.render({
-			status: 500,
+		const not_found = statusCode >= 400 && statusCode < 500;
+
+		const route = not_found
+			? not_found_route
+			: error_route;
+
+		const title: string = not_found
+			? 'Not found'
+			: `Internal server error: ${error.message}`;
+
+		const rendered = route ? route.module.render({
+			status: statusCode,
 			error
-		}) : { head: '', css: null, html: `Internal server error: ${error.message}` };
+		}) : { head: '', css: null, html: title };
 
 		const { head, css, html } = rendered;
 
-		res.end(template.render({
-			scripts: `<script src='/client/${chunks.main}'></script>`,
-			html,
-			head: `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
-			styles: (css && css.code ? `<style>${css.code}</style>` : '')
-		}));
+		const page = template()
+			.replace('%sapper.scripts%', `<script src='/client/${chunks.main}'></script>`)
+			.replace('%sapper.html%', html)
+			.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
+			.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
+
+		res.end(page);
 	}
 
 	return function find_route(req: Req, res: ServerResponse) {
@@ -314,7 +299,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
 			}
 
-			handle_not_found(req, res, 404, 'Not found');
+			handle_error(req, res, 404, 'Not found');
 		} catch (error) {
 			handle_error(req, res, 500, error);
 		}
@@ -353,10 +338,11 @@ function try_serialize(data: any) {
 	}
 }
 
-function try_read(file: string) {
+function exists(file: string) {
 	try {
-		return fs.readFileSync(file, 'utf-8');
+		fs.statSync(file);
+		return true;
 	} catch (err) {
-		return null;
+		return false;
 	}
 }
