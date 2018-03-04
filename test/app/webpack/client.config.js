@@ -1,8 +1,11 @@
 const config = require('../../../webpack/config.js');
 const webpack = require('webpack');
 
+const mode = process.env.NODE_ENV;
+const isDev = mode === 'development';
+
 module.exports = {
-	entry: './app/client.js',
+	entry: config.client.entry(),
 	output: config.client.output(),
 	resolve: {
 		extensions: ['.js', '.html']
@@ -16,24 +19,16 @@ module.exports = {
 					loader: 'svelte-loader',
 					options: {
 						hydratable: true,
-						emitCss: !config.dev,
 						cascade: false,
 						store: true
 					}
 				}
-			},
-			{
-				test: /\.css$/,
-				use: [
-					{ loader: "style-loader" },
-					{ loader: "css-loader" }
-				]
 			}
-		].filter(Boolean)
+		]
 	},
+	mode,
 	plugins: [
-		config.dev && new webpack.HotModuleReplacementPlugin(),
-		!config.dev && new webpack.optimize.ModuleConcatenationPlugin()
+		isDev && new webpack.HotModuleReplacementPlugin()
 	].filter(Boolean),
-	devtool: config.dev ? 'inline-source-map' : false
+	devtool: isDev && 'inline-source-map'
 };

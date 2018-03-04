@@ -39,8 +39,7 @@
     "source-map-support": "^0.5.3",
     "tslib": "^1.8.1",
     "url-parse": "^1.2.0",
-    "walk-sync": "^0.3.2",
-    "webpack": "^3.10.0"
+    "walk-sync": "^0.3.2"
   },
   "devDependencies": {
     "@std/esm": "^0.19.7",
@@ -63,7 +62,8 @@
     "svelte": "^1.49.1",
     "svelte-loader": "^2.3.2",
     "ts-node": "^4.1.0",
-    "typescript": "^2.6.2"
+    "typescript": "^2.6.2",
+    "webpack": "^4.1.0"
   },
   "scripts": {
     "cy:open": "cypress open",

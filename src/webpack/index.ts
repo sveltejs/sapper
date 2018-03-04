@@ -6,12 +6,7 @@ export default {
 	client: {
 		entry: () => {
 			return {
-				main: [
-					'./app/client.js',
-					// workaround for https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/456
-					'style-loader/lib/addStyles',
-					'css-loader/lib/css-base'
-				]
+				main: './app/client.js'
 			};
 		},
 
@@ -34,11 +29,27 @@ export default {
 
 		output: () => {
 			return {
-				path: `${dest()}`,
+				path: dest(),
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'
 			};
+		}
+	},
+
+	serviceworker: {
+		entry: () => {
+			return {
+				'service-worker': './app/service-worker.js'
+			};
+		},
+
+		output: () => {
+			return {
+				path: dest(),
+				filename: '[name].js',
+				chunkFilename: '[name].[id].[hash].js'
+			}
 		}
 	}
 };
