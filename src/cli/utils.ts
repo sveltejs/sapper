@@ -13,6 +13,7 @@ export function wait_for_port(port: number, cb: () => void) {
 	});
 
 	socket.on('error', err => {
+		console.error(err.code, err);
 		setTimeout(() => {
 			wait_for_port(port, cb);
 		}, 100);
