@@ -25,7 +25,7 @@ Nightmare.action('init', function(done) {
 
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(20000);
+		this.timeout(30000);
 
 		let PORT;
 		let proc;
