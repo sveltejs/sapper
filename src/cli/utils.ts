@@ -14,7 +14,6 @@ export function get_connection(port: number, cb: () => void) {
 	});
 
 	socket.on('error', err => {
-		console.error(err.code, err);
 		setTimeout(() => {
 			get_connection(port, cb);
 		}, 10);
