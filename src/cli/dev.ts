@@ -134,7 +134,7 @@ export default async function dev() {
 		error?: (error: Error) => void;
 		result: (stats: any) => void;
 	}) {
-		compiler.plugin('invalid', (filename: string) => {
+		compiler.hooks.invalid.tap('sapper', (filename: string) => {
 			invalid(filename);
 		});
 
