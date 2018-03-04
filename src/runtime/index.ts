@@ -271,7 +271,12 @@ export function preloadRoutes(pathnames: string[]) {
 
 	return routes
 		.filter(route => {
-			return !pathnames || pathnames.some(pathname => route.pattern.test(pathname));
+			if (!pathnames) return true;
+			return pathnames.some(pathname => {
+				return route.error
+					? route.error === pathname
+					: route.pattern.test(pathname)
+			});
 		})
 		.reduce((promise: Promise<any>, route) => {
 			return promise.then(route.load);
