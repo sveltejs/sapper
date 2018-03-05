@@ -23,8 +23,8 @@ Nightmare.action('init', function(done) {
 	this.evaluate_now(() => window.init(), done);
 });
 
-Nightmare.action('preloadRoutes', function(done) {
-	this.evaluate_now(() => window.preloadRoutes(), done);
+Nightmare.action('prefetchRoutes', function(done) {
+	this.evaluate_now(() => window.prefetchRoutes(), done);
 });
 
 function run(env) {
@@ -159,7 +159,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return capture(() => nightmare.goto(base).init().preloadRoutes())
+				return capture(() => nightmare.goto(base).init().prefetchRoutes())
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
