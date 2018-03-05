@@ -403,6 +403,14 @@ function run(env) {
 						assert.equal(text, 'nope');
 					});
 			});
+
+			it('encodes routes', () => {
+				return nightmare.goto(`${base}/fünke`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, `I'm afraid I just blue myself`);
+					});
+			});
 		});
 
 		describe('headers', () => {
