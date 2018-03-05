@@ -266,7 +266,7 @@ export function goto(href: string, opts = { replaceState: false }) {
 	}
 }
 
-export function preloadRoutes(pathnames: string[]) {
+export function prefetchRoutes(pathnames: string[]) {
 	if (!routes) throw new Error(`You must call init() first`);
 
 	return routes
@@ -282,3 +282,6 @@ export function preloadRoutes(pathnames: string[]) {
 			return promise.then(route.load);
 		}, Promise.resolve());
 }
+
+// remove this in 0.9
+export { prefetchRoutes as preloadRoutes };
