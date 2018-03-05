@@ -13,9 +13,7 @@ import upgrade from './upgrade';
 import * as ports from 'port-authority';
 import * as pkg from '../../package.json';
 
-const prog = sade('sapper');
-
-prog.version(pkg.version);
+const prog = sade('sapper').version(pkg.version);
 
 prog.command('dev')
 	.describe('Start a development server')
