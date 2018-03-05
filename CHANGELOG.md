@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.8.3
+
+* Automatically select available port, or use `--port` flag for `dev` and `start` ([#169](https://github.com/sveltejs/sapper/issues/169))
+* Show stats after build/export ([#168](https://github.com/sveltejs/sapper/issues/168))
+* Various CLI improvements ([#170](https://github.com/sveltejs/sapper/pull/170))
+
 ## 0.8.2
 
 * Rename `preloadRoutes` to `prefetchRoutes` ([#166](https://github.com/sveltejs/sapper/issues/166))
