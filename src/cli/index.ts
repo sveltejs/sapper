@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import sade from 'sade';
@@ -10,7 +11,6 @@ import exporter from './export';
 import dev from './dev';
 import upgrade from './upgrade';
 import * as ports from 'port-authority';
-import { exists } from '../utils';
 import * as pkg from '../../package.json';
 
 const prog = sade('sapper');
@@ -60,7 +60,7 @@ prog.command('start [dir]')
 		const resolved = path.resolve(dir);
 		const server = path.resolve(dir, 'server.js');
 
-		if (!exists(server)) {
+		if (!fs.existsSync(server)) {
 			console.log(chalk.bold.red(`> ${dir}/server.js does not exist — type ${chalk.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`));
 			return;
 		}

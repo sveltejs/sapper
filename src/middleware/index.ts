@@ -7,7 +7,6 @@ import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { lookup } from './mime';
 import { create_routes, templates, create_compilers } from 'sapper/core.js';
-import { exists } from '../utils';
 import { dest, dev } from '../config';
 import { Route, Template } from '../interfaces';
 import sourceMapSupport from 'source-map-support';
@@ -52,12 +51,12 @@ export default function middleware({ routes }: {
 			next();
 		},
 
-		exists(path.join(output, 'index.html')) && serve({
+		fs.existsSync(path.join(output, 'index.html')) && serve({
 			pathname: '/index.html',
 			cache_control: 'max-age=600'
 		}),
 
-		exists(path.join(output, 'service-worker.js')) && serve({
+		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
 			pathname: '/service-worker.js',
 			cache_control: 'max-age=600'
 		}),
