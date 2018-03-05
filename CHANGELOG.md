@@ -1,5 +1,15 @@
 # sapper changelog
 
+## 0.8.0
+
+* Update to webpack 4
+* Add `preloadRoutes` function — secondary routes are no longer automatically preloaded ([#160](https://github.com/sveltejs/sapper/issues/160))
+* `sapper build` outputs to `build`, `sapper build custom-dir` outputs to `custom-dir` ([#150](https://github.com/sveltejs/sapper/pull/150))
+* `sapper export` outputs to `export`, `sapper export custom-dir` outputs to `custom-dir` ([#150](https://github.com/sveltejs/sapper/pull/150))
+* Improved logging ([#158](https://github.com/sveltejs/sapper/pull/158))
+* URI-encode routes ([#103](https://github.com/sveltejs/sapper/issues/103))
+* Various performance and stability improvements ([#152](https://github.com/sveltejs/sapper/pull/152))
+
 ## 0.7.6
 
 * Prevent client-side navigation to server route ([#145](https://github.com/sveltejs/sapper/issues/145))
