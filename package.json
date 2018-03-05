@@ -30,6 +30,7 @@
     "mkdirp": "^0.5.1",
     "mri": "^1.1.0",
     "node-fetch": "^1.7.3",
+    "port-authority": "^1.0.0",
     "pretty-ms": "^3.1.0",
     "relative": "^3.0.2",
     "require-relative": "^0.8.7",
