@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.8.2
+
+* Rename `preloadRoutes` to `prefetchRoutes` ([#166](https://github.com/sveltejs/sapper/issues/166))
+
 ## 0.8.1
 
 * Add `sapper start` command, for running an app built with `sapper build` ([#163](https://github.com/sveltejs/sapper/issues/163))
