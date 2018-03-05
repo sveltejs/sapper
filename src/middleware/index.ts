@@ -7,6 +7,7 @@ import serialize from 'serialize-javascript';
 import escape_html from 'escape-html';
 import { lookup } from './mime';
 import { create_routes, templates, create_compilers } from 'sapper/core.js';
+import { exists } from '../utils';
 import { dest, dev } from '../config';
 import { Route, Template } from '../interfaces';
 import sourceMapSupport from 'source-map-support';
@@ -335,14 +336,5 @@ function try_serialize(data: any) {
 		return serialize(data);
 	} catch (err) {
 		return null;
-	}
-}
-
-function exists(file: string) {
-	try {
-		fs.statSync(file);
-		return true;
-	} catch (err) {
-		return false;
 	}
 }
