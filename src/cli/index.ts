@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as child_process from 'child_process';
 import mri from 'mri';
 import chalk from 'chalk';
 import help from './help.md';
@@ -28,36 +30,60 @@ const [cmd] = opts._;
 
 const start = Date.now();
 
-if (cmd === 'build') {
-	process.env.NODE_ENV = 'production';
-	process.env.SAPPER_DEST = opts._[1] || 'build';
+switch (cmd) {
+	case 'build':
+		process.env.NODE_ENV = 'production';
+		process.env.SAPPER_DEST = opts._[1] || 'build';
 
-	build()
-		.then(() => {
-			const elapsed = Date.now() - start;
-			console.error(`built in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
-		})
-		.catch(err => {
-			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+		build()
+			.then(() => {
+				const elapsed = Date.now() - start;
+				console.error(`built in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
+			})
+			.catch(err => {
+				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			});
+
+		break;
+
+	case 'export':
+		process.env.NODE_ENV = 'production';
+
+		const export_dir = opts._[1] || 'export';
+
+		build()
+			.then(() => exporter(export_dir))
+			.then(() => {
+				const elapsed = Date.now() - start;
+				console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
+			})
+			.catch(err => {
+				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			});
+
+		break;
+
+	case 'dev':
+		dev();
+		break;
+
+	case 'upgrade':
+		upgrade();
+		break;
+
+	case 'start':
+		const dir = path.resolve(opts._[1] || 'build');
+
+		child_process.fork(`${dir}/server.js`, [], {
+			cwd: process.cwd(),
+			env: Object.assign({
+				NODE_ENV: 'production',
+				SAPPER_DEST: dir
+			}, process.env)
 		});
-} else if (cmd === 'export') {
-	process.env.NODE_ENV = 'production';
 
-	const export_dir = opts._[1] || 'export';
+		break;
 
-	build()
-		.then(() => exporter(export_dir))
-		.then(() => {
-			const elapsed = Date.now() - start;
-			console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
-		})
-		.catch(err => {
-			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
-		});
-} else if (cmd === 'dev') {
-	dev();
-} else if (cmd === 'upgrade') {
-	upgrade();
-} else {
-	console.log(`unrecognized command ${cmd} — try \`sapper --help\` for more information`);
+	default:
+		console.log(`unrecognized command ${cmd} — try \`sapper --help\` for more information`);
 }
