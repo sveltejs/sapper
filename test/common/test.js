@@ -23,6 +23,10 @@ Nightmare.action('init', function(done) {
 	this.evaluate_now(() => window.init(), done);
 });
 
+Nightmare.action('preloadRoutes', function(done) {
+	this.evaluate_now(() => window.preloadRoutes(), done);
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
 		this.timeout(30000);
@@ -155,7 +159,7 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return capture(() => nightmare.goto(base).init().wait(400))
+				return capture(() => nightmare.goto(base).init().preloadRoutes())
 					.then(() => {
 						return capture(() => nightmare.click('a[href="/about"]'));
 					})
@@ -189,7 +193,6 @@ function run(env) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.wait(200)
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -215,7 +218,7 @@ function run(env) {
 			it('reuses prefetch promise', () => {
 				return nightmare
 					.goto(`${base}/blog`)
-					.init().wait(300)
+					.init()
 					.then(() => {
 						return capture(() => {
 							return nightmare
