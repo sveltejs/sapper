@@ -51,12 +51,12 @@ export default function middleware({ routes }: {
 			next();
 		},
 
-		exists(path.join(output, 'index.html')) && serve({
+		fs.existsSync(path.join(output, 'index.html')) && serve({
 			pathname: '/index.html',
 			cache_control: 'max-age=600'
 		}),
 
-		exists(path.join(output, 'service-worker.js')) && serve({
+		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
 			pathname: '/service-worker.js',
 			cache_control: 'max-age=600'
 		}),
@@ -335,14 +335,5 @@ function try_serialize(data: any) {
 		return serialize(data);
 	} catch (err) {
 		return null;
-	}
-}
-
-function exists(file: string) {
-	try {
-		fs.statSync(file);
-		return true;
-	} catch (err) {
-		return false;
 	}
 }

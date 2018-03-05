@@ -5,9 +5,8 @@ const express = require('express');
 const serve = require('serve-static');
 const walkSync = require('walk-sync');
 const fetch = require('node-fetch');
-
-run('production');
-run('development');
+const rimraf = require('rimraf');
+const ports = require('port-authority');
 
 Nightmare.action('page', {
 	title(done) {
@@ -27,11 +26,94 @@ Nightmare.action('prefetchRoutes', function(done) {
 	this.evaluate_now(() => window.prefetchRoutes(), done);
 });
 
+const cli = path.resolve(__dirname, '../../cli.js');
+
+describe('sapper', function() {
+	process.chdir(path.resolve(__dirname, '../app'));
+
+	// clean up after previous test runs
+	rimraf.sync('export');
+	rimraf.sync('build');
+	rimraf.sync('.sapper');
+
+	this.timeout(30000);
+
+	// TODO reinstate dev tests
+	// run('development');
+	run('production');
+
+	describe('export', () => {
+		before(() => {
+			return exec(`node ${cli} export`);
+		});
+
+		it('export all pages', () => {
+			const dest = path.resolve(__dirname, '../app/export');
+
+			// Pages that should show up in the extraction directory.
+			const expectedPages = [
+				'index.html',
+				'about/index.html',
+				'slow-preload/index.html',
+
+				'blog/index.html',
+				'blog/a-very-long-post/index.html',
+				'blog/how-can-i-get-involved/index.html',
+				'blog/how-is-sapper-different-from-next/index.html',
+				'blog/how-to-use-sapper/index.html',
+				'blog/what-is-sapper/index.html',
+				'blog/why-the-name/index.html',
+
+				'blog.json',
+				'blog/a-very-long-post.json',
+				'blog/how-can-i-get-involved.json',
+				'blog/how-is-sapper-different-from-next.json',
+				'blog/how-to-use-sapper.json',
+				'blog/what-is-sapper.json',
+				'blog/why-the-name.json',
+
+				'favicon.png',
+				'global.css',
+				'great-success.png',
+				'manifest.json',
+				'service-worker.js',
+				'svelte-logo-192.png',
+				'svelte-logo-512.png',
+			];
+			// Client scripts that should show up in the extraction directory.
+			const expectedClientRegexes = [
+				/client\/[^/]+\/_(\.\d+)?\.js/,
+				/client\/[^/]+\/about(\.\d+)?\.js/,
+				/client\/[^/]+\/blog_\$slug\$(\.\d+)?\.js/,
+				/client\/[^/]+\/blog(\.\d+)?\.js/,
+				/client\/[^/]+\/main(\.\d+)?\.js/,
+				/client\/[^/]+\/show_url(\.\d+)?\.js/,
+				/client\/[^/]+\/slow_preload(\.\d+)?\.js/,
+			];
+			const allPages = walkSync(dest);
+
+			expectedPages.forEach((expectedPage) => {
+				assert.ok(allPages.includes(expectedPage),`Could not find page matching ${expectedPage}`);
+			});
+
+			expectedClientRegexes.forEach((expectedRegex) => {
+				// Ensure each client page regular expression matches at least one
+				// generated page.
+				let matched = false;
+				for (const page of allPages) {
+					if (expectedRegex.test(page)) {
+						matched = true;
+						break;
+					}
+				}
+				assert.ok(matched, `Could not find client page matching ${expectedRegex}`);
+			});
+		});
+	});
+});
+
 function run(env) {
 	describe(`env=${env}`, function () {
-		this.timeout(30000);
-
-		let PORT;
 		let proc;
 		let nightmare;
 		let capture;
@@ -39,28 +121,23 @@ function run(env) {
 		let base;
 
 		before(() => {
-			process.chdir(path.resolve(__dirname, '../app'));
+			const promise = env === 'production'
+				? exec(`node ${cli} build`).then(() => ports.find(3000))
+				: ports.find(3000).then(port => {
+					exec(`node ${cli} dev`);
+					return ports.wait(port).then(() => port);
+				});
 
-			let exec_promise = Promise.resolve();
-
-			if (env === 'production') {
-				const cli = path.resolve(__dirname, '../../cli.js');
-				exec_promise = exec(`node ${cli} export`);
-			}
-
-			return exec_promise.then(() => {
-				const resolved = require.resolve('../../middleware.js');
-				delete require.cache[resolved];
-				delete require.cache[require.resolve('../../core.js')]; // TODO remove this
-
-				return require('get-port')();
-			}).then(port => {
+			return promise.then(port => {
 				base = `http://localhost:${port}`;
 
-				proc = require('child_process').fork('.sapper/server.js', {
+				const dir = env === 'production' ? 'build' : '.sapper';
+
+				proc = require('child_process').fork(`${dir}/server.js`, {
 					cwd: process.cwd(),
 					env: {
 						NODE_ENV: env,
+						SAPPER_DEST: dir,
 						PORT: port
 					}
 				});
@@ -430,73 +507,6 @@ function run(env) {
 				});
 			});
 		});
-
-		if (env === 'production') {
-			describe('export', () => {
-				it('export all pages', () => {
-					const dest = path.resolve(__dirname, '../app/export');
-
-					// Pages that should show up in the extraction directory.
-					const expectedPages = [
-						'index.html',
-						'about/index.html',
-						'slow-preload/index.html',
-
-						'blog/index.html',
-						'blog/a-very-long-post/index.html',
-						'blog/how-can-i-get-involved/index.html',
-						'blog/how-is-sapper-different-from-next/index.html',
-						'blog/how-to-use-sapper/index.html',
-						'blog/what-is-sapper/index.html',
-						'blog/why-the-name/index.html',
-
-						'blog.json',
-						'blog/a-very-long-post.json',
-						'blog/how-can-i-get-involved.json',
-						'blog/how-is-sapper-different-from-next.json',
-						'blog/how-to-use-sapper.json',
-						'blog/what-is-sapper.json',
-						'blog/why-the-name.json',
-
-						'favicon.png',
-						'global.css',
-						'great-success.png',
-						'manifest.json',
-						'service-worker.js',
-						'svelte-logo-192.png',
-						'svelte-logo-512.png',
-					];
-					// Client scripts that should show up in the extraction directory.
-					const expectedClientRegexes = [
-						/client\/[^/]+\/_(\.\d+)?\.js/,
-						/client\/[^/]+\/about(\.\d+)?\.js/,
-						/client\/[^/]+\/blog_\$slug\$(\.\d+)?\.js/,
-						/client\/[^/]+\/blog(\.\d+)?\.js/,
-						/client\/[^/]+\/main(\.\d+)?\.js/,
-						/client\/[^/]+\/show_url(\.\d+)?\.js/,
-						/client\/[^/]+\/slow_preload(\.\d+)?\.js/,
-					];
-					const allPages = walkSync(dest);
-
-					expectedPages.forEach((expectedPage) => {
-						assert.ok(allPages.includes(expectedPage),`Could not find page matching ${expectedPage}`);
-					});
-
-					expectedClientRegexes.forEach((expectedRegex) => {
-						// Ensure each client page regular expression matches at least one
-						// generated page.
-						let matched = false;
-						for (const page of allPages) {
-							if (expectedRegex.test(page)) {
-								matched = true;
-								break;
-							}
-						}
-						assert.ok(matched, `Could not find client page matching ${expectedRegex}`);
-					});
-				});
-			});
-		}
 	});
 }
 

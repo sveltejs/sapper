@@ -1,89 +1,112 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
+import sade from 'sade';
 import mri from 'mri';
 import chalk from 'chalk';
+import prettyMs from 'pretty-ms';
 import help from './help.md';
 import build from './build';
 import exporter from './export';
 import dev from './dev';
 import upgrade from './upgrade';
+import * as ports from 'port-authority';
 import * as pkg from '../../package.json';
 
-const opts = mri(process.argv.slice(2), {
-	alias: {
-		h: 'help'
-	}
-});
+const prog = sade('sapper').version(pkg.version);
 
-if (opts.help) {
-	const rendered = help
-		.replace('<@version@>', pkg.version)
-		.replace(/^(.+)/gm, (m: string, $1: string) => /[#>]/.test(m) ? $1 : `  ${$1}`)
-		.replace(/^# (.+)/gm, (m: string, $1: string) => chalk.bold.underline($1))
-		.replace(/^> (.+)/gm, (m: string, $1: string) => chalk.cyan($1));
+prog.command('dev')
+	.describe('Start a development server')
+	.option('-p, --port', 'Specify a port')
+	.action(async ({ port }: { port: number }) => {
+		if (port) {
+			if (!await ports.check(port)) {
+				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
+				return;
+			}
+		} else {
+			port = await ports.find(3000);
+		}
 
-	console.log(`\n${rendered}\n`);
-	process.exit(0);
-}
+		dev(port);
+	});
 
-const [cmd] = opts._;
+prog.command('build [dest]')
+	.describe('Create a production-ready version of your app')
+	.action((dest = 'build') => {
+		console.log(`> Building...`);
 
-const start = Date.now();
-
-switch (cmd) {
-	case 'build':
 		process.env.NODE_ENV = 'production';
-		process.env.SAPPER_DEST = opts._[1] || 'build';
+		process.env.SAPPER_DEST = dest;
+
+		const start = Date.now();
 
 		build()
 			.then(() => {
 				const elapsed = Date.now() - start;
-				console.error(`built in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
+				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${chalk.bold.cyan(dest === 'build' ? 'npx sapper start' : `npx sapper start ${dest}`)} to run the app.`);
 			})
 			.catch(err => {
 				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 			});
+	});
 
-		break;
+prog.command('start [dir]')
+	.describe('Start your app')
+	.option('-p, --port', 'Specify a port')
+	.action(async (dir = 'build', { port }: { port: number }) => {
+		const resolved = path.resolve(dir);
+		const server = path.resolve(dir, 'server.js');
 
-	case 'export':
-		process.env.NODE_ENV = 'production';
+		if (!fs.existsSync(server)) {
+			console.log(chalk.bold.red(`> ${dir}/server.js does not exist — type ${chalk.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`));
+			return;
+		}
 
-		const export_dir = opts._[1] || 'export';
+		if (port) {
+			if (!await ports.check(port)) {
+				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
+				return;
+			}
+		} else {
+			port = await ports.find(3000);
+		}
 
-		build()
-			.then(() => exporter(export_dir))
-			.then(() => {
-				const elapsed = Date.now() - start;
-				console.error(`extracted in ${elapsed}ms`); // TODO beautify this, e.g. 'built in 4.7 seconds'
-			})
-			.catch(err => {
-				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
-			});
-
-		break;
-
-	case 'dev':
-		dev();
-		break;
-
-	case 'upgrade':
-		upgrade();
-		break;
-
-	case 'start':
-		const dir = path.resolve(opts._[1] || 'build');
-
-		child_process.fork(`${dir}/server.js`, [], {
+		child_process.fork(server, [], {
 			cwd: process.cwd(),
 			env: Object.assign({
 				NODE_ENV: 'production',
+				PORT: port,
 				SAPPER_DEST: dir
 			}, process.env)
 		});
+	});
 
-		break;
+prog.command('export [dest]')
+	.describe('Export your app as static files (if possible)')
+	.action((dest = 'export') => {
+		console.log(`> Building...`);
 
-	default:
-		console.log(`unrecognized command ${cmd} — try \`sapper --help\` for more information`);
-}
+		process.env.NODE_ENV = 'production';
+		process.env.SAPPER_DEST = '.sapper/.export';
+
+		const start = Date.now();
+
+		build()
+			.then(() => {
+				const elapsed = Date.now() - start;
+				console.error(`\n> Built in ${prettyMs(elapsed)}. Exporting...`);
+			})
+			.then(() => exporter(dest))
+			.then(() => {
+				const elapsed = Date.now() - start;
+				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${chalk.bold.cyan(`npx serve ${dest}`)} to run the app.`);
+			})
+			.catch(err => {
+				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			});
+	});
+
+// TODO upgrade
+
+prog.parse(process.argv);

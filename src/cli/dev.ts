@@ -8,7 +8,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
-import { wait_for_port } from './utils';
+import * as ports from 'port-authority';
 import { dest } from '../config';
 import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
 
@@ -70,15 +70,14 @@ function create_hot_update_server(port: number, interval = 10000) {
 	return { send };
 }
 
-export default async function dev() {
+export default async function dev(port: number) {
 	process.env.NODE_ENV = 'development';
 
 	const dir = dest();
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
 
-	// initial build
-	const dev_port = await require('get-port')(10000);
+	const dev_port = await ports.find(10000);
 
 	const routes = create_routes();
 	create_app({ routes, dev_port });
@@ -109,7 +108,7 @@ export default async function dev() {
 		unique_errors: new Set()
 	};
 
-	function restart_build(filename) {
+	function restart_build(filename: string) {
 		if (restarting) return;
 
 		restarting = true;
@@ -206,7 +205,7 @@ export default async function dev() {
 
 			deferreds.client.promise.then(() => {
 				function restart() {
-					wait_for_port(3000).then(deferreds.server.fulfil); // TODO control port
+					ports.wait(3000).then(deferreds.server.fulfil); // TODO control port
 				}
 
 				if (proc) {
@@ -218,7 +217,9 @@ export default async function dev() {
 
 				proc = child_process.fork(`${dir}/server.js`, [], {
 					cwd: process.cwd(),
-					env: Object.assign({}, process.env)
+					env: Object.assign({
+						PORT: port
+					}, process.env)
 				});
 			});
 		}
