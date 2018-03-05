@@ -5,7 +5,7 @@ import express from 'express';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
-import * as port_utils from './port-utils';
+import * as ports from 'port-authority';
 import { dest } from '../config';
 
 const app = express();
@@ -27,7 +27,7 @@ export default async function exporter(export_dir: string) {
 		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
-	const port = await port_utils.find(3000);
+	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
 
@@ -36,6 +36,7 @@ export default async function exporter(export_dir: string) {
 		env: {
 			PORT: port,
 			NODE_ENV: 'production',
+			SAPPER_DEST: build_dir,
 			SAPPER_EXPORT: 'true'
 		}
 	});
@@ -88,7 +89,7 @@ export default async function exporter(export_dir: string) {
 			});
 	}
 
-	return port_utils.wait(port)
+	return ports.wait(port)
 		.then(() => handle(new URL(origin))) // TODO all static routes
 		.then(() => proc.kill());
 }

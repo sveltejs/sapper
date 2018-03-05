@@ -8,7 +8,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
-import * as port_utils from './port-utils';
+import * as ports from 'port-authority';
 import { dest } from '../config';
 import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
 
@@ -77,7 +77,7 @@ export default async function dev(port: number) {
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
 
-	const dev_port = await port_utils.find(10000);
+	const dev_port = await ports.find(10000);
 
 	const routes = create_routes();
 	create_app({ routes, dev_port });
@@ -205,7 +205,7 @@ export default async function dev(port: number) {
 
 			deferreds.client.promise.then(() => {
 				function restart() {
-					port_utils.wait(3000).then(deferreds.server.fulfil); // TODO control port
+					ports.wait(3000).then(deferreds.server.fulfil); // TODO control port
 				}
 
 				if (proc) {

@@ -9,7 +9,7 @@ import build from './build';
 import exporter from './export';
 import dev from './dev';
 import upgrade from './upgrade';
-import * as port_utils from './port-utils';
+import * as ports from 'port-authority';
 import { exists } from '../utils';
 import * as pkg from '../../package.json';
 
@@ -22,12 +22,12 @@ prog.command('dev')
 	.option('-p, --port', 'Specify a port')
 	.action(async ({ port }: { port: number }) => {
 		if (port) {
-			if (!await port_utils.check(port)) {
+			if (!await ports.check(port)) {
 				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
 				return;
 			}
 		} else {
-			port = await port_utils.find(3000);
+			port = await ports.find(3000);
 		}
 
 		dev(port);
@@ -66,12 +66,12 @@ prog.command('start [dir]')
 		}
 
 		if (port) {
-			if (!await port_utils.check(port)) {
+			if (!await ports.check(port)) {
 				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
 				return;
 			}
 		} else {
-			port = await port_utils.find(3000);
+			port = await ports.find(3000);
 		}
 
 		child_process.fork(server, [], {
