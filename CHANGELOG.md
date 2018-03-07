@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.8.4
+
+* Fix route sorting ([#175](https://github.com/sveltejs/sapper/pull/175))
+
 ## 0.8.3
 
 * Automatically select available port, or use `--port` flag for `dev` and `start` ([#169](https://github.com/sveltejs/sapper/issues/169))
