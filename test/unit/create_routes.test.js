@@ -22,6 +22,41 @@ describe('create_routes', () => {
 		);
 	});
 
+	it('prefers index page to nested route', () => {
+		const routes = create_routes({
+			files: [
+				'api/examples/[slug].js',
+				'api/examples/index.js',
+				'blog/[slug].html',
+				'api/gists/[id].js',
+				'api/gists/index.js',
+				'4xx.html',
+				'5xx.html',
+				'blog/index.html',
+				'blog/rss.xml.js',
+				'guide/index.html',
+				'index.html'
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.file),
+			[
+				'4xx.html',
+				'5xx.html',
+				'index.html',
+				'guide/index.html',
+				'blog/index.html',
+				'blog/rss.xml.js',
+				'blog/[slug].html',
+				'api/examples/index.js',
+				'api/examples/[slug].js',
+				'api/gists/index.js',
+				'api/gists/[id].js',
+			]
+		);
+	});
+
 	it('generates params', () => {
 		const routes = create_routes({
 			files: ['index.html', 'about.html', '[wildcard].html', 'post/[id].html']

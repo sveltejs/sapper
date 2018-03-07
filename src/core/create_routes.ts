@@ -74,30 +74,27 @@ export default function create_routes({ files } = { files: glob.sync('**/*.+(htm
 		})
 		.filter(Boolean)
 		.sort((a: Route, b: Route) => {
-			let same = true;
+			if (a.file === '4xx.html' || a.file === '5xx.html') return -1;
+			if (b.file === '4xx.html' || b.file === '5xx.html') return 1;
 
-			for (let i = 0; true; i += 1) {
+			const max = Math.max(a.parts.length, b.parts.length);
+
+			for (let i = 0; i < max; i += 1) {
 				const a_part = a.parts[i];
 				const b_part = b.parts[i];
-
-				if (!a_part && !b_part) {
-					if (same) throw new Error(`The ${a.file} and ${b.file} routes clash`);
-					return 0;
-				}
 
 				if (!a_part) return -1;
 				if (!b_part) return 1;
 
 				const a_sub_parts = get_sub_parts(a_part);
 				const b_sub_parts = get_sub_parts(b_part);
+				const max = Math.max(a_sub_parts.length, b_sub_parts.length);
 
-				for (let i = 0; true; i += 1) {
+				for (let i = 0; i < max; i += 1) {
 					const a_sub_part = a_sub_parts[i];
 					const b_sub_part = b_sub_parts[i];
 
-					if (!a_sub_part && !b_sub_part) break;
-
-					if (!a_sub_part) return 1; // note this is reversed from above — match [foo].json before [foo]
+					if (!a_sub_part) return 1; // b is more specific, so goes first
 					if (!b_sub_part) return -1;
 
 					if (a_sub_part.dynamic !== b_sub_part.dynamic) {
@@ -109,6 +106,8 @@ export default function create_routes({ files } = { files: glob.sync('**/*.+(htm
 					}
 				}
 			}
+
+			throw new Error(`The ${a.file} and ${b.file} routes clash`);
 		});
 
 	return routes;
