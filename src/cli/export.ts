@@ -10,10 +10,6 @@ import { dest } from '../config';
 
 const app = polka();
 
-function read_json(file: string) {
-	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
-}
-
 export default async function exporter(export_dir: string) {
 	const build_dir = dest();
 

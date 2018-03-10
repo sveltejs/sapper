@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import sade from 'sade';
-import mri from 'mri';
 import chalk from 'chalk';
 import prettyMs from 'pretty-ms';
 import help from './help.md';

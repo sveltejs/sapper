@@ -4,7 +4,6 @@ import { ClientRequest, ServerResponse } from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import serialize from 'serialize-javascript';
-import escape_html from 'escape-html';
 import { lookup } from './mime';
 import { create_routes, templates, create_compilers } from 'sapper/core.js';
 import { dest, dev } from '../config';
