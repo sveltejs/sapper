@@ -17,7 +17,9 @@ const prog = sade('sapper').version(pkg.version);
 prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
-	.action(async ({ port }: { port: number }) => {
+	.action(async (opts: { port: number }) => {
+		let port = opts.port || +process.env.PORT;
+
 		if (port) {
 			if (!await ports.check(port)) {
 				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
@@ -53,7 +55,9 @@ prog.command('build [dest]')
 prog.command('start [dir]')
 	.describe('Start your app')
 	.option('-p, --port', 'Specify a port')
-	.action(async (dir = 'build', { port }: { port: number }) => {
+	.action(async (dir = 'build', opts: { port: number }) => {
+		let port = opts.port || +process.env.PORT;
+
 		const resolved = path.resolve(dir);
 		const server = path.resolve(dir, 'server.js');
 

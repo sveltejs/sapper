@@ -210,7 +210,7 @@ export default async function dev(port: number) {
 
 			deferreds.client.promise.then(() => {
 				function restart() {
-					ports.wait(3000).then(deferreds.server.fulfil); // TODO control port
+					ports.wait(port).then(deferreds.server.fulfil);
 				}
 
 				if (proc) {
