@@ -1,7 +1,6 @@
 const path = require('path');
 const assert = require('assert');
 const Nightmare = require('nightmare');
-const express = require('express');
 const serve = require('serve-static');
 const walkSync = require('walk-sync');
 const fetch = require('node-fetch');

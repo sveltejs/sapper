@@ -1,5 +1,4 @@
 const config = require('../../../webpack/config.js');
-const pkg = require('../package.json');
 const sapper_pkg = require('../../../package.json');
 
 module.exports = {
@@ -9,7 +8,10 @@ module.exports = {
 	resolve: {
 		extensions: ['.js', '.html']
 	},
-	externals: Object.keys(pkg.dependencies).concat(Object.keys(sapper_pkg.dependencies)),
+	externals: [].concat(
+		Object.keys(sapper_pkg.dependencies),
+		Object.keys(sapper_pkg.devDependencies)
+	),
 	module: {
 		rules: [
 			{

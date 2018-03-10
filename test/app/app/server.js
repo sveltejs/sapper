@@ -1,5 +1,5 @@
 import fs from 'fs';
-import express from 'express';
+import polka from 'polka';
 import compression from 'compression';
 import serve from 'serve-static';
 import sapper from '../../../middleware';
@@ -28,7 +28,7 @@ process.on('message', message => {
 	}
 });
 
-const app = express();
+const app = polka();
 
 app.use((req, res, next) => {
 	if (pending) pending.add(req.url);

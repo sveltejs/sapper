@@ -1,18 +1,14 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
-import express from 'express';
+import polka from 'polka';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { dest } from '../config';
 
-const app = express();
-
-function read_json(file: string) {
-	return JSON.parse(sander.readFileSync(file, { encoding: 'utf-8' }));
-}
+const app = polka();
 
 export default async function exporter(export_dir: string) {
 	const build_dir = dest();
