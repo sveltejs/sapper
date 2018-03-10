@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import sade from 'sade';
-import chalk from 'chalk';
+import * as clorox from 'clorox';
 import prettyMs from 'pretty-ms';
 import help from './help.md';
 import build from './build';
@@ -22,7 +22,7 @@ prog.command('dev')
 
 		if (port) {
 			if (!await ports.check(port)) {
-				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
+				console.log(clorox.bold.red(`> Port ${port} is unavailable`));
 				return;
 			}
 		} else {
@@ -45,7 +45,7 @@ prog.command('build [dest]')
 		build()
 			.then(() => {
 				const elapsed = Date.now() - start;
-				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${chalk.bold.cyan(dest === 'build' ? 'npx sapper start' : `npx sapper start ${dest}`)} to run the app.`);
+				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${clorox.bold.cyan(dest === 'build' ? 'npx sapper start' : `npx sapper start ${dest}`)} to run the app.`);
 			})
 			.catch(err => {
 				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
@@ -62,13 +62,13 @@ prog.command('start [dir]')
 		const server = path.resolve(dir, 'server.js');
 
 		if (!fs.existsSync(server)) {
-			console.log(chalk.bold.red(`> ${dir}/server.js does not exist — type ${chalk.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`));
+			console.log(clorox.bold.red(`> ${dir}/server.js does not exist — type ${clorox.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`));
 			return;
 		}
 
 		if (port) {
 			if (!await ports.check(port)) {
-				console.log(chalk.bold.red(`> Port ${port} is unavailable`));
+				console.log(clorox.bold.red(`> Port ${port} is unavailable`));
 				return;
 			}
 		} else {
@@ -103,7 +103,7 @@ prog.command('export [dest]')
 			.then(() => exporter(dest))
 			.then(() => {
 				const elapsed = Date.now() - start;
-				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${chalk.bold.cyan(`npx serve ${dest}`)} to run the app.`);
+				console.error(`\n> Finished in ${prettyMs(elapsed)}. Type ${clorox.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 			})
 			.catch(err => {
 				console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
