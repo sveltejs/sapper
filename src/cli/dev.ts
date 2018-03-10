@@ -97,6 +97,11 @@ export default async function dev(port: number) {
 
 	let proc: child_process.ChildProcess;
 
+	process.on('exit', () => {
+		// sometimes webpack crashes, so we need to kill our children
+		if (proc) proc.kill();
+	});
+
 	const deferreds = {
 		server: deferred(),
 		client: deferred()
