@@ -10,7 +10,7 @@ import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
 import * as ports from 'port-authority';
 import { dest } from '../config';
-import { create_compilers, create_app, create_routes, create_serviceworker } from '../core';
+import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 
 type Deferred = {
 	promise?: Promise<any>;
@@ -91,13 +91,13 @@ export async function dev(opts: { port: number }) {
 	const dev_port = await ports.find(10000);
 
 	const routes = create_routes();
-	create_app({ routes, dev_port });
+	create_main_manifests({ routes, dev_port });
 
 	const hot_update_server = create_hot_update_server(dev_port);
 
 	watch_files('routes/**/*', ['add', 'unlink'], () => {
 		const routes = create_routes();
-		create_app({ routes, dev_port });
+		create_main_manifests({ routes, dev_port });
 	});
 
 	watch_files('app/template.html', ['change'], () => {
@@ -265,7 +265,7 @@ export async function dev(opts: { port: number }) {
 				});
 			});
 
-			create_serviceworker({
+			create_serviceworker_manifest({
 				routes: create_routes(),
 				client_files
 			});

@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as clorox from 'clorox';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { create_compilers, create_app, create_routes, create_serviceworker } from '../core'
-import { src, dest, dev } from '../config';
+import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core'
+import { dest } from '../config';
 
 export async function build() {
 	const output = dest();
@@ -15,7 +15,7 @@ export async function build() {
 	const routes = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_app({ routes, src, dev });
+	create_main_manifests({ routes });
 
 	const { client, server, serviceworker } = create_compilers();
 
@@ -31,10 +31,9 @@ export async function build() {
 	let serviceworker_stats;
 
 	if (serviceworker) {
-		create_serviceworker({
+		create_serviceworker_manifest({
 			routes,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `/client/${chunk.name}`),
-			src
+			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `/client/${chunk.name}`)
 		});
 
 		serviceworker_stats = await compile(serviceworker);
