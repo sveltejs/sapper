@@ -5,6 +5,7 @@ import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
+import { minify_html } from './utils/minify_html';
 import { locations } from '../config';
 
 export async function exporter(export_dir: string) {
@@ -47,7 +48,7 @@ export async function exporter(export_dir: string) {
 
 		if (message.type === 'text/html') {
 			const file = `${export_dir}/${url.pathname}/index.html`;
-			sander.writeFileSync(file, message.body);
+			sander.writeFileSync(file, minify_html(message.body));
 		} else {
 			const file = `${export_dir}/${url.pathname}`;
 			sander.writeFileSync(file, message.body);
