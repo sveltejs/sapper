@@ -10,36 +10,39 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-const paths = {
-	'sapper/core.js': './core.js'
-};
-
-const plugins = [
-	string({
-		include: '**/*.md'
-	}),
-	json(),
-	commonjs(),
-	typescript({
-		typescript: require('typescript')
-	})
-];
-
 export default [
-	{ name: 'cli', banner: true },
-	{ name: 'core' },
-	{ name: 'middleware' },
-	{ name: 'runtime', format: 'es' },
-	{ name: 'webpack', file: 'webpack/config' }
-].map(obj => ({
-	input: `src/${obj.name}/index.ts`,
-	output: {
-		file: `${obj.file || obj.name}.js`,
-		format: obj.format || 'cjs',
-		banner: obj.banner && '#!/usr/bin/env node',
-		paths,
-		sourcemap: true
+	{
+		input: `src/runtime/index.ts`,
+		output: {
+			file: `runtime.js`,
+			format: 'es'
+		},
+		plugins: [
+			typescript({
+				typescript: require('typescript')
+			})
+		]
 	},
-	external,
-	plugins
-}));
+
+	{
+		input: [`src/cli.ts`, `src/core.ts`, `src/middleware.ts`, `src/webpack.ts`],
+		output: {
+			dir: '.',
+			format: 'cjs',
+			sourcemap: true
+		},
+		external,
+		plugins: [
+			string({
+				include: '**/*.md'
+			}),
+			json(),
+			commonjs(),
+			typescript({
+				typescript: require('typescript')
+			})
+		],
+		experimentalCodeSplitting: true,
+		experimentalDynamicImport: true
+	}
+];

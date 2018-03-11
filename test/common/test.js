@@ -25,7 +25,7 @@ Nightmare.action('prefetchRoutes', function(done) {
 	this.evaluate_now(() => window.prefetchRoutes(), done);
 });
 
-const cli = path.resolve(__dirname, '../../cli.js');
+const cli = path.resolve(__dirname, '../../sapper');
 
 describe('sapper', function() {
 	process.chdir(path.resolve(__dirname, '../app'));

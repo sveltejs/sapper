@@ -1,4 +1,4 @@
-import { dest, dev } from '../config';
+import { dest, dev } from './config';
 
 export default {
 	dev: dev(),

@@ -10,7 +10,7 @@ import { dest } from '../config';
 
 const app = polka();
 
-export default async function exporter(export_dir: string) {
+export async function exporter(export_dir: string) {
 	const build_dir = dest();
 
 	// Prep output directory
