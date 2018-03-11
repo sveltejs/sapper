@@ -6,7 +6,7 @@ import rimraf from 'rimraf';
 import { create_compilers, create_app, create_routes, create_serviceworker } from '../core'
 import { src, dest, dev } from '../config';
 
-export default async function build() {
+export async function build() {
 	const output = dest();
 
 	mkdirp.sync(output);

@@ -70,8 +70,19 @@ function create_hot_update_server(port: number, interval = 10000) {
 	return { send };
 }
 
-export default async function dev(port: number) {
+export async function dev(opts: { port: number }) {
 	process.env.NODE_ENV = 'development';
+
+	let port = opts.port || +process.env.PORT;
+
+	if (port) {
+		if (!await ports.check(port)) {
+			console.log(clorox.bold.red(`> Port ${port} is unavailable`));
+			return;
+		}
+	} else {
+		port = await ports.find(3000);
+	}
 
 	const dir = dest();
 	rimraf.sync(dir);

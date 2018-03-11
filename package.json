@@ -4,7 +4,7 @@
   "description": "Military-grade apps, engineered by Svelte",
   "main": "middleware.js",
   "bin": {
-    "sapper": "sapper"
+    "sapper": "./sapper"
   },
   "files": [
     "*.js",
