@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.9.1
+
+* Include `sapper` bin
+
 ## 0.9.0
 
 * Use `devalue` instead of `serialize-javascript`, allowing `preload` to return non-POJOs and cyclical/repeated references, but *not* functions ([#112](https://github.com/sveltejs/sapper/issues/112))
