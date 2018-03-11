@@ -27,7 +27,7 @@ export default [
 	{
 		input: [`src/cli.ts`, `src/core.ts`, `src/middleware.ts`, `src/webpack.ts`],
 		output: {
-			dir: '.',
+			dir: 'dist',
 			format: 'cjs',
 			sourcemap: true
 		},

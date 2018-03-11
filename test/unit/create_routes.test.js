@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { create_routes } = require('../../core.ts.js');
+const { create_routes } = require('../../dist/core.ts.js');
 
 describe('create_routes', () => {
 	it('sorts routes correctly', () => {
