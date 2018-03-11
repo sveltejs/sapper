@@ -95,12 +95,12 @@ export async function dev(opts: { port: number }) {
 
 	const hot_update_server = create_hot_update_server(dev_port);
 
-	watch_files('routes/**/*', ['add', 'unlink'], () => {
+	watch_files(`${locations.routes()}/**/*`, ['add', 'unlink'], () => {
 		const routes = create_routes();
 		create_main_manifests({ routes, dev_port });
 	});
 
-	watch_files('app/template.html', ['change'], () => {
+	watch_files(`${locations.app()}/template.html`, ['change'], () => {
 		hot_update_server.send({
 			action: 'reload'
 		});
