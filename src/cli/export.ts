@@ -5,10 +5,10 @@ import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
-import { dest } from '../config';
+import { locations } from '../config';
 
 export async function exporter(export_dir: string) {
-	const build_dir = dest();
+	const build_dir = locations.dest();
 
 	// Prep output directory
 	sander.rimrafSync(export_dir);

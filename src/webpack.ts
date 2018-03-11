@@ -1,4 +1,4 @@
-import { dest, dev } from './config';
+import { locations, dev } from './config';
 
 export default {
 	dev: dev(),
@@ -12,7 +12,7 @@ export default {
 
 		output: () => {
 			return {
-				path: `${dest()}/client`,
+				path: `${locations.dest()}/client`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				publicPath: '/client/'
@@ -29,7 +29,7 @@ export default {
 
 		output: () => {
 			return {
-				path: dest(),
+				path: locations.dest(),
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'
@@ -46,7 +46,7 @@ export default {
 
 		output: () => {
 			return {
-				path: dest(),
+				path: locations.dest(),
 				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js'
 			}

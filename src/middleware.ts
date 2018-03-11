@@ -7,7 +7,7 @@ import devalue from 'devalue';
 import { lookup } from './middleware/mime';
 import { minify_html } from './middleware/minify_html';
 import { create_routes, create_compilers } from './core';
-import { dest, dev } from './config';
+import { locations, dev } from './config';
 import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
 
@@ -41,7 +41,7 @@ interface Req extends ClientRequest {
 export default function middleware({ routes }: {
 	routes: RouteObject[]
 }) {
-	const output = dest();
+	const output = locations.dest();
 
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
 
@@ -81,7 +81,7 @@ function serve({ prefix, pathname, cache_control }: {
 		? (req: Req) => req.pathname === pathname
 		: (req: Req) => req.pathname.startsWith(prefix);
 
-	const output = dest();
+	const output = locations.dest();
 
 	const cache: Map<string, Buffer> = new Map();
 

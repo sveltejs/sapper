@@ -4,10 +4,10 @@ import * as clorox from 'clorox';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core'
-import { dest } from '../config';
+import { locations } from '../config';
 
 export async function build() {
-	const output = dest();
+	const output = locations.dest();
 
 	mkdirp.sync(output);
 	rimraf.sync(path.join(output, '**/*'));
