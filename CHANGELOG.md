@@ -1,5 +1,13 @@
 # sapper changelog
 
+## 0.9.4
+
+* Add `SAPPER_BASE` and `SAPPER_APP` environment variables ([#181](https://github.com/sveltejs/sapper/issues/181))
+* Minify template in `sapper build` ([#15](https://github.com/sveltejs/sapper/issues/15))
+* Minify all HTML files in `sapper export` ([#172](https://github.com/sveltejs/sapper/issues/172))
+* Log exported files ([#195](https://github.com/sveltejs/sapper/pull/195))
+* Add `--open`/`-o` flag to `sapper dev` and `sapper start` ([#186](https://github.com/sveltejs/sapper/issues/186))
+
 ## 0.9.3
 
 * Fix path to `sapper-dev-client`
