@@ -1,5 +1,14 @@
 # sapper changelog
 
+## 0.9.0
+
+* Use `devalue` instead of `serialize-javascript`, allowing `preload` to return non-POJOs and cyclical/repeated references, but *not* functions ([#112](https://github.com/sveltejs/sapper/issues/112))
+* Kill child process if webpack crashes ([#177](https://github.com/sveltejs/sapper/issues/177))
+* Support HMR on remote devices ([#165](https://github.com/sveltejs/sapper/issues/165))
+* Remove hard-coded port (([#169](https://github.com/sveltejs/sapper/issues/169)))
+* Allow non-JS files, e.g. TypeScript to be used as entry points and server routes ([#57](https://github.com/sveltejs/sapper/issues/57))
+* Faster startup ([#173](https://github.com/sveltejs/sapper/issues/173))
+
 ## 0.8.4
 
 * Fix route sorting ([#175](https://github.com/sveltejs/sapper/pull/175))
