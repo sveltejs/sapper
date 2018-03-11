@@ -1,0 +1,17 @@
+<h1>{{foo.bar()}}</h1>
+
+<script>
+	export default {
+		preload() {
+			class Foo {
+				bar() {
+					return 42;
+				}
+			}
+
+			return {
+				foo: new Foo()
+			};
+		}
+	};
+</script>
