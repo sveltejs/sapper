@@ -1,10 +1,12 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
+import * as clorox from 'clorox';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
+import prettyBytes from 'pretty-bytes';
 import { minify_html } from './utils/minify_html';
 import { locations } from '../config';
 
@@ -41,18 +43,22 @@ export async function exporter(export_dir: string) {
 	proc.on('message', message => {
 		if (!message.__sapper__) return;
 
-		const url = new URL(message.url, origin);
+		let file = new URL(message.url, origin).pathname.slice(1);
+		let { body } = message;
 
-		if (saved.has(url.pathname)) return;
-		saved.add(url.pathname);
+		if (saved.has(file)) return;
+		saved.add(file);
 
-		if (message.type === 'text/html') {
-			const file = `${export_dir}/${url.pathname}/index.html`;
-			sander.writeFileSync(file, minify_html(message.body));
-		} else {
-			const file = `${export_dir}/${url.pathname}`;
-			sander.writeFileSync(file, message.body);
+		const is_html = message.type === 'text/html';
+
+		if (is_html) {
+			file = file === '' ? 'index.html' : `${file}/index.html`;
+			body = minify_html(body);
 		}
+
+		console.log(`${clorox.bold.cyan(file)} ${clorox.gray(`(${prettyBytes(body.length)})`)}`);
+
+		sander.writeFileSync(`${export_dir}/${file}`, body);
 	});
 
 	function handle(url: URL) {
@@ -79,7 +85,7 @@ export async function exporter(export_dir: string) {
 				}
 			})
 			.catch((err: Error) => {
-				console.error(`Error rendering ${url.pathname}: ${err.message}`);
+				console.log(clorox.red(`> Error rendering ${url.pathname}: ${err.message}`));
 			});
 	}
 
