@@ -19,9 +19,9 @@
     "test": "test"
   },
   "dependencies": {
-    "chalk": "^2.3.0",
     "cheerio": "^1.0.0-rc.2",
     "chokidar": "^1.7.0",
+    "clorox": "^1.0.3",
     "devalue": "^1.0.1",
     "glob": "^7.1.2",
     "mkdirp": "^0.5.1",

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as net from 'net';
-import * as chalk from 'chalk';
+import * as clorox from 'clorox';
 import * as child_process from 'child_process';
 import * as http from 'http';
 import mkdirp from 'mkdirp';
@@ -126,7 +126,7 @@ export default async function dev(port: number) {
 			restarting = false;
 		});
 
-		console.log(`\n${chalk.bold.cyan(path.relative(process.cwd(), filename))} changed. rebuilding...`);
+		console.log(`\n${clorox.bold.cyan(path.relative(process.cwd(), filename))} changed. rebuilding...`);
 	}
 
 	// TODO watch the configs themselves?
@@ -144,15 +144,15 @@ export default async function dev(port: number) {
 
 		compiler.watch({}, (err: Error, stats: any) => {
 			if (err) {
-				console.error(chalk.red(`✗ ${name}`));
-				console.error(chalk.red(err.message));
+				console.error(clorox.red(`✗ ${name}`));
+				console.error(clorox.red(err.message));
 				error(err);
 			} else {
 				const messages = format_messages(stats);
 				const info = stats.toJson();
 
 				if (messages.errors.length > 0) {
-					console.log(chalk.bold.red(`✗ ${name}`));
+					console.log(clorox.bold.red(`✗ ${name}`));
 
 					const filtered = messages.errors.filter((message: string) => {
 						return !build.unique_errors.has(message);
@@ -169,7 +169,7 @@ export default async function dev(port: number) {
 					}
 				} else {
 					if (messages.warnings.length > 0) {
-						console.log(chalk.bold.yellow(`• ${name}`));
+						console.log(clorox.bold.yellow(`• ${name}`));
 
 						const filtered = messages.warnings.filter((message: string) => {
 							return !build.unique_warnings.has(message);
@@ -185,7 +185,7 @@ export default async function dev(port: number) {
 							console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 						}
 					} else {
-						console.log(`${chalk.bold.green(`✔ ${name}`)} ${chalk.grey(`(${prettyMs(info.time)})`)}`);
+						console.log(`${clorox.bold.green(`✔ ${name}`)} ${clorox.grey(`(${prettyMs(info.time)})`)}`);
 					}
 
 					result(info);
