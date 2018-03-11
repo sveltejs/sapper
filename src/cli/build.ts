@@ -3,11 +3,12 @@ import * as path from 'path';
 import * as clorox from 'clorox';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
+import { minify_html } from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core'
-import { dest } from '../config';
+import { locations } from '../config';
 
 export async function build() {
-	const output = dest();
+	const output = locations.dest();
 
 	mkdirp.sync(output);
 	rimraf.sync(path.join(output, '**/*'));
@@ -40,6 +41,11 @@ export async function build() {
 		console.log(clorox.inverse(`\nbuilt service worker`).toString());
 		console.log(serviceworker_stats.toString({ colors: true }));
 	}
+
+	// minify app/template.html
+	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
+	const template = fs.readFileSync(`${locations.app()}/template.html`, 'utf-8');
+	fs.writeFileSync(`${output}/template.html`, minify_html(template));
 }
 
 function compile(compiler: any) {

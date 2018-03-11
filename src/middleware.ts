@@ -6,7 +6,7 @@ import rimraf from 'rimraf';
 import devalue from 'devalue';
 import { lookup } from './middleware/mime';
 import { create_routes, create_compilers } from './core';
-import { dest, dev } from './config';
+import { locations, dev } from './config';
 import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
 
@@ -40,7 +40,7 @@ interface Req extends ClientRequest {
 export default function middleware({ routes }: {
 	routes: RouteObject[]
 }) {
-	const output = dest();
+	const output = locations.dest();
 
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
 
@@ -80,7 +80,7 @@ function serve({ prefix, pathname, cache_control }: {
 		? (req: Req) => req.pathname === pathname
 		: (req: Req) => req.pathname.startsWith(prefix);
 
-	const output = dest();
+	const output = locations.dest();
 
 	const cache: Map<string, Buffer> = new Map();
 
@@ -112,8 +112,8 @@ const resolved = Promise.resolve();
 
 function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
 	const template = dev()
-		? () => fs.readFileSync('app/template.html', 'utf-8')
-		: (str => () => str)(fs.readFileSync('app/template.html', 'utf-8'));
+		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
+		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
 		req.params = route.params(route.pattern.exec(req.pathname));

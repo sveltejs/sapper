@@ -2,7 +2,7 @@
   "name": "sapper",
   "version": "0.9.3",
   "description": "Military-grade apps, engineered by Svelte",
-  "main": "middleware.js",
+  "main": "dist/middleware.ts.js",
   "bin": {
     "sapper": "./sapper"
   },
@@ -23,6 +23,7 @@
     "clorox": "^1.0.3",
     "devalue": "^1.0.1",
     "glob": "^7.1.2",
+    "html-minifier": "^3.5.10",
     "mkdirp": "^0.5.1",
     "node-fetch": "^1.7.3",
     "polka": "^0.3.4",

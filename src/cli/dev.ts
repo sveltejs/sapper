@@ -9,7 +9,7 @@ import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
 import * as ports from 'port-authority';
-import { dest } from '../config';
+import { locations } from '../config';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 
 type Deferred = {
@@ -84,7 +84,7 @@ export async function dev(opts: { port: number }) {
 		port = await ports.find(3000);
 	}
 
-	const dir = dest();
+	const dir = locations.dest();
 	rimraf.sync(dir);
 	mkdirp.sync(dir);
 
@@ -95,12 +95,12 @@ export async function dev(opts: { port: number }) {
 
 	const hot_update_server = create_hot_update_server(dev_port);
 
-	watch_files('routes/**/*', ['add', 'unlink'], () => {
+	watch_files(`${locations.routes()}/**/*`, ['add', 'unlink'], () => {
 		const routes = create_routes();
 		create_main_manifests({ routes, dev_port });
 	});
 
-	watch_files('app/template.html', ['change'], () => {
+	watch_files(`${locations.app()}/template.html`, ['change'], () => {
 		hot_update_server.send({
 			action: 'reload'
 		});
