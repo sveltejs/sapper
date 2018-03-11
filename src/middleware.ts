@@ -5,6 +5,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import devalue from 'devalue';
 import { lookup } from './middleware/mime';
+import { minify_html } from './middleware/minify_html';
 import { create_routes, create_compilers } from './core';
 import { dest, dev } from './config';
 import { Route, Template } from './interfaces';
@@ -113,7 +114,7 @@ const resolved = Promise.resolve();
 function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
 	const template = dev()
 		? () => fs.readFileSync('app/template.html', 'utf-8')
-		: (str => () => str)(fs.readFileSync('app/template.html', 'utf-8'));
+		: (str => () => str)(minify_html(fs.readFileSync('app/template.html', 'utf-8')));
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
 		req.params = route.params(route.pattern.exec(req.pathname));
