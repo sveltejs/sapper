@@ -2,7 +2,7 @@ import fs from 'fs';
 import polka from 'polka';
 import compression from 'compression';
 import serve from 'serve-static';
-import sapper from '../../../middleware';
+import sapper from '../../../dist/middleware.ts.js';
 import { routes } from './manifest/server.js';
 
 let pending;

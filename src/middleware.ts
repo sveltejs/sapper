@@ -5,7 +5,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import devalue from 'devalue';
 import { lookup } from './middleware/mime';
-import { create_routes, templates, create_compilers } from './core/index';
+import { create_routes, create_compilers } from './core';
 import { dest, dev } from './config';
 import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
