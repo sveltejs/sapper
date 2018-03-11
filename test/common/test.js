@@ -487,6 +487,30 @@ function run(env) {
 						assert.equal(title, `I'm afraid I just blue myself`);
 					});
 			});
+
+			it('serializes Set objects returned from preload', () => {
+				return nightmare.goto(`${base}/preload-values/set`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'true');
+						return nightmare.init().page.title();
+					})
+					.then(title => {
+						assert.equal(title, 'true');
+					});
+			});
+
+			it('bails on custom classes returned from preload', () => {
+				return nightmare.goto(`${base}/preload-values/custom-class`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, '42');
+						return nightmare.init().page.title();
+					})
+					.then(title => {
+						assert.equal(title, '42');
+					});
+			});
 		});
 
 		describe('headers', () => {

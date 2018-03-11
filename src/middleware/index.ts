@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ClientRequest, ServerResponse } from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import serialize from 'serialize-javascript';
+import devalue from 'devalue';
 import { lookup } from './mime';
 import { create_routes, templates, create_compilers } from 'sapper/core.js';
 import { dest, dev } from '../config';
@@ -331,7 +331,7 @@ function read_json(file: string) {
 
 function try_serialize(data: any) {
 	try {
-		return serialize(data);
+		return devalue(data);
 	} catch (err) {
 		return null;
 	}
