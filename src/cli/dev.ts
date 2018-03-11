@@ -70,7 +70,7 @@ function create_hot_update_server(port: number, interval = 10000) {
 	return { send };
 }
 
-export async function dev(opts: { port: number }) {
+export async function dev(opts: { port: number, open: boolean }) {
 	process.env.NODE_ENV = 'development';
 
 	let port = opts.port || +process.env.PORT;
@@ -241,6 +241,8 @@ export async function dev(opts: { port: number }) {
 		}
 	});
 
+	let first = true;
+
 	watch(compilers.client, {
 		name: 'client',
 
@@ -263,6 +265,12 @@ export async function dev(opts: { port: number }) {
 				hot_update_server.send({
 					status: 'completed'
 				});
+
+				if (first) {
+					first = false;
+					console.log(`${clorox.bold.cyan(`> Listening on localhost:${port}`)}`);
+					if (opts.open) child_process.exec(`open http://localhost:${port}`);
+				}
 			});
 
 			create_serviceworker_manifest({
