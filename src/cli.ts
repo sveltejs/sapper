@@ -58,7 +58,7 @@ prog.command('export [dest]')
 		try {
 			const { build } = await import('./cli/build');
 			await build();
-			console.error(`\n> Built in ${elapsed(start)}. Exporting...`);
+			console.error(`\n> Built in ${elapsed(start)}. Crawling site...`);
 
 			const { exporter } = await import('./cli/export');
 			await exporter(dest);
