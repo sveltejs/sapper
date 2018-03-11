@@ -4,13 +4,13 @@ import * as child_process from 'child_process';
 import sade from 'sade';
 import * as clorox from 'clorox';
 import prettyMs from 'pretty-ms';
-import help from './help.md';
-import build from './build';
-import exporter from './export';
-import dev from './dev';
-import upgrade from './upgrade';
+import help from './cli/help.md';
+import build from './cli/build';
+import exporter from './cli/export';
+import dev from './cli/dev';
+import upgrade from './cli/upgrade';
 import * as ports from 'port-authority';
-import * as pkg from '../../package.json';
+import * as pkg from '../package.json';
 
 const prog = sade('sapper').version(pkg.version);
 

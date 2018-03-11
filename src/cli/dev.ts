@@ -10,7 +10,7 @@ import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
 import * as ports from 'port-authority';
 import { dest } from '../config';
-import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js';
+import { create_compilers, create_app, create_routes, create_serviceworker } from '../core';
 
 type Deferred = {
 	promise?: Promise<any>;

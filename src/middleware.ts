@@ -4,10 +4,10 @@ import { ClientRequest, ServerResponse } from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import devalue from 'devalue';
-import { lookup } from './mime';
-import { create_routes, templates, create_compilers } from 'sapper/core.js';
-import { dest, dev } from '../config';
-import { Route, Template } from '../interfaces';
+import { lookup } from './middleware/mime';
+import { create_routes, templates, create_compilers } from './core/index';
+import { dest, dev } from './config';
+import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();

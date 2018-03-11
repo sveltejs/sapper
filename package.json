@@ -4,15 +4,12 @@
   "description": "Military-grade apps, engineered by Svelte",
   "main": "middleware.js",
   "bin": {
-    "sapper": "cli.js"
+    "sapper": "sapper"
   },
   "files": [
-    "cli.js",
-    "core.js",
-    "middleware.js",
+    "*.js",
+    "*.ts.js",
     "runtime",
-    "runtime.js",
-    "sapper-dev-client.js",
     "webpack"
   ],
   "directories": {
@@ -51,7 +48,7 @@
     "mocha": "^4.0.1",
     "nightmare": "^2.10.0",
     "npm-run-all": "^4.1.2",
-    "rollup": "^0.53.0",
+    "rollup": "^0.56.5",
     "rollup-plugin-commonjs": "^8.3.0",
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-string": "^2.0.2",

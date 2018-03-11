@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as clorox from 'clorox';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { create_compilers, create_app, create_routes, create_serviceworker } from 'sapper/core.js'
+import { create_compilers, create_app, create_routes, create_serviceworker } from '../core'
 import { src, dest, dev } from '../config';
 
 export default async function build() {
