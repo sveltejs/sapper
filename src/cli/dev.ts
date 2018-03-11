@@ -185,7 +185,7 @@ export default async function dev(port: number) {
 							console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 						}
 					} else {
-						console.log(`${clorox.bold.green(`✔ ${name}`)} ${clorox.grey(`(${prettyMs(info.time)})`)}`);
+						console.log(`${clorox.bold.green(`✔ ${name}`)} ${clorox.gray(`(${prettyMs(info.time)})`)}`);
 					}
 
 					result(info);
