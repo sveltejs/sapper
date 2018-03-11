@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.9.3
+
+* Fix path to `sapper-dev-client`
+
 ## 0.9.2
 
 * Include `dist` files in package

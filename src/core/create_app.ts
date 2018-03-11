@@ -57,7 +57,7 @@ function generate_client(routes: Route[], dev_port?: number) {
 
 	if (dev()) {
 		const sapper_dev_client = posixify(
-			path.resolve(__dirname, 'sapper-dev-client.js')
+			path.resolve(__dirname, '../sapper-dev-client.js')
 		);
 
 		code += `
