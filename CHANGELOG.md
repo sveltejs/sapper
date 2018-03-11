@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.9.2
+
+* Include `dist` files in package
+
 ## 0.9.1
 
 * Include `sapper` bin
