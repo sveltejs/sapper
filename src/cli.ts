@@ -13,7 +13,8 @@ const prog = sade('sapper').version(pkg.version);
 prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
-	.action(async (opts: { port: number }) => {
+	.option('-o, --open', 'Open a browser window')
+	.action(async (opts: { port: number, open: boolean }) => {
 		const { dev } = await import('./cli/dev');
 		dev(opts);
 	});
@@ -40,7 +41,8 @@ prog.command('build [dest]')
 prog.command('start [dir]')
 	.describe('Start your app')
 	.option('-p, --port', 'Specify a port')
-	.action(async (dir = 'build', opts: { port: number }) => {
+	.option('-o, --open', 'Open a browser window')
+	.action(async (dir = 'build', opts: { port: number, open: boolean }) => {
 		const { start } = await import('./cli/start');
 		start(dir, opts);
 	});

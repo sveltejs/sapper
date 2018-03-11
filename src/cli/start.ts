@@ -4,7 +4,7 @@ import * as child_process from 'child_process';
 import * as clorox from 'clorox';
 import * as ports from 'port-authority';
 
-export async function start(dir: string, opts: { port: number }) {
+export async function start(dir: string, opts: { port: number, open: boolean }) {
 	let port = opts.port || +process.env.PORT;
 
 	const resolved = path.resolve(dir);
@@ -32,4 +32,8 @@ export async function start(dir: string, opts: { port: number }) {
 			SAPPER_DEST: dir
 		}, process.env)
 	});
+
+	await ports.wait(port);
+	console.log(`${clorox.bold.cyan(`> Listening on localhost:${port}`)}`);
+	if (opts.open) child_process.exec(`open http://localhost:${port}`);
 }
