@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "dist/middleware.ts.js",
   "bin": {
@@ -34,6 +34,7 @@
     "sade": "^1.4.0",
     "sander": "^0.6.0",
     "source-map-support": "^0.5.3",
+    "tslib": "^1.9.0",
     "url-parse": "^1.2.0",
     "walk-sync": "^0.3.2",
     "webpack-format-messages": "^1.0.1"
@@ -59,7 +60,6 @@
     "serve-static": "^1.13.2",
     "svelte": "^1.49.1",
     "svelte-loader": "^2.3.2",
-    "tslib": "^1.9.0",
     "ts-node": "^4.1.0",
     "typescript": "^2.6.2",
     "webpack": "^4.1.0"

@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.9.6
+
+* Whoops — `tslib` is a runtime dependency
+
 ## 0.9.5
 
 * Stringify clorox output ([#197](https://github.com/sveltejs/sapper/pull/197))
