@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.9.5
+
+* Stringify clorox output ([#197](https://github.com/sveltejs/sapper/pull/197))
+
 ## 0.9.4
 
 * Add `SAPPER_BASE` and `SAPPER_APP` environment variables ([#181](https://github.com/sveltejs/sapper/issues/181))
