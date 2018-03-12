@@ -77,7 +77,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 	if (port) {
 		if (!await ports.check(port)) {
-			console.log(clorox.bold.red(`> Port ${port} is unavailable`));
+			console.log(`${clorox.bold.red(`> Port ${port} is unavailable`)}`);
 			return;
 		}
 	} else {
@@ -155,15 +155,15 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 		compiler.watch({}, (err: Error, stats: any) => {
 			if (err) {
-				console.error(clorox.red(`✗ ${name}`));
-				console.error(clorox.red(err.message));
+				console.log(`${clorox.red(`✗ ${name}`)}`);
+				console.log(`${clorox.red(err.message)}`);
 				error(err);
 			} else {
 				const messages = format_messages(stats);
 				const info = stats.toJson();
 
 				if (messages.errors.length > 0) {
-					console.log(clorox.bold.red(`✗ ${name}`));
+					console.log(`${clorox.bold.red(`✗ ${name}`)}`);
 
 					const filtered = messages.errors.filter((message: string) => {
 						return !build.unique_errors.has(message);
@@ -180,7 +180,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 					}
 				} else {
 					if (messages.warnings.length > 0) {
-						console.log(clorox.bold.yellow(`• ${name}`));
+						console.log(`${clorox.bold.yellow(`• ${name}`)}`);
 
 						const filtered = messages.warnings.filter((message: string) => {
 							return !build.unique_warnings.has(message);
