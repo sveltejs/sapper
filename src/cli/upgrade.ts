@@ -27,10 +27,10 @@ async function upgrade_sapper_main() {
 
 		if (/\%sapper\.main\%/.test(template)) {
 			if (!pattern.test(template)) {
-				console.log(clorox.red(`Could not replace %sapper.main% in ${file}`));
+				console.log(`${clorox.red(`Could not replace %sapper.main% in ${file}`)}`);
 			} else {
 				write(file, template.replace(pattern, `%sapper.scripts%`));
-				console.log(clorox.green(`Replaced %sapper.main% in ${file}`));
+				console.log(`${clorox.green(`Replaced %sapper.main% in ${file}`)}`);
 				replaced = true;
 			}
 		}

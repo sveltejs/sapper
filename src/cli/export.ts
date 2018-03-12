@@ -85,7 +85,7 @@ export async function exporter(export_dir: string) {
 				}
 			})
 			.catch((err: Error) => {
-				console.log(clorox.red(`> Error rendering ${url.pathname}: ${err.message}`));
+				console.log(`${clorox.red(`> Error rendering ${url.pathname}: ${err.message}`)}`);
 			});
 	}
 

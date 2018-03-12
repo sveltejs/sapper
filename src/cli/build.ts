@@ -21,12 +21,12 @@ export async function build() {
 	const { client, server, serviceworker } = create_compilers();
 
 	const client_stats = await compile(client);
-	console.log(clorox.inverse(`\nbuilt client`).toString());
+	console.log(`${clorox.inverse(`\nbuilt client`)}`);
 	console.log(client_stats.toString({ colors: true }));
 	fs.writeFileSync(path.join(output, 'client_info.json'), JSON.stringify(client_stats.toJson()));
 
 	const server_stats = await compile(server);
-	console.log(clorox.inverse(`\nbuilt server`).toString());
+	console.log(`${clorox.inverse(`\nbuilt server`)}`);
 	console.log(server_stats.toString({ colors: true }));
 
 	let serviceworker_stats;
@@ -38,7 +38,7 @@ export async function build() {
 		});
 
 		serviceworker_stats = await compile(serviceworker);
-		console.log(clorox.inverse(`\nbuilt service worker`).toString());
+		console.log(`${clorox.inverse(`\nbuilt service worker`)}`);
 		console.log(serviceworker_stats.toString({ colors: true }));
 	}
 
