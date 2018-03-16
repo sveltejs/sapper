@@ -34,7 +34,7 @@ export async function build() {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `/client/${chunk.name}`)
+			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
 		});
 
 		serviceworker_stats = await compile(serviceworker);

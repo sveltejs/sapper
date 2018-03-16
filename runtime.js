@@ -197,7 +197,7 @@ function handle_popstate(event) {
 }
 var prefetching = null;
 function prefetch(href) {
-    var selected = select_route(new URL(href));
+    var selected = select_route(new URL(href, document.baseURI));
     if (selected) {
         prefetching = {
             href: href,
@@ -240,7 +240,7 @@ function init(_target, _routes) {
 }
 function goto(href, opts) {
     if (opts === void 0) { opts = { replaceState: false }; }
-    var target = select_route(new URL(href, window.location.href));
+    var target = select_route(new URL(href, document.baseURI));
     if (target) {
         navigate(target, null);
         if (history)

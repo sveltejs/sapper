@@ -203,7 +203,7 @@ let prefetching: {
 } = null;
 
 export function prefetch(href: string) {
-	const selected = select_route(new URL(href));
+	const selected = select_route(new URL(href, document.baseURI));
 
 	if (selected) {
 		prefetching = {
@@ -257,7 +257,8 @@ export function init(_target: Node, _routes: Route[]) {
 }
 
 export function goto(href: string, opts = { replaceState: false }) {
-	const target = select_route(new URL(href, window.location.href));
+	const target = select_route(new URL(href, document.baseURI));
+
 	if (target) {
 		navigate(target, null);
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);

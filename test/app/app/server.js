@@ -1,9 +1,10 @@
 import fs from 'fs';
-import polka from 'polka';
+import { resolve } from 'url';
+import express from 'express';
 import compression from 'compression';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
-import { routes } from './manifest/server.js';
+import { basepath, routes } from './manifest/server.js';
 
 let pending;
 let ended;
@@ -26,12 +27,21 @@ process.on('message', message => {
 			pending = null;
 		}
 	}
+
+	if (message.action === 'shutdown') {
+		// a test failed; shut it down
+		ended = true;
+		pending = null;
+		process.send({ type: 'shutdown' }); // acknowledge
+	}
 });
 
-const app = polka();
+const app = express();
 
 app.use((req, res, next) => {
-	if (pending) pending.add(req.url);
+	if (!pending) return next();
+
+	pending.add(req.url);
 
 	const { write, end } = res;
 	const chunks = [];
@@ -68,13 +78,13 @@ const { PORT = 3000 } = process.env;
 // this allows us to do e.g. `fetch('/api/blog')` on the server
 const fetch = require('node-fetch');
 global.fetch = (url, opts) => {
-	if (url[0] === '/') url = `http://localhost:${PORT}${url}`;
+	url = resolve(`http://localhost:${PORT}${basepath}/`, url);
 	return fetch(url, opts);
 };
 
 app.use(compression({ threshold: 0 }));
 
-app.use(serve('assets'));
+app.use(basepath, serve('assets'));
 
 app.use(sapper({
 	routes
