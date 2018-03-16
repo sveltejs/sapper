@@ -360,7 +360,7 @@ function run({ mode, basepath = '' }) {
 					.wait(100)
 					.then(() => nightmare.path())
 					.then(path => {
-						assert.equal(path, '/about');
+						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
 					})
 					.then(title => {
@@ -369,7 +369,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.path())
 					.then(path => {
-						assert.equal(path, '/about');
+						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
 					})
 					.then(title => {
@@ -383,7 +383,7 @@ function run({ mode, basepath = '' }) {
 					.init()
 					.evaluate(() => document.querySelector('p').innerHTML)
 					.end().then(html => {
-						assert.equal(html, `URL is /show-url`);
+						assert.equal(html, `URL is ${basepath}/show-url`);
 					});
 			});
 
@@ -418,7 +418,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare.goto(`${base}/redirect-from`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/redirect-to');
+						assert.equal(path, `${basepath}/redirect-to`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -433,7 +433,7 @@ function run({ mode, basepath = '' }) {
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/redirect-to');
+						assert.equal(path, `${basepath}/redirect-to`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -445,7 +445,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare.goto(`${base}/blog/nope`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/nope');
+						assert.equal(path, `${basepath}/blog/nope`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -460,7 +460,7 @@ function run({ mode, basepath = '' }) {
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/nope');
+						assert.equal(path, `${basepath}/blog/nope`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -472,7 +472,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare.goto(`${base}/blog/throw-an-error`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/throw-an-error');
+						assert.equal(path, `${basepath}/blog/throw-an-error`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -487,7 +487,7 @@ function run({ mode, basepath = '' }) {
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/throw-an-error');
+						assert.equal(path, `${basepath}/blog/throw-an-error`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
