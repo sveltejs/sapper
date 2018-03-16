@@ -46,9 +46,9 @@ describe('sapper', function() {
 	// 	mode: 'development'
 	// });
 
-	run({
-		mode: 'production'
-	});
+	// run({
+	// 	mode: 'production'
+	// });
 
 	run({
 		mode: 'production',
@@ -300,9 +300,7 @@ function run({ mode, basepath = '' }) {
 			});
 
 			it('prefetches programmatically', () => {
-				return nightmare
-					.goto(`${base}/about`)
-					.init()
+				return capture(() => nightmare.goto(`${base}/about`).init())
 					.then(() => {
 						return capture(() => {
 							return nightmare

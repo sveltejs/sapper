@@ -38,6 +38,19 @@ process.on('message', message => {
 
 const app = express();
 
+const { PORT = 3000 } = process.env;
+
+// this allows us to do e.g. `fetch('/api/blog')` on the server
+const fetch = require('node-fetch');
+global.fetch = (url, opts) => {
+	url = resolve(`http://localhost:${PORT}${basepath}/`, url);
+	return fetch(url, opts);
+};
+
+app.use(compression({ threshold: 0 }));
+
+app.use(basepath, serve('assets'));
+
 app.use((req, res, next) => {
 	if (!pending) return next();
 
@@ -72,19 +85,6 @@ app.use((req, res, next) => {
 
 	next();
 });
-
-const { PORT = 3000 } = process.env;
-
-// this allows us to do e.g. `fetch('/api/blog')` on the server
-const fetch = require('node-fetch');
-global.fetch = (url, opts) => {
-	url = resolve(`http://localhost:${PORT}${basepath}/`, url);
-	return fetch(url, opts);
-};
-
-app.use(compression({ threshold: 0 }));
-
-app.use(basepath, serve('assets'));
 
 app.use(sapper({
 	routes
