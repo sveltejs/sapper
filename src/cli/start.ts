@@ -34,6 +34,6 @@ export async function start(dir: string, opts: { port: number, open: boolean }) 
 	});
 
 	await ports.wait(port);
-	console.log(`${clorox.bold.cyan(`> Listening on localhost:${port}`)}`);
+	console.log(`${clorox.bold.cyan(`> Listening on http://localhost:${port}`)}`);
 	if (opts.open) child_process.exec(`open http://localhost:${port}`);
 }

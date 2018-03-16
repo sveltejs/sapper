@@ -268,7 +268,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 				if (first) {
 					first = false;
-					console.log(`${clorox.bold.cyan(`> Listening on localhost:${port}`)}`);
+					console.log(`${clorox.bold.cyan(`> Listening on http://localhost:${port}`)}`);
 					if (opts.open) child_process.exec(`open http://localhost:${port}`);
 				}
 			});
