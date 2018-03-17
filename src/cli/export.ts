@@ -63,34 +63,37 @@ export async function exporter(export_dir: string, { basepath = '' }) {
 		sander.writeFileSync(export_dir, file, body);
 	});
 
-	function handle(url: URL) {
-		if (url.origin !== origin) return;
+	async function handle(url: URL) {
+		const r = await fetch(url.href);
+		const range = ~~(r.status / 100);
 
-		if (seen.has(url.pathname)) return;
-		seen.add(url.pathname);
+		if (range >= 4) {
+			console.log(`${clorox.red(`> Received ${r.status} response when fetching ${url.pathname}`)}`);
+			return;
+		}
 
-		return fetch(url.href)
-			.then(r => {
-				if (r.headers.get('Content-Type') === 'text/html') {
-					return r.text().then((body: string) => {
-						const $ = cheerio.load(body);
-						const hrefs: string[] = [];
+		if (range === 2) {
+			if (r.headers.get('Content-Type') === 'text/html') {
+				const body = await r.text();
+				const $ = cheerio.load(body);
+				const urls: URL[] = [];
 
-						$('a[href]').each((i: number, $a) => {
-							hrefs.push($a.attribs.href);
-						});
+				const base = new URL($('base').attr('href') || '/', url.href);
 
-						const base = new URL($('base').attr('href') || '/', url.href);
+				$('a[href]').each((i: number, $a) => {
+					const url = new URL($a.attribs.href, base.href);
 
-						return hrefs.reduce((promise, href) => {
-							return promise.then(() => handle(new URL(href, base.href)));
-						}, Promise.resolve());
-					});
+					if (url.origin === origin && !seen.has(url.pathname)) {
+						seen.add(url.pathname);
+						urls.push(url);
+					}
+				});
+
+				for (const url of urls) {
+					await handle(url);
 				}
-			})
-			.catch((err: Error) => {
-				console.log(`${clorox.red(`> Error rendering ${url.pathname}: ${err.message}`)}`);
-			});
+			}
+		}
 	}
 
 	return ports.wait(port)

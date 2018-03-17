@@ -31,12 +31,12 @@ process.on('message', message => {
 const app = express();
 
 const { PORT = 3000, BASEPATH } = process.env;
+const base = `http://localhost:${PORT}/${BASEPATH ? `${BASEPATH}/` : ''}`;
 
 // this allows us to do e.g. `fetch('/api/blog')` on the server
 const fetch = require('node-fetch');
 global.fetch = (url, opts) => {
-	url = resolve(`http://localhost:${PORT}${BASEPATH}/`, url);
-	return fetch(url, opts);
+	return fetch(resolve(base, url), opts);
 };
 
 const middlewares = [
@@ -86,6 +86,4 @@ if (BASEPATH) {
 	app.use(...middlewares);
 }
 
-app.listen(PORT, () => {
-	console.log(`listening on port ${PORT}`);
-});
+app.listen(PORT);
