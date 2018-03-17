@@ -1,7 +1,6 @@
 import fs from 'fs';
 import { resolve } from 'url';
 import express from 'express';
-import compression from 'compression';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
 import { basepath, routes } from './manifest/server.js';
@@ -40,48 +39,52 @@ global.fetch = (url, opts) => {
 	return fetch(url, opts);
 };
 
-app.use(compression({ threshold: 0 }));
+const middlewares = [
+	serve('assets'),
 
-app.use(basepath, serve('assets'));
+	(req, res, next) => {
+		if (!pending) return next();
 
-app.use((req, res, next) => {
-	if (!pending) return next();
+		pending.add(req.url);
 
-	pending.add(req.url);
+		const { write, end } = res;
+		const chunks = [];
 
-	const { write, end } = res;
-	const chunks = [];
+		res.write = function(chunk) {
+			chunks.push(new Buffer(chunk));
+			write.apply(res, arguments);
+		};
 
-	res.write = function(chunk) {
-		chunks.push(new Buffer(chunk));
-		write.apply(res, arguments);
-	};
+		res.end = function(chunk) {
+			if (chunk) chunks.push(new Buffer(chunk));
+			end.apply(res, arguments);
 
-	res.end = function(chunk) {
-		if (chunk) chunks.push(new Buffer(chunk));
-		end.apply(res, arguments);
+			if (pending) pending.delete(req.url);
 
-		if (pending) pending.delete(req.url);
+			process.send({
+				method: req.method,
+				url: req.url,
+				status: res.statusCode,
+				headers: res._headers,
+				body: Buffer.concat(chunks).toString()
+			});
 
-		process.send({
-			method: req.method,
-			url: req.url,
-			status: res.statusCode,
-			headers: res._headers,
-			body: Buffer.concat(chunks).toString()
-		});
+			if (pending && pending.size === 0 && ended) {
+				process.send({ type: 'done' });
+			}
+		};
 
-		if (pending && pending.size === 0 && ended) {
-			process.send({ type: 'done' });
-		}
-	};
+		next();
+	},
 
-	next();
-});
+	sapper({ routes })
+];
 
-app.use(sapper({
-	routes
-}));
+if (process.env.BASEPATH) {
+	app.use(process.env.BASEPATH, ...middlewares);
+} else {
+	app.use(...middlewares);
+}
 
 app.listen(PORT, () => {
 	console.log(`listening on port ${PORT}`);

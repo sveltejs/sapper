@@ -1,6 +1,4 @@
-import { basepath, locations, dev } from './config';
-
-const base = basepath() ? `/${basepath()}` : '';
+import { locations, dev } from './config';
 
 export default {
 	dev: dev(),
@@ -17,7 +15,7 @@ export default {
 				path: `${locations.dest()}/client`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
-				publicPath: `${base}/client/`
+				publicPath: `client/`
 			};
 		}
 	},
@@ -50,8 +48,7 @@ export default {
 			return {
 				path: locations.dest(),
 				filename: '[name].js',
-				chunkFilename: '[name].[id].[hash].js',
-				publicPath: base
+				chunkFilename: '[name].[id].[hash].js'
 			}
 		}
 	}

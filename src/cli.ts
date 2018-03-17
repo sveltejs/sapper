@@ -14,23 +14,18 @@ prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
-	.option('--basepath', 'Specify a base path')
-	.action(async (opts: { port: number, open: boolean, basepath: string }) => {
-		if (opts.basepath) process.env.SAPPER_BASEPATH = opts.basepath;
-
+	.action(async (opts: { port: number, open: boolean }) => {
 		const { dev } = await import('./cli/dev');
 		dev(opts);
 	});
 
 prog.command('build [dest]')
 	.describe('Create a production-ready version of your app')
-	.option('--basepath', 'Specify a base path')
-	.action(async (dest = 'build', opts: { basepath: string }) => {
+	.action(async (dest = 'build') => {
 		console.log(`> Building...`);
 
 		process.env.NODE_ENV = 'production';
 		process.env.SAPPER_DEST = dest;
-		if (opts.basepath) process.env.SAPPER_BASEPATH = opts.basepath;
 
 		const start = Date.now();
 
@@ -54,13 +49,11 @@ prog.command('start [dir]')
 
 prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
-	.option('--basepath', 'Specify a base path')
-	.action(async (dest = 'export', opts: { basepath: string }) => {
+	.action(async (dest = 'export') => {
 		console.log(`> Building...`);
 
 		process.env.NODE_ENV = 'production';
 		process.env.SAPPER_DEST = '.sapper/.export';
-		if (opts.basepath) process.env.SAPPER_BASEPATH = opts.basepath;
 
 		const start = Date.now();
 

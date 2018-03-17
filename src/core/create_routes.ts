@@ -1,6 +1,6 @@
 import * as path from 'path';
 import glob from 'glob';
-import { basepath, locations } from '../config';
+import { locations } from '../config';
 import { Route } from '../interfaces';
 
 export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), nodir: true }) }) {
@@ -26,8 +26,6 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			while (match = param_pattern.exec(base)) {
 				params.push(match[1]);
 			}
-
-			if (basepath()) parts.unshift(...basepath().split('/'));
 
 			// TODO can we do all this with sub-parts? or does
 			// nesting make that impossible?

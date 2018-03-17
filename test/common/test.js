@@ -149,14 +149,10 @@ function run({ mode, basepath = '' }) {
 		});
 
 		before(() => {
-			const flags = [
-				basepath && `--basepath ${basepath.replace('/', '')}` // TODO remove replace
-			].filter(Boolean).join(' ');
-
 			const promise = mode === 'production'
-				? exec(`node ${cli} build ${flags}`).then(() => ports.find(3000))
+				? exec(`node ${cli} build`).then(() => ports.find(3000))
 				: ports.find(3000).then(port => {
-					exec(`node ${cli} dev ${flags}`);
+					exec(`node ${cli} dev`);
 					return ports.wait(port).then(() => port);
 				});
 
@@ -170,7 +166,7 @@ function run({ mode, basepath = '' }) {
 					cwd: process.cwd(),
 					env: {
 						NODE_ENV: mode,
-						SAPPER_BASEPATH: basepath.replace('/', ''), // TODO remove replace
+						BASEPATH: basepath.replace('/', ''), // TODO remove replace
 						SAPPER_DEST: dir,
 						PORT: port
 					}

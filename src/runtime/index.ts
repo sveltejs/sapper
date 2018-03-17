@@ -1,6 +1,8 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
 import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Target } from './interfaces';
 
+const manifest = window.__SAPPER__;
+
 export let component: Component;
 let target: Node;
 let routes: Route[];
@@ -22,9 +24,12 @@ if ('scrollRestoration' in history) {
 
 function select_route(url: URL): Target {
 	if (url.origin !== window.location.origin) return null;
+	if (!url.pathname.startsWith(manifest.baseUrl)) return null;
+
+	const pathname = url.pathname.slice(manifest.baseUrl.length);
 
 	for (const route of routes) {
-		const match = route.pattern.exec(url.pathname);
+		const match = route.pattern.exec(pathname);
 		if (match) {
 			if (route.ignore) return null;
 
@@ -80,8 +85,8 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 		return { Component, data, redirect, error };
 	}
 
-	if (!component && window.__SAPPER__ && window.__SAPPER__.preloaded) {
-		return { Component, data: Object.assign(data, window.__SAPPER__.preloaded), redirect, error };
+	if (!component && manifest.preloaded) {
+		return { Component, data: Object.assign(data, manifest.preloaded), redirect, error };
 	}
 
 	return Promise.resolve(Component.preload.call({

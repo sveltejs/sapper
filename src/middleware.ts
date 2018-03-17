@@ -43,50 +43,52 @@ export default function middleware({ routes }: {
 }) {
 	const output = locations.dest();
 
-	const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json'), 'utf-8'));
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
-
-	const base = manifest.basepath ? `/${manifest.basepath}` : '';
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
-			req.originalPath = (req.originalUrl || req.url).replace(/\?.*/, '');
+			if (req.baseUrl === undefined) {
+				req.baseUrl = req.originalUrl
+					? req.originalUrl.slice(0, -req.url.length)
+					: '';
+			}
+
+			if (req.path === undefined) {
+				req.path = req.url.replace(/\?.*/, '');
+			}
+
 			next();
 		},
 
 		fs.existsSync(path.join(output, 'index.html')) && serve({
-			base,
-			pathname: 'index.html',
+			pathname: '/index.html',
 			cache_control: 'max-age=600'
 		}),
 
 		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
-			base,
-			pathname: 'service-worker.js',
+			pathname: '/service-worker.js',
 			cache_control: 'max-age=600'
 		}),
 
 		serve({
-			base,
-			prefix: 'client/',
+			prefix: '/client/',
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_info.assetsByChunkName, routes, base)
+		get_route_handler(client_info.assetsByChunkName, routes)
 	].filter(Boolean));
 
 	return middleware;
 }
 
-function serve({ base, prefix, pathname, cache_control }: {
-	base: string,
+function serve({ prefix, pathname, cache_control }: {
 	prefix?: string,
 	pathname?: string,
 	cache_control: string
 }) {
 	const filter = pathname
-		? (req: Req) => req.originalPath === `${base}/${pathname}`
-		: (req: Req) => req.originalPath.startsWith(`${base}/${prefix}`);
+		? (req: Req) => req.path === pathname
+		: (req: Req) => req.path.startsWith(prefix);
 
 	const output = locations.dest();
 
@@ -98,10 +100,10 @@ function serve({ base, prefix, pathname, cache_control }: {
 
 	return (req: Req, res: ServerResponse, next: () => void) => {
 		if (filter(req)) {
-			const type = lookup(req.originalPath);
+			const type = lookup(req.path);
 
 			try {
-				const data = read(req.originalPath.slice(base.length + 1));
+				const data = read(req.path.slice(1));
 
 				res.setHeader('Content-Type', type);
 				res.setHeader('Cache-Control', cache_control);
@@ -118,13 +120,13 @@ function serve({ base, prefix, pathname, cache_control }: {
 
 const resolved = Promise.resolve();
 
-function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], base: string) {
+function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
 	const template = dev()
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
-		req.params = route.params(route.pattern.exec(req.originalPath));
+		req.params = route.params(route.pattern.exec(req.path));
 
 		const mod = route.module;
 
@@ -135,7 +137,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			// TODO detect other stuff we can preload? images, CSS, fonts?
 			const link = []
 				.concat(chunks.main, chunks[route.id])
-				.map(file => `<${base}/client/${file}>;rel="preload";as="script"`)
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 				.join(', ');
 
 			res.setHeader('Link', link);
@@ -159,7 +161,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			}).then(preloaded => {
 				if (redirect) {
 					res.statusCode = redirect.statusCode;
-					res.setHeader('Location', `${base}/${redirect.location}`);
+					res.setHeader('Location', `${req.baseUrl}/${redirect.location}`);
 					res.end();
 
 					return;
@@ -177,20 +179,22 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
-					.map(file => `<script src='${base}/client/${file}'></script>`)
+					.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 					.join('');
 
-				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
-				const inline_script = [
-					mod.preload && serialized && `__SAPPER__={preloaded: ${serialized}}`,
-					has_service_worker && `if ('serviceWorker' in navigator) navigator.serviceWorker.register('${base}/service-worker.js')`
-				].filter(Boolean).join(';');
+				let inline_script = `__SAPPER__={${[
+					`baseUrl: "${req.baseUrl}"`,
+					mod.preload && serialized && `preloaded: ${serialized}`,
+				].filter(Boolean).join(',')}}`
 
-				if (inline_script) scripts = `<script>${inline_script}</script>${scripts}`;
+				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
+				if (has_service_worker) {
+					`if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js')`
+				}
 
 				const page = template()
-					.replace('%sapper.base%', `<base href="${base}/">`)
-					.replace('%sapper.scripts%', scripts)
+					.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
+					.replace('%sapper.scripts%', `<script>${inline_script}</script>${scripts}`)
 					.replace('%sapper.html%', html)
 					.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 					.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
@@ -297,8 +301,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		const { head, css, html } = rendered;
 
 		const page = template()
-			.replace('%sapper.base%', `<base href="${base}/">`)
-			.replace('%sapper.scripts%', `<script src='${base}/client/${chunks.main}'></script>`)
+			.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
+			.replace('%sapper.scripts%', `<script>__SAPPER__={baseUrl: "${req.baseUrl}"}</script><script src='${req.baseUrl}/client/${chunks.main}'></script>`)
 			.replace('%sapper.html%', html)
 			.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 			.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
@@ -307,11 +311,9 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 	}
 
 	return function find_route(req: Req, res: ServerResponse) {
-		const url = req.originalPath;
-
 		try {
 			for (const route of routes) {
-				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
+				if (!route.error && route.pattern.test(req.path)) return handle_route(route, req, res);
 			}
 
 			handle_error(req, res, 404, 'Not found');
