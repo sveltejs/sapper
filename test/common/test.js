@@ -7,9 +7,15 @@ const fetch = require('node-fetch');
 const rimraf = require('rimraf');
 const ports = require('port-authority');
 
+process.on('SIGINT', () => console.log(process._getActiveHandles()) );
+
 Nightmare.action('page', {
 	title(done) {
 		this.evaluate_now(() => document.querySelector('h1').textContent, done);
+	},
+
+	html(done) {
+		this.evaluate_now(() => document.documentElement.innerHTML, done);
 	},
 
 	text(done) {
@@ -35,11 +41,21 @@ describe('sapper', function() {
 	rimraf.sync('build');
 	rimraf.sync('.sapper');
 
-	this.timeout(30000);
+	this.timeout(process.env.CI ? 30000 : 5000);
 
 	// TODO reinstate dev tests
-	// run('development');
-	run('production');
+	// run({
+	// 	mode: 'development'
+	// });
+
+	run({
+		mode: 'production'
+	});
+
+	run({
+		mode: 'production',
+		basepath: '/custom-basepath'
+	});
 
 	describe('export', () => {
 		before(() => {
@@ -111,31 +127,50 @@ describe('sapper', function() {
 	});
 });
 
-function run(env) {
-	describe(`env=${env}`, function () {
+function run({ mode, basepath = '' }) {
+	describe(`mode=${mode}`, function () {
 		let proc;
-		let nightmare;
 		let capture;
 
 		let base;
 
+		const nightmare = new Nightmare();
+
+		nightmare.on('console', (type, ...args) => {
+			console[type](...args);
+		});
+
+		nightmare.on('page', (type, ...args) => {
+			if (type === 'error') {
+				console.error(args[1]);
+			} else {
+				console.warn(type, args);
+			}
+		});
+
 		before(() => {
-			const promise = env === 'production'
-				? exec(`node ${cli} build`).then(() => ports.find(3000))
+			const flags = [
+				basepath && `--basepath ${basepath.replace('/', '')}` // TODO remove replace
+			].filter(Boolean).join(' ');
+
+			const promise = mode === 'production'
+				? exec(`node ${cli} build ${flags}`).then(() => ports.find(3000))
 				: ports.find(3000).then(port => {
-					exec(`node ${cli} dev`);
+					exec(`node ${cli} dev ${flags}`);
 					return ports.wait(port).then(() => port);
 				});
 
 			return promise.then(port => {
 				base = `http://localhost:${port}`;
+				if (basepath) base += basepath;
 
-				const dir = env === 'production' ? 'build' : '.sapper';
+				const dir = mode === 'production' ? 'build' : '.sapper';
 
 				proc = require('child_process').fork(`${dir}/server.js`, {
 					cwd: process.cwd(),
 					env: {
-						NODE_ENV: env,
+						NODE_ENV: mode,
+						SAPPER_BASEPATH: basepath.replace('/', ''), // TODO remove replace
 						SAPPER_DEST: dir,
 						PORT: port
 					}
@@ -183,30 +218,13 @@ function run(env) {
 
 		after(() => {
 			// give a chance to clean up
-			return new Promise(fulfil => {
-				proc.on('exit', fulfil);
-				proc.kill();
-			});
-		});
-
-		beforeEach(() => {
-			nightmare = new Nightmare();
-
-			nightmare.on('console', (type, ...args) => {
-				console[type](...args);
-			});
-
-			nightmare.on('page', (type, ...args) => {
-				if (type === 'error') {
-					console.error(args[1]);
-				} else {
-					console.warn(type, args);
-				}
-			});
-		});
-
-		afterEach(() => {
-			return nightmare.end();
+			return Promise.all([
+				nightmare.end(),
+				new Promise(fulfil => {
+					proc.on('exit', fulfil);
+					proc.kill();
+				})
+			]);
 		});
 
 		describe('basic functionality', () => {
@@ -235,16 +253,16 @@ function run(env) {
 			});
 
 			it('navigates to a new page without reloading', () => {
-				return capture(() => nightmare.goto(base).init().prefetchRoutes())
+				return nightmare.goto(base).init().prefetchRoutes()
 					.then(() => {
-						return capture(() => nightmare.click('a[href="/about"]'));
+						return capture(() => nightmare.click('a[href="about"]'));
 					})
 					.then(requests => {
 						assert.deepEqual(requests.map(r => r.url), []);
 						return nightmare.path();
 					})
 					.then(path => {
-						assert.equal(path, '/about');
+						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
 					})
 					.then(title => {
@@ -257,7 +275,7 @@ function run(env) {
 					.goto(`${base}/about`)
 					.init()
 					.click('.goto')
-					.wait(() => window.location.pathname === '/blog/what-is-sapper')
+					.wait(url => window.location.pathname === url, `${basepath}/blog/what-is-sapper`)
 					.wait(100)
 					.title()
 					.then(title => {
@@ -266,9 +284,7 @@ function run(env) {
 			});
 
 			it('prefetches programmatically', () => {
-				return nightmare
-					.goto(`${base}/about`)
-					.init()
+				return capture(() => nightmare.goto(`${base}/about`).init())
 					.then(() => {
 						return capture(() => {
 							return nightmare
@@ -277,7 +293,7 @@ function run(env) {
 						});
 					})
 					.then(requests => {
-						assert.ok(!!requests.find(r => r.url === '/blog/why-the-name.json'));
+						assert.ok(!!requests.find(r => r.url === `${basepath}/blog/why-the-name.json`));
 					});
 			});
 
@@ -298,21 +314,21 @@ function run(env) {
 					.then(() => {
 						return capture(() => {
 							return nightmare
-								.mouseover('[href="/blog/what-is-sapper"]')
+								.mouseover('[href="blog/what-is-sapper"]')
 								.wait(200);
 						});
 					})
 					.then(mouseover_requests => {
-						assert.ok(mouseover_requests.findIndex(r => r.url === '/blog/what-is-sapper.json') !== -1);
+						assert.ok(mouseover_requests.findIndex(r => r.url === `${basepath}/blog/what-is-sapper.json`) !== -1);
 
 						return capture(() => {
 							return nightmare
-								.click('[href="/blog/what-is-sapper"]')
+								.click('[href="blog/what-is-sapper"]')
 								.wait(200);
 						});
 					})
 					.then(click_requests => {
-						assert.ok(click_requests.findIndex(r => r.url === '/blog/what-is-sapper.json') === -1);
+						assert.ok(click_requests.findIndex(r => r.url === `${basepath}/blog/what-is-sapper.json`) === -1);
 					});
 			});
 
@@ -320,13 +336,13 @@ function run(env) {
 				return nightmare
 					.goto(base)
 					.init()
-					.click('a[href="/slow-preload"]')
+					.click('a[href="slow-preload"]')
 					.wait(100)
-					.click('a[href="/about"]')
+					.click('a[href="about"]')
 					.wait(100)
 					.then(() => nightmare.path())
 					.then(path => {
-						assert.equal(path, '/about');
+						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
 					})
 					.then(title => {
@@ -335,7 +351,7 @@ function run(env) {
 					})
 					.then(() => nightmare.path())
 					.then(path => {
-						assert.equal(path, '/about');
+						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
 					})
 					.then(title => {
@@ -348,8 +364,8 @@ function run(env) {
 					.goto(`${base}/show-url`)
 					.init()
 					.evaluate(() => document.querySelector('p').innerHTML)
-					.end().then(html => {
-						assert.equal(html, `URL is /show-url`);
+					.then(html => {
+						assert.equal(html, `URL is ${basepath}/show-url`);
 					});
 			});
 
@@ -384,7 +400,7 @@ function run(env) {
 				return nightmare.goto(`${base}/redirect-from`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/redirect-to');
+						assert.equal(path, `${basepath}/redirect-to`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -394,12 +410,12 @@ function run(env) {
 
 			it('redirects in client', () => {
 				return nightmare.goto(base)
-					.wait('[href="/redirect-from"]')
-					.click('[href="/redirect-from"]')
+					.wait('[href="redirect-from"]')
+					.click('[href="redirect-from"]')
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/redirect-to');
+						assert.equal(path, `${basepath}/redirect-to`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -411,7 +427,7 @@ function run(env) {
 				return nightmare.goto(`${base}/blog/nope`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/nope');
+						assert.equal(path, `${basepath}/blog/nope`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -422,11 +438,11 @@ function run(env) {
 			it('handles 4xx error in client', () => {
 				return nightmare.goto(base)
 					.init()
-					.click('[href="/blog/nope"]')
+					.click('[href="blog/nope"]')
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/nope');
+						assert.equal(path, `${basepath}/blog/nope`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -438,7 +454,7 @@ function run(env) {
 				return nightmare.goto(`${base}/blog/throw-an-error`)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/throw-an-error');
+						assert.equal(path, `${basepath}/blog/throw-an-error`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -449,11 +465,11 @@ function run(env) {
 			it('handles non-4xx error in client', () => {
 				return nightmare.goto(base)
 					.init()
-					.click('[href="/blog/throw-an-error"]')
+					.click('[href="blog/throw-an-error"]')
 					.wait(200)
 					.path()
 					.then(path => {
-						assert.equal(path, '/blog/throw-an-error');
+						assert.equal(path, `${basepath}/blog/throw-an-error`);
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
@@ -464,7 +480,7 @@ function run(env) {
 			it('does not attempt client-side navigation to server routes', () => {
 				return nightmare.goto(`${base}/blog/how-is-sapper-different-from-next`)
 					.init()
-					.click(`[href="/blog/how-is-sapper-different-from-next.json"]`)
+					.click(`[href="blog/how-is-sapper-different-from-next.json"]`)
 					.wait(200)
 					.page.text()
 					.then(text => {
@@ -515,7 +531,7 @@ function run(env) {
 
 		describe('headers', () => {
 			it('sets Content-Type and Link...preload headers', () => {
-				return capture(() => nightmare.goto(base).end()).then(requests => {
+				return capture(() => nightmare.goto(base)).then(requests => {
 					const { headers } = requests[0];
 
 					assert.equal(
@@ -523,8 +539,16 @@ function run(env) {
 						'text/html'
 					);
 
+					const str = ['main', '_\\.\\d+']
+						.map(file => {
+							return `<${basepath}/client/[^/]+/${file}\\.js>;rel="preload";as="script"`;
+						})
+						.join(', ');
+
+					const regex = new RegExp(str);
+
 					assert.ok(
-						/<\/client\/[^/]+\/main\.js>;rel="preload";as="script", <\/client\/[^/]+\/_\.\d+\.js>;rel="preload";as="script"/.test(headers['link']),
+						regex.test(headers['link']),
 						headers['link']
 					);
 				});
@@ -535,7 +559,7 @@ function run(env) {
 
 function exec(cmd) {
 	return new Promise((fulfil, reject) => {
-		const parts = cmd.split(' ');
+		const parts = cmd.trim().split(' ');
 		const proc = require('child_process').spawn(parts.shift(), parts);
 
 		proc.stdout.on('data', data => {

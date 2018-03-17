@@ -2,6 +2,8 @@ import * as path from 'path';
 
 export const dev = () => process.env.NODE_ENV !== 'production';
 
+export const basepath = () => process.env.SAPPER_BASEPATH || '';
+
 export const locations = {
 	base:   () => path.resolve(process.env.SAPPER_BASE || ''),
 	app:    () => path.resolve(process.env.SAPPER_BASE || '', process.env.SAPPER_APP    || 'app'),

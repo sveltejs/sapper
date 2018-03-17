@@ -9,7 +9,7 @@ import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
 import prettyMs from 'pretty-ms';
 import * as ports from 'port-authority';
-import { locations } from '../config';
+import { basepath, locations } from '../config';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 
 type Deferred = {
@@ -89,6 +89,10 @@ export async function dev(opts: { port: number, open: boolean }) {
 	mkdirp.sync(dir);
 
 	const dev_port = await ports.find(10000);
+
+	fs.writeFileSync(`${dir}/manifest.json`, JSON.stringify({
+		basepath: basepath()
+	}, null, '  '));
 
 	const routes = create_routes();
 	create_main_manifests({ routes, dev_port });
@@ -259,7 +263,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify(info, null, '  '));
 			deferreds.client.fulfil();
 
-			const client_files = info.assets.map((chunk: { name: string }) => `/client/${chunk.name}`);
+			const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
 
 			deferreds.server.promise.then(() => {
 				hot_update_server.send({

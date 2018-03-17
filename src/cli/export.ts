@@ -8,7 +8,7 @@ import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import prettyBytes from 'pretty-bytes';
 import { minify_html } from './utils/minify_html';
-import { locations } from '../config';
+import { basepath, locations } from '../config';
 
 export async function exporter(export_dir: string) {
 	const build_dir = locations.dest();
@@ -74,12 +74,14 @@ export async function exporter(export_dir: string) {
 						const $ = cheerio.load(body);
 						const hrefs: string[] = [];
 
+						const base = new URL($('base').attr('href') || '', origin);
+
 						$('a[href]').each((i: number, $a) => {
 							hrefs.push($a.attribs.href);
 						});
 
 						return hrefs.reduce((promise, href) => {
-							return promise.then(() => handle(new URL(href, url.href)));
+							return promise.then(() => handle(new URL(href, base.href)));
 						}, Promise.resolve());
 					});
 				}
@@ -90,6 +92,6 @@ export async function exporter(export_dir: string) {
 	}
 
 	return ports.wait(port)
-		.then(() => handle(new URL(origin))) // TODO all static routes
+		.then(() => handle(new URL(basepath(), origin))) // TODO all static routes
 		.then(() => proc.kill());
 }

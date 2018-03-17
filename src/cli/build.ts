@@ -5,7 +5,7 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { minify_html } from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core'
-import { locations } from '../config';
+import { basepath, locations } from '../config';
 
 export async function build() {
 	const output = locations.dest();
@@ -34,7 +34,7 @@ export async function build() {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `/client/${chunk.name}`)
+			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
 		});
 
 		serviceworker_stats = await compile(serviceworker);
@@ -46,6 +46,11 @@ export async function build() {
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
 	const template = fs.readFileSync(`${locations.app()}/template.html`, 'utf-8');
 	fs.writeFileSync(`${output}/template.html`, minify_html(template));
+
+	// write out a manifest
+	fs.writeFileSync(`${output}/manifest.json`, JSON.stringify({
+		basepath: basepath()
+	}, null, '  '));
 }
 
 function compile(compiler: any) {
