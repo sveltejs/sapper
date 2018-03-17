@@ -385,7 +385,7 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('calls a delete handler', () => {
+			it.skip('calls a delete handler', () => {
 				return nightmare
 					.goto(`${base}/delete-test`)
 					.init()
@@ -555,8 +555,16 @@ function run({ mode, basepath = '' }) {
 						'text/html'
 					);
 
+					const str = ['main', '_\\.\\d+']
+						.map(file => {
+							return `<${basepath}/client/[^/]+/${file}\\.js>;rel="preload";as="script"`;
+						})
+						.join(', ');
+
+					const regex = new RegExp(str);
+
 					assert.ok(
-						/<\/client\/[^/]+\/main\.js>;rel="preload";as="script", <\/client\/[^/]+\/_\.\d+\.js>;rel="preload";as="script"/.test(headers['link']),
+						regex.test(headers['link']),
 						headers['link']
 					);
 				});

@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { resolve } from 'url';
 import { ClientRequest, ServerResponse } from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import devalue from 'devalue';
 import { lookup } from './middleware/mime';
 import { create_routes, create_compilers } from './core';
-import { basepath, locations, dev } from './config';
+import { locations, dev } from './config';
 import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
 
@@ -41,9 +42,11 @@ export default function middleware({ routes }: {
 	routes: RouteObject[]
 }) {
 	const output = locations.dest();
-	const base = basepath() ? `/${basepath()}` : '';
 
+	const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json'), 'utf-8'));
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
+
+	const base = manifest.basepath ? `/${manifest.basepath}` : '';
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
@@ -156,7 +159,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			}).then(preloaded => {
 				if (redirect) {
 					res.statusCode = redirect.statusCode;
-					res.setHeader('Location', redirect.location);
+					res.setHeader('Location', `${base}/${redirect.location}`);
 					res.end();
 
 					return;
