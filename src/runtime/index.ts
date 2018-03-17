@@ -1,10 +1,11 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Target } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Store, Target } from './interfaces';
 
 const manifest = typeof window !== 'undefined' && window.__SAPPER__;
 
 export let component: Component;
 let target: Node;
+let store: Store;
 let routes: Route[];
 let errors: { '4xx': Route, '5xx': Route };
 
@@ -69,6 +70,7 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 	component = new Component({
 		target,
 		data,
+		store,
 		hydrate: !component
 	});
 
@@ -227,13 +229,17 @@ function handle_touchstart_mouseover(event: MouseEvent | TouchEvent) {
 
 let inited: boolean;
 
-export function init(_target: Node, _routes: Route[]) {
+export function init(_target: Node, _routes: Route[], opts?: { store?: (data: any) => Store }) {
 	target = _target;
 	routes = _routes.filter(r => !r.error);
 	errors = {
 		'4xx': _routes.find(r => r.error === '4xx'),
 		'5xx': _routes.find(r => r.error === '5xx')
 	};
+
+	if (opts && opts.store) {
+		store = opts.store(manifest.store);
+	}
 
 	if (!inited) { // this check makes HMR possible
 		window.addEventListener('click', handle_click);

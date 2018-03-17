@@ -13,3 +13,7 @@ export type Template = {
 	render: (data: Record<string, string>) => string;
 	stream: (req, res, data: Record<string, string | Promise<string>>) => void;
 };
+
+export type Store = {
+	get: () => any;
+};

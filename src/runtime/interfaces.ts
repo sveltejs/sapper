@@ -1,9 +1,12 @@
+import { Store } from '../interfaces';
+
+export { Store };
 export type Params = Record<string, string>;
 export type Query = Record<string, string | true>;
 export type RouteData = { params: Params, query: Query };
 
 export interface ComponentConstructor {
-	new (options: { target: Node, data: any, hydrate: boolean }): Component;
+	new (options: { target: Node, data: any, store: Store, hydrate: boolean }): Component;
 	preload: (data: { params: Params, query: Query }) => Promise<any>;
 };
 

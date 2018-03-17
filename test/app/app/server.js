@@ -3,6 +3,7 @@ import { resolve } from 'url';
 import express from 'express';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
+import { Store } from 'svelte/store.js';
 import { routes } from './manifest/server.js';
 
 let pending;
@@ -77,7 +78,14 @@ const middlewares = [
 		next();
 	},
 
-	sapper({ routes })
+	sapper({
+		routes,
+		store: () => {
+			return new Store({
+				title: 'Stored title'
+			});
+		}
+	})
 ];
 
 if (BASEPATH) {

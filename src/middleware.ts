@@ -19,7 +19,7 @@ type RouteObject = {
 	pattern: RegExp;
 	params: (match: RegExpMatchArray) => Record<string, string>;
 	module: {
-		render: (data: any) => {
+		render: (data: any, opts: { store: Store }) => {
 			head: string;
 			css: { code: string, map: any };
 			html: string
@@ -31,15 +31,22 @@ type RouteObject = {
 
 type Handler = (req: Req, res: ServerResponse, next: () => void) => void;
 
+type Store = {
+	get: () => any
+};
+
 interface Req extends ClientRequest {
 	url: string;
+	baseUrl: string;
+	originalUrl: string;
 	method: string;
-	pathname: string;
+	path: string;
 	params: Record<string, string>;
 }
 
-export default function middleware({ routes }: {
-	routes: RouteObject[]
+export default function middleware({ routes, store }: {
+	routes: RouteObject[],
+	store: (req: Req) => Store
 }) {
 	const output = locations.dest();
 
@@ -75,7 +82,7 @@ export default function middleware({ routes }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_info.assetsByChunkName, routes)
+		get_route_handler(client_info.assetsByChunkName, routes, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -120,7 +127,7 @@ function serve({ prefix, pathname, cache_control }: {
 
 const resolved = Promise.resolve();
 
-function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]) {
+function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], store_getter: (req: Req) => Store) {
 	const template = dev()
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
@@ -142,6 +149,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 			res.setHeader('Link', link);
 
+			const store = store_getter ? store_getter(req) : null;
 			const data = { params: req.params, query: req.query };
 
 			let redirect: { statusCode: number, location: string };
@@ -154,7 +162,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					},
 					error: (statusCode: number, message: Error | string) => {
 						error = { statusCode, message };
-					}
+					},
+					store
 				}, req) : {}
 			).catch(err => {
 				error = { statusCode: 500, message: err };
@@ -172,10 +181,15 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					return;
 				}
 
-				const serialized = try_serialize(preloaded); // TODO bail on non-POJOs
+				const serialized = {
+					preloaded: mod.preload && try_serialize(preloaded),
+					store: store && try_serialize(store.get())
+				};
 				Object.assign(data, preloaded);
 
-				const { html, head, css } = mod.render(data);
+				const { html, head, css } = mod.render(data, {
+					store
+				});
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
@@ -184,7 +198,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let inline_script = `__SAPPER__={${[
 					`baseUrl: "${req.baseUrl}"`,
-					mod.preload && serialized && `preloaded: ${serialized}`,
+					serialized.preloaded && `preloaded: ${serialized.preloaded}`,
+					serialized.store && `store: ${serialized.store}`
 				].filter(Boolean).join(',')}}`
 
 				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));

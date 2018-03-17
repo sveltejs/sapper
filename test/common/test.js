@@ -521,6 +521,18 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, '42');
 					});
 			});
+
+			it('renders store props', () => {
+				return nightmare.goto(`${base}/store`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'Stored title');
+						return nightmare.init().page.title();
+					})
+					.then(title => {
+						assert.equal(title, 'Stored title');
+					});
+			});
 		});
 
 		describe('headers', () => {
