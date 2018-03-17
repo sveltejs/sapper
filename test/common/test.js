@@ -39,7 +39,7 @@ describe('sapper', function() {
 	rimraf.sync('build');
 	rimraf.sync('.sapper');
 
-	this.timeout(process.env.CI ? 30000 : 5000);
+	this.timeout(process.env.CI ? 30000 : 10000);
 
 	// TODO reinstate dev tests
 	// run({
