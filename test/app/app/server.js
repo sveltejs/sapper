@@ -27,13 +27,6 @@ process.on('message', message => {
 			pending = null;
 		}
 	}
-
-	if (message.action === 'shutdown') {
-		// a test failed; shut it down
-		ended = true;
-		pending = null;
-		process.send({ type: 'shutdown' }); // acknowledge
-	}
 });
 
 const app = express();

@@ -7,6 +7,8 @@ const fetch = require('node-fetch');
 const rimraf = require('rimraf');
 const ports = require('port-authority');
 
+process.on('SIGINT', () => console.log(process._getActiveHandles()) );
+
 Nightmare.action('page', {
 	title(done) {
 		this.evaluate_now(() => document.querySelector('h1').textContent, done);
@@ -46,9 +48,9 @@ describe('sapper', function() {
 	// 	mode: 'development'
 	// });
 
-	// run({
-	// 	mode: 'production'
-	// });
+	run({
+		mode: 'production'
+	});
 
 	run({
 		mode: 'production',
@@ -128,10 +130,23 @@ describe('sapper', function() {
 function run({ mode, basepath = '' }) {
 	describe(`mode=${mode}`, function () {
 		let proc;
-		let nightmare;
 		let capture;
 
 		let base;
+
+		const nightmare = new Nightmare();
+
+		nightmare.on('console', (type, ...args) => {
+			console[type](...args);
+		});
+
+		nightmare.on('page', (type, ...args) => {
+			if (type === 'error') {
+				console.error(args[1]);
+			} else {
+				console.warn(type, args);
+			}
+		});
 
 		before(() => {
 			const flags = [
@@ -203,42 +218,11 @@ function run({ mode, basepath = '' }) {
 
 		after(() => {
 			// give a chance to clean up
-			return new Promise(fulfil => {
-				proc.on('exit', fulfil);
-				proc.kill();
-			});
-		});
-
-		beforeEach(() => {
-			nightmare = new Nightmare();
-
-			nightmare.on('console', (type, ...args) => {
-				console[type](...args);
-			});
-
-			nightmare.on('page', (type, ...args) => {
-				if (type === 'error') {
-					console.error(args[1]);
-				} else {
-					console.warn(type, args);
-				}
-			});
-		});
-
-		afterEach(() => {
 			return Promise.all([
 				nightmare.end(),
-				new Promise((fulfil) => {
-					proc.on('message', function handler(message) {
-						if (message.type === 'shutdown') {
-							proc.removeListener('message', handler);
-							fulfil();
-						}
-					});
-
-					proc.send({
-						action: 'shutdown'
-					});
+				new Promise(fulfil => {
+					proc.on('exit', fulfil);
+					proc.kill();
 				})
 			]);
 		});
@@ -380,12 +364,12 @@ function run({ mode, basepath = '' }) {
 					.goto(`${base}/show-url`)
 					.init()
 					.evaluate(() => document.querySelector('p').innerHTML)
-					.end().then(html => {
+					.then(html => {
 						assert.equal(html, `URL is ${basepath}/show-url`);
 					});
 			});
 
-			it.skip('calls a delete handler', () => {
+			it('calls a delete handler', () => {
 				return nightmare
 					.goto(`${base}/delete-test`)
 					.init()
@@ -547,7 +531,7 @@ function run({ mode, basepath = '' }) {
 
 		describe('headers', () => {
 			it('sets Content-Type and Link...preload headers', () => {
-				return capture(() => nightmare.goto(base).end()).then(requests => {
+				return capture(() => nightmare.goto(base)).then(requests => {
 					const { headers } = requests[0];
 
 					assert.equal(
