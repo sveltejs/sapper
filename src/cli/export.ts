@@ -10,8 +10,10 @@ import prettyBytes from 'pretty-bytes';
 import { minify_html } from './utils/minify_html';
 import { locations } from '../config';
 
-export async function exporter(export_dir: string) {
+export async function exporter(export_dir: string, { basepath = '' }) {
 	const build_dir = locations.dest();
+
+	export_dir = path.join(export_dir, basepath);
 
 	// Prep output directory
 	sander.rimrafSync(export_dir);
@@ -58,7 +60,7 @@ export async function exporter(export_dir: string) {
 
 		console.log(`${clorox.bold.cyan(file)} ${clorox.gray(`(${prettyBytes(body.length)})`)}`);
 
-		sander.writeFileSync(`${export_dir}/${file}`, body);
+		sander.writeFileSync(export_dir, file, body);
 	});
 
 	function handle(url: URL) {
@@ -78,8 +80,10 @@ export async function exporter(export_dir: string) {
 							hrefs.push($a.attribs.href);
 						});
 
+						const base = new URL($('base').attr('href') || '/', url.href);
+
 						return hrefs.reduce((promise, href) => {
-							return promise.then(() => handle(new URL(href, url.href)));
+							return promise.then(() => handle(new URL(href, base.href)));
 						}, Promise.resolve());
 					});
 				}
@@ -90,6 +94,6 @@ export async function exporter(export_dir: string) {
 	}
 
 	return ports.wait(port)
-		.then(() => handle(new URL(origin))) // TODO all static routes
+		.then(() => handle(new URL(`/${basepath}`, origin))) // TODO all static routes
 		.then(() => proc.kill());
 }
