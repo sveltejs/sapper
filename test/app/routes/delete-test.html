@@ -4,7 +4,7 @@
 	export default {
 		methods: {
 			del() {
-				fetch(`/api/delete/42`, { method: 'DELETE' })
+				fetch(`api/delete/42`, { method: 'DELETE' })
 					.then(r => r.json())
 					.then(data => {
 						window.deleted = data;

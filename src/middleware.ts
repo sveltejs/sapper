@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { resolve } from 'url';
 import { ClientRequest, ServerResponse } from 'http';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
@@ -46,7 +47,16 @@ export default function middleware({ routes }: {
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
-			req.pathname = req.url.replace(/\?.*/, '');
+			if (req.baseUrl === undefined) {
+				req.baseUrl = req.originalUrl
+					? req.originalUrl.slice(0, -req.url.length)
+					: '';
+			}
+
+			if (req.path === undefined) {
+				req.path = req.url.replace(/\?.*/, '');
+			}
+
 			next();
 		},
 
@@ -77,8 +87,8 @@ function serve({ prefix, pathname, cache_control }: {
 	cache_control: string
 }) {
 	const filter = pathname
-		? (req: Req) => req.pathname === pathname
-		: (req: Req) => req.pathname.startsWith(prefix);
+		? (req: Req) => req.path === pathname
+		: (req: Req) => req.path.startsWith(prefix);
 
 	const output = locations.dest();
 
@@ -90,10 +100,10 @@ function serve({ prefix, pathname, cache_control }: {
 
 	return (req: Req, res: ServerResponse, next: () => void) => {
 		if (filter(req)) {
-			const type = lookup(req.pathname);
+			const type = lookup(req.path);
 
 			try {
-				const data = read(req.pathname.slice(1));
+				const data = read(req.path.slice(1));
 
 				res.setHeader('Content-Type', type);
 				res.setHeader('Cache-Control', cache_control);
@@ -116,7 +126,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
-		req.params = route.params(route.pattern.exec(req.pathname));
+		req.params = route.params(route.pattern.exec(req.path));
 
 		const mod = route.module;
 
@@ -127,7 +137,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			// TODO detect other stuff we can preload? images, CSS, fonts?
 			const link = []
 				.concat(chunks.main, chunks[route.id])
-				.map(file => `</client/${file}>;rel="preload";as="script"`)
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 				.join(', ');
 
 			res.setHeader('Link', link);
@@ -151,7 +161,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			}).then(preloaded => {
 				if (redirect) {
 					res.statusCode = redirect.statusCode;
-					res.setHeader('Location', redirect.location);
+					res.setHeader('Location', `${req.baseUrl}/${redirect.location}`);
 					res.end();
 
 					return;
@@ -169,13 +179,22 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
-					.map(file => `<script src='/client/${file}'></script>`)
+					.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 					.join('');
 
-				scripts = `<script>__SAPPER__ = { preloaded: ${serialized} };</script>${scripts}`;
+				let inline_script = `__SAPPER__={${[
+					`baseUrl: "${req.baseUrl}"`,
+					mod.preload && serialized && `preloaded: ${serialized}`,
+				].filter(Boolean).join(',')}}`
+
+				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
+				if (has_service_worker) {
+					`if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js')`
+				}
 
 				const page = template()
-					.replace('%sapper.scripts%', scripts)
+					.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
+					.replace('%sapper.scripts%', `<script>${inline_script}</script>${scripts}`)
 					.replace('%sapper.html%', html)
 					.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 					.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
@@ -282,7 +301,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		const { head, css, html } = rendered;
 
 		const page = template()
-			.replace('%sapper.scripts%', `<script src='/client/${chunks.main}'></script>`)
+			.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
+			.replace('%sapper.scripts%', `<script>__SAPPER__={baseUrl: "${req.baseUrl}"}</script><script src='${req.baseUrl}/client/${chunks.main}'></script>`)
 			.replace('%sapper.html%', html)
 			.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 			.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
@@ -291,11 +311,9 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 	}
 
 	return function find_route(req: Req, res: ServerResponse) {
-		const url = req.pathname;
-
 		try {
 			for (const route of routes) {
-				if (!route.error && route.pattern.test(url)) return handle_route(route, req, res);
+				if (!route.error && route.pattern.test(req.path)) return handle_route(route, req, res);
 			}
 
 			handle_error(req, res, 404, 'Not found');

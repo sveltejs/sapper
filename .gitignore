@@ -7,8 +7,7 @@ test/app/.sapper
 test/app/app/manifest
 test/app/export
 test/app/build
-*.js
-*.js.map
-*.ts.js
-*.ts.js.map
+sapper
+runtime.js
+dist
 !rollup.config.js

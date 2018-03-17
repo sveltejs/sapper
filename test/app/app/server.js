@@ -1,6 +1,6 @@
 import fs from 'fs';
-import polka from 'polka';
-import compression from 'compression';
+import { resolve } from 'url';
+import express from 'express';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
 import { routes } from './manifest/server.js';
@@ -28,58 +28,62 @@ process.on('message', message => {
 	}
 });
 
-const app = polka();
+const app = express();
 
-app.use((req, res, next) => {
-	if (pending) pending.add(req.url);
-
-	const { write, end } = res;
-	const chunks = [];
-
-	res.write = function(chunk) {
-		chunks.push(new Buffer(chunk));
-		write.apply(res, arguments);
-	};
-
-	res.end = function(chunk) {
-		if (chunk) chunks.push(new Buffer(chunk));
-		end.apply(res, arguments);
-
-		if (pending) pending.delete(req.url);
-
-		process.send({
-			method: req.method,
-			url: req.url,
-			status: res.statusCode,
-			headers: res._headers,
-			body: Buffer.concat(chunks).toString()
-		});
-
-		if (pending && pending.size === 0 && ended) {
-			process.send({ type: 'done' });
-		}
-	};
-
-	next();
-});
-
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, BASEPATH = '' } = process.env;
+const base = `http://localhost:${PORT}${BASEPATH}/`;
 
 // this allows us to do e.g. `fetch('/api/blog')` on the server
 const fetch = require('node-fetch');
 global.fetch = (url, opts) => {
-	if (url[0] === '/') url = `http://localhost:${PORT}${url}`;
-	return fetch(url, opts);
+	return fetch(resolve(base, url), opts);
 };
 
-app.use(compression({ threshold: 0 }));
+const middlewares = [
+	serve('assets'),
 
-app.use(serve('assets'));
+	(req, res, next) => {
+		if (!pending) return next();
 
-app.use(sapper({
-	routes
-}));
+		pending.add(req.url);
 
-app.listen(PORT, () => {
-	console.log(`listening on port ${PORT}`);
-});
+		const { write, end } = res;
+		const chunks = [];
+
+		res.write = function(chunk) {
+			chunks.push(new Buffer(chunk));
+			write.apply(res, arguments);
+		};
+
+		res.end = function(chunk) {
+			if (chunk) chunks.push(new Buffer(chunk));
+			end.apply(res, arguments);
+
+			if (pending) pending.delete(req.url);
+
+			process.send({
+				method: req.method,
+				url: req.url,
+				status: res.statusCode,
+				headers: res._headers,
+				body: Buffer.concat(chunks).toString()
+			});
+
+			if (pending && pending.size === 0 && ended) {
+				process.send({ type: 'done' });
+			}
+		};
+
+		next();
+	},
+
+	sapper({ routes })
+];
+
+if (BASEPATH) {
+	app.use(BASEPATH, ...middlewares);
+} else {
+	app.use(...middlewares);
+}
+
+app.listen(PORT);

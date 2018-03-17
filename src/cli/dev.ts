@@ -259,7 +259,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify(info, null, '  '));
 			deferreds.client.fulfil();
 
-			const client_files = info.assets.map((chunk: { name: string }) => `/client/${chunk.name}`);
+			const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
 
 			deferreds.server.promise.then(() => {
 				hot_update_server.send({

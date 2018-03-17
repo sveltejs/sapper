@@ -15,7 +15,7 @@ export default {
 				path: `${locations.dest()}/client`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
-				publicPath: '/client/'
+				publicPath: `client/`
 			};
 		}
 	},

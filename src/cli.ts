@@ -49,7 +49,8 @@ prog.command('start [dir]')
 
 prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
-	.action(async (dest = 'export') => {
+	.option('--basepath', 'Specify a base path')
+	.action(async (dest = 'export', opts: { basepath?: string }) => {
 		console.log(`> Building...`);
 
 		process.env.NODE_ENV = 'production';
@@ -63,7 +64,7 @@ prog.command('export [dest]')
 			console.error(`\n> Built in ${elapsed(start)}. Crawling site...`);
 
 			const { exporter } = await import('./cli/export');
-			await exporter(dest);
+			await exporter(dest, opts);
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${clorox.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
