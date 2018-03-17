@@ -30,8 +30,8 @@ process.on('message', message => {
 
 const app = express();
 
-const { PORT = 3000, BASEPATH } = process.env;
-const base = `http://localhost:${PORT}/${BASEPATH ? `${BASEPATH}/` : ''}`;
+const { PORT = 3000, BASEPATH = '' } = process.env;
+const base = `http://localhost:${PORT}${BASEPATH}/`;
 
 // this allows us to do e.g. `fetch('/api/blog')` on the server
 const fetch = require('node-fetch');
