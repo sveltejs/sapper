@@ -50,7 +50,7 @@ export default function middleware({ routes }: {
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
-			req.pathname = req.url.replace(/\?.*/, '');
+			req.originalPath = (req.originalUrl || req.url).replace(/\?.*/, '');
 			next();
 		},
 
@@ -85,8 +85,8 @@ function serve({ base, prefix, pathname, cache_control }: {
 	cache_control: string
 }) {
 	const filter = pathname
-		? (req: Req) => req.pathname === `${base}/${pathname}`
-		: (req: Req) => req.pathname.startsWith(`${base}/${prefix}`);
+		? (req: Req) => req.originalPath === `${base}/${pathname}`
+		: (req: Req) => req.originalPath.startsWith(`${base}/${prefix}`);
 
 	const output = locations.dest();
 
@@ -98,10 +98,10 @@ function serve({ base, prefix, pathname, cache_control }: {
 
 	return (req: Req, res: ServerResponse, next: () => void) => {
 		if (filter(req)) {
-			const type = lookup(req.pathname);
+			const type = lookup(req.originalPath);
 
 			try {
-				const data = read(req.pathname.slice(base.length + 1));
+				const data = read(req.originalPath.slice(base.length + 1));
 
 				res.setHeader('Content-Type', type);
 				res.setHeader('Cache-Control', cache_control);
@@ -124,7 +124,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
-		req.params = route.params(route.pattern.exec(req.pathname));
+		req.params = route.params(route.pattern.exec(req.originalPath));
 
 		const mod = route.module;
 
@@ -307,7 +307,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 	}
 
 	return function find_route(req: Req, res: ServerResponse) {
-		const url = req.pathname;
+		const url = req.originalPath;
 
 		try {
 			for (const route of routes) {
