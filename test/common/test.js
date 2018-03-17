@@ -7,8 +7,6 @@ const fetch = require('node-fetch');
 const rimraf = require('rimraf');
 const ports = require('port-authority');
 
-process.on('SIGINT', () => console.log(process._getActiveHandles()) );
-
 Nightmare.action('page', {
 	title(done) {
 		this.evaluate_now(() => document.querySelector('h1').textContent, done);
@@ -166,7 +164,7 @@ function run({ mode, basepath = '' }) {
 					cwd: process.cwd(),
 					env: {
 						NODE_ENV: mode,
-						BASEPATH: basepath.replace('/', ''), // TODO remove replace
+						BASEPATH: basepath,
 						SAPPER_DEST: dir,
 						PORT: port
 					}
@@ -289,7 +287,7 @@ function run({ mode, basepath = '' }) {
 						});
 					})
 					.then(requests => {
-						assert.ok(!!requests.find(r => r.url === `${basepath}/blog/why-the-name.json`));
+						assert.ok(!!requests.find(r => r.url === `/blog/why-the-name.json`));
 					});
 			});
 
@@ -315,7 +313,7 @@ function run({ mode, basepath = '' }) {
 						});
 					})
 					.then(mouseover_requests => {
-						assert.ok(mouseover_requests.findIndex(r => r.url === `${basepath}/blog/what-is-sapper.json`) !== -1);
+						assert.ok(mouseover_requests.findIndex(r => r.url === `/blog/what-is-sapper.json`) !== -1);
 
 						return capture(() => {
 							return nightmare
@@ -324,7 +322,7 @@ function run({ mode, basepath = '' }) {
 						});
 					})
 					.then(click_requests => {
-						assert.ok(click_requests.findIndex(r => r.url === `${basepath}/blog/what-is-sapper.json`) === -1);
+						assert.ok(click_requests.findIndex(r => r.url === `/blog/what-is-sapper.json`) === -1);
 					});
 			});
 
@@ -361,7 +359,7 @@ function run({ mode, basepath = '' }) {
 					.init()
 					.evaluate(() => document.querySelector('p').innerHTML)
 					.then(html => {
-						assert.equal(html, `URL is ${basepath}/show-url`);
+						assert.equal(html, `URL is /show-url`);
 					});
 			});
 

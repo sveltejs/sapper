@@ -3,7 +3,7 @@ import { resolve } from 'url';
 import express from 'express';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
-import { basepath, routes } from './manifest/server.js';
+import { routes } from './manifest/server.js';
 
 let pending;
 let ended;
@@ -30,12 +30,12 @@ process.on('message', message => {
 
 const app = express();
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, BASEPATH } = process.env;
 
 // this allows us to do e.g. `fetch('/api/blog')` on the server
 const fetch = require('node-fetch');
 global.fetch = (url, opts) => {
-	url = resolve(`http://localhost:${PORT}${basepath}/`, url);
+	url = resolve(`http://localhost:${PORT}${BASEPATH}/`, url);
 	return fetch(url, opts);
 };
 
@@ -80,8 +80,8 @@ const middlewares = [
 	sapper({ routes })
 ];
 
-if (process.env.BASEPATH) {
-	app.use(process.env.BASEPATH, ...middlewares);
+if (BASEPATH) {
+	app.use(BASEPATH, ...middlewares);
 } else {
 	app.use(...middlewares);
 }

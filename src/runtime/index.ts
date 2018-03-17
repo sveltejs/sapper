@@ -1,7 +1,7 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
 import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Target } from './interfaces';
 
-const manifest = window.__SAPPER__;
+const manifest = typeof window !== 'undefined' && window.__SAPPER__;
 
 export let component: Component;
 let target: Node;
