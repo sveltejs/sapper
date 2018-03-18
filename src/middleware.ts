@@ -77,6 +77,11 @@ export default function middleware({ routes, store }: {
 			cache_control: 'max-age=600'
 		}),
 
+		fs.existsSync(path.join(output, 'service-worker.js.map')) && serve({
+			pathname: '/service-worker.js.map',
+			cache_control: 'max-age=600'
+		}),
+
 		serve({
 			prefix: '/client/',
 			cache_control: 'max-age=31536000'

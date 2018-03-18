@@ -25,6 +25,10 @@ export async function exporter(export_dir: string, { basepath = '' }) {
 		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
+	if (sander.existsSync(build_dir, 'service-worker.js.map')) {
+		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
+	}
+
 	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
