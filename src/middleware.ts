@@ -193,6 +193,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
+					.filter(function (file) { return !file.match(/\.map$/); })
 					.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 					.join('');
 
