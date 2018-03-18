@@ -149,6 +149,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			// TODO detect other stuff we can preload? images, CSS, fonts?
 			const link = []
 				.concat(chunks.main, chunks[route.id])
+				.filter(file => !file.match(/\.map$/))
 				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 				.join(', ');
 
@@ -198,7 +199,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
-					.filter(function (file) { return !file.match(/\.map$/); })
+					.filter(file => !file.match(/\.map$/))
 					.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 					.join('');
 
