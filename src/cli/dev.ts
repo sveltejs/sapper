@@ -71,6 +71,13 @@ function create_hot_update_server(port: number, interval = 10000) {
 }
 
 export async function dev(opts: { port: number, open: boolean }) {
+	// remove this in a future version
+	const template = fs.readFileSync(path.join(locations.app(), 'template.html'), 'utf-8');
+	if (template.indexOf('%sapper.base%') === -1) {
+		console.log(`${clorox.bold.red(`> As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`)}`);
+		process.exit(1);
+	}
+
 	process.env.NODE_ENV = 'development';
 
 	let port = opts.port || +process.env.PORT;
