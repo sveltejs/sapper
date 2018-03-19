@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.10.1
+
+* Fix server-side `fetch` paths ([#207](https://github.com/sveltejs/sapper/pull/207))
+
 ## 0.10.0
 
 * Support mounting on a path (this requires `app/template.html` to include `%sapper.base%`) ([#180](https://github.com/sveltejs/sapper/issues/180))
