@@ -533,6 +533,32 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, 'Stored title');
 					});
 			});
+
+			it('sends cookies when using this.fetch with credentials: "include"', () => {
+				return nightmare.goto(`${base}/credentials?creds=include`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'woohoo!');
+					});
+			});
+
+			it('does not send cookies when using this.fetch without credentials', () => {
+				return nightmare.goto(`${base}/credentials`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'unauthorized');
+					});
+			});
+
+			it('delegates to fetch on the client', () => {
+				return nightmare.goto(base).init()
+					.click('[href="credentials?creds=include"]')
+					.wait(100)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'woohoo!');
+					});
+			});
 		});
 
 		describe('headers', () => {

@@ -92,6 +92,8 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 	}
 
 	return Promise.resolve(Component.preload.call({
+		store,
+		fetch: (url: string, opts?: any) => window.fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
 			redirect = { statusCode, location };
 		},

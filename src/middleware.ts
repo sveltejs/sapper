@@ -1,10 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { resolve } from 'url';
+import { resolve, URL } from 'url';
 import { ClientRequest, ServerResponse } from 'http';
+import cookie from 'cookie';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import devalue from 'devalue';
+import fetch from 'node-fetch';
 import { lookup } from './middleware/mime';
 import { create_routes, create_compilers } from './core';
 import { locations, dev } from './config';
@@ -42,6 +44,7 @@ interface Req extends ClientRequest {
 	method: string;
 	path: string;
 	params: Record<string, string>;
+	headers: Record<string, string>;
 }
 
 export default function middleware({ routes, store }: {
@@ -162,6 +165,41 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					},
 					error: (statusCode: number, message: Error | string) => {
 						error = { statusCode, message };
+					},
+					fetch: (url: string, opts?: any) => {
+						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl}${req.path}`);
+
+						if (opts) {
+							opts = Object.assign({}, opts);
+
+							const include_cookies = (
+								opts.credentials === 'include' ||
+								opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+							);
+
+							if (include_cookies) {
+								const cookies: Record<string, string> = {};
+								if (!opts.headers) opts.headers = {};
+
+								const str = []
+									.concat(
+										cookie.parse(req.headers.cookie || ''),
+										cookie.parse(opts.headers.cookie || ''),
+										cookie.parse(res.getHeader('Set-Cookie') || '')
+									)
+									.map(cookie => {
+										return Object.keys(cookie)
+											.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
+											.join('; ');
+									})
+									.filter(Boolean)
+									.join(', ');
+
+								opts.headers.cookie = str;
+							}
+						}
+
+						return fetch(parsed.href, opts);
 					},
 					store
 				}, req) : {}

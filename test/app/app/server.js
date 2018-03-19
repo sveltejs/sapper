@@ -43,6 +43,13 @@ global.fetch = (url, opts) => {
 const middlewares = [
 	serve('assets'),
 
+	// set test cookie
+	(req, res, next) => {
+		res.setHeader('Set-Cookie', 'test=woohoo!; Max-Age=3600');
+		next();
+	},
+
+	// emit messages so we can capture requests
 	(req, res, next) => {
 		if (!pending) return next();
 
