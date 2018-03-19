@@ -173,7 +173,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 						error = { statusCode, message };
 					},
 					fetch: (url: string, opts?: any) => {
-						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl}${req.path}`);
+						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/'  :''}`);
 
 						if (opts) {
 							opts = Object.assign({}, opts);
