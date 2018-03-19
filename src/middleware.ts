@@ -80,6 +80,11 @@ export default function middleware({ routes, store }: {
 			cache_control: 'max-age=600'
 		}),
 
+		fs.existsSync(path.join(output, 'service-worker.js.map')) && serve({
+			pathname: '/service-worker.js.map',
+			cache_control: 'max-age=600'
+		}),
+
 		serve({
 			prefix: '/client/',
 			cache_control: 'max-age=31536000'
@@ -147,6 +152,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 			// TODO detect other stuff we can preload? images, CSS, fonts?
 			const link = []
 				.concat(chunks.main, chunks[route.id])
+				.filter(file => !file.match(/\.map$/))
 				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 				.join(', ');
 
@@ -231,6 +237,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 
 				let scripts = []
 					.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
+					.filter(file => !file.match(/\.map$/))
 					.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 					.join('');
 
