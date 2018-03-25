@@ -356,6 +356,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		const rendered = route ? route.module.render({
 			status: statusCode,
 			error
+		}, {
+			store: store_getter && store_getter(req)
 		}) : { head: '', css: null, html: title };
 
 		const { head, css, html } = rendered;

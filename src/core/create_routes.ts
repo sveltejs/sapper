@@ -102,7 +102,10 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 					}
 
 					if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
-						return b_sub_part.content.length - a_sub_part.content.length;
+						return (
+							(b_sub_part.content.length - a_sub_part.content.length) ||
+							(a_sub_part.content < b_sub_part.content ? -1 : 1)
+						);
 					}
 				}
 			}

@@ -12,8 +12,8 @@ describe('create_routes', () => {
 			[
 				'index.html',
 				'about.html',
-				'post/foo.html',
 				'post/bar.html',
+				'post/foo.html',
 				'post/f[xx].html',
 				'post/[id].json.js',
 				'post/[id].html',
@@ -23,7 +23,7 @@ describe('create_routes', () => {
 	});
 
 	it('prefers index page to nested route', () => {
-		const routes = create_routes({
+		let routes = create_routes({
 			files: [
 				'api/examples/[slug].js',
 				'api/examples/index.js',
@@ -53,6 +53,45 @@ describe('create_routes', () => {
 				'api/examples/[slug].js',
 				'api/gists/index.js',
 				'api/gists/[id].js',
+			]
+		);
+
+		routes = create_routes({
+			files: [
+				'4xx.html',
+				'5xx.html',
+				'api/blog/[slug].js',
+				'api/blog/index.js',
+				'api/guide/contents.js',
+				'api/guide/index.js',
+				'blog/[slug].html',
+				'blog/index.html',
+				'blog/rss.xml.js',
+				'gist/[id].js',
+				'gist/create.js',
+				'guide/index.html',
+				'index.html',
+				'repl/index.html'
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.file),
+			[
+				'4xx.html',
+				'5xx.html',
+				'index.html',
+				'guide/index.html',
+				'blog/index.html',
+				'blog/rss.xml.js',
+				'blog/[slug].html',
+				'gist/create.js',
+				'gist/[id].js',
+				'repl/index.html',
+				'api/guide/index.js',
+				'api/guide/contents.js',
+				'api/blog/index.js',
+				'api/blog/[slug].js',
 			]
 		);
 	});
