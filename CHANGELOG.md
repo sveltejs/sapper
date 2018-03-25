@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.10.2
+
+* Attach `store` to error pages
+* Fix sorting edge case ([#215](https://github.com/sveltejs/sapper/pull/215))
+
 ## 0.10.1
 
 * Fix server-side `fetch` paths ([#207](https://github.com/sveltejs/sapper/pull/207))
