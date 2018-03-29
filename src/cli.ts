@@ -14,6 +14,7 @@ prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
+	.option('--ext', 'Specify route file extension(s) (comma separated)')
 	.action(async (opts: { port: number, open: boolean }) => {
 		const { dev } = await import('./cli/dev');
 		dev(opts);
