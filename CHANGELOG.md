@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.10.3
+
+* Downgrade chokidar ([#212](https://github.com/sveltejs/sapper/issues/212))
+
 ## 0.10.2
 
 * Attach `store` to error pages
