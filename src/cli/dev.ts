@@ -311,7 +311,8 @@ function watch_files(pattern: string, events: string[], callback: () => void) {
 
 	const watcher = chokidar.watch(pattern, {
 		persistent: true,
-		ignoreInitial: true
+		ignoreInitial: true,
+		disableGlobing: true
 	});
 
 	events.forEach(event => {
