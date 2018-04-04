@@ -102,7 +102,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 	const hot_update_server = create_hot_update_server(dev_port);
 
-	watch_files(`${locations.routes()}/**/*`, ['add', 'unlink'], () => {
+	watch_files(locations.routes(), ['add', 'unlink'], () => {
 		const routes = create_routes();
 		create_main_manifests({ routes, dev_port });
 	});
