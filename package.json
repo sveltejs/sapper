@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "chokidar": "^1.7.0",
+    "chokidar": "^2.0.3",
     "clorox": "^1.0.3",
     "cookie": "^0.3.1",
     "devalue": "^1.0.1",
