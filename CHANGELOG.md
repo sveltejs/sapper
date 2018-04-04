@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.10.4
+
+* Upgrade chokidar, this time with a fix ([#227](https://github.com/sveltejs/sapper/pull/227))
+
 ## 0.10.3
 
 * Downgrade chokidar ([#212](https://github.com/sveltejs/sapper/issues/212))
