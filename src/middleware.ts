@@ -245,11 +245,11 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					`baseUrl: "${req.baseUrl}"`,
 					serialized.preloaded && `preloaded: ${serialized.preloaded}`,
 					serialized.store && `store: ${serialized.store}`
-				].filter(Boolean).join(',')}}`
+				].filter(Boolean).join(',')}};`;
 
 				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
 				if (has_service_worker) {
-					`if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js')`
+					inline_script += `if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
 				}
 
 				const page = template()
