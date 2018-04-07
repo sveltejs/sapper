@@ -559,6 +559,12 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, 'woohoo!');
 					});
 			});
+
+			it('includes service worker', () => {
+				return nightmare.goto(base).page.html().then(html => {
+					assert.ok(html.indexOf('service-worker.js') !== -1);
+				});
+			});
 		});
 
 		describe('headers', () => {
