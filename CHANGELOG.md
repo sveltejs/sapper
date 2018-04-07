@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.10.5
+
+* Fix missing service worker ([#231](https://github.com/sveltejs/sapper/pull/231))
+
 ## 0.10.4
 
 * Upgrade chokidar, this time with a fix ([#227](https://github.com/sveltejs/sapper/pull/227))
