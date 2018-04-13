@@ -33,7 +33,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			let i = parts.length;
 			let nested = true;
 			while (i--) {
-				const part = encodeURIComponent(parts[i].normalize()).replace(/%5B/g, '[').replace(/%5D/g, ']');
+				const part = encodeURI(parts[i].normalize()).replace(/\?/g, '%3F').replace(/#/g, '%23').replace(/%5B/g, '[').replace(/%5D/g, ']');
 				const dynamic = ~part.indexOf('[');
 
 				if (dynamic) {
