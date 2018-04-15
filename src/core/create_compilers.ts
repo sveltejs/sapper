@@ -4,7 +4,7 @@ import relative from 'require-relative';
 export default function create_compilers() {
 	const webpack = relative('webpack', process.cwd());
 
-	const serviceworker_config = try_require(path.resolve('webpack/service-worker.config.js'));
+	const serviceworker_config = !process.env.DISABLE_SERVICE_WORKER && try_require(path.resolve('webpack/service-worker.config.js'));
 
 	return {
 		client: webpack(
