@@ -5,9 +5,8 @@ import { Route } from '../interfaces';
 
 export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), nodir: true }) }) {
 	const routes: Route[] = files
+		.filter((file: string) => !/(^|\/|\\)_/.test(file))
 		.map((file: string) => {
-			if (/(^|\/|\\)_/.test(file)) return;
-
 			if (/]\[/.test(file)) {
 				throw new Error(`Invalid route ${file} — parameters must be separated`);
 			}
@@ -16,6 +15,59 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			const parts = base.split('/'); // glob output is always posix-style
 			if (parts[parts.length - 1] === 'index') parts.pop();
 
+			return {
+				files: [file],
+				base,
+				parts
+			};
+		})
+		.filter((a, index, array) => {
+			const found = array.slice(index + 1).find(b => a.base === b.base);
+			if (found) found.files.push(...a.files);
+			return !found;
+		})
+		.sort((a, b) => {
+			const max = Math.max(a.parts.length, b.parts.length);
+
+			if (max === 1) {
+				if (a.parts[0] === '4xx' || a.parts[0] === '5xx') return -1;
+				if (b.parts[0] === '4xx' || b.parts[0] === '5xx') return 1;
+			}
+
+			for (let i = 0; i < max; i += 1) {
+				const a_part = a.parts[i];
+				const b_part = b.parts[i];
+
+				if (!a_part) return -1;
+				if (!b_part) return 1;
+
+				const a_sub_parts = get_sub_parts(a_part);
+				const b_sub_parts = get_sub_parts(b_part);
+				const max = Math.max(a_sub_parts.length, b_sub_parts.length);
+
+				for (let i = 0; i < max; i += 1) {
+					const a_sub_part = a_sub_parts[i];
+					const b_sub_part = b_sub_parts[i];
+
+					if (!a_sub_part) return 1; // b is more specific, so goes first
+					if (!b_sub_part) return -1;
+
+					if (a_sub_part.dynamic !== b_sub_part.dynamic) {
+						return a_sub_part.dynamic ? 1 : -1;
+					}
+
+					if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
+						return (
+							(b_sub_part.content.length - a_sub_part.content.length) ||
+							(a_sub_part.content < b_sub_part.content ? -1 : 1)
+						);
+					}
+				}
+			}
+
+			throw new Error(`The ${a.base} and ${b.base} routes clash`);
+		})
+		.map(({ files, base, parts }) => {
 			const id = (
 				parts.join('_').replace(/[[\]]/g, '$').replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '_')
 			 ) || '_';
@@ -63,54 +115,26 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 
 			return {
 				id,
-				type: path.extname(file) === '.html' ? 'page' : 'route',
-				file,
+				handlers: files.map(file => ({
+					type: path.extname(file) === '.html' ? 'page' : 'route',
+					file
+				})).sort((a, b) => {
+					if (a.type === 'page' && b.type === 'route') {
+						return 1;
+					}
+
+					if (a.type === 'route' && b.type === 'page') {
+						return -1;
+					}
+
+					return 0;
+				}),
 				pattern,
 				test,
 				exec,
 				parts,
 				params
 			};
-		})
-		.filter(Boolean)
-		.sort((a: Route, b: Route) => {
-			if (a.file === '4xx.html' || a.file === '5xx.html') return -1;
-			if (b.file === '4xx.html' || b.file === '5xx.html') return 1;
-
-			const max = Math.max(a.parts.length, b.parts.length);
-
-			for (let i = 0; i < max; i += 1) {
-				const a_part = a.parts[i];
-				const b_part = b.parts[i];
-
-				if (!a_part) return -1;
-				if (!b_part) return 1;
-
-				const a_sub_parts = get_sub_parts(a_part);
-				const b_sub_parts = get_sub_parts(b_part);
-				const max = Math.max(a_sub_parts.length, b_sub_parts.length);
-
-				for (let i = 0; i < max; i += 1) {
-					const a_sub_part = a_sub_parts[i];
-					const b_sub_part = b_sub_parts[i];
-
-					if (!a_sub_part) return 1; // b is more specific, so goes first
-					if (!b_sub_part) return -1;
-
-					if (a_sub_part.dynamic !== b_sub_part.dynamic) {
-						return a_sub_part.dynamic ? 1 : -1;
-					}
-
-					if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
-						return (
-							(b_sub_part.content.length - a_sub_part.content.length) ||
-							(a_sub_part.content < b_sub_part.content ? -1 : 1)
-						);
-					}
-				}
-			}
-
-			throw new Error(`The ${a.file} and ${b.file} routes clash`);
 		});
 
 	return routes;

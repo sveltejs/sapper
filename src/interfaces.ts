@@ -1,7 +1,9 @@
 export type Route = {
 	id: string;
-	type: 'page' | 'route';
-	file: string;
+	handlers: {
+		type: 'page' | 'route';
+		file: string;
+	}[];
 	pattern: RegExp;
 	test: (url: string) => boolean;
 	exec: (url: string) => Record<string, string>;
