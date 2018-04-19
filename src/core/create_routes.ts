@@ -3,7 +3,7 @@ import glob from 'glob';
 import { locations } from '../config';
 import { Route } from '../interfaces';
 
-export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), nodir: true }) }) {
+export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), dot: true, nodir: true }) }) {
 	const routes: Route[] = files
 		.map((file: string) => {
 			if (/(^|\/|\\)_/.test(file)) return;
