@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.10.6
+
+* Fix error reporting in `sapper start`
+
 ## 0.10.5
 
 * Fix missing service worker ([#231](https://github.com/sveltejs/sapper/pull/231))
