@@ -35,12 +35,12 @@ export async function exporter(export_dir: string, { basepath = '' }) {
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server.js`), [], {
 		cwd: process.cwd(),
-		env: Object.assign({}, process.env, {
+		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
 			SAPPER_DEST: build_dir,
 			SAPPER_EXPORT: 'true'
-		})
+		}, process.env)
 	});
 
 	const seen = new Set();
