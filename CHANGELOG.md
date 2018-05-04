@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.11.0
+
+* Create launcher file ([#240](https://github.com/sveltejs/sapper/issues/240))
+* Only keep necessary parts of webpack stats ([#251](https://github.com/sveltejs/sapper/pull/251))
+* Allow `NODE_ENV` to be overridden when building ([#241](https://github.com/sveltejs/sapper/issues/241))
+
 ## 0.10.7
 
 * Allow routes to have a leading `.` ([#243](https://github.com/sveltejs/sapper/pull/243))
