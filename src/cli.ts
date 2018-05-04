@@ -50,6 +50,7 @@ prog.command('build [dest]')
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${clorox.bold.cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			process.exit(1);
 		}
 	});
 
@@ -83,6 +84,7 @@ prog.command('export [dest]')
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${clorox.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			process.exit(1);
 		}
 	});
 
