@@ -263,7 +263,9 @@ export async function dev(opts: { port: number, open: boolean }) {
 		},
 
 		result: info => {
-			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify(info, null, '  '));
+			fs.writeFileSync(path.join(dir, 'client_info.json'), JSON.stringify({
+				assets: info.assetsByChunkName
+			}, null, '  '));
 			deferreds.client.fulfil();
 
 			const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);

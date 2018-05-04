@@ -1,6 +1,6 @@
-<:Head>
+<svelte:head>
 	<title>Sapper project template</title>
-</:Head>
+</svelte:head>
 
 <h1>Great success!</h1>
 
@@ -11,7 +11,7 @@
 <a href='blog/nope'>broken link</a>
 <a href='blog/throw-an-error'>error link</a>
 <a href='credentials?creds=include'>credentials</a>
-<a rel=prefetch class='{{page === "blog"  ? "selected" : ""}}' href='blog'>blog</a>
+<a rel=prefetch class='{page === "blog"  ? "selected" : ""}' href='blog'>blog</a>
 
 <div class='hydrate-test'></div>
 

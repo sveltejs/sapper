@@ -90,7 +90,7 @@ export default function middleware({ routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_info.assetsByChunkName, routes, store)
+		get_route_handler(client_info.assets, routes, store)
 	].filter(Boolean));
 
 	return middleware;

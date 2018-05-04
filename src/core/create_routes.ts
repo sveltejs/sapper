@@ -7,6 +7,8 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 	const routes: Route[] = files
 		.filter((file: string) => !/(^|\/|\\)_/.test(file))
 		.map((file: string) => {
+			if (/(^|\/|\\)(_|\.(?!well-known))/.test(file)) return;
+
 			if (/]\[/.test(file)) {
 				throw new Error(`Invalid route ${file} — parameters must be separated`);
 			}

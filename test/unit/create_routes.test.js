@@ -172,6 +172,17 @@ describe('create_routes', () => {
 		);
 	});
 
+	it('ignores files and directories with leading dots except .well-known', () => {
+		const routes = create_routes({
+			files: ['.well-known', '.unknown']
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.file),
+			['.well-known']
+		);
+	});
+
 	it('matches /foo/:bar before /:baz/qux', () => {
 		const a = create_routes({
 			files: ['foo/[bar].html', '[baz]/qux.html']

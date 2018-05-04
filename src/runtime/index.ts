@@ -214,7 +214,7 @@ let prefetching: {
 export function prefetch(href: string) {
 	const selected = select_route(new URL(href, document.baseURI));
 
-	if (selected) {
+	if (selected && (!prefetching || href !== prefetching.href)) {
 		prefetching = {
 			href,
 			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.data))
@@ -222,7 +222,16 @@ export function prefetch(href: string) {
 	}
 }
 
-function handle_touchstart_mouseover(event: MouseEvent | TouchEvent) {
+let mousemove_timeout: NodeJS.Timer;
+
+function handle_mousemove(event: MouseEvent) {
+	clearTimeout(mousemove_timeout);
+	mousemove_timeout = setTimeout(() => {
+		trigger_prefetch(event);
+	}, 20);
+}
+
+function trigger_prefetch(event: MouseEvent | TouchEvent) {
 	const a: HTMLAnchorElement = <HTMLAnchorElement>findAnchor(<Node>event.target);
 	if (!a || a.rel !== 'prefetch') return;
 
@@ -248,8 +257,8 @@ export function init(_target: Node, _routes: Route[], opts?: { store?: (data: an
 		window.addEventListener('popstate', handle_popstate);
 
 		// prefetch
-		window.addEventListener('touchstart', handle_touchstart_mouseover);
-		window.addEventListener('mouseover', handle_touchstart_mouseover);
+		window.addEventListener('touchstart', trigger_prefetch);
+		window.addEventListener('mousemove', handle_mousemove);
 
 		inited = true;
 	}
