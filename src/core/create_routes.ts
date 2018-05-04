@@ -6,7 +6,7 @@ import { Route } from '../interfaces';
 export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), dot: true, nodir: true }) }) {
 	const routes: Route[] = files
 		.map((file: string) => {
-			if (/(^|\/|\\)_/.test(file)) return;
+			if (/(^|\/|\\)(_|\.(?!well-known))/.test(file)) return;
 
 			if (/]\[/.test(file)) {
 				throw new Error(`Invalid route ${file} — parameters must be separated`);
