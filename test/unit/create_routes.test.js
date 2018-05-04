@@ -2,6 +2,28 @@ const assert = require('assert');
 const { create_routes } = require('../../dist/core.ts.js');
 
 describe('create_routes', () => {
+	it('sorts handlers correctly', () => {
+		const routes = create_routes({
+			files: ['foo.html', 'foo.js']
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.handlers),
+			[
+				[
+					{
+						type: 'route',
+						file: 'foo.js'
+					},
+					{
+						type: 'page',
+						file: 'foo.html'
+					}
+				]
+    	]
+    )
+  });
+    
 	it('encodes caharcters not allowed in path', () => {
 		const routes = create_routes({
 			files: [
@@ -27,7 +49,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			[
 				'index.html',
 				'about.html',
@@ -59,7 +81,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			[
 				'4xx.html',
 				'5xx.html',
@@ -95,7 +117,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			[
 				'4xx.html',
 				'5xx.html',
@@ -125,7 +147,7 @@ describe('create_routes', () => {
 		for (let i = 0; i < routes.length; i += 1) {
 			const route = routes[i];
 			if (params = route.exec('/post/123')) {
-				file = route.file;
+				file = route.handlers[0].file;
 				break;
 			}
 		}
@@ -142,7 +164,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			[
 				'index.html',
 				'e/f/g/h.html'
@@ -170,12 +192,12 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			a.map(r => r.file),
+			a.map(r => r.handlers[0].file),
 			['foo/[bar].html', '[baz]/qux.html']
 		);
 
 		assert.deepEqual(
-			b.map(r => r.file),
+			b.map(r => r.handlers[0].file),
 			['foo/[bar].html', '[baz]/qux.html']
 		);
 	});
@@ -185,13 +207,7 @@ describe('create_routes', () => {
 			create_routes({
 				files: ['[foo].html', '[bar]/index.html']
 			});
-		}, /The \[foo\].html and \[bar\]\/index.html routes clash/);
-
-		assert.throws(() => {
-			create_routes({
-				files: ['foo.html', 'foo.js']
-			});
-		}, /The foo.html and foo.js routes clash/);
+		}, /The \[foo\] and \[bar\]\/index routes clash/);
 	});
 
 	it('matches nested routes', () => {
@@ -214,7 +230,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			['settings.html', 'settings/[submenu].html']
 		);
 	});
