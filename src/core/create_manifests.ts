@@ -59,7 +59,7 @@ function generate_client(routes: Route[], path_to_routes: string, dev_port?: num
 						? '{}'
 						: `{ ${route.params.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
 
-					return `{ pattern: ${route.pattern}, params: ${route.params.length > 0 ? `match` : `()`} => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
+					return `{ id: '${route.id}', type: '${route.type}', pattern: ${route.pattern}, params: ${route.params.length > 0 ? `match` : `()`} => (${params}), load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
 				})
 				.join(',\n\t')}
 		];`.replace(/^\t\t/gm, '').trim();

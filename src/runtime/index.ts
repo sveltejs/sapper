@@ -121,10 +121,7 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 }
 
 function navigate(target: Target, id: number) {
-	if (id) {
-		// popstate or initial navigation
-		cid = id;
-	} else {
+	if (!id) {
 		// clicked on a link. preserve scroll state
 		scroll_history[cid] = scroll_state();
 
