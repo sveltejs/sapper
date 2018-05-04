@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const Nightmare = require('nightmare');
@@ -38,6 +39,7 @@ describe('sapper', function() {
 	rimraf.sync('export');
 	rimraf.sync('build');
 	rimraf.sync('.sapper');
+	rimraf.sync('start.js');
 
 	this.timeout(process.env.CI ? 30000 : 10000);
 
@@ -148,7 +150,7 @@ function run({ mode, basepath = '' }) {
 
 		before(() => {
 			const promise = mode === 'production'
-				? exec(`node ${cli} build`).then(() => ports.find(3000))
+				? exec(`node ${cli} build -l`).then(() => ports.find(3000))
 				: ports.find(3000).then(port => {
 					exec(`node ${cli} dev`);
 					return ports.wait(port).then(() => port);
@@ -159,6 +161,10 @@ function run({ mode, basepath = '' }) {
 				if (basepath) base += basepath;
 
 				const dir = mode === 'production' ? 'build' : '.sapper';
+
+				if (mode === 'production') {
+					assert.ok(fs.existsSync('start.js'));
+				}
 
 				proc = require('child_process').fork(`${dir}/server.js`, {
 					cwd: process.cwd(),
