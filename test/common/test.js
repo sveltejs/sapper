@@ -163,7 +163,7 @@ function run({ mode, basepath = '' }) {
 				const dir = mode === 'production' ? 'build' : '.sapper';
 
 				if (mode === 'production') {
-					assert.ok(fs.existsSync('start.js'));
+					assert.ok(fs.existsSync('build/index.js'));
 				}
 
 				proc = require('child_process').fork(`${dir}/server.js`, {
