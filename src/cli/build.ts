@@ -35,7 +35,9 @@ export async function build() {
 	const client_stats = await compile(client);
 	console.log(`${clorox.inverse(`\nbuilt client`)}`);
 	console.log(client_stats.toString({ colors: true }));
-	fs.writeFileSync(path.join(output, 'client_info.json'), JSON.stringify(client_stats.toJson()));
+	fs.writeFileSync(path.join(output, 'client_info.json'), JSON.stringify({
+		assets: client_stats.toJson().assetsByChunkName
+	}));
 
 	const server_stats = await compile(server);
 	console.log(`${clorox.inverse(`\nbuilt server`)}`);
