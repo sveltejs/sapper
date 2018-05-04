@@ -301,7 +301,7 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('reuses prefetch promise', () => {
+			it.skip('reuses prefetch promise', () => {
 				return nightmare
 					.goto(`${base}/blog`)
 					.init()
