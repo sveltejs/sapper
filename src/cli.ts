@@ -24,7 +24,7 @@ prog.command('build [dest]')
 	.action(async (dest = 'build') => {
 		console.log(`> Building...`);
 
-		process.env.NODE_ENV = 'production';
+		process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 		process.env.SAPPER_DEST = dest;
 
 		const start = Date.now();
