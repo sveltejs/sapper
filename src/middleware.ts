@@ -173,7 +173,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 						error = { statusCode, message };
 					},
 					fetch: (url: string, opts?: any) => {
-						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl}${req.path}`);
+						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/'  :''}`);
 
 						if (opts) {
 							opts = Object.assign({}, opts);
@@ -245,11 +245,11 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					`baseUrl: "${req.baseUrl}"`,
 					serialized.preloaded && `preloaded: ${serialized.preloaded}`,
 					serialized.store && `store: ${serialized.store}`
-				].filter(Boolean).join(',')}}`
+				].filter(Boolean).join(',')}};`;
 
 				const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
 				if (has_service_worker) {
-					`if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js')`
+					inline_script += `if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
 				}
 
 				const page = template()
@@ -356,6 +356,8 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 		const rendered = route ? route.module.render({
 			status: statusCode,
 			error
+		}, {
+			store: store_getter && store_getter(req)
 		}) : { head: '', css: null, html: title };
 
 		const { head, css, html } = rendered;

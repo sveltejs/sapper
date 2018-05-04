@@ -1,5 +1,45 @@
 # sapper changelog
 
+## 0.10.7
+
+* Allow routes to have a leading `.` ([#243](https://github.com/sveltejs/sapper/pull/243))
+* Only encode necessary characters in routes ([#234](https://github.com/sveltejs/sapper/pull/234))
+* Preserve existing `process.env` when exporting ([#245](https://github.com/sveltejs/sapper/pull/245))
+
+## 0.10.6
+
+* Fix error reporting in `sapper start`
+
+## 0.10.5
+
+* Fix missing service worker ([#231](https://github.com/sveltejs/sapper/pull/231))
+
+## 0.10.4
+
+* Upgrade chokidar, this time with a fix ([#227](https://github.com/sveltejs/sapper/pull/227))
+
+## 0.10.3
+
+* Downgrade chokidar ([#212](https://github.com/sveltejs/sapper/issues/212))
+
+## 0.10.2
+
+* Attach `store` to error pages
+* Fix sorting edge case ([#215](https://github.com/sveltejs/sapper/pull/215))
+
+## 0.10.1
+
+* Fix server-side `fetch` paths ([#207](https://github.com/sveltejs/sapper/pull/207))
+
+## 0.10.0
+
+* Support mounting on a path (this requires `app/template.html` to include `%sapper.base%`) ([#180](https://github.com/sveltejs/sapper/issues/180))
+* Support per-request server-side `Store` with client-side hydration ([#178](https://github.com/sveltejs/sapper/issues/178))
+* Add `this.fetch` to `preload`, with credentials support ([#178](https://github.com/sveltejs/sapper/issues/178))
+* Exclude sourcemaps from preload links and `<script>` block ([#204](https://github.com/sveltejs/sapper/pull/204))
+* Register service worker in `<script>` block
+
+
 ## 0.9.6
 
 * Whoops — `tslib` is a runtime dependency

@@ -13,6 +13,18 @@ export async function build() {
 	mkdirp.sync(output);
 	rimraf.sync(path.join(output, '**/*'));
 
+	// minify app/template.html
+	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
+	const template = fs.readFileSync(`${locations.app()}/template.html`, 'utf-8');
+
+	// remove this in a future version
+	if (template.indexOf('%sapper.base%') === -1) {
+		console.log(`${clorox.bold.red(`> As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`)}`);
+		process.exit(1);
+	}
+
+	fs.writeFileSync(`${output}/template.html`, minify_html(template));
+
 	const routes = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
@@ -41,11 +53,6 @@ export async function build() {
 		console.log(`${clorox.inverse(`\nbuilt service worker`)}`);
 		console.log(serviceworker_stats.toString({ colors: true }));
 	}
-
-	// minify app/template.html
-	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${locations.app()}/template.html`, 'utf-8');
-	fs.writeFileSync(`${output}/template.html`, minify_html(template));
 }
 
 function compile(compiler: any) {

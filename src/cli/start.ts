@@ -11,13 +11,13 @@ export async function start(dir: string, opts: { port: number, open: boolean }) 
 	const server = path.resolve(dir, 'server.js');
 
 	if (!fs.existsSync(server)) {
-		console.log(clorox.bold.red(`> ${dir}/server.js does not exist — type ${clorox.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`));
+		console.log(`${clorox.bold.red(`> ${dir}/server.js does not exist — type ${clorox.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`)}`);
 		return;
 	}
 
 	if (port) {
 		if (!await ports.check(port)) {
-			console.log(clorox.bold.red(`> Port ${port} is unavailable`));
+			console.log(`${clorox.bold.red(`> Port ${port} is unavailable`)}`);
 			return;
 		}
 	} else {

@@ -3,7 +3,7 @@ import glob from 'glob';
 import { locations } from '../config';
 import { Route } from '../interfaces';
 
-export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), nodir: true }) }) {
+export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), dot: true, nodir: true }) }) {
 	const routes: Route[] = files
 		.map((file: string) => {
 			if (/(^|\/|\\)_/.test(file)) return;
@@ -33,7 +33,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			let i = parts.length;
 			let nested = true;
 			while (i--) {
-				const part = encodeURIComponent(parts[i].normalize()).replace(/%5B/g, '[').replace(/%5D/g, ']');
+				const part = encodeURI(parts[i].normalize()).replace(/\?/g, '%3F').replace(/#/g, '%23').replace(/%5B/g, '[').replace(/%5D/g, ']');
 				const dynamic = ~part.indexOf('[');
 
 				if (dynamic) {
@@ -102,7 +102,10 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 					}
 
 					if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
-						return b_sub_part.content.length - a_sub_part.content.length;
+						return (
+							(b_sub_part.content.length - a_sub_part.content.length) ||
+							(a_sub_part.content < b_sub_part.content ? -1 : 1)
+						);
 					}
 				}
 			}
