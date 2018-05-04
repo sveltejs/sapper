@@ -2,6 +2,25 @@ const assert = require('assert');
 const { create_routes } = require('../../dist/core.ts.js');
 
 describe('create_routes', () => {
+	it('encodes caharcters not allowed in path', () => {
+		const routes = create_routes({
+			files: [
+				'"',
+				'#',
+				'?'
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.pattern),
+			[
+				/^\/%22\/?$/,
+				/^\/%23\/?$/,
+				/^\/%3F\/?$/
+			]
+		);
+	});
+
 	it('sorts routes correctly', () => {
 		const routes = create_routes({
 			files: ['index.html', 'about.html', 'post/f[xx].html', '[wildcard].html', 'post/foo.html', 'post/[id].html', 'post/bar.html', 'post/[id].json.js']
