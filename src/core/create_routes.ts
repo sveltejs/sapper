@@ -18,7 +18,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 
 			const id = (
 				parts.join('_').replace(/[[\]]/g, '$').replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '_')
-			 ) || '_';
+			 ) || 'index';
 
 			const params: string[] = [];
 			const param_pattern = /\[([^\]]+)\]/g;
