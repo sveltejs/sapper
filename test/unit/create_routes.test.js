@@ -20,6 +20,25 @@ describe('create_routes', () => {
 						file: 'foo.html'
 					}
 				]
+    	]
+    )
+  });
+    
+	it('encodes caharcters not allowed in path', () => {
+		const routes = create_routes({
+			files: [
+				'"',
+				'#',
+				'?'
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.pattern),
+			[
+				/^\/%22\/?$/,
+				/^\/%23\/?$/,
+				/^\/%3F\/?$/
 			]
 		);
 	});
