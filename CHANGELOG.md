@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.11.1
+
+* Limit routes with leading dots to `.well-known` URIs ([#252](https://github.com/sveltejs/sapper/issues/252))
+* Allow server routes to sit in front of pages ([#236](https://github.com/sveltejs/sapper/pull/236))
+
 ## 0.11.0
 
 * Create launcher file ([#240](https://github.com/sveltejs/sapper/issues/240))
