@@ -23,6 +23,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 				parts
 			};
 		})
+		.filter(Boolean)
 		.filter((a, index, array) => {
 			const found = array.slice(index + 1).find(b => a.base === b.base);
 			if (found) found.files.push(...a.files);

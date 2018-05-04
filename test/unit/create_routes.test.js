@@ -20,11 +20,11 @@ describe('create_routes', () => {
 						file: 'foo.html'
 					}
 				]
-    	]
-    )
-  });
-    
-	it('encodes caharcters not allowed in path', () => {
+			]
+		)
+	});
+
+	it('encodes characters not allowed in path', () => {
 		const routes = create_routes({
 			files: [
 				'"',
@@ -178,7 +178,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.file),
+			routes.map(r => r.handlers[0].file),
 			['.well-known']
 		);
 	});
