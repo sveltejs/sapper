@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.10.7
+
+* Allow routes to have a leading `.` ([#243](https://github.com/sveltejs/sapper/pull/243))
+* Only encode necessary characters in routes ([#234](https://github.com/sveltejs/sapper/pull/234))
+* Preserve existing `process.env` when exporting ([#245](https://github.com/sveltejs/sapper/pull/245))
+
 ## 0.10.6
 
 * Fix error reporting in `sapper start`
