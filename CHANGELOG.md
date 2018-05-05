@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.12.0
+
+* Each app has a single `<App>` component. See the [migration guide](https://sapper.svelte.technology/guide#0-11-to-0-12) for more information ([#157](https://github.com/sveltejs/sapper/issues/157))
+* Process exits with error code 1 if build/export fails ([#208](https://github.com/sveltejs/sapper/issues/208))
+
 ## 0.11.1
 
 * Limit routes with leading dots to `.well-known` URIs ([#252](https://github.com/sveltejs/sapper/issues/252))
