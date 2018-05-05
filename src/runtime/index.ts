@@ -251,6 +251,10 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 let inited: boolean;
 
 export function init(opts: { App: ComponentConstructor, target: Node, routes: Route[], store?: (data: any) => Store }) {
+	if (opts instanceof HTMLElement) {
+		throw new Error(`The signature of init(...) has changed — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
+	}
+
 	App = opts.App;
 	target = opts.target;
 	routes = opts.routes.filter(r => !r.error);

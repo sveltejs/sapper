@@ -54,6 +54,10 @@ export default function middleware({ App, routes, store }: {
 	routes: RouteObject[],
 	store: (req: Req) => Store
 }) {
+	if (!App) {
+		throw new Error(`As of 0.12, you must supply an App component to Sapper — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
+	}
+
 	const output = locations.dest();
 
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
