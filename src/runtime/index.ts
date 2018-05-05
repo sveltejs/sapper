@@ -3,6 +3,7 @@ import { Component, ComponentConstructor, Params, Query, Route, RouteData, Scrol
 
 const manifest = typeof window !== 'undefined' && window.__SAPPER__;
 
+export let App: ComponentConstructor;
 export let component: Component;
 let target: Node;
 let store: Store;
@@ -27,10 +28,10 @@ function select_route(url: URL): Target {
 	if (url.origin !== window.location.origin) return null;
 	if (!url.pathname.startsWith(manifest.baseUrl)) return null;
 
-	const pathname = url.pathname.slice(manifest.baseUrl.length);
+	const path = url.pathname.slice(manifest.baseUrl.length);
 
 	for (const route of routes) {
-		const match = route.pattern.exec(pathname);
+		const match = route.pattern.exec(path);
 		if (match) {
 			if (route.ignore) return null;
 
@@ -43,18 +44,24 @@ function select_route(url: URL): Target {
 					query[key] = value || true;
 				})
 			}
-			return { url, route, data: { params, query } };
+			return { url, route, props: { params, query, path } };
 		}
 	}
 }
 
 let current_token: {};
 
-function render(Component: ComponentConstructor, data: any, scroll: ScrollPosition, token: {}) {
+function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, token: {}) {
 	if (current_token !== token) return;
 
+	const data = {
+		Page,
+		props,
+		preloading: false
+	};
+
 	if (component) {
-		component.destroy();
+		component.set(data);
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -65,33 +72,39 @@ function render(Component: ComponentConstructor, data: any, scroll: ScrollPositi
 			detach(start);
 			detach(end);
 		}
-	}
 
-	component = new Component({
-		target,
-		data,
-		store,
-		hydrate: !component
-	});
+		component = new App({
+			target,
+			data,
+			store,
+			hydrate: true
+		});
+	}
 
 	if (scroll) {
 		window.scrollTo(scroll.x, scroll.y);
 	}
 }
 
-function prepare_route(Component: ComponentConstructor, data: RouteData) {
+function prepare_route(Page: ComponentConstructor, props: RouteData) {
 	let redirect: { statusCode: number, location: string } = null;
 	let error: { statusCode: number, message: Error | string } = null;
 
-	if (!Component.preload) {
-		return { Component, data, redirect, error };
+	if (!Page.preload) {
+		return { Page, props, redirect, error };
 	}
 
 	if (!component && manifest.preloaded) {
-		return { Component, data: Object.assign(data, manifest.preloaded), redirect, error };
+		return { Page, props: Object.assign(props, manifest.preloaded), redirect, error };
 	}
 
-	return Promise.resolve(Component.preload.call({
+	if (component) {
+		component.set({
+			preloading: true
+		});
+	}
+
+	return Promise.resolve(Page.preload.call({
 		store,
 		fetch: (url: string, opts?: any) => window.fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
@@ -100,7 +113,7 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 		error: (statusCode: number, message: Error | string) => {
 			error = { statusCode, message };
 		}
-	}, data)).catch(err => {
+	}, props)).catch(err => {
 		error = { statusCode: 500, message: err };
 	}).then(preloaded => {
 		if (error) {
@@ -108,15 +121,15 @@ function prepare_route(Component: ComponentConstructor, data: RouteData) {
 				? errors['4xx']
 				: errors['5xx'];
 
-			return route.load().then(({ default: Component }: { default: ComponentConstructor }) => {
+			return route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
 				const err = error.message instanceof Error ? error.message : new Error(error.message);
-				Object.assign(data, { status: error.statusCode, error: err });
-				return { Component, data, redirect: null };
+				Object.assign(props, { status: error.statusCode, error: err });
+				return { Page, props, redirect: null };
 			});
 		}
 
-		Object.assign(data, preloaded)
-		return { Component, data, redirect };
+		Object.assign(props, preloaded)
+		return { Page, props, redirect };
 	});
 }
 
@@ -136,18 +149,18 @@ function navigate(target: Target, id: number) {
 
 	const loaded = prefetching && prefetching.href === target.url.href ?
 		prefetching.promise :
-		target.route.load().then(mod => prepare_route(mod.default, target.data));
+		target.route.load().then(mod => prepare_route(mod.default, target.props));
 
 	prefetching = null;
 
 	const token = current_token = {};
 
-	return loaded.then(({ Component, data, redirect }) => {
+	return loaded.then(({ Page, props, redirect }) => {
 		if (redirect) {
 			return goto(redirect.location, { replaceState: true });
 		}
 
-		render(Component, data, scroll_history[id], token);
+		render(Page, props, scroll_history[id], token);
 	});
 }
 
@@ -208,7 +221,7 @@ function handle_popstate(event: PopStateEvent) {
 
 let prefetching: {
 	href: string;
-	promise: Promise<{ Component: ComponentConstructor, data: any }>;
+	promise: Promise<{ Page: ComponentConstructor, props: any }>;
 } = null;
 
 export function prefetch(href: string) {
@@ -217,7 +230,7 @@ export function prefetch(href: string) {
 	if (selected && (!prefetching || href !== prefetching.href)) {
 		prefetching = {
 			href,
-			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.data))
+			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.props))
 		};
 	}
 }
@@ -240,12 +253,17 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 
 let inited: boolean;
 
-export function init(_target: Node, _routes: Route[], opts?: { store?: (data: any) => Store }) {
-	target = _target;
-	routes = _routes.filter(r => !r.error);
+export function init(opts: { App: ComponentConstructor, target: Node, routes: Route[], store?: (data: any) => Store }) {
+	if (opts instanceof HTMLElement) {
+		throw new Error(`The signature of init(...) has changed — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
+	}
+
+	App = opts.App;
+	target = opts.target;
+	routes = opts.routes.filter(r => !r.error);
 	errors = {
-		'4xx': _routes.find(r => r.error === '4xx'),
-		'5xx': _routes.find(r => r.error === '5xx')
+		'4xx': opts.routes.find(r => r.error === '4xx'),
+		'5xx': opts.routes.find(r => r.error === '5xx')
 	};
 
 	if (opts && opts.store) {

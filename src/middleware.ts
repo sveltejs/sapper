@@ -20,14 +20,7 @@ type RouteObject = {
 	type: 'page' | 'route';
 	pattern: RegExp;
 	params: (match: RegExpMatchArray) => Record<string, string>;
-	module: {
-		render: (data: any, opts: { store: Store }) => {
-			head: string;
-			css: { code: string, map: any };
-			html: string
-		},
-		preload: (data: any) => any | Promise<any>
-	};
+	module: Component;
 	error?: string;
 }
 
@@ -47,10 +40,24 @@ interface Req extends ClientRequest {
 	headers: Record<string, string>;
 }
 
-export default function middleware({ routes, store }: {
+interface Component {
+	render: (data: any, opts: { store: Store }) => {
+		head: string;
+		css: { code: string, map: any };
+		html: string
+	},
+	preload: (data: any) => any | Promise<any>
+}
+
+export default function middleware({ App, routes, store }: {
+	App: Component,
 	routes: RouteObject[],
 	store: (req: Req) => Store
 }) {
+	if (!App) {
+		throw new Error(`As of 0.12, you must supply an App component to Sapper — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
+	}
+
 	const output = locations.dest();
 
 	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
@@ -90,7 +97,7 @@ export default function middleware({ routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_info.assets, routes, store)
+		get_route_handler(client_info.assets, App, routes, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -135,7 +142,7 @@ function serve({ prefix, pathname, cache_control }: {
 
 const resolved = Promise.resolve();
 
-function get_route_handler(chunks: Record<string, string>, routes: RouteObject[], store_getter: (req: Req) => Store) {
+function get_route_handler(chunks: Record<string, string>, App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
 	const template = dev()
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
@@ -170,7 +177,7 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 					res.setHeader('Link', link);
 
 					const store = store_getter ? store_getter(req) : null;
-					const data = { params: req.params, query: req.query };
+					const props = { params: req.params, query: req.query, path: req.path };
 
 					let redirect: { statusCode: number, location: string };
 					let error: { statusCode: number, message: Error | string };
@@ -240,9 +247,9 @@ function get_route_handler(chunks: Record<string, string>, routes: RouteObject[]
 							preloaded: mod.preload && try_serialize(preloaded),
 							store: store && try_serialize(store.get())
 						};
-						Object.assign(data, preloaded);
+						Object.assign(props, preloaded);
 
-						const { html, head, css } = mod.render(data, {
+						const { html, head, css } = App.render({ Page: mod, props }, {
 							store
 						});
 
