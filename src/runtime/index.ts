@@ -49,13 +49,20 @@ function select_route(url: URL): Target {
 	}
 }
 
-let first_load = true;
 let current_token: {};
 
 function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, token: {}) {
 	if (current_token !== token) return;
 
-	if (first_load) {
+	const data = {
+		Page,
+		props,
+		preloading: false
+	};
+
+	if (component) {
+		component.set(data);
+	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
 		const end = document.querySelector('#sapper-head-end');
@@ -68,19 +75,9 @@ function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, 
 
 		component = new App({
 			target,
-			data: {
-				Page,
-				props
-			},
+			data,
 			store,
 			hydrate: true
-		});
-
-		first_load = false;
-	} else {
-		component.set({
-			Page,
-			props
 		});
 	}
 
@@ -99,6 +96,12 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 
 	if (!component && manifest.preloaded) {
 		return { Page, props: Object.assign(props, manifest.preloaded), redirect, error };
+	}
+
+	if (component) {
+		component.set({
+			preloading: true
+		});
 	}
 
 	return Promise.resolve(Page.preload.call({

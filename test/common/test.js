@@ -574,6 +574,29 @@ function run({ mode, basepath = '' }) {
 					assert.ok(html.indexOf('service-worker.js') !== -1);
 				});
 			});
+
+			it('sets preloading true when appropriate', () => {
+				return nightmare
+					.goto(base)
+					.init()
+					.click('a[href="slow-preload"]')
+					.wait(100)
+					.evaluate(() => {
+						const progress = document.querySelector('progress');
+						return !!progress;
+					})
+					.then(hasProgressIndicator => {
+						assert.ok(hasProgressIndicator);
+					})
+					.then(() => nightmare.evaluate(() => window.fulfil()))
+					.then(() => nightmare.evaluate(() => {
+						const progress = document.querySelector('progress');
+						return !!progress;
+					}))
+					.then(hasProgressIndicator => {
+						assert.ok(!hasProgressIndicator);
+					});
+			});
 		});
 
 		describe('headers', () => {
