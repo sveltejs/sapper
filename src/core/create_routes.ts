@@ -30,12 +30,10 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			return !found;
 		})
 		.sort((a, b) => {
-			const max = Math.max(a.parts.length, b.parts.length);
+			if (a.parts[0] === '4xx' || a.parts[0] === '5xx') return -1;
+			if (b.parts[0] === '4xx' || b.parts[0] === '5xx') return 1;
 
-			if (max === 1) {
-				if (a.parts[0] === '4xx' || a.parts[0] === '5xx') return -1;
-				if (b.parts[0] === '4xx' || b.parts[0] === '5xx') return 1;
-			}
+			const max = Math.max(a.parts.length, b.parts.length);
 
 			for (let i = 0; i < max; i += 1) {
 				const a_part = a.parts[i];
