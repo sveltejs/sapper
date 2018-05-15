@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as net from 'net';
-import * as clorox from 'clorox';
+import * as colors from 'ansi-colors';
 import * as child_process from 'child_process';
 import * as http from 'http';
 import mkdirp from 'mkdirp';
@@ -74,7 +74,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 	// remove this in a future version
 	const template = fs.readFileSync(path.join(locations.app(), 'template.html'), 'utf-8');
 	if (template.indexOf('%sapper.base%') === -1) {
-		console.log(`${clorox.bold.red(`> As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`)}`);
+		console.log(`${colors.bold.red(`> As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`)}`);
 		process.exit(1);
 	}
 
@@ -84,7 +84,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 	if (port) {
 		if (!await ports.check(port)) {
-			console.log(`${clorox.bold.red(`> Port ${port} is unavailable`)}`);
+			console.log(`${colors.bold.red(`> Port ${port} is unavailable`)}`);
 			return;
 		}
 	} else {
@@ -144,7 +144,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 			restarting = false;
 		});
 
-		console.log(`\n${clorox.bold.cyan(path.relative(process.cwd(), filename))} changed. rebuilding...`);
+		console.log(`\n${colors.bold.cyan(path.relative(process.cwd(), filename))} changed. rebuilding...`);
 	}
 
 	// TODO watch the configs themselves?
@@ -162,15 +162,15 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 		compiler.watch({}, (err: Error, stats: any) => {
 			if (err) {
-				console.log(`${clorox.red(`✗ ${name}`)}`);
-				console.log(`${clorox.red(err.message)}`);
+				console.log(`${colors.red(`✗ ${name}`)}`);
+				console.log(`${colors.red(err.message)}`);
 				error(err);
 			} else {
 				const messages = format_messages(stats);
 				const info = stats.toJson();
 
 				if (messages.errors.length > 0) {
-					console.log(`${clorox.bold.red(`✗ ${name}`)}`);
+					console.log(`${colors.bold.red(`✗ ${name}`)}`);
 
 					const filtered = messages.errors.filter((message: string) => {
 						return !build.unique_errors.has(message);
@@ -187,7 +187,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 					}
 				} else {
 					if (messages.warnings.length > 0) {
-						console.log(`${clorox.bold.yellow(`• ${name}`)}`);
+						console.log(`${colors.bold.yellow(`• ${name}`)}`);
 
 						const filtered = messages.warnings.filter((message: string) => {
 							return !build.unique_warnings.has(message);
@@ -203,7 +203,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 							console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 						}
 					} else {
-						console.log(`${clorox.bold.green(`✔ ${name}`)} ${clorox.gray(`(${prettyMs(info.time)})`)}`);
+						console.log(`${colors.bold.green(`✔ ${name}`)} ${colors.gray(`(${prettyMs(info.time)})`)}`);
 					}
 
 					result(info);
@@ -277,7 +277,7 @@ export async function dev(opts: { port: number, open: boolean }) {
 
 				if (first) {
 					first = false;
-					console.log(`${clorox.bold.cyan(`> Listening on http://localhost:${port}`)}`);
+					console.log(`${colors.bold.cyan(`> Listening on http://localhost:${port}`)}`);
 					if (opts.open) child_process.exec(`open http://localhost:${port}`);
 				}
 			});

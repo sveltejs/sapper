@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import sade from 'sade';
-import * as clorox from 'clorox';
+import * as colors from 'ansi-colors';
 import prettyMs from 'pretty-ms';
 // import upgrade from './cli/upgrade';
 import * as ports from 'port-authority';
@@ -47,7 +47,7 @@ prog.command('build [dest]')
 				require('./server.js');
 			`.replace(/^\t+/gm, '').trim());
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${clorox.bold.cyan(`node ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 			process.exit(1);
@@ -81,7 +81,7 @@ prog.command('export [dest]')
 
 			const { exporter } = await import('./cli/export');
 			await exporter(dest, opts);
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${clorox.bold.cyan(`npx serve ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
 			process.exit(1);

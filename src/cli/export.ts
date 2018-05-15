@@ -1,7 +1,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
-import * as clorox from 'clorox';
+import * as colors from 'ansi-colors';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
@@ -62,7 +62,7 @@ export async function exporter(export_dir: string, { basepath = '' }) {
 			body = minify_html(body);
 		}
 
-		console.log(`${clorox.bold.cyan(file)} ${clorox.gray(`(${prettyBytes(body.length)})`)}`);
+		console.log(`${colors.bold.cyan(file)} ${colors.gray(`(${prettyBytes(body.length)})`)}`);
 
 		sander.writeFileSync(export_dir, file, body);
 	});
@@ -72,7 +72,7 @@ export async function exporter(export_dir: string, { basepath = '' }) {
 		const range = ~~(r.status / 100);
 
 		if (range >= 4) {
-			console.log(`${clorox.red(`> Received ${r.status} response when fetching ${url.pathname}`)}`);
+			console.log(`${colors.red(`> Received ${r.status} response when fetching ${url.pathname}`)}`);
 			return;
 		}
 
