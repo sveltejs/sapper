@@ -5,14 +5,12 @@ import { locations } from '../config';
 export function build() {
 	return new Promise((fulfil, reject) => {
 		try {
-			console.log('1');
 			const emitter = _build({
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
 				webpack: 'webpack'
 			});
-			console.log('2', emitter);
 
 			emitter.on('build', event => {
 				console.log(colors.inverse(`\nbuilt ${event.type}`));
