@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
-import * as clorox from 'clorox';
+import * as colors from 'ansi-colors';
 import * as ports from 'port-authority';
 
 export async function start(dir: string, opts: { port: number, open: boolean }) {
@@ -11,13 +11,13 @@ export async function start(dir: string, opts: { port: number, open: boolean }) 
 	const server = path.resolve(dir, 'server.js');
 
 	if (!fs.existsSync(server)) {
-		console.log(`${clorox.bold.red(`> ${dir}/server.js does not exist — type ${clorox.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`)}`);
+		console.log(`${colors.bold.red(`> ${dir}/server.js does not exist — type ${colors.bold.cyan(dir === 'build' ? `npx sapper build` : `npx sapper build ${dir}`)} to create it`)}`);
 		return;
 	}
 
 	if (port) {
 		if (!await ports.check(port)) {
-			console.log(`${clorox.bold.red(`> Port ${port} is unavailable`)}`);
+			console.log(`${colors.bold.red(`> Port ${port} is unavailable`)}`);
 			return;
 		}
 	} else {
@@ -34,6 +34,6 @@ export async function start(dir: string, opts: { port: number, open: boolean }) 
 	});
 
 	await ports.wait(port);
-	console.log(`${clorox.bold.cyan(`> Listening on http://localhost:${port}`)}`);
+	console.log(`${colors.bold.cyan(`> Listening on http://localhost:${port}`)}`);
 	if (opts.open) child_process.exec(`open http://localhost:${port}`);
 }

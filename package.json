@@ -18,9 +18,9 @@
     "test": "test"
   },
   "dependencies": {
+    "ansi-colors": "^2.0.1",
     "cheerio": "^1.0.0-rc.2",
     "chokidar": "^2.0.3",
-    "clorox": "^1.0.3",
     "cookie": "^0.3.1",
     "devalue": "^1.0.1",
     "glob": "^7.1.2",
@@ -37,7 +37,7 @@
     "source-map-support": "^0.5.5",
     "tslib": "^1.9.0",
     "url-parse": "^1.2.0",
-    "webpack-format-messages": "^1.0.2"
+    "webpack-format-messages": "^2.0.1"
   },
   "devDependencies": {
     "@types/glob": "^5.0.34",
