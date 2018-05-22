@@ -7,7 +7,7 @@ import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import prettyBytes from 'pretty-bytes';
-import { minify_html } from './utils/minify_html';
+import { minify_html } from '../api/utils/minify_html';
 import { locations } from '../config';
 
 export async function exporter(export_dir: string, { basepath = '' }) {
