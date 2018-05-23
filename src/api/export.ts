@@ -8,16 +8,17 @@ import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { minify_html } from './utils/minify_html';
 import { locations } from '../config';
+import * as events from './interfaces';
 
-export default function exporter(opts: {}) {
+export function exporter(opts: {}) {
 	const emitter = new EventEmitter();
 
 	execute(emitter, opts).then(
 		() => {
-			emitter.emit('done', {}); // TODO do we need to pass back any info?
+			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
 		},
 		error => {
-			emitter.emit('error', {
+			emitter.emit('error', <events.ErrorEvent>{
 				error
 			});
 		}
@@ -80,7 +81,7 @@ async function execute(emitter: EventEmitter, {
 			body = minify_html(body);
 		}
 
-		emitter.emit('file', {
+		emitter.emit('file', <events.FileEvent>{
 			file,
 			size: body.length
 		});
@@ -93,7 +94,7 @@ async function execute(emitter: EventEmitter, {
 		const range = ~~(r.status / 100);
 
 		if (range >= 4) {
-			emitter.emit('failure', {
+			emitter.emit('failure', <events.FailureEvent>{
 				status: r.status,
 				pathname: url.pathname
 			});

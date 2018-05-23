@@ -6,16 +6,17 @@ import { EventEmitter } from 'events';
 import { minify_html } from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core'
 import { locations } from '../config';
+import * as events from './interfaces';
 
-export default function build(opts: {}) {
+export function build(opts: {}) {
 	const emitter = new EventEmitter();
 
 	execute(emitter, opts).then(
 		() => {
-			emitter.emit('done', {}); // TODO do we need to pass back any info?
+			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
 		},
 		error => {
-			emitter.emit('error', {
+			emitter.emit('error', <events.ErrorEvent>{
 				error
 			});
 		}
@@ -54,7 +55,7 @@ async function execute(emitter: EventEmitter, {
 	const { client, server, serviceworker } = create_compilers({ webpack });
 
 	const client_stats = await compile(client);
-	emitter.emit('build', {
+	emitter.emit('build', <events.BuildEvent>{
 		type: 'client',
 		// TODO duration/warnings
 		webpack_stats: client_stats
@@ -65,7 +66,7 @@ async function execute(emitter: EventEmitter, {
 	}));
 
 	const server_stats = await compile(server);
-	emitter.emit('build', {
+	emitter.emit('build', <events.BuildEvent>{
 		type: 'server',
 		// TODO duration/warnings
 		webpack_stats: server_stats
@@ -81,7 +82,7 @@ async function execute(emitter: EventEmitter, {
 
 		serviceworker_stats = await compile(serviceworker);
 
-		emitter.emit('build', {
+		emitter.emit('build', <events.BuildEvent>{
 			type: 'serviceworker',
 			// TODO duration/warnings
 			webpack_stats: serviceworker_stats

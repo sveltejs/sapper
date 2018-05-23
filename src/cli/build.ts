@@ -1,4 +1,4 @@
-import _build from '../api/build';
+import { build as _build } from '../api/build';
 import * as colors from 'ansi-colors';
 import { locations } from '../config';
 

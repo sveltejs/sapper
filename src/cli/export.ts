@@ -1,4 +1,4 @@
-import _exporter from '../api/export';
+import { exporter as _exporter } from '../api/export';
 import * as colors from 'ansi-colors';
 import prettyBytes from 'pretty-bytes';
 import { locations } from '../config';
