@@ -201,7 +201,9 @@ class Watcher extends EventEmitter {
 					client_files
 				});
 
-				watch_serviceworker();
+				// we need to wait a beat before watching the service
+				// worker, because of some webpack nonsense
+				setTimeout(watch_serviceworker, 100);
 			}
 		});
 
