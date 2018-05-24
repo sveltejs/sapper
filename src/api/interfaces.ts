@@ -1,5 +1,8 @@
+import * as child_process from 'child_process';
+
 export type ReadyEvent = {
 	port: number;
+	process: child_process.ChildProcess;
 };
 
 export type ErrorEvent = {

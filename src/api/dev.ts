@@ -10,7 +10,7 @@ import prettyMs from 'pretty-ms';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
-import * as events from '../interfaces';
+import * as events from './interfaces';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -143,6 +143,10 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'server_info.json'), JSON.stringify(info, null, '  '));
 
 				this.deferreds.client.promise.then(() => {
+					this.dev_server.send({
+						status: 'completed'
+					});
+
 					const restart = () => {
 						ports.wait(this.port).then(this.deferreds.server.fulfil);
 					};
@@ -158,7 +162,13 @@ class Watcher extends EventEmitter {
 						cwd: process.cwd(),
 						env: Object.assign({
 							PORT: this.port
-						}, process.env)
+						}, process.env),
+						stdio: ['ipc']
+					});
+
+					this.emit('ready', <events.ReadyEvent>{
+						port: this.port,
+						process: this.proc
 					});
 				});
 			}
@@ -185,16 +195,6 @@ class Watcher extends EventEmitter {
 				this.deferreds.client.fulfil();
 
 				const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
-
-				this.deferreds.server.promise.then(() => {
-					this.dev_server.send({
-						status: 'completed'
-					});
-
-					this.emit('ready', <events.ReadyEvent>{
-						port: this.port
-					});
-				});
 
 				create_serviceworker_manifest({
 					routes: create_routes(),

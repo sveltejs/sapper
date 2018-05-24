@@ -9,7 +9,6 @@
   "files": [
     "*.js",
     "*.ts.js",
-    "api",
     "runtime",
     "webpack",
     "sapper",
