@@ -189,9 +189,8 @@ class Watcher extends EventEmitter {
 			},
 
 			result: info => {
-				fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify({
-					assets: info.assetsByChunkName
-				}, null, '  '));
+				fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(info));
+				fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(info.assetsByChunkName, null, '  '));
 				this.deferreds.client.fulfil();
 
 				const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
@@ -291,20 +290,14 @@ class Watcher extends EventEmitter {
 						const duplicate = this.current_build.unique_errors.has(message);
 						this.current_build.unique_errors.add(message);
 
-						return {
-							message,
-							duplicate
-						}
+						return mungeWebpackError(message, duplicate);
 					}),
 
 					warnings: messages.warnings.map((message: string) => {
 						const duplicate = this.current_build.unique_warnings.has(message);
 						this.current_build.unique_warnings.add(message);
 
-						return {
-							message,
-							duplicate
-						}
+						return mungeWebpackError(message, duplicate);
 					}),
 				});
 
@@ -312,6 +305,37 @@ class Watcher extends EventEmitter {
 			}
 		});
 	}
+}
+
+const locPattern = /\((\d+):(\d+)\)$/;
+
+function mungeWebpackError(message: string, duplicate: boolean) {
+	// TODO this is all a bit rube goldberg...
+	const lines = message.split('\n');
+
+	const file = lines.shift()
+		.replace('[7m', '') // careful — there is a special character at the beginning of this string
+		.replace('[27m', '')
+		.replace('./', '');
+
+	let line = null;
+	let column = null;
+
+	const match = locPattern.exec(lines[0]);
+	if (match) {
+		lines[0] = lines[0].replace(locPattern, '');
+		line = +match[1];
+		column = +match[2];
+	}
+
+	return {
+		file,
+		line,
+		column,
+		message: lines.join('\n'),
+		originalMessage: message,
+		duplicate
+	};
 }
 
 class Deferred {

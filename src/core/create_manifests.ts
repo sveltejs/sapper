@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
-import create_routes from './create_routes';
 import { posixify, write_if_changed } from './utils';
 import { dev, locations } from '../config';
 import { Route } from '../interfaces';

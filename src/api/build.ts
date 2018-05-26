@@ -61,9 +61,9 @@ async function execute(emitter: EventEmitter, {
 		webpack_stats: client_stats
 	});
 
-	fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify({
-		assets: client_stats.toJson().assetsByChunkName
-	}));
+	const client_info = client_stats.toJson();
+	fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(client_info));
+	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
 
 	const server_stats = await compile(server);
 	emitter.emit('build', <events.BuildEvent>{
