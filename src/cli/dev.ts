@@ -17,6 +17,16 @@ export function dev(opts: { port: number, open: boolean }) {
 				if (opts.open) child_process.exec(`open http://localhost:${event.port}`);
 				first = false;
 			}
+
+			// TODO clear screen?
+
+			event.process.stdout.on('data', data => {
+				process.stdout.write(data);
+			});
+
+			event.process.stderr.on('data', data => {
+				process.stderr.write(data);
+			});
 		});
 
 		watcher.on('invalid', (event: events.InvalidEvent) => {

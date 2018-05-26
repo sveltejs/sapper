@@ -148,7 +148,14 @@ class Watcher extends EventEmitter {
 					});
 
 					const restart = () => {
-						ports.wait(this.port).then(this.deferreds.server.fulfil);
+						ports.wait(this.port).then((() => {
+							this.emit('ready', <events.ReadyEvent>{
+								port: this.port,
+								process: this.proc
+							});
+
+							this.deferreds.server.fulfil();
+						}));
 					};
 
 					if (this.proc) {
@@ -164,11 +171,6 @@ class Watcher extends EventEmitter {
 							PORT: this.port
 						}, process.env),
 						stdio: ['ipc']
-					});
-
-					this.emit('ready', <events.ReadyEvent>{
-						port: this.port,
-						process: this.proc
 					});
 				});
 			}
@@ -190,7 +192,7 @@ class Watcher extends EventEmitter {
 
 			result: info => {
 				fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(info));
-				fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(info.assetsByChunkName, null, '  '));
+				fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(info.assetsByChunkName, null, '  '));
 				this.deferreds.client.fulfil();
 
 				const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
