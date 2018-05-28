@@ -1,21 +1,21 @@
 import * as path from 'path';
 import relative from 'require-relative';
 
-export default function create_compilers() {
-	const webpack = relative('webpack', process.cwd());
+export default function create_compilers({ webpack }: { webpack: string }) {
+	const wp = relative('webpack', process.cwd());
 
-	const serviceworker_config = try_require(path.resolve('webpack/service-worker.config.js'));
+	const serviceworker_config = try_require(path.resolve(`${webpack}/service-worker.config.js`));
 
 	return {
-		client: webpack(
-			require(path.resolve('webpack/client.config.js'))
+		client: wp(
+			require(path.resolve(`${webpack}/client.config.js`))
 		),
 
-		server: webpack(
-			require(path.resolve('webpack/server.config.js'))
+		server: wp(
+			require(path.resolve(`${webpack}/server.config.js`))
 		),
 
-		serviceworker: serviceworker_config && webpack(serviceworker_config)
+		serviceworker: serviceworker_config && wp(serviceworker_config)
 	};
 }
 

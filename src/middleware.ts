@@ -8,7 +8,6 @@ import rimraf from 'rimraf';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import { lookup } from './middleware/mime';
-import { create_routes, create_compilers } from './core';
 import { locations, dev } from './config';
 import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
@@ -60,7 +59,7 @@ export default function middleware({ App, routes, store }: {
 
 	const output = locations.dest();
 
-	const client_info = JSON.parse(fs.readFileSync(path.join(output, 'client_info.json'), 'utf-8'));
+	const client_assets = JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'));
 
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
@@ -97,7 +96,7 @@ export default function middleware({ App, routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_info.assets, App, routes, store)
+		get_route_handler(client_assets, App, routes, store)
 	].filter(Boolean));
 
 	return middleware;

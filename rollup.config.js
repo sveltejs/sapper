@@ -25,7 +25,13 @@ export default [
 	},
 
 	{
-		input: [`src/cli.ts`, `src/core.ts`, `src/middleware.ts`, `src/webpack.ts`],
+		input: [
+			`src/api.ts`,
+			`src/cli.ts`,
+			`src/core.ts`,
+			`src/middleware.ts`,
+			`src/webpack.ts`
+		],
 		output: {
 			dir: 'dist',
 			format: 'cjs',
