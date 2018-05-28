@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.13.0
+
+* Expose `dev`, `build`, `export` and `find_page` APIs ([#272](https://github.com/sveltejs/sapper/issues/272))
+
 ## 0.12.0
 
 * Each app has a single `<App>` component. See the [migration guide](https://sapper.svelte.technology/guide#0-11-to-0-12) for more information ([#157](https://github.com/sveltejs/sapper/issues/157))
