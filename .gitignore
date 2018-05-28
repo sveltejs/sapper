@@ -8,7 +8,6 @@ test/app/app/manifest
 test/app/export
 test/app/build
 sapper
-api.js
 runtime.js
 dist
 !rollup.config.js
