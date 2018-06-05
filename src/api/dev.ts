@@ -353,8 +353,11 @@ class Deferred {
 	}
 }
 
+const INTERVAL = 10000;
+
 class DevServer {
 	clients: Set<http.ServerResponse>;
+	interval: NodeJS.Timer;
 	_: http.Server;
 
 	constructor(port: number, interval = 10000) {
@@ -385,13 +388,14 @@ class DevServer {
 
 		this._.listen(port);
 
-		setInterval(() => {
+		this.interval = setInterval(() => {
 			this.send(null);
-		});
+		}, INTERVAL);
 	}
 
 	close() {
 		this._.close();
+		clearInterval(this.interval);
 	}
 
 	send(data: any) {
