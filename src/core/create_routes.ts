@@ -63,6 +63,22 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 							(a_sub_part.content < b_sub_part.content ? -1 : 1)
 						);
 					}
+					// If both parts dynamic, check for regexp patterns
+	                if (a_sub_part.dynamic && b_sub_part.dynamic) {
+	                    const regexp_pattern = /\((.*?)\)/;
+	                    const a_match = regexp_pattern.exec(a_sub_part.content);
+	                    const b_match = regexp_pattern.exec(b_sub_part.content);
+
+	                    if (!a_match && b_match) {
+	                        return 1; // No regexp, so less specific than b
+	                    }
+	                    if (!b_match && a_match) {
+	                        return -1; 
+	                    }
+	                    if (a_match && b_match) {
+	                    	return b_match[1].length - a_match[1].length;
+	                    }
+	                }
 				}
 			}
 
@@ -74,10 +90,14 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			 ) || '_';
 
 			const params: string[] = [];
-			const param_pattern = /\[([^\]]+)\]/g;
+			const match_patterns: string[] = [];
+			const param_pattern = /\[([^\(]+)(?:\((.+?)\))?\]/g;
 			let match;
 			while (match = param_pattern.exec(base)) {
 				params.push(match[1]);
+				if (typeof match[2] !== 'undefined') {
+	                match_patterns.push(`(${match[2]}?)`);
+	            }
 			}
 
 			// TODO can we do all this with sub-parts? or does
@@ -90,7 +110,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 				const dynamic = ~part.indexOf('[');
 
 				if (dynamic) {
-					const matcher = part.replace(param_pattern, `([^\/]+?)`);
+					const matcher = part.replace(param_pattern, match_patterns[i] || `([^/]+?)`);
 					pattern_string = nested ? `(?:\\/${matcher}${pattern_string})?` : `\\/${matcher}${pattern_string}`;
 				} else {
 					nested = false;
@@ -142,7 +162,7 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 }
 
 function get_sub_parts(part: string) {
-	return part.split(/[\[\]]/)
+	return part.split(/\[(.+)\]/)
 		.map((content, i) => {
 			if (!content) return null;
 			return {
