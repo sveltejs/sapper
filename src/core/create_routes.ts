@@ -90,13 +90,14 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
              ) || '_';
 
             const params: string[] = [];
-            const match_patterns: string[] = [];
-            const param_pattern = /\[([^\(]+)(?:\((.+?)\))?\]/g;
+            const match_patterns: object = {};
+            const param_pattern = /\[([^\(\]]+)(?:\((.+?)\))?\]/g;
             let match;
             while (match = param_pattern.exec(base)) {
                 params.push(match[1]);
                 if (typeof match[2] !== 'undefined') {
-                    match_patterns.push(`(${match[2]}?)`);
+                    // Make a map of the regexp patterns
+                    match_patterns[match[1]] = `(${match[2]}?)`;
                 }
             }
 
@@ -110,7 +111,13 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
                 const dynamic = ~part.indexOf('[');
 
                 if (dynamic) {
-                    const matcher = part.replace(param_pattern, match_patterns[i] || `([^/]+?)`);
+                    // Get keys from part and replace with stored match patterns
+                    const keys = part.replace(/\(.*?\)/, '').split(/[\[\]]/).filter((x, i) => { if (i % 2) return x });
+                    let matcher = part;
+                    keys.forEach(k => {
+                        const key_pattern = new RegExp('\\[' + k + '(?:\\((.+?)\\))?\\]');
+                        matcher = matcher.replace(key_pattern, match_patterns[k] || `([^/]+?)`);
+                    })
                     pattern_string = nested ? `(?:\\/${matcher}${pattern_string})?` : `\\/${matcher}${pattern_string}`;
                 } else {
                     nested = false;
