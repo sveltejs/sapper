@@ -11,7 +11,7 @@ function check() {
 export function connect(port) {
 	if (source || !window.EventSource) return;
 
-	source = new EventSource(`http://${window.location.hostname}:${port}/__sapper__`);
+	source = new EventSource(`https://${window.location.hostname}:${port}/__sapper__`);
 
 	window.source = source;
 
@@ -32,7 +32,7 @@ export function connect(port) {
 		}
 
 		if (data.status === 'completed') {
-			check();
+			setTimeout(() => check(), 250); 
 		}
 	};
 }
