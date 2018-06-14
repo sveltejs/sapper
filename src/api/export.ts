@@ -66,7 +66,7 @@ async function execute(emitter: EventEmitter, {
 	const saved = new Set();
 
 	proc.on('message', message => {
-		if (!message.__sapper__) return;
+		if (!message.__sapper__ || message.event !== 'file') return;
 
 		let file = new URL(message.url, origin).pathname.slice(1);
 		let { body } = message;

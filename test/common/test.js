@@ -133,6 +133,7 @@ function run({ mode, basepath = '' }) {
 		let capture;
 
 		let base;
+		let captured_basepath;
 
 		const nightmare = new Nightmare();
 
@@ -179,7 +180,13 @@ function run({ mode, basepath = '' }) {
 				let handler;
 
 				proc.on('message', message => {
-					if (message.__sapper__) return;
+					if (message.__sapper__) {
+						if (message.event === 'basepath') {
+							captured_basepath = basepath;
+						}
+						return;
+					}
+
 					if (handler) handler(message);
 				});
 
@@ -596,6 +603,10 @@ function run({ mode, basepath = '' }) {
 					.then(hasProgressIndicator => {
 						assert.ok(!hasProgressIndicator);
 					});
+			});
+
+			it('emits a basepath', () => {
+				assert.equal(captured_basepath, basepath);
 			});
 		});
 

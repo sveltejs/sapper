@@ -58,12 +58,24 @@ export default function middleware({ App, routes, store }: {
 
 	const client_assets = JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'));
 
+	let emitted_basepath = false;
+
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
 			if (req.baseUrl === undefined) {
 				req.baseUrl = req.originalUrl
 					? req.originalUrl.slice(0, -req.url.length)
 					: '';
+			}
+
+			if (!emitted_basepath && process.send) {
+				process.send({
+					__sapper__: true,
+					event: 'basepath',
+					basepath: req.baseUrl
+				});
+
+				emitted_basepath = true;
 			}
 
 			if (req.path === undefined) {
@@ -276,6 +288,7 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 						if (process.send) {
 							process.send({
 								__sapper__: true,
+								event: 'file',
 								url: req.url,
 								method: req.method,
 								status: 200,
@@ -315,6 +328,7 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 
 								process.send({
 									__sapper__: true,
+									event: 'file',
 									url: req.url,
 									method: req.method,
 									status: res.statusCode,

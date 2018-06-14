@@ -6,7 +6,6 @@ import * as ports from 'port-authority';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
-import prettyMs from 'pretty-ms';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
@@ -171,6 +170,14 @@ class Watcher extends EventEmitter {
 							PORT: this.port
 						}, process.env),
 						stdio: ['ipc']
+					});
+
+					this.proc.on('message', message => {
+						if (message.__sapper__ && message.event === 'basepath') {
+							this.emit('basepath', {
+								basepath: message.basepath
+							});
+						}
 					});
 				});
 			}
