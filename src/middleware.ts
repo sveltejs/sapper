@@ -1,15 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { resolve, URL } from 'url';
+import { URL } from 'url';
 import { ClientRequest, ServerResponse } from 'http';
 import cookie from 'cookie';
-import mkdirp from 'mkdirp';
-import rimraf from 'rimraf';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import { lookup } from './middleware/mime';
 import { locations, dev } from './config';
-import { Route, Template } from './interfaces';
 import sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();
@@ -61,12 +58,24 @@ export default function middleware({ App, routes, store }: {
 
 	const client_assets = JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'));
 
+	let emitted_basepath = false;
+
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
 			if (req.baseUrl === undefined) {
 				req.baseUrl = req.originalUrl
 					? req.originalUrl.slice(0, -req.url.length)
 					: '';
+			}
+
+			if (!emitted_basepath && process.send) {
+				process.send({
+					__sapper__: true,
+					event: 'basepath',
+					basepath: req.baseUrl
+				});
+
+				emitted_basepath = true;
 			}
 
 			if (req.path === undefined) {
@@ -138,8 +147,6 @@ function serve({ prefix, pathname, cache_control }: {
 		}
 	};
 }
-
-const resolved = Promise.resolve();
 
 function get_route_handler(chunks: Record<string, string>, App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
 	const template = dev()
@@ -281,6 +288,7 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 						if (process.send) {
 							process.send({
 								__sapper__: true,
+								event: 'file',
 								url: req.url,
 								method: req.method,
 								status: 200,
@@ -320,6 +328,7 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 
 								process.send({
 									__sapper__: true,
+									event: 'file',
 									url: req.url,
 									method: req.method,
 									status: res.statusCode,
@@ -449,10 +458,6 @@ function compose_handlers(handlers: Handler[]) {
 
 		go();
 	};
-}
-
-function read_json(file: string) {
-	return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
 
 function try_serialize(data: any) {
