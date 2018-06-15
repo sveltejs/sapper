@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.13.2
+
+* Emit a `basepath` event ([#284](https://github.com/sveltejs/sapper/pull/284))
+
 ## 0.13.1
 
 * Reinstate ten-second interval between dev server heartbeats ([#276](https://github.com/sveltejs/sapper/issues/276))
