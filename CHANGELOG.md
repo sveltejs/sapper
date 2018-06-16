@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.13.3
+
+* Make `fatal` events clonable for IPC purposes
+
 ## 0.13.2
 
 * Emit a `basepath` event ([#284](https://github.com/sveltejs/sapper/pull/284))
