@@ -7,11 +7,11 @@ export type ReadyEvent = {
 
 export type ErrorEvent = {
 	type: string;
-	error: Error;
+	message: string;
 };
 
 export type FatalEvent = {
-	error: Error;
+	message: string;
 };
 
 export type InvalidEvent = {

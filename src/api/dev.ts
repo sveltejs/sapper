@@ -90,7 +90,7 @@ class Watcher extends EventEmitter {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
 				this.emit('fatal', <events.FatalEvent>{
-					error: new Error(`Port ${this.port} is unavailable`)
+					message: `Port ${this.port} is unavailable`
 				});
 				return;
 			}
