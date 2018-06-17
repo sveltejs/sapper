@@ -130,6 +130,12 @@ class Watcher extends EventEmitter {
 		// TODO watch the configs themselves?
 		const compilers = create_compilers({ webpack: this.dirs.webpack });
 
+		const emitFatal = () => {
+			this.emit('fatal', <events.FatalEvent>{
+				message: `Server crashed`
+			});
+		};
+
 		this.watch(compilers.server, {
 			name: 'server',
 
@@ -158,6 +164,7 @@ class Watcher extends EventEmitter {
 					};
 
 					if (this.proc) {
+						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
 						this.proc.on('exit', restart);
 					} else {
@@ -172,6 +179,14 @@ class Watcher extends EventEmitter {
 						stdio: ['ipc']
 					});
 
+					this.proc.stdout.on('data', chunk => {
+						this.emit('stdout', chunk);
+					});
+
+					this.proc.stderr.on('data', chunk => {
+						this.emit('stderr', chunk);
+					});
+
 					this.proc.on('message', message => {
 						if (message.__sapper__ && message.event === 'basepath') {
 							this.emit('basepath', {
@@ -179,6 +194,8 @@ class Watcher extends EventEmitter {
 							});
 						}
 					});
+
+					this.proc.on('exit', emitFatal);
 				});
 			}
 		});
