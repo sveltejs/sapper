@@ -250,8 +250,8 @@ class Watcher extends EventEmitter {
 			this.restarting = true;
 
 			this.current_build = {
-				changed: new Set(),
-				rebuilding: new Set(),
+				changed: new Set([filename]),
+				rebuilding: new Set([type]),
 				unique_warnings: new Set(),
 				unique_errors: new Set()
 			};
