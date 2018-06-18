@@ -56,8 +56,6 @@ export default function middleware({ App, routes, store }: {
 
 	const output = locations.dest();
 
-	const client_assets = JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'));
-
 	let emitted_basepath = false;
 
 	const middleware = compose_handlers([
@@ -105,7 +103,7 @@ export default function middleware({ App, routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_route_handler(client_assets, App, routes, store)
+		get_route_handler(App, routes, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -148,7 +146,13 @@ function serve({ prefix, pathname, cache_control }: {
 	};
 }
 
-function get_route_handler(chunks: Record<string, string>, App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
+function get_route_handler(App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
+	const output = locations.dest();
+
+	const get_chunks = dev()
+		? () => JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'))
+		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8')));
+
 	const template = dev()
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
@@ -159,6 +163,8 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 		const handlers = route.handlers[Symbol.iterator]();
 
 		function next() {
+			const chunks: Record<string, string> = get_chunks();
+
 			try {
 				const { value: handler, done } = handlers.next();
 
@@ -384,7 +390,7 @@ function get_route_handler(chunks: Record<string, string>, App: Component, route
 		function render_page({ head, css, html }) {
 			const page = template()
 				.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', `<script>__SAPPER__={baseUrl: "${req.baseUrl}"}</script><script src='${req.baseUrl}/client/${chunks.main}'></script>`)
+				.replace('%sapper.scripts%', `<script>__SAPPER__={baseUrl: "${req.baseUrl}"}</script><script src='${req.baseUrl}/client/${get_chunks().main}'></script>`)
 				.replace('%sapper.html%', html)
 				.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
