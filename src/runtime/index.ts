@@ -161,6 +161,7 @@ function navigate(target: Target, id: number) {
 		}
 
 		render(Page, props, scroll_history[id], token);
+		document.activeElement.blur();
 	});
 }
 

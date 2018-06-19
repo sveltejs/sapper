@@ -608,6 +608,19 @@ function run({ mode, basepath = '' }) {
 			it('emits a basepath', () => {
 				assert.equal(captured_basepath, basepath);
 			});
+
+			// skipped because Nightmare doesn't seem to focus the <a> correctly
+			it.skip('resets the active element after navigation', () => {
+				return nightmare
+					.goto(base)
+					.init()
+					.click('a[href="about"]')
+					.wait(100)
+					.evaluate(() => document.activeElement.nodeName)
+					.then(name => {
+						assert.equal(name, 'BODY');
+					});
+			});
 		});
 
 		describe('headers', () => {
