@@ -148,10 +148,6 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'server_info.json'), JSON.stringify(info, null, '  '));
 
 				this.deferreds.client.promise.then(() => {
-					this.dev_server.send({
-						status: 'completed'
-					});
-
 					const restart = () => {
 						ports.wait(this.port).then((() => {
 							this.emit('ready', <events.ReadyEvent>{
@@ -160,6 +156,10 @@ class Watcher extends EventEmitter {
 							});
 
 							this.deferreds.server.fulfil();
+
+							this.dev_server.send({
+								status: 'completed'
+							});
 						}));
 					};
 
