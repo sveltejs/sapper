@@ -1,5 +1,14 @@
 # sapper changelog
 
+## 0.13.4
+
+* Focus `<body>` after navigation ([#287](https://github.com/sveltejs/sapper/issues/287))
+* Fix timing of hot reload updates
+* Emit `fatal` event if server crashes ([#285](https://github.com/sveltejs/sapper/pull/285))
+* Emit `stdout` and `stderr` events on dev watcher ([#285](https://github.com/sveltejs/sapper/pull/285))
+* Always refresh client assets in dev ([#286](https://github.com/sveltejs/sapper/pull/286))
+* Correctly initialise rebuild stats
+
 ## 0.13.3
 
 * Make `fatal` events clonable for IPC purposes
