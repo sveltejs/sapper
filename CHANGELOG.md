@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.13.5
+
+* Fix handling of fatal errors ([#289](https://github.com/sveltejs/sapper/issues/289))
+
 ## 0.13.4
 
 * Focus `<body>` after navigation ([#287](https://github.com/sveltejs/sapper/issues/287))
