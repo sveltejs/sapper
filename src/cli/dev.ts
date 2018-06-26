@@ -36,11 +36,12 @@ export function dev(opts: { port: number, open: boolean }) {
 
 		watcher.on('error', (event: events.ErrorEvent) => {
 			console.log(`${colors.red(`✗ ${event.type}`)}`);
-			console.log(`${colors.red(event.error.message)}`);
+			console.log(`${colors.red(event.message)}`);
 		});
 
 		watcher.on('fatal', (event: events.FatalEvent) => {
-			console.log(`${colors.bold.red(`> ${event.error.message}`)}`);
+			console.log(`${colors.bold.red(`> ${event.message}`)}`);
+			if (event.log) console.log(event.log);
 		});
 
 		watcher.on('build', (event: events.BuildEvent) => {
