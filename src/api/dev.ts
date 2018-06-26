@@ -33,6 +33,7 @@ class Watcher extends EventEmitter {
 		server: Deferred;
 	};
 
+	crashed: boolean;
 	restarting: boolean;
 	current_build: {
 		changed: Set<string>;
@@ -130,10 +131,16 @@ class Watcher extends EventEmitter {
 		// TODO watch the configs themselves?
 		const compilers = create_compilers({ webpack: this.dirs.webpack });
 
+		let log = '';
+
 		const emitFatal = () => {
 			this.emit('fatal', <events.FatalEvent>{
-				message: `Server crashed`
+				message: `Server crashed`,
+				log
 			});
+
+			this.crashed = true;
+			this.proc = null;
 		};
 
 		this.watch(compilers.server, {
@@ -149,18 +156,30 @@ class Watcher extends EventEmitter {
 
 				this.deferreds.client.promise.then(() => {
 					const restart = () => {
-						ports.wait(this.port).then((() => {
-							this.emit('ready', <events.ReadyEvent>{
-								port: this.port,
-								process: this.proc
-							});
+						log = '';
+						this.crashed = false;
 
-							this.deferreds.server.fulfil();
+						ports.wait(this.port)
+							.then((() => {
+								this.emit('ready', <events.ReadyEvent>{
+									port: this.port,
+									process: this.proc
+								});
 
-							this.dev_server.send({
-								status: 'completed'
+								this.deferreds.server.fulfil();
+
+								this.dev_server.send({
+									status: 'completed'
+								});
+							}))
+							.catch(err => {
+								if (this.crashed) return;
+
+								this.emit('fatal', <events.FatalEvent>{
+									message: `Server is not listening on port ${this.port}`,
+									log
+								});
 							});
-						}));
 					};
 
 					if (this.proc) {
@@ -180,10 +199,12 @@ class Watcher extends EventEmitter {
 					});
 
 					this.proc.stdout.on('data', chunk => {
+						log += chunk;
 						this.emit('stdout', chunk);
 					});
 
 					this.proc.stderr.on('data', chunk => {
+						log += chunk;
 						this.emit('stderr', chunk);
 					});
 
@@ -301,7 +322,7 @@ class Watcher extends EventEmitter {
 			if (err) {
 				this.emit('error', <events.ErrorEvent>{
 					type: name,
-					error: err
+					message: err.message
 				});
 			} else {
 				const messages = format_messages(stats);
