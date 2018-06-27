@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.13.6
+
+* Fix `baseUrl` synthesis ([#296](https://github.com/sveltejs/sapper/issues/296))
+
 ## 0.13.5
 
 * Fix handling of fatal errors ([#289](https://github.com/sveltejs/sapper/issues/289))
