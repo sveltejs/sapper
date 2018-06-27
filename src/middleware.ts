@@ -61,8 +61,13 @@ export default function middleware({ App, routes, store }: {
 	const middleware = compose_handlers([
 		(req: Req, res: ServerResponse, next: () => void) => {
 			if (req.baseUrl === undefined) {
-				req.baseUrl = req.originalUrl
-					? req.originalUrl.slice(0, -req.url.length)
+				let { originalUrl } = req;
+				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
+					originalUrl += '/';
+				}
+
+				req.baseUrl = originalUrl
+					? originalUrl.slice(0, -req.url.length)
 					: '';
 			}
 
