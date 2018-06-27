@@ -162,8 +162,13 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
-	function handle_route(route: RouteObject, req: Req, res: ServerResponse) {
-		req.params = route.params(route.pattern.exec(req.path));
+	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
+	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
+
+	function handle_route(route: RouteObject, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
+		req.params = error
+			? {}
+			: route.params(route.pattern.exec(req.path));
 
 		const handlers = route.handlers[Symbol.iterator]();
 
@@ -174,7 +179,14 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 				const { value: handler, done } = handlers.next();
 
 				if (done) {
-					handle_error(req, res, 404, 'Not found');
+					if (route.error) {
+						// there was an error rendering the error page!
+						res.statusCode = status;
+						res.end(error instanceof Error ? error.message : error);
+					} else {
+						handle_route(not_found_route, req, res, 404, 'Not found');
+					}
+
 					return;
 				}
 
@@ -186,7 +198,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 					// preload main.js and current route
 					// TODO detect other stuff we can preload? images, CSS, fonts?
 					const link = []
-						.concat(chunks.main, chunks[route.id])
+						.concat(chunks.main, chunks[route.id] || chunks[`_${route.error}`]) // TODO this is gross
 						.filter(file => !file.match(/\.map$/))
 						.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 						.join(', ');
@@ -197,7 +209,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 					const props = { params: req.params, query: req.query, path: req.path };
 
 					let redirect: { statusCode: number, location: string };
-					let error: { statusCode: number, message: Error | string };
+					let preload_error: { statusCode: number, message: Error | string };
 
 					Promise.resolve(
 						mod.preload ? mod.preload.call({
@@ -205,7 +217,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 								redirect = { statusCode, location };
 							},
 							error: (statusCode: number, message: Error | string) => {
-								error = { statusCode, message };
+								preload_error = { statusCode, message };
 							},
 							fetch: (url: string, opts?: any) => {
 								const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/'  :''}`);
@@ -245,7 +257,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 						store
 						}, req) : {}
 					).catch(err => {
-						error = { statusCode: 500, message: err };
+						preload_error = { statusCode: 500, message: err };
 					}).then(preloaded => {
 						if (redirect) {
 							res.statusCode = redirect.statusCode;
@@ -255,8 +267,8 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 							return;
 						}
 
-						if (error) {
-							handle_error(req, res, error.statusCode, error.message);
+						if (preload_error) {
+							handle_route(error_route, req, res, preload_error.statusCode, preload_error.message);
 							return;
 						}
 
@@ -370,76 +382,11 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 					}
 				}
 			} catch (error) {
-				handle_error(req, res, 500, error);
+				handle_route(error_route, req, res, 500, error || 'Internal server error');
 			}
 		}
 
 		next();
-	}
-
-	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
-	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
-
-	function handle_error(req: Req, res: ServerResponse, statusCode: number, message: Error | string) {
-		res.statusCode = statusCode;
-		res.setHeader('Content-Type', 'text/html');
-
-		const error = message instanceof Error ? message : new Error(message);
-
-		const not_found = statusCode >= 400 && statusCode < 500;
-
-		const route = not_found
-			? not_found_route
-			: error_route;
-
-		function render_page({ head, css, html }) {
-			const page = template()
-				.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', `<script>__SAPPER__={baseUrl: "${req.baseUrl}"}</script><script src='${req.baseUrl}/client/${get_chunks().main}'></script>`)
-				.replace('%sapper.html%', html)
-				.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
-
-			res.end(page);
-		}
-
-		function handle_notfound() {
-			const title: string = not_found
-				? 'Not found'
-				: `Internal server error: ${error.message}`;
-
-			render_page({ head: '', css: null, html: title });
-		}
-
-		if (route) {
-			const handlers = route.handlers[Symbol.iterator]();
-
-			function next() {
-				const { value: handler, done } = handlers.next();
-
-				if (done) {
-					handle_notfound();
-				} else if (handler.type === 'page') {
-					render_page(handler.module.render({
-						status: statusCode,
-						error
-					}, {
-						store: store_getter && store_getter(req)
-					}));
-				} else {
-					const handle_method = mod[method_export];
-					if (handle_method) {
-						handle_method(req, res, next);
-					} else {
-						next();
-					}
-				}
-			}
-
-			next();
-		} else {
-			handle_notfound();
-		}
 	}
 
 	return function find_route(req: Req, res: ServerResponse) {
@@ -447,7 +394,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 			if (!route.error && route.pattern.test(req.path)) return handle_route(route, req, res);
 		}
 
-		handle_error(req, res, 404, 'Not found');
+		handle_route(not_found_route, req, res, 404, 'Not found');
 	};
 }
 
