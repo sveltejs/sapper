@@ -281,9 +281,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.click('.goto')
-					.wait(url => window.location.pathname === url, `${basepath}/blog/what-is-sapper`)
-					.wait(100)
+					.evaluate(() => window.goto('blog/what-is-sapper'))
 					.title()
 					.then(title => {
 						assert.equal(title, 'What is Sapper?');

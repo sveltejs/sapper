@@ -133,7 +133,7 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 	});
 }
 
-function navigate(target: Target, id: number) {
+function navigate(target: Target, id: number): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
@@ -299,13 +299,17 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 
 export function goto(href: string, opts = { replaceState: false }) {
 	const target = select_route(new URL(href, document.baseURI));
+	let promise;
 
 	if (target) {
-		navigate(target, null);
+		promise = navigate(target, null);
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 	} else {
 		window.location.href = href;
+		promise = new Promise(f => {}); // never resolves
 	}
+
+	return promise;
 }
 
 export function prefetchRoutes(pathnames: string[]) {
