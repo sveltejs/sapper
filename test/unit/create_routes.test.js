@@ -71,8 +71,7 @@ describe('create_routes', () => {
 				'blog/[slug].html',
 				'api/gists/[id].js',
 				'api/gists/index.js',
-				'4xx.html',
-				'5xx.html',
+				'_error.html',
 				'blog/index.html',
 				'blog/rss.xml.js',
 				'guide/index.html',
@@ -83,8 +82,7 @@ describe('create_routes', () => {
 		assert.deepEqual(
 			routes.map(r => r.handlers[0].file),
 			[
-				'4xx.html',
-				'5xx.html',
+				'_error.html',
 				'index.html',
 				'guide/index.html',
 				'blog/index.html',
@@ -99,8 +97,7 @@ describe('create_routes', () => {
 
 		routes = create_routes({
 			files: [
-				'4xx.html',
-				'5xx.html',
+				'_error.html',
 				'api/blog/[slug].js',
 				'api/blog/index.js',
 				'api/guide/contents.js',
@@ -119,8 +116,7 @@ describe('create_routes', () => {
 		assert.deepEqual(
 			routes.map(r => r.handlers[0].file),
 			[
-				'4xx.html',
-				'5xx.html',
+				'_error.html',
 				'index.html',
 				'guide/index.html',
 				'blog/index.html',
@@ -283,5 +279,29 @@ describe('create_routes', () => {
 				files: ['[foo][bar].js']
 			});
 		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
+	});
+
+	it('errors on 4xx.html', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['4xx.html']
+			});
+		}, /As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html/);
+	});
+
+	it('errors on 5xx.html', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['5xx.html']
+			});
+		}, /As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html/);
+	});
+
+	it('treats foo/index.json.js the same as foo.json.js', () => {
+		const route = create_routes({
+			files: ['foo/index.json.js']
+		})[0];
+
+		assert.ok(route.test('/foo.json'));
 	});
 });

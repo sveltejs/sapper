@@ -6,7 +6,6 @@ import * as ports from 'port-authority';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import format_messages from 'webpack-format-messages';
-import prettyMs from 'pretty-ms';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
@@ -34,6 +33,7 @@ class Watcher extends EventEmitter {
 		server: Deferred;
 	};
 
+	crashed: boolean;
 	restarting: boolean;
 	current_build: {
 		changed: Set<string>;
@@ -91,7 +91,7 @@ class Watcher extends EventEmitter {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
 				this.emit('fatal', <events.FatalEvent>{
-					error: new Error(`Port ${this.port} is unavailable`)
+					message: `Port ${this.port} is unavailable`
 				});
 				return;
 			}
@@ -131,6 +131,18 @@ class Watcher extends EventEmitter {
 		// TODO watch the configs themselves?
 		const compilers = create_compilers({ webpack: this.dirs.webpack });
 
+		let log = '';
+
+		const emitFatal = () => {
+			this.emit('fatal', <events.FatalEvent>{
+				message: `Server crashed`,
+				log
+			});
+
+			this.crashed = true;
+			this.proc = null;
+		};
+
 		this.watch(compilers.server, {
 			name: 'server',
 
@@ -143,22 +155,35 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'server_info.json'), JSON.stringify(info, null, '  '));
 
 				this.deferreds.client.promise.then(() => {
-					this.dev_server.send({
-						status: 'completed'
-					});
-
 					const restart = () => {
-						ports.wait(this.port).then((() => {
-							this.emit('ready', <events.ReadyEvent>{
-								port: this.port,
-								process: this.proc
-							});
+						log = '';
+						this.crashed = false;
 
-							this.deferreds.server.fulfil();
-						}));
+						ports.wait(this.port)
+							.then((() => {
+								this.emit('ready', <events.ReadyEvent>{
+									port: this.port,
+									process: this.proc
+								});
+
+								this.deferreds.server.fulfil();
+
+								this.dev_server.send({
+									status: 'completed'
+								});
+							}))
+							.catch(err => {
+								if (this.crashed) return;
+
+								this.emit('fatal', <events.FatalEvent>{
+									message: `Server is not listening on port ${this.port}`,
+									log
+								});
+							});
 					};
 
 					if (this.proc) {
+						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
 						this.proc.on('exit', restart);
 					} else {
@@ -172,6 +197,26 @@ class Watcher extends EventEmitter {
 						}, process.env),
 						stdio: ['ipc']
 					});
+
+					this.proc.stdout.on('data', chunk => {
+						log += chunk;
+						this.emit('stdout', chunk);
+					});
+
+					this.proc.stderr.on('data', chunk => {
+						log += chunk;
+						this.emit('stderr', chunk);
+					});
+
+					this.proc.on('message', message => {
+						if (message.__sapper__ && message.event === 'basepath') {
+							this.emit('basepath', {
+								basepath: message.basepath
+							});
+						}
+					});
+
+					this.proc.on('exit', emitFatal);
 				});
 			}
 		});
@@ -243,8 +288,8 @@ class Watcher extends EventEmitter {
 			this.restarting = true;
 
 			this.current_build = {
-				changed: new Set(),
-				rebuilding: new Set(),
+				changed: new Set([filename]),
+				rebuilding: new Set([type]),
 				unique_warnings: new Set(),
 				unique_errors: new Set()
 			};
@@ -277,7 +322,7 @@ class Watcher extends EventEmitter {
 			if (err) {
 				this.emit('error', <events.ErrorEvent>{
 					type: name,
-					error: err
+					message: err.message
 				});
 			} else {
 				const messages = format_messages(stats);

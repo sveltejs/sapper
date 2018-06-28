@@ -52,8 +52,8 @@ function generate_client(routes: Route[], path_to_routes: string, dev_port?: num
 
 					const file = posixify(`${path_to_routes}/${page.file}`);
 
-					if (route.id === '_4xx' || route.id === '_5xx') {
-						return `{ error: '${route.id.slice(1)}', load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
+					if (route.id === '_error') {
+						return `{ error: true, load: () => import(/* webpackChunkName: "${route.id}" */ '${file}') }`;
 					}
 
 					const params = route.params.length === 0
@@ -107,8 +107,8 @@ function generate_server(routes: Route[], path_to_routes: string) {
 							`{ type: '${type}', module: ${route.id}${index} }`)
 						.join(', ');
 
-					if (route.id === '_4xx' || route.id === '_5xx') {
-						return `{ error: '${route.id.slice(1)}', handlers: [${handlers}] }`;
+					if (route.id === '_error') {
+						return `{ error: true, handlers: [${handlers}] }`;
 					}
 
 					const params = route.params.length === 0

@@ -1,5 +1,38 @@
 # sapper changelog
 
+## 0.14.0
+
+* `4xx.html` and `5xx.html` are replaced with `_error.html` ([#209](https://github.com/sveltejs/sapper/issues/209))
+* Treat `foo/index.json.js` and `foo.json.js` as equivalents ([#297](https://github.com/sveltejs/sapper/issues/297))
+* Return a promise from `goto` ([#270](https://github.com/sveltejs/sapper/issues/270))
+* Use store when rendering error pages ([#293](https://github.com/sveltejs/sapper/issues/293))
+* Prevent console errors when visiting an error page ([#279](https://github.com/sveltejs/sapper/issues/279))
+
+## 0.13.6
+
+* Fix `baseUrl` synthesis ([#296](https://github.com/sveltejs/sapper/issues/296))
+
+## 0.13.5
+
+* Fix handling of fatal errors ([#289](https://github.com/sveltejs/sapper/issues/289))
+
+## 0.13.4
+
+* Focus `<body>` after navigation ([#287](https://github.com/sveltejs/sapper/issues/287))
+* Fix timing of hot reload updates
+* Emit `fatal` event if server crashes ([#285](https://github.com/sveltejs/sapper/pull/285))
+* Emit `stdout` and `stderr` events on dev watcher ([#285](https://github.com/sveltejs/sapper/pull/285))
+* Always refresh client assets in dev ([#286](https://github.com/sveltejs/sapper/pull/286))
+* Correctly initialise rebuild stats
+
+## 0.13.3
+
+* Make `fatal` events clonable for IPC purposes
+
+## 0.13.2
+
+* Emit a `basepath` event ([#284](https://github.com/sveltejs/sapper/pull/284))
+
 ## 0.13.1
 
 * Reinstate ten-second interval between dev server heartbeats ([#276](https://github.com/sveltejs/sapper/issues/276))

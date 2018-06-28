@@ -8,7 +8,7 @@ export let component: Component;
 let target: Node;
 let store: Store;
 let routes: Route[];
-let errors: { '4xx': Route, '5xx': Route };
+let error_route: Route;
 
 const history = typeof window !== 'undefined' ? window.history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -117,11 +117,7 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 		error = { statusCode: 500, message: err };
 	}).then(preloaded => {
 		if (error) {
-			const route = error.statusCode >= 400 && error.statusCode < 500
-				? errors['4xx']
-				: errors['5xx'];
-
-			return route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
+			return error_route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
 				const err = error.message instanceof Error ? error.message : new Error(error.message);
 				Object.assign(props, { status: error.statusCode, error: err });
 				return { Page, props, redirect: null };
@@ -133,7 +129,7 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 	});
 }
 
-function navigate(target: Target, id: number) {
+function navigate(target: Target, id: number): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
@@ -161,6 +157,7 @@ function navigate(target: Target, id: number) {
 		}
 
 		render(Page, props, scroll_history[id], token);
+		document.activeElement.blur();
 	});
 }
 
@@ -211,7 +208,11 @@ function handle_popstate(event: PopStateEvent) {
 	if (event.state) {
 		const url = new URL(window.location.href);
 		const target = select_route(url);
-		navigate(target, event.state.id);
+		if (target) {
+			navigate(target, event.state.id);
+		} else {
+			window.location.href = window.location.href;
+		}
 	} else {
 		// hashchange
 		cid = ++uid;
@@ -261,10 +262,7 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 	App = opts.App;
 	target = opts.target;
 	routes = opts.routes.filter(r => !r.error);
-	errors = {
-		'4xx': opts.routes.find(r => r.error === '4xx'),
-		'5xx': opts.routes.find(r => r.error === '5xx')
-	};
+	error_route = opts.routes.find(r => r.error);
 
 	if (opts && opts.store) {
 		store = opts.store(manifest.store);
@@ -292,19 +290,23 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 		history.replaceState({ id: uid }, '', href);
 
 		const target = select_route(new URL(window.location.href));
-		return navigate(target, uid);
+		if (target) return navigate(target, uid);
 	});
 }
 
 export function goto(href: string, opts = { replaceState: false }) {
 	const target = select_route(new URL(href, document.baseURI));
+	let promise;
 
 	if (target) {
-		navigate(target, null);
+		promise = navigate(target, null);
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 	} else {
 		window.location.href = href;
+		promise = new Promise(f => {}); // never resolves
 	}
+
+	return promise;
 }
 
 export function prefetchRoutes(pathnames: string[]) {

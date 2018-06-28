@@ -133,6 +133,7 @@ function run({ mode, basepath = '' }) {
 		let capture;
 
 		let base;
+		let captured_basepath;
 
 		const nightmare = new Nightmare();
 
@@ -179,7 +180,13 @@ function run({ mode, basepath = '' }) {
 				let handler;
 
 				proc.on('message', message => {
-					if (message.__sapper__) return;
+					if (message.__sapper__) {
+						if (message.event === 'basepath') {
+							captured_basepath = basepath;
+						}
+						return;
+					}
+
 					if (handler) handler(message);
 				});
 
@@ -274,9 +281,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare
 					.goto(`${base}/about`)
 					.init()
-					.click('.goto')
-					.wait(url => window.location.pathname === url, `${basepath}/blog/what-is-sapper`)
-					.wait(100)
+					.evaluate(() => window.goto('blog/what-is-sapper'))
 					.title()
 					.then(title => {
 						assert.equal(title, 'What is Sapper?');
@@ -434,7 +439,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Not found')
+						assert.equal(title, '404')
 					});
 			});
 
@@ -449,7 +454,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Not found');
+						assert.equal(title, '404');
 					});
 			});
 
@@ -461,7 +466,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Internal server error')
+						assert.equal(title, '500')
 					});
 			});
 
@@ -476,7 +481,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Internal server error');
+						assert.equal(title, '500');
 					});
 			});
 
@@ -595,6 +600,23 @@ function run({ mode, basepath = '' }) {
 					}))
 					.then(hasProgressIndicator => {
 						assert.ok(!hasProgressIndicator);
+					});
+			});
+
+			it('emits a basepath', () => {
+				assert.equal(captured_basepath, basepath);
+			});
+
+			// skipped because Nightmare doesn't seem to focus the <a> correctly
+			it.skip('resets the active element after navigation', () => {
+				return nightmare
+					.goto(base)
+					.init()
+					.click('a[href="about"]')
+					.wait(100)
+					.evaluate(() => document.activeElement.nodeName)
+					.then(name => {
+						assert.equal(name, 'BODY');
 					});
 			});
 		});
