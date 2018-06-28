@@ -11,6 +11,10 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 				throw new Error(`Invalid route ${file} — parameters must be separated`);
 			}
 
+			if (file === '4xx.html' || file === '5xx.html') {
+				throw new Error('As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html');
+			}
+
 			const base = file.replace(/\.[^/.]+$/, '');
 			const parts = base.split('/'); // glob output is always posix-style
 			if (parts[parts.length - 1] === 'index') parts.pop();

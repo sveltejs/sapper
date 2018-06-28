@@ -280,4 +280,20 @@ describe('create_routes', () => {
 			});
 		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
 	});
+
+	it('errors on 4xx.html', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['4xx.html']
+			});
+		}, /As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html/);
+	});
+
+	it('errors on 5xx.html', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['5xx.html']
+			});
+		}, /As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html/);
+	});
 });
