@@ -296,4 +296,12 @@ describe('create_routes', () => {
 			});
 		}, /As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html/);
 	});
+
+	it('treats foo/index.json.js the same as foo.json.js', () => {
+		const route = create_routes({
+			files: ['foo/index.json.js']
+		})[0];
+
+		assert.ok(route.test('/foo.json'));
+	});
 });
