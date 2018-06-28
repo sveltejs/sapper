@@ -17,7 +17,7 @@ export interface Component {
 export type Route = {
 	pattern: RegExp;
 	load: () => Promise<{ default: ComponentConstructor }>;
-	error?: string;
+	error?: boolean;
 	params?: (match: RegExpExecArray) => Record<string, string>;
 	ignore?: boolean;
 };

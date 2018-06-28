@@ -439,7 +439,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Not found')
+						assert.equal(title, '404')
 					});
 			});
 
@@ -454,7 +454,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Not found');
+						assert.equal(title, '404');
 					});
 			});
 
@@ -466,7 +466,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Internal server error')
+						assert.equal(title, '500')
 					});
 			});
 
@@ -481,7 +481,7 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(() => nightmare.page.title())
 					.then(title => {
-						assert.equal(title, 'Internal server error');
+						assert.equal(title, '500');
 					});
 			});
 

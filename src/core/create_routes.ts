@@ -5,10 +5,8 @@ import { Route } from '../interfaces';
 
 export default function create_routes({ files } = { files: glob.sync('**/*.*', { cwd: locations.routes(), dot: true, nodir: true }) }) {
 	const routes: Route[] = files
-		.filter((file: string) => !/(^|\/|\\)_/.test(file))
+		.filter((file: string) => !/(^|\/|\\)(_(?!error\.html)|\.(?!well-known))/.test(file))
 		.map((file: string) => {
-			if (/(^|\/|\\)(_|\.(?!well-known))/.test(file)) return;
-
 			if (/]\[/.test(file)) {
 				throw new Error(`Invalid route ${file} — parameters must be separated`);
 			}
@@ -30,8 +28,8 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 			return !found;
 		})
 		.sort((a, b) => {
-			if (a.parts[0] === '4xx' || a.parts[0] === '5xx') return -1;
-			if (b.parts[0] === '4xx' || b.parts[0] === '5xx') return 1;
+			if (a.parts[0] === '_error') return -1;
+			if (b.parts[0] === '_error') return 1;
 
 			const max = Math.max(a.parts.length, b.parts.length);
 
