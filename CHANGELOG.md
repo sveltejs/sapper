@@ -1,5 +1,13 @@
 # sapper changelog
 
+## 0.14.0
+
+* `4xx.html` and `5xx.html` are replaced with `_error.html` ([#209](https://github.com/sveltejs/sapper/issues/209))
+* Treat `foo/index.json.js` and `foo.json.js` as equivalents ([#297](https://github.com/sveltejs/sapper/issues/297))
+* Return a promise from `goto` ([#270](https://github.com/sveltejs/sapper/issues/270))
+* Use store when rendering error pages ([#293](https://github.com/sveltejs/sapper/issues/293))
+* Prevent console errors when visiting an error page ([#279](https://github.com/sveltejs/sapper/issues/279))
+
 ## 0.13.6
 
 * Fix `baseUrl` synthesis ([#296](https://github.com/sveltejs/sapper/issues/296))
