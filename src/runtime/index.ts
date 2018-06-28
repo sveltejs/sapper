@@ -208,7 +208,11 @@ function handle_popstate(event: PopStateEvent) {
 	if (event.state) {
 		const url = new URL(window.location.href);
 		const target = select_route(url);
-		navigate(target, event.state.id);
+		if (target) {
+			navigate(target, event.state.id);
+		} else {
+			window.location.href = window.location.href;
+		}
 	} else {
 		// hashchange
 		cid = ++uid;
@@ -286,7 +290,7 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 		history.replaceState({ id: uid }, '', href);
 
 		const target = select_route(new URL(window.location.href));
-		return navigate(target, uid);
+		if (target) return navigate(target, uid);
 	});
 }
 
