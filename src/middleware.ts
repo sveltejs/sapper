@@ -162,8 +162,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
-	const not_found_route = routes.find((route: RouteObject) => route.error === '4xx');
-	const error_route = routes.find((route: RouteObject) => route.error === '5xx');
+	const error_route = routes.find((route: RouteObject) => route.error);
 
 	function handle_route(route: RouteObject, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
 		req.params = error
@@ -184,7 +183,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 						res.statusCode = status;
 						res.end(error instanceof Error ? error.message : error);
 					} else {
-						handle_route(not_found_route, req, res, 404, 'Not found');
+						handle_route(error_route, req, res, 404, 'Not found');
 					}
 
 					return;
@@ -198,7 +197,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 					// preload main.js and current route
 					// TODO detect other stuff we can preload? images, CSS, fonts?
 					const link = []
-						.concat(chunks.main, chunks[route.id] || chunks[`_${route.error}`]) // TODO this is gross
+						.concat(chunks.main, chunks[route.id] || chunks._error) // TODO this is gross
 						.filter(file => !file.match(/\.map$/))
 						.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 						.join(', ');
@@ -207,6 +206,11 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 
 					const store = store_getter ? store_getter(req) : null;
 					const props = { params: req.params, query: req.query, path: req.path };
+
+					if (route.error) {
+						props.error = error instanceof Error ? error : { message: error };
+						props.status = status;
+					}
 
 					let redirect: { statusCode: number, location: string };
 					let preload_error: { statusCode: number, message: Error | string };
@@ -306,6 +310,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 							.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 							.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
 
+						res.statusCode = status;
 						res.end(page);
 
 						if (process.send) {
@@ -382,7 +387,13 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 					}
 				}
 			} catch (error) {
-				handle_route(error_route, req, res, 500, error || 'Internal server error');
+				if (route.error) {
+					// there was an error rendering the error page!
+					res.statusCode = status;
+					res.end(error instanceof Error ? error.message : error);
+				} else {
+					handle_route(error_route, req, res, 500, error || 'Internal server error');
+				}
 			}
 		}
 
@@ -394,7 +405,7 @@ function get_route_handler(App: Component, routes: RouteObject[], store_getter: 
 			if (!route.error && route.pattern.test(req.path)) return handle_route(route, req, res);
 		}
 
-		handle_route(not_found_route, req, res, 404, 'Not found');
+		handle_route(error_route, req, res, 404, 'Not found');
 	};
 }
 

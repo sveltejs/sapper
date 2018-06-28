@@ -8,7 +8,7 @@ export let component: Component;
 let target: Node;
 let store: Store;
 let routes: Route[];
-let errors: { '4xx': Route, '5xx': Route };
+let error_route: Route;
 
 const history = typeof window !== 'undefined' ? window.history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -117,11 +117,7 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 		error = { statusCode: 500, message: err };
 	}).then(preloaded => {
 		if (error) {
-			const route = error.statusCode >= 400 && error.statusCode < 500
-				? errors['4xx']
-				: errors['5xx'];
-
-			return route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
+			return error_route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
 				const err = error.message instanceof Error ? error.message : new Error(error.message);
 				Object.assign(props, { status: error.statusCode, error: err });
 				return { Page, props, redirect: null };
@@ -262,10 +258,7 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 	App = opts.App;
 	target = opts.target;
 	routes = opts.routes.filter(r => !r.error);
-	errors = {
-		'4xx': opts.routes.find(r => r.error === '4xx'),
-		'5xx': opts.routes.find(r => r.error === '5xx')
-	};
+	error_route = opts.routes.find(r => r.error);
 
 	if (opts && opts.store) {
 		store = opts.store(manifest.store);
