@@ -17,7 +17,10 @@ export default function create_routes({ files } = { files: glob.sync('**/*.*', {
 
 			const base = file.replace(/\.[^/.]+$/, '');
 			const parts = base.split('/'); // glob output is always posix-style
-			if (parts[parts.length - 1] === 'index') parts.pop();
+			if (/^index(\..+)?/.test(parts[parts.length - 1])) {
+				const part = parts.pop();
+				if (parts.length > 0) parts[parts.length - 1] += part.slice(5);
+			}
 
 			return {
 				files: [file],
