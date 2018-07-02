@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.14.1
+
+* Route parameters can be qualified with regex characters ([#283](https://github.com/sveltejs/sapper/pull/283))
+
 ## 0.14.0
 
 * `4xx.html` and `5xx.html` are replaced with `_error.html` ([#209](https://github.com/sveltejs/sapper/issues/209))
