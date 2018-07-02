@@ -45,7 +45,17 @@ describe('create_routes', () => {
 
 	it('sorts routes correctly', () => {
 		const routes = create_routes({
-			files: ['index.html', 'about.html', 'post/f[xx].html', '[wildcard].html', 'post/foo.html', 'post/[id].html', 'post/bar.html', 'post/[id].json.js']
+			files: [
+				'index.html', 
+				'about.html', 
+				'post/f[xx].html', 
+				'[wildcard].html', 
+				'post/foo.html', 
+				'post/[id].html', 
+				'post/bar.html', 
+				'post/[id].json.js',
+				'post/[id([0-9-a-z]{3,})].html',
+			]
 		});
 
 		assert.deepEqual(
@@ -56,9 +66,29 @@ describe('create_routes', () => {
 				'post/bar.html',
 				'post/foo.html',
 				'post/f[xx].html',
+				'post/[id([0-9-a-z]{3,})].html', // RegExp is more specific
 				'post/[id].json.js',
 				'post/[id].html',
 				'[wildcard].html'
+			]
+		);
+	});
+
+	it('distinguishes and sorts regexp routes correctly', () => {
+		const routes = create_routes({
+			files: [
+				'[slug].html',
+				'[slug([a-z]{2})].html',
+				'[slug([0-9-a-z]{3,})].html',
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.handlers[0].file),
+			[
+				'[slug([0-9-a-z]{3,})].html',
+				'[slug([a-z]{2})].html',
+				'[slug].html',
 			]
 		);
 	});
@@ -129,6 +159,24 @@ describe('create_routes', () => {
 				'api/guide/contents.js',
 				'api/blog/index.js',
 				'api/blog/[slug].js',
+			]
+		);
+
+		// RegExp routes
+		routes = create_routes({
+			files: [
+				'blog/[slug].html',
+				'blog/index.html',
+				'blog/[slug([^0-9]+)].html',
+			]
+		});
+
+		assert.deepEqual(
+			routes.map(r => r.handlers[0].file),
+			[
+				'blog/index.html',
+				'blog/[slug([^0-9]+)].html',
+				'blog/[slug].html',
 			]
 		);
 	});
@@ -204,7 +252,14 @@ describe('create_routes', () => {
 				files: ['[foo].html', '[bar]/index.html']
 			});
 		}, /The \[foo\] and \[bar\]\/index routes clash/);
+
+		assert.throws(() => {
+			create_routes({
+				files: ['[foo([0-9-a-z]+)].html', '[bar([0-9-a-z]+)]/index.html']
+			});
+		}, /The \[foo\(\[0-9-a-z\]\+\)\] and \[bar\(\[0-9-a-z\]\+\)\]\/index routes clash/);
 	});
+
 
 	it('matches nested routes', () => {
 		const route = create_routes({
@@ -279,6 +334,14 @@ describe('create_routes', () => {
 				files: ['[foo][bar].js']
 			});
 		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
+	});
+
+	it('errors when trying to use reserved characters in route regexp', () => {
+		assert.throws(() => {
+			create_routes({
+				files: ['[lang([a-z]{2}(?:-[a-z]{2,4})?)]']
+			});
+		}, /Sapper does not allow \(, \), \? or \: in RegExp routes yet/);
 	});
 
 	it('errors on 4xx.html', () => {
