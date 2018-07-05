@@ -5,7 +5,6 @@ import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
 import { Store } from 'svelte/store.js';
 import { routes } from './manifest/server.js';
-import App from './App.html'
 
 let pending;
 let ended;
@@ -87,7 +86,6 @@ const middlewares = [
 	},
 
 	sapper({
-		App,
 		routes,
 		store: () => {
 			return new Store({

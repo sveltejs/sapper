@@ -3,7 +3,6 @@ import { Component, ComponentConstructor, Params, Query, Route, RouteData, Scrol
 
 const manifest = typeof window !== 'undefined' && window.__SAPPER__;
 
-export let App: ComponentConstructor;
 export let component: Component;
 let target: Node;
 let store: Store;

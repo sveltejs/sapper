@@ -45,15 +45,10 @@ interface Component {
 	preload: (data: any) => any | Promise<any>
 }
 
-export default function middleware({ App, routes, store }: {
-	App: Component,
+export default function middleware({ routes, store }: {
 	routes: RouteObject[],
 	store: (req: Req) => Store
 }) {
-	if (!App) {
-		throw new Error(`As of 0.12, you must supply an App component to Sapper — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
-	}
-
 	const output = locations.dest();
 
 	let emitted_basepath = false;
@@ -109,7 +104,7 @@ export default function middleware({ App, routes, store }: {
 		}),
 
 		get_server_route_handler(routes.server_routes),
-		get_page_handler(App, routes, store)
+		get_page_handler(routes, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -227,7 +222,7 @@ function get_server_route_handler(routes: RouteObject[]) {
 	};
 }
 
-function get_page_handler(App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
+function get_page_handler(routes: RouteObject[], store_getter: (req: Req) => Store) {
 	const output = locations.dest();
 
 	const get_chunks = dev()
