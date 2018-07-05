@@ -30,12 +30,15 @@ function select_route(url: URL): Target {
 
 	const path = url.pathname.slice(manifest.baseUrl.length);
 
-	for (const route of routes) {
-		const match = route.pattern.exec(path);
-		if (match) {
-			if (route.ignore) return null;
+	// avoid accidental clashes between server routes and pages
+	if (routes.ignore.some(pattern => pattern.test(path))) return;
 
-			const params = route.params(match);
+	for (let i = 0; i < routes.pages.length; i += 1) {
+		const page = routes.pages[i];
+
+		const match = page.pattern.exec(path);
+		if (match) {
+			const params = page.params(match);
 
 			const query: Record<string, string | true> = {};
 			if (url.search.length > 0) {
@@ -44,7 +47,7 @@ function select_route(url: URL): Target {
 					query[key] = value || true;
 				})
 			}
-			return { url, route, props: { params, query, path } };
+			return { url, route: page, props: { params, query, path } };
 		}
 	}
 }
@@ -117,7 +120,7 @@ function prepare_route(Page: ComponentConstructor, props: RouteData) {
 		error = { statusCode: 500, message: err };
 	}).then(preloaded => {
 		if (error) {
-			return error_route.load().then(({ default: Page }: { default: ComponentConstructor }) => {
+			return error_route().then(({ default: Page }: { default: ComponentConstructor }) => {
 				const err = error.message instanceof Error ? error.message : new Error(error.message);
 				Object.assign(props, { status: error.statusCode, error: err });
 				return { Page, props, redirect: null };
@@ -261,8 +264,8 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 
 	App = opts.App;
 	target = opts.target;
-	routes = opts.routes.filter(r => !r.error);
-	error_route = opts.routes.find(r => r.error);
+	routes = opts.routes;
+	error_route = opts.routes.error;
 
 	if (opts && opts.store) {
 		store = opts.store(manifest.store);
@@ -312,14 +315,10 @@ export function goto(href: string, opts = { replaceState: false }) {
 export function prefetchRoutes(pathnames: string[]) {
 	if (!routes) throw new Error(`You must call init() first`);
 
-	return routes
+	return routes.pages
 		.filter(route => {
 			if (!pathnames) return true;
-			return pathnames.some(pathname => {
-				return route.error
-					? route.error === pathname
-					: route.pattern.test(pathname)
-			});
+			return pathnames.some(pathname => route.pattern.test(pathname));
 		})
 		.reduce((promise: Promise<any>, route) => {
 			return promise.then(route.load);

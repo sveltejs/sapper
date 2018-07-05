@@ -2,30 +2,8 @@ const assert = require('assert');
 const { create_routes } = require('../../dist/core.ts.js');
 
 describe('create_routes', () => {
-	it('sorts handlers correctly', () => {
-		const routes = create_routes({
-			files: ['foo.html', 'foo.js']
-		});
-
-		assert.deepEqual(
-			routes.map(r => r.handlers),
-			[
-				[
-					{
-						type: 'route',
-						file: 'foo.js'
-					},
-					{
-						type: 'page',
-						file: 'foo.html'
-					}
-				]
-			]
-		)
-	});
-
 	it('encodes characters not allowed in path', () => {
-		const routes = create_routes({
+		const { server_routes } = create_routes({
 			files: [
 				'"',
 				'#',
@@ -34,7 +12,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.pattern),
+			server_routes.map(r => r.pattern),
 			[
 				/^\/%22\/?$/,
 				/^\/%23\/?$/,
@@ -44,22 +22,22 @@ describe('create_routes', () => {
 	});
 
 	it('sorts routes correctly', () => {
-		const routes = create_routes({
+		const { pages, server_routes } = create_routes({
 			files: [
-				'index.html', 
-				'about.html', 
-				'post/f[xx].html', 
-				'[wildcard].html', 
-				'post/foo.html', 
-				'post/[id].html', 
-				'post/bar.html', 
+				'index.html',
+				'about.html',
+				'post/f[xx].html',
+				'[wildcard].html',
+				'post/foo.html',
+				'post/[id].html',
+				'post/bar.html',
 				'post/[id].json.js',
 				'post/[id([0-9-a-z]{3,})].html',
 			]
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'index.html',
 				'about.html',
@@ -67,15 +45,21 @@ describe('create_routes', () => {
 				'post/foo.html',
 				'post/f[xx].html',
 				'post/[id([0-9-a-z]{3,})].html', // RegExp is more specific
-				'post/[id].json.js',
 				'post/[id].html',
 				'[wildcard].html'
+			]
+		);
+
+		assert.deepEqual(
+			server_routes.map(r => r.file),
+			[
+				'post/[id].json.js'
 			]
 		);
 	});
 
 	it('distinguishes and sorts regexp routes correctly', () => {
-		const routes = create_routes({
+		const { pages } = create_routes({
 			files: [
 				'[slug].html',
 				'[slug([a-z]{2})].html',
@@ -84,7 +68,7 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'[slug([0-9-a-z]{3,})].html',
 				'[slug([a-z]{2})].html',
@@ -94,7 +78,7 @@ describe('create_routes', () => {
 	});
 
 	it('prefers index page to nested route', () => {
-		let routes = create_routes({
+		let { pages, server_routes } = create_routes({
 			files: [
 				'api/examples/[slug].js',
 				'api/examples/index.js',
@@ -110,14 +94,20 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'_error.html',
 				'index.html',
 				'guide/index.html',
 				'blog/index.html',
+				'blog/[slug].html'
+			]
+		);
+
+		assert.deepEqual(
+			server_routes.map(r => r.file),
+			[
 				'blog/rss.xml.js',
-				'blog/[slug].html',
 				'api/examples/index.js',
 				'api/examples/[slug].js',
 				'api/gists/index.js',
@@ -125,7 +115,7 @@ describe('create_routes', () => {
 			]
 		);
 
-		routes = create_routes({
+		({ pages, server_routes } = create_routes({
 			files: [
 				'_error.html',
 				'api/blog/[slug].js',
@@ -141,20 +131,26 @@ describe('create_routes', () => {
 				'index.html',
 				'repl/index.html'
 			]
-		});
+		}));
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'_error.html',
 				'index.html',
 				'guide/index.html',
 				'blog/index.html',
-				'blog/rss.xml.js',
 				'blog/[slug].html',
+				'repl/index.html'
+			]
+		);
+
+		assert.deepEqual(
+			server_routes.map(r => r.file),
+			[
+				'blog/rss.xml.js',
 				'gist/create.js',
 				'gist/[id].js',
-				'repl/index.html',
 				'api/guide/index.js',
 				'api/guide/contents.js',
 				'api/blog/index.js',
@@ -163,16 +159,16 @@ describe('create_routes', () => {
 		);
 
 		// RegExp routes
-		routes = create_routes({
+		({ pages } = create_routes({
 			files: [
 				'blog/[slug].html',
 				'blog/index.html',
 				'blog/[slug([^0-9]+)].html',
 			]
-		});
+		}));
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'blog/index.html',
 				'blog/[slug([^0-9]+)].html',
@@ -182,16 +178,16 @@ describe('create_routes', () => {
 	});
 
 	it('generates params', () => {
-		const routes = create_routes({
+		const { pages } = create_routes({
 			files: ['index.html', 'about.html', '[wildcard].html', 'post/[id].html']
 		});
 
 		let file;
 		let params;
-		for (let i = 0; i < routes.length; i += 1) {
-			const route = routes[i];
+		for (let i = 0; i < pages.length; i += 1) {
+			const route = pages[i];
 			if (params = route.exec('/post/123')) {
-				file = route.handlers[0].file;
+				file = route.file;
 				break;
 			}
 		}
@@ -203,12 +199,12 @@ describe('create_routes', () => {
 	});
 
 	it('ignores files and directories with leading underscores', () => {
-		const routes = create_routes({
+		const { pages } = create_routes({
 			files: ['index.html', '_foo.html', 'a/_b/c/d.html', 'e/f/g/h.html', 'i/_j.html']
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			[
 				'index.html',
 				'e/f/g/h.html'
@@ -217,13 +213,13 @@ describe('create_routes', () => {
 	});
 
 	it('ignores files and directories with leading dots except .well-known', () => {
-		const routes = create_routes({
-			files: ['.well-known', '.unknown']
+		const { server_routes } = create_routes({
+			files: ['.well-known/dnt-policy.txt.js', '.unknown/foo.txt.js']
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
-			['.well-known']
+			server_routes.map(r => r.file),
+			['.well-known/dnt-policy.txt.js']
 		);
 	});
 
@@ -236,12 +232,12 @@ describe('create_routes', () => {
 		});
 
 		assert.deepEqual(
-			a.map(r => r.handlers[0].file),
+			a.pages.map(r => r.file),
 			['foo/[bar].html', '[baz]/qux.html']
 		);
 
 		assert.deepEqual(
-			b.map(r => r.handlers[0].file),
+			b.pages.map(r => r.file),
 			['foo/[bar].html', '[baz]/qux.html']
 		);
 	});
@@ -262,46 +258,46 @@ describe('create_routes', () => {
 
 
 	it('matches nested routes', () => {
-		const route = create_routes({
+		const page = create_routes({
 			files: ['settings/[submenu].html']
-		})[0];
+		}).pages[0];
 
-		assert.deepEqual(route.exec('/settings/foo'), {
+		assert.deepEqual(page.exec('/settings/foo'), {
 			submenu: 'foo'
 		});
 
-		assert.deepEqual(route.exec('/settings'), {
+		assert.deepEqual(page.exec('/settings'), {
 			submenu: null
 		});
 	});
 
 	it('prefers index routes to nested routes', () => {
-		const routes = create_routes({
+		const { pages } = create_routes({
 			files: ['settings/[submenu].html', 'settings.html']
 		});
 
 		assert.deepEqual(
-			routes.map(r => r.handlers[0].file),
+			pages.map(r => r.file),
 			['settings.html', 'settings/[submenu].html']
 		);
 	});
 
 	it('matches deeply nested routes', () => {
-		const route = create_routes({
+		const page = create_routes({
 			files: ['settings/[a]/[b]/index.html']
-		})[0];
+		}).pages[0];
 
-		assert.deepEqual(route.exec('/settings/foo/bar'), {
+		assert.deepEqual(page.exec('/settings/foo/bar'), {
 			a: 'foo',
 			b: 'bar'
 		});
 
-		assert.deepEqual(route.exec('/settings/foo'), {
+		assert.deepEqual(page.exec('/settings/foo'), {
 			a: 'foo',
 			b: null
 		});
 
-		assert.deepEqual(route.exec('/settings'), {
+		assert.deepEqual(page.exec('/settings'), {
 			a: null,
 			b: null
 		});
@@ -310,7 +306,7 @@ describe('create_routes', () => {
 	it('matches a dynamic part within a part', () => {
 		const route = create_routes({
 			files: ['things/[slug].json.js']
-		})[0];
+		}).server_routes[0];
 
 		assert.deepEqual(route.exec('/things/foo.json'), {
 			slug: 'foo'
@@ -320,7 +316,7 @@ describe('create_routes', () => {
 	it('matches multiple dynamic parts within a part', () => {
 		const route = create_routes({
 			files: ['things/[id]_[slug].json.js']
-		})[0];
+		}).server_routes[0];
 
 		assert.deepEqual(route.exec('/things/someid_someslug.json'), {
 			id: 'someid',
@@ -363,7 +359,7 @@ describe('create_routes', () => {
 	it('treats foo/index.json.js the same as foo.json.js', () => {
 		const route = create_routes({
 			files: ['foo/index.json.js']
-		})[0];
+		}).server_routes[0];
 
 		assert.ok(route.test('/foo.json'));
 	});
