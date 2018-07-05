@@ -34,6 +34,8 @@ export default function create_routes({
 				parts.join('_').replace(/[[\]]/g, '$').replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '_')
 			) || '_';
 
+			const type = file.endsWith('.html') ? 'page' : 'route';
+
 			const params: string[] = [];
 			const match_patterns: Record<string, string> = {};
 			const param_pattern = /\[([^\(\]]+)(?:\((.+?)\))?\]/g;
@@ -67,7 +69,7 @@ export default function create_routes({
 						const key_pattern = new RegExp('\\[' + k + '(?:\\((.+?)\\))?\\]');
 						matcher = matcher.replace(key_pattern, match_patterns[k] || `([^/]+?)`);
 					})
-					pattern_string = nested ? `(?:\\/${matcher}${pattern_string})?` : `\\/${matcher}${pattern_string}`;
+					pattern_string = (nested && type === 'page') ? `(?:\\/${matcher}${pattern_string})?` : `\\/${matcher}${pattern_string}`;
 				} else {
 					nested = false;
 					pattern_string = `\\/${part}${pattern_string}`;
@@ -93,7 +95,7 @@ export default function create_routes({
 			return {
 				id,
 				base,
-				type: file.endsWith('.html') ? 'page' : 'route',
+				type,
 				file,
 				pattern,
 				test,
