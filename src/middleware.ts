@@ -360,11 +360,11 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 			}
 
 			const page = template()
-				.replace('%sapper.base%', `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', `<script>${inline_script}</script>${scripts}`)
-				.replace('%sapper.html%', html)
-				.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', (css && css.code ? `<style>${css.code}</style>` : ''));
+				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
+				.replace('%sapper.scripts%', () => `<script>${inline_script}</script>${scripts}`)
+				.replace('%sapper.html%', () => html)
+				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
+				.replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
 
 			res.statusCode = status;
 			res.end(page);

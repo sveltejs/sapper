@@ -619,6 +619,16 @@ function run({ mode, basepath = '' }) {
 						assert.equal(name, 'BODY');
 					});
 			});
+
+			it('replaces %sapper.xxx% tags safely', () => {
+				return nightmare
+					.goto(`${base}/unsafe-replacement`)
+					.init()
+					.page.html()
+					.then(html => {
+						assert.equal(html.indexOf('%sapper'), -1);
+					});
+			});
 		});
 
 		describe('headers', () => {
