@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.14.2
+
+* Prevent unsafe replacements ([#307](https://github.com/sveltejs/sapper/pull/307))
+
 ## 0.14.1
 
 * Route parameters can be qualified with regex characters ([#283](https://github.com/sveltejs/sapper/pull/283))
