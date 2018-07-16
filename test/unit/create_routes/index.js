@@ -72,20 +72,22 @@ describe('create_routes', () => {
 	it('encodes invalid characters', () => {
 		const { components, pages } = create_routes(path.join(__dirname, 'samples/encoding'));
 
-		const quote = { name: 'page_$34', file: '".html' };
+		// had to remove ? and " because windows
+
+		// const quote = { name: 'page_$34', file: '".html' };
 		const hash = { name: 'page_$35', file: '#.html' };
-		const question_mark = { name: 'page_$63', file: '?.html' };
+		// const question_mark = { name: 'page_$63', file: '?.html' };
 
 		assert.deepEqual(components, [
-			quote,
+			// quote,
 			hash,
-			question_mark
+			// question_mark
 		]);
 
 		assert.deepEqual(pages.map(p => p.pattern), [
-			/^\/%22\/?$/,
+			// /^\/%22\/?$/,
 			/^\/%23\/?$/,
-			/^\/%3F\/?$/
+			// /^\/%3F\/?$/
 		]);
 	});
 
