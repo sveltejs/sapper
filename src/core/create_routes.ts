@@ -1,29 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { locations } from '../config';
-
-type Component = {
-	name: string;
-	file: string;
-};
-
-type Page = {
-	pattern: RegExp;
-	parts: Array<{
-		component: Component;
-		params: string[];
-	}>
-};
-
-type ServerRoute = {
-	name: string;
-	pattern: RegExp;
-	file: string;
-	params: string[];
-};
+import { Page, PageComponent, ServerRoute } from '../interfaces';
 
 export default function create_routes(cwd = locations.routes()) {
-	const components: Component[] = [];
+	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
 
@@ -32,7 +13,7 @@ export default function create_routes(cwd = locations.routes()) {
 		parent_segments: Part[][],
 		parent_params: string[],
 		stack: Array<{
-			component: Component,
+			component: PageComponent,
 			params: string[]
 		}>
 	) {
