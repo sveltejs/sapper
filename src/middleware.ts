@@ -204,7 +204,6 @@ function get_server_route_handler(routes: ServerRoute[]) {
 
 			const handle_next = (err?: Error) => {
 				if (err) {
-					console.error(err.stack);
 					res.statusCode = 500;
 					res.end(err.message);
 				} else {
@@ -273,11 +272,10 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		const store = store_getter ? store_getter(req) : null;
 		const props = { query: req.query, path: req.path };
 
-		// TODO reinstate this!
-		// if (page.error) {
-		// 	props.error = error instanceof Error ? error : { message: error };
-		// 	props.status = status;
-		// }
+		if (error) {
+			props.error = error instanceof Error ? error : { message: error };
+			props.status = status;
+		}
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
@@ -286,7 +284,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			return part.component.preload
 				? part.component.preload.call({
 					redirect: (statusCode: number, location: string) => {
-						if (redirect && redirect.statusCode !== statusCode || redirect.location !== location) {
+						if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
 							throw new Error(`Conflicting redirects`);
 						}
 						redirect = { statusCode, location };
@@ -345,9 +343,13 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 
 			if (preload_error) {
-				// TODO reinstate this!
-				// handle_page(error_route, req, res, preload_error.statusCode, preload_error.message);
-				res.end('oops');
+				handle_page({
+					pattern: null,
+					parts: [
+						{ component: error_route }
+					]
+				}, req, res, preload_error.statusCode, preload_error.message);
+
 				return;
 			}
 
@@ -417,6 +419,9 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 					body
 				});
 			}
+		}).catch(err => {
+			res.statusCode = 500;
+			res.end(err.message);
 		});
 	}
 
@@ -430,7 +435,12 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 		}
 
-		handle_page(error_route, req, res, 404, 'Not found');
+		handle_page({
+			pattern: null,
+			parts: [
+				{ component: error_route }
+			]
+		}, req, res, 404, 'Not found');
 	};
 }
 
