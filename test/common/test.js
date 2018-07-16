@@ -32,6 +32,8 @@ Nightmare.action('prefetchRoutes', function(done) {
 
 const cli = path.resolve(__dirname, '../../sapper');
 
+const wait = ms => new Promise(f => setTimeout(f, ms));
+
 describe('sapper', function() {
 	process.chdir(path.resolve(__dirname, '../app'));
 
@@ -266,8 +268,9 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(requests => {
 						assert.deepEqual(requests.map(r => r.url), []);
-						return nightmare.path();
 					})
+					.then(() => wait(100))
+					.then(() => nightmare.path())
 					.then(path => {
 						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
