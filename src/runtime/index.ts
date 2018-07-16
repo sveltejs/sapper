@@ -1,13 +1,14 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Route, RouteData, ScrollPosition, Store, Target } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Redirect, Routes, RouteData, ScrollPosition, Store, Target } from './interfaces';
 
-const manifest = typeof window !== 'undefined' && window.__SAPPER__;
+const initial_data = typeof window !== 'undefined' && window.__SAPPER__;
 
-export let component: Component;
+export let root: Component;
 let target: Node;
 let store: Store;
-let routes: Route[];
-let error_route: Route;
+let routes: Routes;
+
+export { root as component }; // legacy reasons — drop in a future version
 
 const history = typeof window !== 'undefined' ? window.history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -25,9 +26,9 @@ if ('scrollRestoration' in history) {
 
 function select_route(url: URL): Target {
 	if (url.origin !== window.location.origin) return null;
-	if (!url.pathname.startsWith(manifest.baseUrl)) return null;
+	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 
-	const path = url.pathname.slice(manifest.baseUrl.length);
+	const path = url.pathname.slice(initial_data.baseUrl.length);
 
 	// avoid accidental clashes between server routes and pages
 	if (routes.ignore.some(pattern => pattern.test(path))) return;
@@ -37,33 +38,25 @@ function select_route(url: URL): Target {
 
 		const match = page.pattern.exec(path);
 		if (match) {
-			const params = page.params(match);
-
 			const query: Record<string, string | true> = {};
 			if (url.search.length > 0) {
 				url.search.slice(1).split('&').forEach(searchParam => {
 					const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
 					query[key] = value || true;
-				})
+				});
 			}
-			return { url, route: page, props: { params, query, path } };
+			return { url, path, page, match, query };
 		}
 	}
 }
 
 let current_token: {};
 
-function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, token: {}) {
+function render(data: any, scroll: ScrollPosition, token: {}) {
 	if (current_token !== token) return;
 
-	const data = {
-		Page,
-		props,
-		preloading: false
-	};
-
-	if (component) {
-		component.set(data);
+	if (root) {
+		root.set(data);
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -75,7 +68,7 @@ function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, 
 			detach(end);
 		}
 
-		component = new App({
+		root = new routes.root({
 			target,
 			data,
 			store,
@@ -88,50 +81,84 @@ function render(Page: ComponentConstructor, props: any, scroll: ScrollPosition, 
 	}
 }
 
-function prepare_route(Page: ComponentConstructor, props: RouteData) {
-	let redirect: { statusCode: number, location: string } = null;
+function prepare_page(target: Target): Promise<{
+	redirect?: Redirect;
+	data?: any
+}> {
+	const { page, path, query } = target;
+
+	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
 
-	if (!Page.preload) {
-		return { Page, props, redirect, error };
-	}
-
-	if (!component && manifest.preloaded) {
-		return { Page, props: Object.assign(props, manifest.preloaded), redirect, error };
-	}
-
-	if (component) {
-		component.set({
-			preloading: true
-		});
-	}
-
-	return Promise.resolve(Page.preload.call({
+	const preload_context = {
 		store,
 		fetch: (url: string, opts?: any) => window.fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
+			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
+				throw new Error(`Conflicting redirects`);
+			}
 			redirect = { statusCode, location };
 		},
 		error: (statusCode: number, message: Error | string) => {
 			error = { statusCode, message };
 		}
-	}, props)).catch(err => {
+	};
+
+	return Promise.all(page.parts.map(async part => {
+		const { default: Component } = await part.component();
+		const req = {
+			path,
+			query,
+			params: part.params ? part.params(target.match) : {}
+		};
+
+		return {
+			Component,
+			preloaded: Component.preload
+				? await Component.preload.call(preload_context, req)
+				: {}
+		};
+	})).catch(err => {
 		error = { statusCode: 500, message: err };
-	}).then(preloaded => {
+		return [];
+	}).then(results => {
 		if (error) {
-			return error_route().then(({ default: Page }: { default: ComponentConstructor }) => {
-				const err = error.message instanceof Error ? error.message : new Error(error.message);
-				Object.assign(props, { status: error.statusCode, error: err });
-				return { Page, props, redirect: null };
-			});
+			console.error('TODO', error);
 		}
 
-		Object.assign(props, preloaded)
-		return { Page, props, redirect };
+		if (redirect) {
+			return { redirect };
+		}
+
+		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
+		const params = get_params(target.match);
+
+		// TODO skip unchanged segments
+		const props = { path, query };
+		const data = { path, query, params, child: {} };
+		let level = data.child;
+		for (let i = 0; i < page.parts.length; i += 1) {
+			const part = page.parts[i];
+			const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
+
+			Object.assign(level, {
+				// TODO segment
+				props: Object.assign({}, props, {
+					params: get_params(target.match),
+				}, results[i].preloaded),
+				component: results[i].Component
+			});
+			if (i < results.length - 1) {
+				level.props.child = {};
+			}
+			level = level.props.child;
+		}
+
+		return { data };
 	});
 }
 
-function navigate(target: Target, id: number): Promise<any> {
+async function navigate(target: Target, id: number): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
@@ -147,20 +174,19 @@ function navigate(target: Target, id: number): Promise<any> {
 
 	const loaded = prefetching && prefetching.href === target.url.href ?
 		prefetching.promise :
-		target.route.load().then(mod => prepare_route(mod.default, target.props));
+		prepare_page(target);
 
 	prefetching = null;
 
 	const token = current_token = {};
+	const { redirect, data } = await loaded;
 
-	return loaded.then(({ Page, props, redirect }) => {
-		if (redirect) {
-			return goto(redirect.location, { replaceState: true });
-		}
-
-		render(Page, props, scroll_history[id], token);
+	if (redirect) {
+		await goto(redirect.location, { replaceState: true });
+	} else {
+		render(data, scroll_history[id], token);
 		document.activeElement.blur();
-	});
+	}
 }
 
 function handle_click(event: MouseEvent) {
@@ -224,16 +250,16 @@ function handle_popstate(event: PopStateEvent) {
 
 let prefetching: {
 	href: string;
-	promise: Promise<{ Page: ComponentConstructor, props: any }>;
+	promise: Promise<{ redirect?: Redirect, data?: any }>;
 } = null;
 
 export function prefetch(href: string) {
-	const selected = select_route(new URL(href, document.baseURI));
+	const target: Target = select_route(new URL(href, document.baseURI));
 
-	if (selected && (!prefetching || href !== prefetching.href)) {
+	if (target && (!prefetching || href !== prefetching.href)) {
 		prefetching = {
 			href,
-			promise: selected.route.load().then(mod => prepare_route(mod.default, selected.props))
+			promise: prepare_page(target)
 		};
 	}
 }
@@ -256,18 +282,16 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 
 let inited: boolean;
 
-export function init(opts: { App: ComponentConstructor, target: Node, routes: Route[], store?: (data: any) => Store }) {
+export function init(opts: { App: ComponentConstructor, target: Node, routes: Routes, store?: (data: any) => Store }) {
 	if (opts instanceof HTMLElement) {
 		throw new Error(`The signature of init(...) has changed — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
 	}
 
-	App = opts.App;
 	target = opts.target;
 	routes = opts.routes;
-	error_route = opts.routes.error;
 
 	if (opts && opts.store) {
-		store = opts.store(manifest.store);
+		store = opts.store(initial_data.store);
 	}
 
 	if (!inited) { // this check makes HMR possible

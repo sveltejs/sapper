@@ -271,7 +271,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		res.setHeader('Link', link);
 
 		const store = store_getter ? store_getter(req) : null;
-		const props = { params: req.params, query: req.query, path: req.path };
+		const props = { query: req.query, path: req.path };
 
 		// TODO reinstate this!
 		// if (page.error) {
@@ -353,12 +353,14 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 			const serialized = {
 				preloaded: page.parts.map((part, i) => {
-					return part.component.preload && try_serialize(preloaded[i]);
+					return part.component.preload ? try_serialize(preloaded[i]) : null;
 				}),
 				store: store && try_serialize(store.get())
 			};
 
-			const data = Object.assign({}, props, {
+			console.log(serialized.preloaded);
+
+			const data = Object.assign({}, props, { params: req.params }, {
 				child: {}
 			});
 			let level = data.child;
@@ -387,7 +389,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 			let inline_script = `__SAPPER__={${[
 				`baseUrl: "${req.baseUrl}"`,
-				serialized.preloaded && `preloaded: ${serialized.preloaded}`,
+				serialized.preloaded && `preloaded: [${serialized.preloaded}]`,
 				serialized.store && `store: ${serialized.store}`
 			].filter(Boolean).join(',')}};`;
 
