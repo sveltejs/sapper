@@ -54,10 +54,6 @@ function generate_client(routes: Route[], path_to_routes: string, dev_port?: num
 				${pages.map(page => {
 					const file = posixify(`${path_to_routes}/${page.file}`);
 
-					if (page.id === '_error') {
-						return `{ error: true, load: () => import(/* webpackChunkName: "${page.id}" */ '${file}') }`;
-					}
-
 					const params = page.params.length === 0
 						? '{}'
 						: `{ ${page.params.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
@@ -87,12 +83,13 @@ function generate_client(routes: Route[], path_to_routes: string, dev_port?: num
 }
 
 function generate_server(routes: Route[], path_to_routes: string) {
+	const pages = routes.pages.filter(page => page.id !== '_error');
 	const error_route = routes.pages.find(page => page.id === '_error');
 
 	const imports = [].concat(
 		routes.server_routes.map(route =>
 			`import * as route_${route.id} from '${posixify(`${path_to_routes}/${route.file}`)}';`),
-		routes.pages.map(page =>
+		pages.map(page =>
 			`import page_${page.id} from '${posixify(`${path_to_routes}/${page.file}`)}';`),
 		`import error from '${posixify(`${path_to_routes}/${error_route.file}`)}';`
 	);
@@ -113,7 +110,7 @@ function generate_server(routes: Route[], path_to_routes: string) {
 			],
 
 			pages: [
-				${routes.pages.map(page => {
+				${pages.map(page => {
 					const params = page.params.length === 0
 						? '{}'
 						: `{ ${page.params.map((part, i) => `${part}: match[${i + 1}]`).join(', ')} }`;
