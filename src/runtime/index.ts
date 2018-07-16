@@ -123,16 +123,31 @@ function prepare_page(target: Target): Promise<{
 		error = { statusCode: 500, message: err };
 		return [];
 	}).then(results => {
-		if (error) {
-			console.error('TODO', error);
-		}
-
 		if (redirect) {
 			return { redirect };
 		}
 
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const params = get_params(target.match);
+
+		if (error) {
+			const props = {
+				path,
+				query,
+				params,
+				error: typeof error.message === 'string' ? new Error(error.message) : error.message,
+				status: error.statusCode
+			};
+
+			return {
+				data: Object.assign({}, props, {
+					child: {
+						component: routes.error,
+						props
+					}
+				})
+			};
+		}
 
 		// TODO skip unchanged segments
 		const props = { path, query };
