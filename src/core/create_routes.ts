@@ -51,6 +51,16 @@ export default function create_routes(cwd = locations.routes()) {
 				const is_index = is_dir ? false : basename.startsWith('index.');
 				const is_page = path.extname(basename) === '.html';
 
+				parts.forEach(part => {
+					if (/\]\[/.test(part.content)) {
+						throw new Error(`Invalid route ${file} — parameters must be separated`);
+					}
+
+					if (part.qualifier && /[\(\)\?\:]/.test(part.qualifier.slice(1, -1))) {
+						throw new Error(`Invalid route ${file} — cannot use (, ), ? or : in route qualifiers`);
+					}
+				});
+
 				return {
 					basename,
 					parts,
@@ -260,17 +270,15 @@ function comparator(
 	}
 }
 
-const qualifier_pattern = /\(.+\)$/;
-
 function get_parts(part: string): Part[] {
 	return part.split(/\[(.+)\]/)
-		.map((content, i) => {
-			if (!content) return null;
+		.map((str, i) => {
+			if (!str) return null;
 			const dynamic = i % 2 === 1;
 
-			const qualifier = dynamic && qualifier_pattern.test(content)
-				? qualifier_pattern.exec(content)[0]
-				: null;
+			const [, content, qualifier] = dynamic
+				? /([^(]+)(\(.+\))?$/.exec(str)
+				: [, str, null];
 
 			return {
 				content,

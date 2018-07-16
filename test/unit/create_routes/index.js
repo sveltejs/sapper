@@ -135,12 +135,23 @@ describe.only('create_routes', () => {
 	it('fails on clashes', () => {
 		assert.throws(() => {
 			const { pages } = create_routes(path.join(__dirname, 'samples/clash-pages'));
-			console.log(pages);
 		}, /The \[bar\]\/index\.html and \[foo\]\.html pages clash/);
 
 		assert.throws(() => {
 			const { server_routes } = create_routes(path.join(__dirname, 'samples/clash-routes'));
 			console.log(server_routes);
 		}, /The \[bar\]\/index\.js and \[foo\]\.js routes clash/);
+	});
+
+	it('fails if dynamic params are not separated', () => {
+		assert.throws(() => {
+			create_routes(path.join(__dirname, 'samples/invalid-params'));
+		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
+	});
+
+	it('errors when trying to use reserved characters in route regexp', () => {
+		assert.throws(() => {
+			create_routes(path.join(__dirname, 'samples/invalid-qualifier'));
+		}, /Invalid route \[foo\(\[a-z\]\[0-9\]\?\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
 	});
 });
