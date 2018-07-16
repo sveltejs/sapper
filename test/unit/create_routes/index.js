@@ -2,7 +2,7 @@ const path = require('path');
 const assert = require('assert');
 const { create_routes } = require('../../../dist/core.ts.js');
 
-describe.only('create_routes', () => {
+describe('create_routes', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_routes(path.join(__dirname, 'samples/basic'));
 

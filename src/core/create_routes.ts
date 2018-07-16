@@ -3,6 +3,11 @@ import * as path from 'path';
 import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 
+const fallback_index = path.resolve(
+	__dirname,
+	'../fallback.html'
+);
+
 export default function create_routes(cwd = locations.routes()) {
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
@@ -90,7 +95,7 @@ export default function create_routes(cwd = locations.routes()) {
 			params.push(...item.parts.filter(p => p.dynamic).map(p => p.content));
 
 			if (item.is_dir) {
-				const index = path.join(dir, 'index.html');
+				const index = path.join(dir, item.basename, 'index.html');
 				const component = fs.existsSync(index)
 					? {
 						name: `page_${get_slug(item.file)}`,
@@ -105,7 +110,10 @@ export default function create_routes(cwd = locations.routes()) {
 					segments,
 					params,
 					stack.concat({
-						component,
+						component: component || {
+							name: 'fallback',
+							file: fallback_index
+						},
 						params
 					})
 				);

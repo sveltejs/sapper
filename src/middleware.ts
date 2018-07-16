@@ -358,8 +358,6 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				store: store && try_serialize(store.get())
 			};
 
-			console.log(serialized.preloaded);
-
 			const data = Object.assign({}, props, { params: req.params }, {
 				child: {}
 			});
