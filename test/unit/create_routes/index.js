@@ -1,10 +1,10 @@
 const path = require('path');
 const assert = require('assert');
-const { create_routes_alt } = require('../../dist/core.ts.js');
+const { create_routes } = require('../../../dist/core.ts.js');
 
-describe('create_routes', () => {
+describe.only('create_routes', () => {
 	it('creates routes', () => {
-		const { components, pages, server_routes } = create_routes_alt(path.join(__dirname, 'samples/basic'));
+		const { components, pages, server_routes } = create_routes(path.join(__dirname, 'samples/basic'));
 
 		const page_index = { name: 'page_index', file: '_default.html' };
 		const page_about = { name: 'page_about', file: 'about.html' };
@@ -70,7 +70,7 @@ describe('create_routes', () => {
 	});
 
 	it('encodes invalid characters', () => {
-		const { components, pages } = create_routes_alt(path.join(__dirname, 'samples/encoding'));
+		const { components, pages } = create_routes(path.join(__dirname, 'samples/encoding'));
 
 		const quote = { name: 'page_$34', file: '".html' };
 		const hash = { name: 'page_$35', file: '#.html' };
@@ -90,7 +90,7 @@ describe('create_routes', () => {
 	});
 
 	it('allows regex qualifiers', () => {
-		const { pages } = create_routes_alt(path.join(__dirname, 'samples/qualifiers'));
+		const { pages } = create_routes(path.join(__dirname, 'samples/qualifiers'));
 
 		assert.deepEqual(pages.map(p => p.pattern), [
 			/^\/([0-9-a-z]{3,})\/?$/,
@@ -100,7 +100,7 @@ describe('create_routes', () => {
 	});
 
 	it('sorts routes correctly', () => {
-		const { pages } = create_routes_alt(path.join(__dirname, 'samples/sorting'));
+		const { pages } = create_routes(path.join(__dirname, 'samples/sorting'));
 
 		assert.deepEqual(pages.map(p => p.parts.map(part => part.component.file)), [
 			['_default.html'],
@@ -113,5 +113,34 @@ describe('create_routes', () => {
 			['post/index.html', 'post/[id].html'],
 			['[wildcard].html']
 		]);
+	});
+
+	it('ignores files and directories with leading underscores', () => {
+		const { server_routes } = create_routes(path.join(__dirname, 'samples/hidden-underscore'));
+
+		assert.deepEqual(server_routes.map(r => r.file), [
+			'index.js',
+			'e/f/g/h.js'
+		]);
+	});
+
+	it('ignores files and directories with leading dots except .well-known', () => {
+		const { server_routes } = create_routes(path.join(__dirname, 'samples/hidden-dot'));
+
+		assert.deepEqual(server_routes.map(r => r.file), [
+			'.well-known/dnt-policy.txt.js'
+		]);
+	});
+
+	it('fails on clashes', () => {
+		assert.throws(() => {
+			const { pages } = create_routes(path.join(__dirname, 'samples/clash-pages'));
+			console.log(pages);
+		}, /The \[bar\]\/index\.html and \[foo\]\.html pages clash/);
+
+		assert.throws(() => {
+			const { server_routes } = create_routes(path.join(__dirname, 'samples/clash-routes'));
+			console.log(server_routes);
+		}, /The \[bar\]\/index\.js and \[foo\]\.js routes clash/);
 	});
 });

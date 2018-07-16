@@ -63,6 +63,14 @@ export default function create_routes(cwd = locations.routes()) {
 			.sort(comparator);
 
 		items.forEach(item => {
+			if (item.basename[0] === '_') {
+				if (item.basename !== (item.is_dir ? '_default' : '_default.html')) return;
+			}
+
+			if (item.basename[0] === '.') {
+				if (item.file !== '.well-known') return;
+			}
+
 			const segments = parent_segments.slice();
 
 			if (item.is_index && segments.length > 0) {
@@ -114,7 +122,22 @@ export default function create_routes(cwd = locations.routes()) {
 			}
 
 			else if (item.basename === 'index.html') {
-				// TODO if this is a leaf, create a route for it
+				const is_branch = items.some(other_item => {
+					if (other_item === item) return false;
+
+					if (item.is_dir) {
+						return fs.existsSync(path.join(dir, item.basename, 'index.html'));
+					}
+
+					return item.is_page;
+				});
+
+				if (!is_branch) {
+					pages.push({
+						pattern: get_pattern(parent_segments),
+						parts: stack
+					});
+				}
 			}
 
 			else if (item.is_page) {
@@ -154,6 +177,32 @@ export default function create_routes(cwd = locations.routes()) {
 	}
 
 	walk(cwd, [], [], []);
+
+	// check for clashes
+	const seen_pages: Map<string, Page> = new Map();
+	pages.forEach(page => {
+		const pattern = page.pattern.toString();
+		if (seen_pages.has(pattern)) {
+			const file = page.parts.pop().component.file;
+			const other_page = seen_pages.get(pattern);
+			const other_file = other_page.parts.pop().component.file;
+
+			throw new Error(`The ${other_file} and ${file} pages clash`);
+		}
+
+		seen_pages.set(pattern, page);
+	});
+
+	const seen_routes: Map<string, ServerRoute> = new Map();
+	server_routes.forEach(route => {
+		const pattern = route.pattern.toString();
+		if (seen_routes.has(pattern)) {
+			const other_route = seen_routes.get(pattern);
+			throw new Error(`The ${other_route.file} and ${route.file} routes clash`);
+		}
+
+		seen_routes.set(pattern, route);
+	});
 
 	return {
 		components,

@@ -333,6 +333,9 @@ function get_page_handler(routes: RouteObject[], store_getter: (req: Req) => Sto
 			};
 			Object.assign(props, preloaded);
 
+			res.end('TODO');
+			return;
+
 			const { html, head, css } = App.render({ Page: route.handler, props }, {
 				store
 			});
