@@ -79,6 +79,8 @@ function render(data: any, scroll: ScrollPosition, token: {}) {
 	if (scroll) {
 		window.scrollTo(scroll.x, scroll.y);
 	}
+
+	ready = true;
 }
 
 function prepare_page(target: Target): Promise<{
@@ -104,7 +106,7 @@ function prepare_page(target: Target): Promise<{
 		}
 	};
 
-	return Promise.all(page.parts.map(async part => {
+	return Promise.all(page.parts.map(async (part, i) => {
 		const { default: Component } = await part.component();
 		const req = {
 			path,
@@ -112,12 +114,11 @@ function prepare_page(target: Target): Promise<{
 			params: part.params ? part.params(target.match) : {}
 		};
 
-		return {
-			Component,
-			preloaded: Component.preload
-				? await Component.preload.call(preload_context, req)
-				: {}
-		};
+		const preloaded = ready || !initial_data.preloaded[i]
+			? Component.preload ? await Component.preload.call(preload_context, req) : {}
+			: initial_data.preloaded[i];
+
+		return { Component, preloaded };
 	})).catch(err => {
 		error = { statusCode: 500, message: err };
 		return [];
@@ -281,6 +282,7 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 }
 
 let inited: boolean;
+let ready = false;
 
 export function init(opts: { App: ComponentConstructor, target: Node, routes: Routes, store?: (data: any) => Store }) {
 	if (opts instanceof HTMLElement) {
