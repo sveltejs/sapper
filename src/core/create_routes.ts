@@ -127,7 +127,7 @@ export default function create_routes(cwd = locations.routes()) {
 						return fs.existsSync(path.join(dir, item.basename, 'index.html'));
 					}
 
-					return item.is_page;
+					return other_item.is_page;
 				});
 
 				if (!is_branch) {
