@@ -87,6 +87,10 @@ function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
 	data?: any
 }> {
+	if (root) {
+		root.set({ preloading: true });
+	}
+
 	const { page, path, query } = target;
 
 	let redirect: Redirect = null;
@@ -141,6 +145,7 @@ function prepare_page(target: Target): Promise<{
 
 			return {
 				data: Object.assign({}, props, {
+					preloading: false,
 					child: {
 						component: routes.error,
 						props
@@ -151,7 +156,7 @@ function prepare_page(target: Target): Promise<{
 
 		// TODO skip unchanged segments
 		const props = { path, query };
-		const data = { path, query, params, child: {} };
+		const data = { path, query, params, preloading: false, child: {} };
 		let level = data.child;
 		for (let i = 0; i < page.parts.length; i += 1) {
 			const part = page.parts[i];
