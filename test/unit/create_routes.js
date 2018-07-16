@@ -1,0 +1,117 @@
+const path = require('path');
+const assert = require('assert');
+const { create_routes_alt } = require('../../dist/core.ts.js');
+
+describe('create_routes', () => {
+	it('creates routes', () => {
+		const { components, pages, server_routes } = create_routes_alt(path.join(__dirname, 'samples/basic'));
+
+		const page_index = { name: 'page_index', file: '_default.html' };
+		const page_about = { name: 'page_about', file: 'about.html' };
+		const page_blog = { name: 'page_blog', file: 'blog/index.html' };
+		const page_blog_index = { name: 'page_blog_index', file: 'blog/_default.html' };
+		const page_blog_$slug = { name: 'page_blog_$slug', file: 'blog/[slug].html' };
+
+		assert.deepEqual(components, [
+			page_index,
+			page_about,
+			page_blog,
+			page_blog_index,
+			page_blog_$slug
+		]);
+
+		assert.deepEqual(pages, [
+			{
+				pattern: /^\/?$/,
+				parts: [
+					{ component: page_index, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/about\/?$/,
+				parts: [
+					{ component: page_about, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/blog\/?$/,
+				parts: [
+					{ component: page_blog, params: [] },
+					{ component: page_blog_index, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				parts: [
+					{ component: page_blog, params: [] },
+					{ component: page_blog_$slug, params: ['slug'] }
+				]
+			}
+		]);
+
+		assert.deepEqual(server_routes, [
+			{
+				name: 'route_blog_json',
+				pattern: /^\/blog.json\/?$/,
+				file: 'blog/index.json.js',
+				params: []
+			},
+
+			{
+				name: 'route_blog_$slug_json',
+				pattern: /^\/blog\/([^\/]+?).json\/?$/,
+				file: 'blog/[slug].json.js',
+				params: ['slug']
+			}
+		]);
+	});
+
+	it('encodes invalid characters', () => {
+		const { components, pages } = create_routes_alt(path.join(__dirname, 'samples/encoding'));
+
+		const quote = { name: 'page_$34', file: '".html' };
+		const hash = { name: 'page_$35', file: '#.html' };
+		const question_mark = { name: 'page_$63', file: '?.html' };
+
+		assert.deepEqual(components, [
+			quote,
+			hash,
+			question_mark
+		]);
+
+		assert.deepEqual(pages.map(p => p.pattern), [
+			/^\/%22\/?$/,
+			/^\/%23\/?$/,
+			/^\/%3F\/?$/
+		]);
+	});
+
+	it('allows regex qualifiers', () => {
+		const { pages } = create_routes_alt(path.join(__dirname, 'samples/qualifiers'));
+
+		assert.deepEqual(pages.map(p => p.pattern), [
+			/^\/([0-9-a-z]{3,})\/?$/,
+			/^\/([a-z]{2})\/?$/,
+			/^\/([^\/]+?)\/?$/
+		]);
+	});
+
+	it('sorts routes correctly', () => {
+		const { pages } = create_routes_alt(path.join(__dirname, 'samples/sorting'));
+
+		assert.deepEqual(pages.map(p => p.parts.map(part => part.component.file)), [
+			['_default.html'],
+			['about.html'],
+			['post/index.html', 'post/_default.html'],
+			['post/index.html', 'post/bar.html'],
+			['post/index.html', 'post/foo.html'],
+			['post/index.html', 'post/f[xx].html'],
+			['post/index.html', 'post/[id([0-9-a-z]{3,})].html'],
+			['post/index.html', 'post/[id].html'],
+			['[wildcard].html']
+		]);
+	});
+});
