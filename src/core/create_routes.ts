@@ -4,10 +4,10 @@ import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 import { posixify } from './utils';
 
-const fallback_index = path.resolve(
+const fallback_index = posixify(path.resolve(
 	__dirname,
 	'../fallback.html'
-);
+));
 
 export default function create_routes(cwd = locations.routes()) {
 	const components: PageComponent[] = [];
@@ -100,7 +100,7 @@ export default function create_routes(cwd = locations.routes()) {
 				const component = fs.existsSync(index)
 					? {
 						name: `page_${get_slug(item.file)}`,
-						file: path.join(item.file, 'index.html')
+						file: `${item.file}/index.html`
 					}
 					: null;
 
