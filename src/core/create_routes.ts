@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
+import { posixify } from './utils';
 
 const fallback_index = path.resolve(
 	__dirname,
@@ -49,7 +50,7 @@ export default function create_routes(cwd = locations.routes()) {
 				return {
 					basename,
 					parts,
-					file,
+					file: posixify(file),
 					is_dir,
 					is_index,
 					is_page
