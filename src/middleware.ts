@@ -20,6 +20,7 @@ type ServerRoute = {
 type Page = {
 	pattern: RegExp;
 	parts: Array<{
+		name: string;
 		component: Component;
 		params?: (match: RegExpMatchArray) => Record<string, string>;
 	}>
@@ -261,8 +262,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
 		const link = []
-			// TODO reinstate this!
-			// .concat(chunks.main, chunks[page.id] || chunks._error) // TODO this is gross
+			.concat(chunks.main, error ? [] : page.parts.map(part => chunks[part.name]))
 			.filter(file => !file.match(/\.map$/))
 			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 			.join(', ');
@@ -346,7 +346,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				handle_page({
 					pattern: null,
 					parts: [
-						{ component: error_route }
+						{ name: null, component: error_route }
 					]
 				}, req, res, preload_error.statusCode, preload_error.message);
 
@@ -438,7 +438,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		handle_page({
 			pattern: null,
 			parts: [
-				{ component: error_route }
+				{ name: null, component: error_route }
 			]
 		}, req, res, 404, 'Not found');
 	};

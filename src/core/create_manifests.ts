@@ -62,7 +62,8 @@ function generate_client(
 		import error from '${posixify(`${path_to_routes}/_error.html`)}';
 
 		${routes.components.map(component =>
-		`const ${right_pad(component.name, len)} = () => import('${posixify(`${path_to_routes}/${component.file}`)}');`)
+		`const ${component.name} = () =>
+			import(/* webpackChunkName: "${component.name}" */ '${posixify(`${path_to_routes}/${component.file}`)}');`)
 		.join('\n')}
 
 		export const routes = {
@@ -142,12 +143,17 @@ function generate_server(
 					pattern: ${page.pattern},
 					parts: [
 						${page.parts.map(part => {
+							const props = [
+								`name: "${part.component.name}"`,
+								`component: ${part.component.name}`
+							];
+
 							if (part.params.length > 0) {
-								const props = part.params.map((param, i) => `${param}: match[${i + 1}]`);
-								return `{ component: ${part.component.name}, params: match => ({ ${props.join(', ')} }) }`;
+								const params = part.params.map((param, i) => `${param}: match[${i + 1}]`);
+								props.push(`params: match => ({ ${params.join(', ')} })`);
 							}
 
-							return `{ component: ${part.component.name} }`;
+							return `{ ${props.join(', ')} }`;
 						}).join(',\n\t\t\t\t\t\t')}
 					]
 				}`).join(',\n\n\t\t\t\t')}

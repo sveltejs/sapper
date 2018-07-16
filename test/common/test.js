@@ -41,7 +41,7 @@ describe('sapper', function() {
 	rimraf.sync('.sapper');
 	rimraf.sync('start.js');
 
-	this.timeout(process.env.CI ? 30000 : 10000);
+	this.timeout(process.env.CI ? 30000 : 15000);
 
 	// TODO reinstate dev tests
 	// run({
@@ -97,13 +97,13 @@ describe('sapper', function() {
 			];
 			// Client scripts that should show up in the extraction directory.
 			const expectedClientRegexes = [
-				/client\/[^/]+\/_(\.\d+)?\.js/,
-				/client\/[^/]+\/about(\.\d+)?\.js/,
-				/client\/[^/]+\/blog_\$slug\$(\.\d+)?\.js/,
-				/client\/[^/]+\/blog(\.\d+)?\.js/,
 				/client\/[^/]+\/main(\.\d+)?\.js/,
-				/client\/[^/]+\/show_url(\.\d+)?\.js/,
-				/client\/[^/]+\/slow_preload(\.\d+)?\.js/,
+				/client\/[^/]+\/page_index(\.\d+)?\.js/,
+				/client\/[^/]+\/page_about(\.\d+)?\.js/,
+				/client\/[^/]+\/page_blog_\$slug(\.\d+)?\.js/,
+				/client\/[^/]+\/page_blog(\.\d+)?\.js/,
+				/client\/[^/]+\/page_show\$45url(\.\d+)?\.js/,
+				/client\/[^/]+\/page_slow\$45preload(\.\d+)?\.js/,
 			];
 			const allPages = walkSync(dest);
 
@@ -641,7 +641,7 @@ function run({ mode, basepath = '' }) {
 						'text/html'
 					);
 
-					const str = ['main', '_\\.\\d+']
+					const str = ['main', '.+?\\.\\d+']
 						.map(file => {
 							return `<${basepath}/client/[^/]+/${file}\\.js>;rel="preload";as="script"`;
 						})
