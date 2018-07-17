@@ -262,9 +262,12 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
 		let preloaded_chunks = Array.isArray(chunks.main) ? chunks.main : [chunks.main];
-		page.parts.forEach(part => {
-			preloaded_chunks = preloaded_chunks.concat(chunks[part.name]); // using concat because it could be a string or an array. thanks webpack!
-		});
+		if (!error) {
+			page.parts.forEach(part => {
+				// using concat because it could be a string or an array. thanks webpack!
+				preloaded_chunks = preloaded_chunks.concat(chunks[part.name]);
+			});
+		}
 
 		const link = preloaded_chunks
 			.filter(file => !file.match(/\.map$/))
