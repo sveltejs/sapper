@@ -7,6 +7,31 @@ export let root: Component;
 let target: Node;
 let store: Store;
 let routes: Routes;
+let segments: string[] = [];
+
+type RootProps = {
+	path: string;
+	params: Record<string, string>;
+	query: Record<string, string>;
+	child: Child;
+};
+
+type Child = {
+	segment?: string;
+	props?: any;
+	component?: Component;
+};
+
+const root_props: RootProps = {
+	path: null,
+	params: null,
+	query: null,
+	child: {
+		segment: null,
+		component: null,
+		props: {}
+	}
+};
 
 export { root as component }; // legacy reasons — drop in a future version
 
@@ -52,10 +77,23 @@ function select_route(url: URL): Target {
 
 let current_token: {};
 
-function render(data: any, scroll: ScrollPosition, token: {}) {
+function render(data: any, changed_from: number, scroll: ScrollPosition, token: {}) {
 	if (current_token !== token) return;
 
 	if (root) {
+		// first, clear out highest-level root component
+		let level = data.child;
+		for (let i = 0; i < changed_from; i += 1) {
+			if (i === changed_from) break;
+			level = level.props.child;
+		}
+
+		const { component } = level;
+		level.component = null;
+		root.set({ child: data.child });
+
+		// then render new stuff
+		level.component = component;
 		root.set(data);
 	} else {
 		// first load — remove SSR'd <head> contents
@@ -80,18 +118,32 @@ function render(data: any, scroll: ScrollPosition, token: {}) {
 		window.scrollTo(scroll.x, scroll.y);
 	}
 
+	Object.assign(root_props, data);
 	ready = true;
+}
+
+function changed(a: Record<string, string | true>, b: Record<string, string | true>) {
+	return JSON.stringify(a) !== JSON.stringify(b);
 }
 
 function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
-	data?: any
+	data?: any;
+	changed_from?: number;
 }> {
 	if (root) {
 		root.set({ preloading: true });
 	}
 
 	const { page, path, query } = target;
+	const new_segments = path.split('/').filter(Boolean);
+	let changed_from = 0;
+
+	while (
+		segments[changed_from] &&
+		new_segments[changed_from] &&
+		segments[changed_from] === new_segments[changed_from]
+	) changed_from += 1;
 
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
@@ -111,6 +163,8 @@ function prepare_page(target: Target): Promise<{
 	};
 
 	return Promise.all(page.parts.map(async (part, i) => {
+		if (i < changed_from) return null;
+
 		const { default: Component } = await part.component();
 		const req = {
 			path,
@@ -130,6 +184,8 @@ function prepare_page(target: Target): Promise<{
 		if (redirect) {
 			return { redirect };
 		}
+
+		segments = new_segments;
 
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const params = get_params(target.match);
@@ -154,28 +210,37 @@ function prepare_page(target: Target): Promise<{
 			};
 		}
 
-		// TODO skip unchanged segments
 		const props = { path, query };
-		const data = { path, query, params, preloading: false, child: {} };
+		const data = {
+			path,
+			preloading: false,
+			child: Object.assign({}, root_props.child)
+		};
+		if (changed(query, root_props.query)) data.query = query;
+		if (changed(params, root_props.params)) data.params = params;
+
 		let level = data.child;
 		for (let i = 0; i < page.parts.length; i += 1) {
 			const part = page.parts[i];
-			const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
+			const get_params = part.params || (() => ({}));
 
-			Object.assign(level, {
-				// TODO segment
-				props: Object.assign({}, props, {
+			if (i < changed_from) {
+				level.props.path = path;
+				level.props.query = query;
+				level.props.child = Object.assign({}, level.props.child);
+			} else {
+				level.segment = new_segments[i];
+				level.component = results[i].Component;
+				level.props = Object.assign({}, level.props, props, {
 					params: get_params(target.match),
-				}, results[i].preloaded),
-				component: results[i].Component
-			});
-			if (i < results.length - 1) {
+				}, results[i].preloaded);
 				level.props.child = {};
 			}
+
 			level = level.props.child;
 		}
 
-		return { data };
+		return { data, changed_from };
 	});
 }
 
@@ -200,12 +265,12 @@ async function navigate(target: Target, id: number): Promise<any> {
 	prefetching = null;
 
 	const token = current_token = {};
-	const { redirect, data } = await loaded;
+	const { redirect, data, changed_from } = await loaded;
 
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
 	} else {
-		render(data, scroll_history[id], token);
+		render(data, changed_from, scroll_history[id], token);
 		document.activeElement.blur();
 	}
 }
@@ -271,7 +336,7 @@ function handle_popstate(event: PopStateEvent) {
 
 let prefetching: {
 	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any }>;
+	promise: Promise<{ redirect?: Redirect, data?: any, changed_from?: number }>;
 } = null;
 
 export function prefetch(href: string) {

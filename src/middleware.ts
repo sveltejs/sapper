@@ -255,14 +255,18 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			? {}
 			: get_params(page.pattern.exec(req.path));
 
-		const chunks: Record<string, string> = get_chunks();
+		const chunks: Record<string, string | string[]> = get_chunks();
 
 		res.setHeader('Content-Type', 'text/html');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
-		const link = []
-			.concat(chunks.main, error ? [] : page.parts.map(part => chunks[part.name]))
+		let preloaded_chunks = Array.isArray(chunks.main) ? chunks.main : [chunks.main];
+		page.parts.forEach(part => {
+			preloaded_chunks = preloaded_chunks.concat(chunks[part.name]); // using concat because it could be a string or an array. thanks webpack!
+		});
+
+		const link = preloaded_chunks
 			.filter(file => !file.match(/\.map$/))
 			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 			.join(', ');
