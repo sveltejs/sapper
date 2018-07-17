@@ -251,7 +251,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
-		const match = page.pattern.exec(req.path);
+		const match = error ? null : page.pattern.exec(req.path);
 
 		req.params = error
 			? {}
