@@ -4,7 +4,7 @@ import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 import { posixify } from './utils';
 
-const fallback_index = posixify(path.resolve(
+const fallback_file = posixify(path.resolve(
 	__dirname,
 	'../fallback.html'
 ));
@@ -13,6 +13,11 @@ export default function create_routes(cwd = locations.routes()) {
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
+
+	const fallback = {
+		name: 'fallback',
+		file: path.relative(cwd, fallback_file)
+	};
 
 	function walk(
 		dir: string,
@@ -104,17 +109,18 @@ export default function create_routes(cwd = locations.routes()) {
 					}
 					: null;
 
-				if (component) components.push(component);
+				if (component) {
+					components.push(component);
+				} else if (components.indexOf(fallback) === -1) {
+					components.push(fallback);
+				}
 
 				walk(
 					path.join(dir, item.basename),
 					segments,
 					params,
 					stack.concat({
-						component: component || {
-							name: 'fallback',
-							file: fallback_index
-						},
+						component: component || fallback,
 						params
 					})
 				);

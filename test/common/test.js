@@ -659,6 +659,14 @@ function run({ mode, basepath = '' }) {
 						]);
 					});
 			});
+
+			it('uses a fallback index component if none is provided', () => {
+				return nightmare.goto(`${base}/missing-index/ok`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'it works');
+					});
+			});
 		});
 
 		describe('headers', () => {
