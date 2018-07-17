@@ -154,6 +154,6 @@ describe('create_routes', () => {
 	it('errors when trying to use reserved characters in route regexp', () => {
 		assert.throws(() => {
 			create_routes(path.join(__dirname, 'samples/invalid-qualifier'));
-		}, /Invalid route \[foo\(\[a-z\]\[0-9\]\?\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
+		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
 	});
 });
