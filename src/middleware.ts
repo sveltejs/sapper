@@ -387,9 +387,8 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 						query: req.query
 					}, preloaded[i])
 				});
-				if (i < preloaded.length - 1) {
-					level.props.child = {};
-				}
+
+				level.props.child = {};
 				level = level.props.child;
 			}
 
