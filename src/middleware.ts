@@ -251,9 +251,11 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
+		const match = page.pattern.exec(req.path);
+
 		req.params = error
 			? {}
-			: get_params(page.pattern.exec(req.path));
+			: get_params(match);
 
 		const chunks: Record<string, string | string[]> = get_chunks();
 
@@ -367,16 +369,23 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				store: store && try_serialize(store.get())
 			};
 
+			const segments = req.path.split('/').filter(Boolean);
+
 			const data = Object.assign({}, props, { params: req.params }, {
 				child: {}
 			});
 			let level = data.child;
 			for (let i = 0; i < page.parts.length; i += 1) {
 				const part = page.parts[i];
+				const get_params = part.params || (() => ({}));
+
 				Object.assign(level, {
-					// TODO segment
-					props: Object.assign({}, props, preloaded[i]),
-					component: part.component
+					segment: segments[i],
+					component: part.component,
+					props: Object.assign({}, props, {
+						params: get_params(match),
+						query: req.query
+					}, preloaded[i])
 				});
 				if (i < preloaded.length - 1) {
 					level.props.child = {};
