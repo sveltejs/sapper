@@ -129,6 +129,9 @@ export default function create_routes(cwd = locations.routes()) {
 			else if (item.basename === 'index.html') {
 				const is_branch = items.some(other_item => {
 					if (other_item === item) return false;
+					if (other_item.basename[0] === '_') {
+						return other_item.basename === (other_item.is_dir ? '_default' : '_default.html');
+					}
 
 					if (other_item.is_dir) {
 						return fs.existsSync(path.join(dir, other_item.basename, 'index.html'));
