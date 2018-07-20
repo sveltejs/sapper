@@ -2,15 +2,14 @@ import * as glob from 'glob';
 import { locations } from '../config';
 import { create_routes } from '../core';
 
-export function find_page(pathname: string, files: string[] = glob.sync('**/*.*', { cwd: locations.routes(), dot: true, nodir: true })) {
-	const routes = create_routes({ files });
+export function find_page(pathname: string, cwd = locations.routes()) {
+	const { pages } = create_routes(cwd);
 
-	for (let i = 0; i < routes.length; i += 1) {
-		const route = routes[i];
+	for (let i = 0; i < pages.length; i += 1) {
+		const page = pages[i];
 
-		if (route.pattern.test(pathname)) {
-			const page = route.handlers.find(handler => handler.type === 'page');
-			if (page) return page.file;
+		if (page.pattern.test(pathname)) {
+			return page.parts[page.parts.length - 1].component.file;
 		}
 	}
 }
