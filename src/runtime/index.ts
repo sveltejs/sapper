@@ -402,8 +402,10 @@ export function init(opts: { App: ComponentConstructor, target: Node, routes: Ro
 
 		history.replaceState({ id: uid }, '', href);
 
-		const target = select_route(new URL(window.location.href));
-		if (target) return navigate(target, uid);
+		if (!initial_data.error) {
+			const target = select_route(new URL(window.location.href));
+			if (target) return navigate(target, uid);
+		}
 	});
 }
 

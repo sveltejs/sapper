@@ -249,6 +249,15 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 	const { server_routes, pages } = routes;
 	const error_route = routes.error;
 
+	function handle_error(req: Req, res: ServerResponse, statusCode: number, error: Error | string) {
+		handle_page({
+			pattern: null,
+			parts: [
+				{ name: null, component: error_route }
+			]
+		}, req, res, statusCode, error);
+	}
+
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const match = error ? null : page.pattern.exec(req.path);
@@ -352,13 +361,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 
 			if (preload_error) {
-				handle_page({
-					pattern: null,
-					parts: [
-						{ name: null, component: error_route }
-					]
-				}, req, res, preload_error.statusCode, preload_error.message);
-
+				handle_error(req, res, preload_error.statusCode, preload_error.message);
 				return;
 			}
 
@@ -403,6 +406,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				.join('');
 
 			let inline_script = `__SAPPER__={${[
+				error && `error:1`,
 				`baseUrl: "${req.baseUrl}"`,
 				serialized.preloaded && `preloaded: [${serialized.preloaded}]`,
 				serialized.store && `store: ${serialized.store}`
@@ -435,8 +439,13 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				});
 			}
 		}).catch(err => {
-			res.statusCode = 500;
-			res.end(err.message);
+			if (error) {
+				// we encountered an error while rendering the error page — oops
+				res.statusCode = 500;
+				res.end(`<pre>${escape_html(err.message)}</pre>`);
+			} else {
+				handle_error(req, res, 500, err);
+			}
 		});
 	}
 
@@ -450,12 +459,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 		}
 
-		handle_page({
-			pattern: null,
-			parts: [
-				{ name: null, component: error_route }
-			]
-		}, req, res, 404, 'Not found');
+		handle_error(req, res, 404, 'Not found');
 	};
 }
 
@@ -485,4 +489,16 @@ function try_serialize(data: any) {
 	} catch (err) {
 		return null;
 	}
+}
+
+function escape_html(html: string) {
+	const chars: Record<string, string> = {
+		'"' : 'quot',
+		"'": '#39',
+		'&': 'amp',
+		'<' : 'lt',
+		'>' : 'gt'
+	};
+
+	return html.replace(/["'&<>]/g, c => `&${chars[c]};`);
 }
