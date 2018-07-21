@@ -21,6 +21,7 @@ export type Store = {
 };
 
 export type PageComponent = {
+	missing?: boolean;
 	name: string;
 	file: string;
 };

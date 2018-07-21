@@ -4,20 +4,10 @@ import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 import { posixify } from './utils';
 
-const fallback_file = posixify(path.resolve(
-	__dirname,
-	'../fallback.html'
-));
-
 export default function create_routes(cwd = locations.routes()) {
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
-
-	const fallback = {
-		name: 'fallback',
-		file: path.relative(cwd, fallback_file)
-	};
 
 	function walk(
 		dir: string,
@@ -111,8 +101,6 @@ export default function create_routes(cwd = locations.routes()) {
 
 				if (component) {
 					components.push(component);
-				} else if (components.indexOf(fallback) === -1) {
-					components.push(fallback);
 				}
 
 				walk(
@@ -120,7 +108,11 @@ export default function create_routes(cwd = locations.routes()) {
 					segments,
 					params,
 					stack.concat({
-						component: component || fallback,
+						component: component || {
+							missing: true,
+							name: null,
+							file: path.join(item.file, 'index.html')
+						},
 						params
 					})
 				);
@@ -186,9 +178,19 @@ export default function create_routes(cwd = locations.routes()) {
 
 	walk(cwd, [], [], []);
 
-	// check for clashes
 	const seen_pages: Map<string, Page> = new Map();
 	pages.forEach(page => {
+		// check for missing intermediate index.html files
+		let i = page.parts.length;
+		const last_part = page.parts[i - 1];
+		while (i--) {
+			const part = page.parts[i];
+			if (part.component.missing) {
+				throw new Error(`Missing ${part.component.file}, which is required for ${last_part.component.file} to be valid`);
+			}
+		}
+
+		// check for clashes
 		const pattern = page.pattern.toString();
 		if (seen_pages.has(pattern)) {
 			const file = page.parts.pop().component.file;
