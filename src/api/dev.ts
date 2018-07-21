@@ -105,8 +105,15 @@ class Watcher extends EventEmitter {
 
 		const dev_port = await ports.find(10000);
 
-		const routes = create_routes();
-		create_main_manifests({ routes, dev_port });
+		try {
+			const routes = create_routes();
+			create_main_manifests({ routes, dev_port });
+		} catch (err) {
+			this.emit('fatal', <events.FatalEvent>{
+				message: err.message
+			});
+			return;
+		}
 
 		this.dev_server = new DevServer(dev_port);
 
@@ -114,6 +121,15 @@ class Watcher extends EventEmitter {
 			watch_files(locations.routes(), ['add', 'unlink'], () => {
 				const routes = create_routes();
 				create_main_manifests({ routes, dev_port });
+
+				try {
+					const routes = create_routes();
+					create_main_manifests({ routes, dev_port });
+				} catch (err) {
+					this.emit('error', <events.ErrorEvent>{
+						message: err.message
+					});
+				}
 			}),
 
 			watch_files(`${locations.app()}/template.html`, ['change'], () => {
@@ -272,7 +288,7 @@ class Watcher extends EventEmitter {
 		if (this.closed) return;
 		this.closed = true;
 
-		this.dev_server.close();
+		if (this.dev_server) this.dev_server.close();
 
 		if (this.proc) this.proc.kill();
 		this.filewatchers.forEach(watcher => {
