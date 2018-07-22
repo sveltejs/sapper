@@ -667,6 +667,14 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, 'it works');
 					});
 			});
+
+			it('runs preload in root component', () => {
+				return nightmare.goto(`${base}/preload-root`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'root preload function ran: true');
+					});
+			});
 		});
 
 		describe('headers', () => {
