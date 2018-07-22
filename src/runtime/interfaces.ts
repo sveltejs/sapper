@@ -23,7 +23,7 @@ export type Page = {
 	}>;
 };
 
-export type Routes = {
+export type Manifest = {
 	ignore: RegExp[];
 	root: ComponentConstructor;
 	error: () => Promise<{ default: ComponentConstructor }>;

@@ -2,13 +2,18 @@ const path = require('path');
 const assert = require('assert');
 const { create_routes } = require('../../../dist/core.ts.js');
 
+
+const _default_layout = {
+	name: '_default_layout',
+	file: '../../../../../components/default-layout.html'.split('/').join(path.sep)
+};
+
 describe('create_routes', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_routes(path.join(__dirname, 'samples/basic'));
 
 		const index = { name: 'index', file: 'index.html' };
 		const about = { name: 'about', file: 'about.html' };
-		const _default_layout = { name: '_default_layout', file: '../../../../../default-layout.html' };
 		const blog = { name: 'blog', file: 'blog/index.html' };
 		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html' };
 
@@ -104,17 +109,15 @@ describe('create_routes', () => {
 	it('sorts routes correctly', () => {
 		const { pages } = create_routes(path.join(__dirname, 'samples/sorting'));
 
-		const layout = '../../../../../default-layout.html';
-
 		assert.deepEqual(pages.map(p => p.parts.map(part => part.component.file)), [
 			['index.html'],
 			['about.html'],
-			[layout, 'post/index.html'],
-			[layout, 'post/bar.html'],
-			[layout, 'post/foo.html'],
-			[layout, 'post/f[xx].html'],
-			[layout, 'post/[id([0-9-a-z]{3,})].html'],
-			[layout, 'post/[id].html'],
+			[_default_layout.file, 'post/index.html'],
+			[_default_layout.file, 'post/bar.html'],
+			[_default_layout.file, 'post/foo.html'],
+			[_default_layout.file, 'post/f[xx].html'],
+			[_default_layout.file, 'post/[id([0-9-a-z]{3,})].html'],
+			[_default_layout.file, 'post/[id].html'],
 			['[wildcard].html']
 		]);
 	});

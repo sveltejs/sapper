@@ -26,7 +26,7 @@ type Page = {
 	}>
 };
 
-type RouteObject = {
+type Manifest = {
 	server_routes: ServerRoute[];
 	pages: Page[];
 	root: Component;
@@ -73,11 +73,18 @@ interface Component {
 	preload: (data: any) => any | Promise<any>
 }
 
-export default function middleware({ routes, store }: {
-	routes: RouteObject,
-	store: (req: Req) => Store
+export default function middleware(opts: {
+	manifest: Manifest,
+	store: (req: Req) => Store,
+	routes?: any // legacy
 }) {
+	if (opts.routes) {
+		throw new Error(`As of Sapper 0.15, opts.routes should be opts.manifest`);
+	}
+
 	const output = locations.dest();
+
+	const { manifest, store } = opts;
 
 	let emitted_basepath = false;
 
@@ -131,8 +138,8 @@ export default function middleware({ routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_server_route_handler(routes.server_routes),
-		get_page_handler(routes, store)
+		get_server_route_handler(manifest.server_routes),
+		get_page_handler(manifest, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -249,7 +256,7 @@ function get_server_route_handler(routes: ServerRoute[]) {
 	};
 }
 
-function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store) {
+function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store) {
 	const output = locations.dest();
 
 	const get_chunks = dev()
@@ -260,8 +267,8 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
-	const { server_routes, pages } = routes;
-	const error_route = routes.error;
+	const { server_routes, pages } = manifest;
+	const error_route = manifest.error;
 
 	function handle_error(req: Req, res: ServerResponse, statusCode: number, error: Error | string) {
 		handle_page({
@@ -350,8 +357,8 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			store
 		};
 
-		const root_preloaded = routes.root.preload
-			? routes.root.preload.call(preload_context, {
+		const root_preloaded = manifest.root.preload
+			? manifest.root.preload.call(preload_context, {
 				path: req.path,
 				query: req.query,
 				params: {}
@@ -424,7 +431,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				level = level.props.child;
 			}
 
-			const { html, head, css } = routes.root.render(data, {
+			const { html, head, css } = manifest.root.render(data, {
 				store
 			});
 

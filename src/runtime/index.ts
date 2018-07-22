@@ -1,12 +1,12 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Redirect, Routes, RouteData, ScrollPosition, Store, Target } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Redirect, Manifest, RouteData, ScrollPosition, Store, Target } from './interfaces';
 
 const initial_data = typeof window !== 'undefined' && window.__SAPPER__;
 
 export let root: Component;
 let target: Node;
 let store: Store;
-let routes: Routes;
+let manifest: Manifest;
 let segments: string[] = [];
 
 type RootProps = {
@@ -56,10 +56,10 @@ function select_route(url: URL): Target {
 	const path = url.pathname.slice(initial_data.baseUrl.length);
 
 	// avoid accidental clashes between server routes and pages
-	if (routes.ignore.some(pattern => pattern.test(path))) return;
+	if (manifest.ignore.some(pattern => pattern.test(path))) return;
 
-	for (let i = 0; i < routes.pages.length; i += 1) {
-		const page = routes.pages[i];
+	for (let i = 0; i < manifest.pages.length; i += 1) {
+		const page = manifest.pages[i];
 
 		const match = page.pattern.exec(path);
 		if (match) {
@@ -108,7 +108,7 @@ function render(data: any, changed_from: number, scroll: ScrollPosition, token: 
 
 		Object.assign(data, root_data);
 
-		root = new routes.root({
+		root = new manifest.root({
 			target,
 			data,
 			store,
@@ -168,8 +168,8 @@ function prepare_page(target: Target): Promise<{
 	};
 
 	if (!root_preload) {
-		root_preload = routes.root.preload
-			? initial_data.preloaded[0] || routes.root.preload.call(preload_context, {
+		root_preload = manifest.root.preload
+			? initial_data.preloaded[0] || manifest.root.preload.call(preload_context, {
 				path,
 				query,
 				params: {}
@@ -220,7 +220,7 @@ function prepare_page(target: Target): Promise<{
 				data: Object.assign({}, props, {
 					preloading: false,
 					child: {
-						component: routes.error,
+						component: manifest.error,
 						props
 					}
 				})
@@ -386,13 +386,23 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 let inited: boolean;
 let ready = false;
 
-export function init(opts: { App: ComponentConstructor, target: Node, routes: Routes, store?: (data: any) => Store }) {
+export function init(opts: {
+	App: ComponentConstructor,
+	target: Node,
+	manifest: Manifest,
+	store?: (data: any) => Store,
+	routes?: any // legacy
+}) {
 	if (opts instanceof HTMLElement) {
 		throw new Error(`The signature of init(...) has changed — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
 	}
 
+	if (opts.routes) {
+		throw new Error(`As of Sapper 0.15, opts.routes should be opts.manifest`);
+	}
+
 	target = opts.target;
-	routes = opts.routes;
+	manifest = opts.manifest;
 
 	if (opts && opts.store) {
 		store = opts.store(initial_data.store);
@@ -442,9 +452,9 @@ export function goto(href: string, opts = { replaceState: false }) {
 }
 
 export function prefetchRoutes(pathnames: string[]) {
-	if (!routes) throw new Error(`You must call init() first`);
+	if (!manifest) throw new Error(`You must call init() first`);
 
-	return routes.pages
+	return manifest.pages
 		.filter(route => {
 			if (!pathnames) return true;
 			return pathnames.some(pathname => route.pattern.test(pathname));

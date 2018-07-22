@@ -19,7 +19,8 @@ export default [
 		},
 		plugins: [
 			typescript({
-				typescript: require('typescript')
+				typescript: require('typescript'),
+				target: "ES2017"
 			})
 		]
 	},
@@ -45,8 +46,7 @@ export default [
 			json(),
 			commonjs(),
 			typescript({
-				typescript: require('typescript'),
-				target: "ES5"
+				typescript: require('typescript')
 			})
 		],
 		experimentalCodeSplitting: true,
