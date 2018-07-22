@@ -302,61 +302,71 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
 
-		Promise.all(page.parts.map(part => {
+		const preload_context = {
+			redirect: (statusCode: number, location: string) => {
+				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
+					throw new Error(`Conflicting redirects`);
+				}
+				redirect = { statusCode, location };
+			},
+			error: (statusCode: number, message: Error | string) => {
+				preload_error = { statusCode, message };
+			},
+			fetch: (url: string, opts?: any) => {
+				const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+
+				if (opts) {
+					opts = Object.assign({}, opts);
+
+					const include_cookies = (
+						opts.credentials === 'include' ||
+						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+					);
+
+					if (include_cookies) {
+						const cookies: Record<string, string> = {};
+						if (!opts.headers) opts.headers = {};
+
+						const str = []
+							.concat(
+								cookie.parse(req.headers.cookie || ''),
+								cookie.parse(opts.headers.cookie || ''),
+								cookie.parse(res.getHeader('Set-Cookie') || '')
+							)
+							.map(cookie => {
+								return Object.keys(cookie)
+									.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
+									.join('; ');
+							})
+							.filter(Boolean)
+							.join(', ');
+
+						opts.headers.cookie = str;
+					}
+				}
+
+				return fetch(parsed.href, opts);
+			},
+			store
+		};
+
+		const root_preloaded = routes.root.preload
+			? routes.root.preload.call(preload_context, {
+				path: req.path,
+				query: req.query,
+				params: {}
+			})
+			: {};
+
+		Promise.all([root_preloaded].concat(page.parts.map(part => {
 			return part.component.preload
-				? part.component.preload.call({
-					redirect: (statusCode: number, location: string) => {
-						if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-							throw new Error(`Conflicting redirects`);
-						}
-						redirect = { statusCode, location };
-					},
-					error: (statusCode: number, message: Error | string) => {
-						preload_error = { statusCode, message };
-					},
-					fetch: (url: string, opts?: any) => {
-						const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
-
-						if (opts) {
-							opts = Object.assign({}, opts);
-
-							const include_cookies = (
-								opts.credentials === 'include' ||
-								opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
-							);
-
-							if (include_cookies) {
-								const cookies: Record<string, string> = {};
-								if (!opts.headers) opts.headers = {};
-
-								const str = []
-									.concat(
-										cookie.parse(req.headers.cookie || ''),
-										cookie.parse(opts.headers.cookie || ''),
-										cookie.parse(res.getHeader('Set-Cookie') || '')
-									)
-									.map(cookie => {
-										return Object.keys(cookie)
-											.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
-											.join('; ');
-									})
-									.filter(Boolean)
-									.join(', ');
-
-								opts.headers.cookie = str;
-							}
-						}
-
-						return fetch(parsed.href, opts);
-					},
-					store
-				}, {
+				? part.component.preload.call(preload_context, {
 					path: req.path,
 					query: req.query,
 					params: part.params ? part.params(match) : {}
 				})
 				: {};
-		})).catch(err => {
+		}))).catch(err => {
 			preload_error = { statusCode: 500, message: err };
 			return []; // appease TypeScript
 		}).then(preloaded => {
@@ -374,9 +384,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 
 			const serialized = {
-				preloaded: page.parts.map((part, i) => {
-					return part.component.preload ? try_serialize(preloaded[i]) : null;
-				}),
+				preloaded: try_serialize(preloaded),
 				store: store && try_serialize(store.get())
 			};
 
@@ -394,7 +402,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 				props.status = status;
 			}
 
-			const data = Object.assign({}, props, {
+			const data = Object.assign({}, props, preloaded[0], {
 				params: {},
 				child: {}
 			});
@@ -409,7 +417,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 					component: part.component,
 					props: Object.assign({}, props, {
 						params: get_params(match)
-					}, preloaded[i])
+					}, preloaded[i + 1])
 				});
 
 				level.props.child = <Props["child"]>{};
