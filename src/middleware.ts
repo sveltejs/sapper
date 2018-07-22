@@ -346,7 +346,11 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 						return fetch(parsed.href, opts);
 					},
 					store
-				}, req)
+				}, {
+					path: req.path,
+					query: req.query,
+					params: part.params ? part.params(match) : {}
+				})
 				: {};
 		})).catch(err => {
 			preload_error = { statusCode: 500, message: err };
@@ -374,7 +378,11 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 			const segments = req.path.split('/').filter(Boolean);
 
-			const data = Object.assign({}, props, { params: req.params }, {
+			const data = Object.assign({
+				path: req.path,
+				query: req.query,
+				params: {}
+			}, {
 				child: {}
 			});
 			let level = data.child;

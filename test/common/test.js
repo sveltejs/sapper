@@ -370,16 +370,6 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('passes entire request object to preload', () => {
-				return nightmare
-					.goto(`${base}/show-url`)
-					.init()
-					.evaluate(() => document.querySelector('p').innerHTML)
-					.then(html => {
-						assert.equal(html, `URL is /show-url`);
-					});
-			});
-
 			it('calls a delete handler', () => {
 				return nightmare
 					.goto(`${base}/delete-test`)
