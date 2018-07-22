@@ -104,7 +104,6 @@ describe('sapper', function() {
 				/client\/[^/]+\/page_about(\.\d+)?\.js/,
 				/client\/[^/]+\/page_blog_\$slug(\.\d+)?\.js/,
 				/client\/[^/]+\/page_blog(\.\d+)?\.js/,
-				/client\/[^/]+\/page_show\$45url(\.\d+)?\.js/,
 				/client\/[^/]+\/page_slow\$45preload(\.\d+)?\.js/,
 			];
 			const allPages = walkSync(dest);

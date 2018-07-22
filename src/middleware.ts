@@ -39,6 +39,20 @@ type Store = {
 	get: () => any
 };
 
+type Props = {
+	path: string;
+	query: Record<string, string>;
+	params: Record<string, string>;
+	error?: { message: string };
+	status?: number;
+	child: {
+		segment: string;
+		component: Component;
+		props: Props;
+	};
+	[key: string]: any;
+};
+
 interface Req extends ClientRequest {
 	url: string;
 	baseUrl: string;
@@ -262,10 +276,6 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const match = error ? null : page.pattern.exec(req.path);
 
-		req.params = error
-			? {}
-			: get_params(match);
-
 		const chunks: Record<string, string | string[]> = get_chunks();
 
 		res.setHeader('Content-Type', 'text/html');
@@ -288,12 +298,6 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 		res.setHeader('Link', link);
 
 		const store = store_getter ? store_getter(req) : null;
-		const props = { query: req.query, path: req.path };
-
-		if (error) {
-			props.error = error instanceof Error ? error : { message: error };
-			props.status = status;
-		}
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
@@ -378,13 +382,23 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 
 			const segments = req.path.split('/').filter(Boolean);
 
-			const data = Object.assign({
+			const props: Props = {
 				path: req.path,
 				query: req.query,
-				params: {}
-			}, {
+				params: {},
+				child: null
+			};
+
+			if (error) {
+				props.error = error instanceof Error ? error : { message: error };
+				props.status = status;
+			}
+
+			const data = Object.assign({}, props, {
+				params: {},
 				child: {}
 			});
+
 			let level = data.child;
 			for (let i = 0; i < page.parts.length; i += 1) {
 				const part = page.parts[i];
@@ -394,12 +408,11 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 					segment: segments[i],
 					component: part.component,
 					props: Object.assign({}, props, {
-						params: get_params(match),
-						query: req.query
+						params: get_params(match)
 					}, preloaded[i])
 				});
 
-				level.props.child = {};
+				level.props.child = <Props["child"]>{};
 				level = level.props.child;
 			}
 
