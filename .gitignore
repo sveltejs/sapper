@@ -7,3 +7,4 @@ test/app/.sapper
 test/app/app/manifest
 test/app/export
 test/app/build
+!rollup.config.js
