@@ -437,7 +437,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			let inline_script = `__SAPPER__={${[
 				error && `error:1`,
 				`baseUrl: "${req.baseUrl}"`,
-				serialized.preloaded && `preloaded: [${serialized.preloaded}]`,
+				serialized.preloaded && `preloaded: ${serialized.preloaded}`,
 				serialized.store && `store: ${serialized.store}`
 			].filter(Boolean).join(',')}};`;
 

@@ -106,6 +106,8 @@ function render(data: any, changed_from: number, scroll: ScrollPosition, token: 
 			detach(end);
 		}
 
+		Object.assign(data, root_data);
+
 		root = new routes.root({
 			target,
 			data,
@@ -125,6 +127,9 @@ function render(data: any, changed_from: number, scroll: ScrollPosition, token: 
 function changed(a: Record<string, string | true>, b: Record<string, string | true>) {
 	return JSON.stringify(a) !== JSON.stringify(b);
 }
+
+let root_preload: Promise<any>;
+let root_data: any;
 
 function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
@@ -162,6 +167,16 @@ function prepare_page(target: Target): Promise<{
 		}
 	};
 
+	if (!root_preload) {
+		root_preload = routes.root.preload
+			? initial_data.preloaded[0] || routes.root.preload.call(preload_context, {
+				path,
+				query,
+				params: {}
+			})
+			: {};
+	}
+
 	return Promise.all(page.parts.map(async (part, i) => {
 		if (i < changed_from) return null;
 
@@ -172,15 +187,17 @@ function prepare_page(target: Target): Promise<{
 			params: part.params ? part.params(target.match) : {}
 		};
 
-		const preloaded = ready || !initial_data.preloaded[i]
+		const preloaded = ready || !initial_data.preloaded[i + 1]
 			? Component.preload ? await Component.preload.call(preload_context, req) : {}
-			: initial_data.preloaded[i];
+			: initial_data.preloaded[i + 1];
 
 		return { Component, preloaded };
 	})).catch(err => {
 		error = { statusCode: 500, message: err };
 		return [];
-	}).then(results => {
+	}).then(async results => {
+		if (!root_data) root_data = await root_preload;
+
 		if (redirect) {
 			return { redirect };
 		}
