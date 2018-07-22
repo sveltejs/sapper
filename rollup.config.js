@@ -45,7 +45,8 @@ export default [
 			json(),
 			commonjs(),
 			typescript({
-				typescript: require('typescript')
+				typescript: require('typescript'),
+				target: "ES5"
 			})
 		],
 		experimentalCodeSplitting: true,
