@@ -384,7 +384,7 @@ function get_page_handler(routes: RouteObject, store_getter: (req: Req) => Store
 			}
 
 			const serialized = {
-				preloaded: try_serialize(preloaded),
+				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
 				store: store && try_serialize(store.get())
 			};
 
