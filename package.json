@@ -12,6 +12,7 @@
     "runtime",
     "webpack",
     "sapper",
+    "components",
     "dist"
   ],
   "directories": {

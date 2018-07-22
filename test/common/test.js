@@ -100,11 +100,11 @@ describe('sapper', function() {
 			// Client scripts that should show up in the extraction directory.
 			const expectedClientRegexes = [
 				/client\/[^/]+\/main(\.\d+)?\.js/,
-				/client\/[^/]+\/page_index(\.\d+)?\.js/,
-				/client\/[^/]+\/page_about(\.\d+)?\.js/,
-				/client\/[^/]+\/page_blog_\$slug(\.\d+)?\.js/,
-				/client\/[^/]+\/page_blog(\.\d+)?\.js/,
-				/client\/[^/]+\/page_slow\$45preload(\.\d+)?\.js/,
+				/client\/[^/]+\/index(\.\d+)?\.js/,
+				/client\/[^/]+\/about(\.\d+)?\.js/,
+				/client\/[^/]+\/blog_\$slug(\.\d+)?\.js/,
+				/client\/[^/]+\/blog(\.\d+)?\.js/,
+				/client\/[^/]+\/slow\$45preload(\.\d+)?\.js/,
 			];
 			const allPages = walkSync(dest);
 

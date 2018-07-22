@@ -6,48 +6,48 @@ describe('create_routes', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_routes(path.join(__dirname, 'samples/basic'));
 
-		const page_index = { name: 'page_index', file: '_default.html' };
-		const page_about = { name: 'page_about', file: 'about.html' };
-		const page_blog = { name: 'page_blog', file: 'blog/index.html' };
-		const page_blog_index = { name: 'page_blog_index', file: 'blog/_default.html' };
-		const page_blog_$slug = { name: 'page_blog_$slug', file: 'blog/[slug].html' };
+		const index = { name: 'index', file: 'index.html' };
+		const about = { name: 'about', file: 'about.html' };
+		const _default_layout = { name: '_default_layout', file: '../../../../../default-layout.html' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html' };
 
 		assert.deepEqual(components, [
-			page_index,
-			page_about,
-			page_blog,
-			page_blog_index,
-			page_blog_$slug
+			index,
+			about,
+			_default_layout,
+			blog,
+			blog_$slug
 		]);
 
 		assert.deepEqual(pages, [
 			{
 				pattern: /^\/?$/,
 				parts: [
-					{ component: page_index, params: [] }
+					{ component: index, params: [] }
 				]
 			},
 
 			{
 				pattern: /^\/about\/?$/,
 				parts: [
-					{ component: page_about, params: [] }
+					{ component: about, params: [] }
 				]
 			},
 
 			{
 				pattern: /^\/blog\/?$/,
 				parts: [
-					{ component: page_blog, params: [] },
-					{ component: page_blog_index, params: [] }
+					{ component: _default_layout, params: [] },
+					{ component: blog, params: [] }
 				]
 			},
 
 			{
 				pattern: /^\/blog\/([^\/]+?)\/?$/,
 				parts: [
-					{ component: page_blog, params: [] },
-					{ component: page_blog_$slug, params: ['slug'] }
+					{ component: _default_layout, params: [] },
+					{ component: blog_$slug, params: ['slug'] }
 				]
 			}
 		]);
@@ -74,9 +74,9 @@ describe('create_routes', () => {
 
 		// had to remove ? and " because windows
 
-		// const quote = { name: 'page_$34', file: '".html' };
-		const hash = { name: 'page_$35', file: '#.html' };
-		// const question_mark = { name: 'page_$63', file: '?.html' };
+		// const quote = { name: '$34', file: '".html' };
+		const hash = { name: '$35', file: '#.html' };
+		// const question_mark = { name: '$63', file: '?.html' };
 
 		assert.deepEqual(components, [
 			// quote,
@@ -104,15 +104,17 @@ describe('create_routes', () => {
 	it('sorts routes correctly', () => {
 		const { pages } = create_routes(path.join(__dirname, 'samples/sorting'));
 
+		const layout = '../../../../../default-layout.html';
+
 		assert.deepEqual(pages.map(p => p.parts.map(part => part.component.file)), [
-			['_default.html'],
+			['index.html'],
 			['about.html'],
-			['post/index.html', 'post/_default.html'],
-			['post/index.html', 'post/bar.html'],
-			['post/index.html', 'post/foo.html'],
-			['post/index.html', 'post/f[xx].html'],
-			['post/index.html', 'post/[id([0-9-a-z]{3,})].html'],
-			['post/index.html', 'post/[id].html'],
+			[layout, 'post/index.html'],
+			[layout, 'post/bar.html'],
+			[layout, 'post/foo.html'],
+			[layout, 'post/f[xx].html'],
+			[layout, 'post/[id([0-9-a-z]{3,})].html'],
+			[layout, 'post/[id].html'],
 			['[wildcard].html']
 		]);
 	});

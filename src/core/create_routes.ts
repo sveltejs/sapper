@@ -4,9 +4,9 @@ import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 import { posixify } from './utils';
 
-const fallback_file = posixify(path.resolve(
+const default_layout_file = posixify(path.resolve(
 	__dirname,
-	'../fallback.html'
+	'../components/default-layout.html'
 ));
 
 export default function create_routes(cwd = locations.routes()) {
@@ -14,9 +14,9 @@ export default function create_routes(cwd = locations.routes()) {
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
 
-	const fallback = {
-		name: 'fallback',
-		file: path.relative(cwd, fallback_file)
+	const default_layout = {
+		name: '_default_layout',
+		file: path.relative(cwd, default_layout_file)
 	};
 
 	function walk(
@@ -64,9 +64,7 @@ export default function create_routes(cwd = locations.routes()) {
 			.sort(comparator);
 
 		items.forEach(item => {
-			if (item.basename[0] === '_') {
-				if (item.basename !== (item.is_dir ? '_default' : '_default.html')) return;
-			}
+			if (item.basename[0] === '_') return;
 
 			if (item.basename[0] === '.') {
 				if (item.file !== '.well-known') return;
@@ -101,18 +99,18 @@ export default function create_routes(cwd = locations.routes()) {
 			params.push(...item.parts.filter(p => p.dynamic).map(p => p.content));
 
 			if (item.is_dir) {
-				const index = path.join(dir, item.basename, 'index.html');
-				const component = fs.existsSync(index)
+				const index = path.join(dir, item.basename, '_layout.html');
+				const layout = fs.existsSync(index)
 					? {
-						name: `page_${get_slug(item.file)}`,
-						file: `${item.file}/index.html`
+						name: `${get_slug(item.file)}__layout`,
+						file: `${item.file}/_layout.html`
 					}
 					: null;
 
-				if (component) {
-					components.push(component);
-				} else if (components.indexOf(fallback) === -1) {
-					components.push(fallback);
+				if (layout) {
+					components.push(layout);
+				} else if (components.indexOf(default_layout) === -1) {
+					components.push(default_layout);
 				}
 
 				walk(
@@ -120,37 +118,15 @@ export default function create_routes(cwd = locations.routes()) {
 					segments,
 					params,
 					stack.concat({
-						component: component || fallback,
+						component: layout || default_layout,
 						params
 					})
 				);
 			}
 
-			else if (item.basename === 'index.html') {
-				const is_branch = items.some(other_item => {
-					if (other_item === item) return false;
-					if (other_item.basename[0] === '_') {
-						return other_item.basename === (other_item.is_dir ? '_default' : '_default.html');
-					}
-
-					if (other_item.is_dir) {
-						return fs.existsSync(path.join(dir, other_item.basename, 'index.html'));
-					}
-
-					return other_item.is_page;
-				});
-
-				if (!is_branch) {
-					pages.push({
-						pattern: get_pattern(parent_segments),
-						parts: stack
-					});
-				}
-			}
-
 			else if (item.is_page) {
 				const component = {
-					name: `page_${get_slug(item.file)}`,
+					name: get_slug(item.file),
 					file: item.file
 				};
 
@@ -160,7 +136,7 @@ export default function create_routes(cwd = locations.routes()) {
 				});
 
 				components.push(component);
-				if (item.basename === '_default.html') {
+				if (item.basename === 'index.html') {
 					pages.push({
 						pattern: get_pattern(parent_segments),
 						parts
@@ -183,6 +159,14 @@ export default function create_routes(cwd = locations.routes()) {
 			}
 		});
 	}
+
+	const root_file = path.join(cwd, '_layout.html');
+	const root = fs.existsSync(root_file)
+		? {
+			name: 'main',
+			file: '_layout.html'
+		}
+		: default_layout;
 
 	walk(cwd, [], [], []);
 
@@ -213,6 +197,7 @@ export default function create_routes(cwd = locations.routes()) {
 	});
 
 	return {
+		root,
 		components,
 		pages,
 		server_routes
@@ -226,9 +211,11 @@ type Part = {
 };
 
 function comparator(
-	a: { basename: string, parts: Part[], file: string, is_dir: boolean },
-	b: { basename: string, parts: Part[], file: string, is_dir: boolean }
+	a: { basename: string, parts: Part[], file: string, is_index: boolean },
+	b: { basename: string, parts: Part[], file: string, is_index: boolean }
 ) {
+	if (a.is_index !== b.is_index) return a.is_index ? -1 : 1;
+
 	const max = Math.max(a.parts.length, b.parts.length);
 
 	for (let i = 0; i < max; i += 1) {
