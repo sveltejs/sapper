@@ -1,0 +1,20 @@
+<span>x: {segment} {count}</span>
+<svelte:component this={child.component} {...child.props}/>
+
+<script>
+	import counts from './_counts.js';
+
+	export default {
+		preload() {
+			return {
+				count: counts.x += 1
+			};
+		},
+
+		oncreate() {
+			this.set({
+				segment: this.get().params.x
+			});
+		}
+	};
+</script>

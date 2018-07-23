@@ -12,6 +12,7 @@
     "runtime",
     "webpack",
     "sapper",
+    "components",
     "dist"
   ],
   "directories": {
@@ -67,7 +68,7 @@
     "cy:open": "cypress open",
     "test": "mocha --opts mocha.opts",
     "pretest": "npm run build",
-    "build": "rollup -c",
+    "build": "rm -rf dist && rollup -c",
     "dev": "rollup -cw",
     "prepublishOnly": "npm test",
     "update_mime_types": "curl http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types | grep -e \"^[^#]\" > src/middleware/mime-types.md"

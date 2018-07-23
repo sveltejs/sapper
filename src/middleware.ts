@@ -11,19 +11,46 @@ import sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();
 
-type RouteObject = {
-	id: string;
-	type: 'page' | 'route';
+type ServerRoute = {
 	pattern: RegExp;
+	handlers: Record<string, Handler>;
 	params: (match: RegExpMatchArray) => Record<string, string>;
-	module: Component;
-	error?: string;
+};
+
+type Page = {
+	pattern: RegExp;
+	parts: Array<{
+		name: string;
+		component: Component;
+		params?: (match: RegExpMatchArray) => Record<string, string>;
+	}>
+};
+
+type Manifest = {
+	server_routes: ServerRoute[];
+	pages: Page[];
+	root: Component;
+	error: Component;
 }
 
 type Handler = (req: Req, res: ServerResponse, next: () => void) => void;
 
 type Store = {
 	get: () => any
+};
+
+type Props = {
+	path: string;
+	query: Record<string, string>;
+	params: Record<string, string>;
+	error?: { message: string };
+	status?: number;
+	child: {
+		segment: string;
+		component: Component;
+		props: Props;
+	};
+	[key: string]: any;
 };
 
 interface Req extends ClientRequest {
@@ -33,6 +60,7 @@ interface Req extends ClientRequest {
 	method: string;
 	path: string;
 	params: Record<string, string>;
+	query: Record<string, string>;
 	headers: Record<string, string>;
 }
 
@@ -45,16 +73,18 @@ interface Component {
 	preload: (data: any) => any | Promise<any>
 }
 
-export default function middleware({ App, routes, store }: {
-	App: Component,
-	routes: RouteObject[],
-	store: (req: Req) => Store
+export default function middleware(opts: {
+	manifest: Manifest,
+	store: (req: Req) => Store,
+	routes?: any // legacy
 }) {
-	if (!App) {
-		throw new Error(`As of 0.12, you must supply an App component to Sapper — see https://sapper.svelte.technology/guide#0-11-to-0-12 for more information`);
+	if (opts.routes) {
+		throw new Error(`As of Sapper 0.15, opts.routes should be opts.manifest`);
 	}
 
 	const output = locations.dest();
+
+	const { manifest, store } = opts;
 
 	let emitted_basepath = false;
 
@@ -108,8 +138,8 @@ export default function middleware({ App, routes, store }: {
 			cache_control: 'max-age=31536000'
 		}),
 
-		get_server_route_handler(routes.server_routes),
-		get_page_handler(App, routes, store)
+		get_server_route_handler(manifest.server_routes),
+		get_page_handler(manifest, store)
 	].filter(Boolean));
 
 	return middleware;
@@ -152,8 +182,8 @@ function serve({ prefix, pathname, cache_control }: {
 	};
 }
 
-function get_server_route_handler(routes: RouteObject[]) {
-	function handle_route(route, req, res, next) {
+function get_server_route_handler(routes: ServerRoute[]) {
+	function handle_route(route: ServerRoute, req: Req, res: ServerResponse, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
 		const method = req.method.toLowerCase();
@@ -196,7 +226,6 @@ function get_server_route_handler(routes: RouteObject[]) {
 
 			const handle_next = (err?: Error) => {
 				if (err) {
-					console.error(err.stack);
 					res.statusCode = 500;
 					res.end(err.message);
 				} else {
@@ -215,7 +244,7 @@ function get_server_route_handler(routes: RouteObject[]) {
 		}
 	}
 
-	return function find_route(req: Req, res: ServerResponse, next) {
+	return function find_route(req: Req, res: ServerResponse, next: () => void) {
 		for (const route of routes) {
 			if (route.pattern.test(req.path)) {
 				handle_route(route, req, res, next);
@@ -227,7 +256,7 @@ function get_server_route_handler(routes: RouteObject[]) {
 	};
 }
 
-function get_page_handler(App: Component, routes: RouteObject[], store_getter: (req: Req) => Store) {
+function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store) {
 	const output = locations.dest();
 
 	const get_chunks = dev()
@@ -238,22 +267,37 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
-	const { server_routes, pages } = routes;
-	const error_route = routes.error;
+	const { server_routes, pages } = manifest;
+	const error_route = manifest.error;
 
-	function handle_route(route: RouteObject, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
-		req.params = error
-			? {}
-			: route.params(route.pattern.exec(req.path));
+	function handle_error(req: Req, res: ServerResponse, statusCode: number, error: Error | string) {
+		handle_page({
+			pattern: null,
+			parts: [
+				{ name: null, component: error_route }
+			]
+		}, req, res, statusCode, error);
+	}
 
-		const chunks: Record<string, string> = get_chunks();
+	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
+		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
+		const match = error ? null : page.pattern.exec(req.path);
+
+		const chunks: Record<string, string | string[]> = get_chunks();
 
 		res.setHeader('Content-Type', 'text/html');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
-		const link = []
-			.concat(chunks.main, chunks[route.id] || chunks._error) // TODO this is gross
+		let preloaded_chunks = Array.isArray(chunks.main) ? chunks.main : [chunks.main];
+		if (!error) {
+			page.parts.forEach(part => {
+				// using concat because it could be a string or an array. thanks webpack!
+				preloaded_chunks = preloaded_chunks.concat(chunks[part.name]);
+			});
+		}
+
+		const link = preloaded_chunks
 			.filter(file => !file.match(/\.map$/))
 			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 			.join(', ');
@@ -261,63 +305,77 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 		res.setHeader('Link', link);
 
 		const store = store_getter ? store_getter(req) : null;
-		const props = { params: req.params, query: req.query, path: req.path };
-
-		if (route.error) {
-			props.error = error instanceof Error ? error : { message: error };
-			props.status = status;
-		}
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
 
-		Promise.resolve(
-			route.handler.preload ? route.handler.preload.call({
-				redirect: (statusCode: number, location: string) => {
-					redirect = { statusCode, location };
-				},
-				error: (statusCode: number, message: Error | string) => {
-					preload_error = { statusCode, message };
-				},
-				fetch: (url: string, opts?: any) => {
-					const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/'  :''}`);
+		const preload_context = {
+			redirect: (statusCode: number, location: string) => {
+				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
+					throw new Error(`Conflicting redirects`);
+				}
+				redirect = { statusCode, location };
+			},
+			error: (statusCode: number, message: Error | string) => {
+				preload_error = { statusCode, message };
+			},
+			fetch: (url: string, opts?: any) => {
+				const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
-					if (opts) {
-						opts = Object.assign({}, opts);
+				if (opts) {
+					opts = Object.assign({}, opts);
 
-						const include_cookies = (
-							opts.credentials === 'include' ||
-							opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
-						);
+					const include_cookies = (
+						opts.credentials === 'include' ||
+						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+					);
 
-						if (include_cookies) {
-							const cookies: Record<string, string> = {};
-							if (!opts.headers) opts.headers = {};
+					if (include_cookies) {
+						const cookies: Record<string, string> = {};
+						if (!opts.headers) opts.headers = {};
 
-							const str = []
-								.concat(
-									cookie.parse(req.headers.cookie || ''),
-									cookie.parse(opts.headers.cookie || ''),
-									cookie.parse(res.getHeader('Set-Cookie') || '')
-								)
-								.map(cookie => {
-									return Object.keys(cookie)
-										.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
-										.join('; ');
-								})
-								.filter(Boolean)
-								.join(', ');
+						const str = []
+							.concat(
+								cookie.parse(req.headers.cookie || ''),
+								cookie.parse(opts.headers.cookie || ''),
+								cookie.parse(res.getHeader('Set-Cookie') || '')
+							)
+							.map(cookie => {
+								return Object.keys(cookie)
+									.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
+									.join('; ');
+							})
+							.filter(Boolean)
+							.join(', ');
 
-							opts.headers.cookie = str;
-						}
+						opts.headers.cookie = str;
 					}
+				}
 
-					return fetch(parsed.href, opts);
-				},
+				return fetch(parsed.href, opts);
+			},
 			store
-			}, req) : {}
-		).catch(err => {
+		};
+
+		const root_preloaded = manifest.root.preload
+			? manifest.root.preload.call(preload_context, {
+				path: req.path,
+				query: req.query,
+				params: {}
+			})
+			: {};
+
+		Promise.all([root_preloaded].concat(page.parts.map(part => {
+			return part.component.preload
+				? part.component.preload.call(preload_context, {
+					path: req.path,
+					query: req.query,
+					params: part.params ? part.params(match) : {}
+				})
+				: {};
+		}))).catch(err => {
 			preload_error = { statusCode: 500, message: err };
+			return []; // appease TypeScript
 		}).then(preloaded => {
 			if (redirect) {
 				res.statusCode = redirect.statusCode;
@@ -328,17 +386,52 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 			}
 
 			if (preload_error) {
-				handle_route(error_route, req, res, preload_error.statusCode, preload_error.message);
+				handle_error(req, res, preload_error.statusCode, preload_error.message);
 				return;
 			}
 
 			const serialized = {
-				preloaded: route.handler.preload && try_serialize(preloaded),
+				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
 				store: store && try_serialize(store.get())
 			};
-			Object.assign(props, preloaded);
 
-			const { html, head, css } = App.render({ Page: route.handler, props }, {
+			const segments = req.path.split('/').filter(Boolean);
+
+			const props: Props = {
+				path: req.path,
+				query: req.query,
+				params: {},
+				child: null
+			};
+
+			if (error) {
+				props.error = error instanceof Error ? error : { message: error };
+				props.status = status;
+			}
+
+			const data = Object.assign({}, props, preloaded[0], {
+				params: {},
+				child: {}
+			});
+
+			let level = data.child;
+			for (let i = 0; i < page.parts.length; i += 1) {
+				const part = page.parts[i];
+				const get_params = part.params || (() => ({}));
+
+				Object.assign(level, {
+					segment: segments[i],
+					component: part.component,
+					props: Object.assign({}, props, {
+						params: get_params(match)
+					}, preloaded[i + 1])
+				});
+
+				level.props.child = <Props["child"]>{};
+				level = level.props.child;
+			}
+
+			const { html, head, css } = manifest.root.render(data, {
 				store
 			});
 
@@ -349,6 +442,7 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 				.join('');
 
 			let inline_script = `__SAPPER__={${[
+				error && `error:1`,
 				`baseUrl: "${req.baseUrl}"`,
 				serialized.preloaded && `preloaded: ${serialized.preloaded}`,
 				serialized.store && `store: ${serialized.store}`
@@ -359,7 +453,7 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 				inline_script += `if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
 			}
 
-			const page = template()
+			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
 				.replace('%sapper.scripts%', () => `<script>${inline_script}</script>${scripts}`)
 				.replace('%sapper.html%', () => html)
@@ -367,7 +461,7 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 				.replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
 
 			res.statusCode = status;
-			res.end(page);
+			res.end(body);
 
 			if (process.send) {
 				process.send({
@@ -377,8 +471,16 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 					method: req.method,
 					status: 200,
 					type: 'text/html',
-					body: page
+					body
 				});
+			}
+		}).catch(err => {
+			if (error) {
+				// we encountered an error while rendering the error page — oops
+				res.statusCode = 500;
+				res.end(`<pre>${escape_html(err.message)}</pre>`);
+			} else {
+				handle_error(req, res, 500, err);
 			}
 		});
 	}
@@ -387,13 +489,13 @@ function get_page_handler(App: Component, routes: RouteObject[], store_getter: (
 		if (!server_routes.some(route => route.pattern.test(req.path))) {
 			for (const page of pages) {
 				if (page.pattern.test(req.path)) {
-					handle_route(page, req, res);
+					handle_page(page, req, res);
 					return;
 				}
 			}
 		}
 
-		handle_route(error_route, req, res, 404, 'Not found');
+		handle_error(req, res, 404, 'Not found');
 	};
 }
 
@@ -423,4 +525,16 @@ function try_serialize(data: any) {
 	} catch (err) {
 		return null;
 	}
+}
+
+function escape_html(html: string) {
+	const chars: Record<string, string> = {
+		'"' : 'quot',
+		"'": '#39',
+		'&': 'amp',
+		'<' : 'lt',
+		'>' : 'gt'
+	};
+
+	return html.replace(/["'&<>]/g, c => `&${chars[c]};`);
 }

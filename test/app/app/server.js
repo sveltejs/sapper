@@ -4,8 +4,7 @@ import express from 'express';
 import serve from 'serve-static';
 import sapper from '../../../dist/middleware.ts.js';
 import { Store } from 'svelte/store.js';
-import { routes } from './manifest/server.js';
-import App from './App.html'
+import { manifest } from './manifest/server.js';
 
 let pending;
 let ended;
@@ -87,8 +86,7 @@ const middlewares = [
 	},
 
 	sapper({
-		App,
-		routes,
+		manifest,
 		store: () => {
 			return new Store({
 				title: 'Stored title'

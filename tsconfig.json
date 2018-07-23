@@ -6,9 +6,9 @@
         "noEmitOnError": true,
         "allowJs": true,
         "lib": ["es5", "es6", "dom"],
-        "importHelpers": true
+        "importHelpers": true,
+        "target": "ES5"
     },
-    "target": "ES5",
     "include": [
         "src"
     ],

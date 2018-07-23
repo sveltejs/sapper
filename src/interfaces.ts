@@ -19,3 +19,24 @@ export type Template = {
 export type Store = {
 	get: () => any;
 };
+
+export type PageComponent = {
+	default?: boolean;
+	name: string;
+	file: string;
+};
+
+export type Page = {
+	pattern: RegExp;
+	parts: Array<{
+		component: PageComponent;
+		params: string[];
+	}>
+};
+
+export type ServerRoute = {
+	name: string;
+	pattern: RegExp;
+	file: string;
+	params: string[];
+};

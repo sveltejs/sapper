@@ -32,6 +32,8 @@ Nightmare.action('prefetchRoutes', function(done) {
 
 const cli = path.resolve(__dirname, '../../sapper');
 
+const wait = ms => new Promise(f => setTimeout(f, ms));
+
 describe('sapper', function() {
 	process.chdir(path.resolve(__dirname, '../app'));
 
@@ -41,7 +43,7 @@ describe('sapper', function() {
 	rimraf.sync('.sapper');
 	rimraf.sync('start.js');
 
-	this.timeout(process.env.CI ? 30000 : 10000);
+	this.timeout(process.env.CI ? 30000 : 15000);
 
 	// TODO reinstate dev tests
 	// run({
@@ -97,13 +99,12 @@ describe('sapper', function() {
 			];
 			// Client scripts that should show up in the extraction directory.
 			const expectedClientRegexes = [
-				/client\/[^/]+\/_(\.\d+)?\.js/,
-				/client\/[^/]+\/about(\.\d+)?\.js/,
-				/client\/[^/]+\/blog_\$slug\$(\.\d+)?\.js/,
-				/client\/[^/]+\/blog(\.\d+)?\.js/,
 				/client\/[^/]+\/main(\.\d+)?\.js/,
-				/client\/[^/]+\/show_url(\.\d+)?\.js/,
-				/client\/[^/]+\/slow_preload(\.\d+)?\.js/,
+				/client\/[^/]+\/index(\.\d+)?\.js/,
+				/client\/[^/]+\/about(\.\d+)?\.js/,
+				/client\/[^/]+\/blog_\$slug(\.\d+)?\.js/,
+				/client\/[^/]+\/blog(\.\d+)?\.js/,
+				/client\/[^/]+\/slow\$45preload(\.\d+)?\.js/,
 			];
 			const allPages = walkSync(dest);
 
@@ -266,8 +267,9 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(requests => {
 						assert.deepEqual(requests.map(r => r.url), []);
-						return nightmare.path();
 					})
+					.then(() => wait(100))
+					.then(() => nightmare.path())
 					.then(path => {
 						assert.equal(path, `${basepath}/about`);
 						return nightmare.title();
@@ -364,16 +366,6 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(title => {
 						assert.equal(title, 'About');
-					});
-			});
-
-			it('passes entire request object to preload', () => {
-				return nightmare
-					.goto(`${base}/show-url`)
-					.init()
-					.evaluate(() => document.querySelector('p').innerHTML)
-					.then(html => {
-						assert.equal(html, `URL is /show-url`);
 					});
 			});
 
@@ -629,6 +621,49 @@ function run({ mode, basepath = '' }) {
 						assert.equal(html.indexOf('%sapper'), -1);
 					});
 			});
+
+			it('only recreates components when necessary', () => {
+				return nightmare
+					.goto(`${base}/foo/bar/baz`)
+					.init()
+					.evaluate(() => document.querySelector('#sapper').textContent)
+					.then(text => {
+						assert.deepEqual(text.split('\n').filter(Boolean), [
+							'x: foo 1',
+							'y: bar 1',
+							'z: baz 1'
+						]);
+
+						return nightmare.click(`a`)
+							.then(() => wait(100))
+							.then(() => {
+								return nightmare.evaluate(() => document.querySelector('#sapper').textContent);
+							});
+					})
+					.then(text => {
+						assert.deepEqual(text.split('\n').filter(Boolean), [
+							'x: foo 1',
+							'y: bar 1',
+							'z: qux 2'
+						]);
+					});
+			});
+
+			it('uses a fallback index component if none is provided', () => {
+				return nightmare.goto(`${base}/missing-index/ok`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'it works');
+					});
+			});
+
+			it('runs preload in root component', () => {
+				return nightmare.goto(`${base}/preload-root`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'root preload function ran: true');
+					});
+			});
 		});
 
 		describe('headers', () => {
@@ -641,7 +676,7 @@ function run({ mode, basepath = '' }) {
 						'text/html'
 					);
 
-					const str = ['main', '_\\.\\d+']
+					const str = ['main', '.+?\\.\\d+']
 						.map(file => {
 							return `<${basepath}/client/[^/]+/${file}\\.js>;rel="preload";as="script"`;
 						})

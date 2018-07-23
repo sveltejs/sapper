@@ -11,15 +11,23 @@ export interface ComponentConstructor {
 };
 
 export interface Component {
+	set: (data: any) => void;
 	destroy: () => void;
 }
 
-export type Route = {
+export type Page = {
 	pattern: RegExp;
-	load: () => Promise<{ default: ComponentConstructor }>;
-	error?: boolean;
-	params?: (match: RegExpExecArray) => Record<string, string>;
-	ignore?: boolean;
+	parts: Array<{
+		component: () => Promise<{ default: ComponentConstructor }>;
+		params?: (match: RegExpExecArray) => Record<string, string>;
+	}>;
+};
+
+export type Manifest = {
+	ignore: RegExp[];
+	root: ComponentConstructor;
+	error: () => Promise<{ default: ComponentConstructor }>;
+	pages: Page[]
 };
 
 export type ScrollPosition = {
@@ -29,6 +37,13 @@ export type ScrollPosition = {
 
 export type Target = {
 	url: URL;
-	route: Route;
-	props: RouteData;
+	path: string;
+	page: Page;
+	match: RegExpExecArray;
+	query: Record<string, string | true>;
+};
+
+export type Redirect = {
+	statusCode: number;
+	location: string;
 };

@@ -1,186 +1,306 @@
+import * as fs from 'fs';
 import * as path from 'path';
-import glob from 'glob';
 import { locations } from '../config';
-import { Route } from '../interfaces';
+import { Page, PageComponent, ServerRoute } from '../interfaces';
+import { posixify } from './utils';
 
-export default function create_routes({
-	files
-} = {
-	files: glob.sync('**/*.*', {
-		cwd: locations.routes(),
-		dot: true,
-		nodir: true
-	})
-}) {
-	const all_routes = files
-		.filter((file: string) => !/(^|\/|\\)(_(?!error\.html)|\.(?!well-known))/.test(file))
-		.map((file: string) => {
-			if (/]\[/.test(file)) {
-				throw new Error(`Invalid route ${file} — parameters must be separated`);
-			}
+const default_layout_file = posixify(path.resolve(
+	__dirname,
+	'../components/default-layout.html'
+));
 
-			if (file === '4xx.html' || file === '5xx.html') {
-				throw new Error('As of Sapper 0.14, 4xx.html and 5xx.html should be replaced with _error.html');
-			}
+export default function create_routes(cwd = locations.routes()) {
+	const components: PageComponent[] = [];
+	const pages: Page[] = [];
+	const server_routes: ServerRoute[] = [];
 
-			const base = file.replace(/\.[^/.]+$/, '');
-			const parts = base.split('/'); // glob output is always posix-style
-			if (/^index(\..+)?/.test(parts[parts.length - 1])) {
-				const part = parts.pop();
-				if (parts.length > 0) parts[parts.length - 1] += part.slice(5);
-			}
+	const default_layout: PageComponent = {
+		default: true,
+		name: '_default_layout',
+		file: null
+	};
 
-			const id = (
-				parts.join('_').replace(/[[\]]/g, '$').replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '_')
-			) || '_';
+	function walk(
+		dir: string,
+		parent_segments: Part[][],
+		parent_params: string[],
+		stack: Array<{
+			component: PageComponent,
+			params: string[]
+		}>
+	) {
+		const items = fs.readdirSync(dir)
+			.map(basename => {
+				const resolved = path.join(dir, basename);
+				const file = path.relative(cwd, resolved);
+				const is_dir = fs.statSync(resolved).isDirectory();
 
-			const type = file.endsWith('.html') ? 'page' : 'route';
+				const segment = is_dir
+					? basename
+					: basename.slice(0, -path.extname(basename).length);
 
-			const params: string[] = [];
-			const match_patterns: Record<string, string> = {};
-			const param_pattern = /\[([^\(\]]+)(?:\((.+?)\))?\]/g;
+				const parts = get_parts(segment);
+				const is_index = is_dir ? false : basename.startsWith('index.');
+				const is_page = path.extname(basename) === '.html';
 
-			let match;
-			while (match = param_pattern.exec(base)) {
-				params.push(match[1]);
-				if (typeof match[2] !== 'undefined') {
-					if (/[\(\)\?\:]/.exec(match[2])) {
-						throw new Error('Sapper does not allow (, ), ? or : in RegExp routes yet');
+				parts.forEach(part => {
+					if (/\]\[/.test(part.content)) {
+						throw new Error(`Invalid route ${file} — parameters must be separated`);
 					}
-					// Make a map of the regexp patterns
-					match_patterns[match[1]] = `(${match[2]}?)`;
-				}
-			}
 
-			// TODO can we do all this with sub-parts? or does
-			// nesting make that impossible?
-			let pattern_string = '';
-			let i = parts.length;
-			let nested = true;
-			while (i--) {
-				const part = encodeURI(parts[i].normalize()).replace(/\?/g, '%3F').replace(/#/g, '%23').replace(/%5B/g, '[').replace(/%5D/g, ']');
-				const dynamic = ~part.indexOf('[');
-
-				if (dynamic) {
-					// Get keys from part and replace with stored match patterns
-					const keys = part.replace(/\(.*?\)/, '').split(/[\[\]]/).filter((x, i) => { if (i % 2) return x });
-					let matcher = part;
-					keys.forEach(k => {
-						const key_pattern = new RegExp('\\[' + k + '(?:\\((.+?)\\))?\\]');
-						matcher = matcher.replace(key_pattern, match_patterns[k] || `([^/]+?)`);
-					})
-					pattern_string = (nested && type === 'page') ? `(?:\\/${matcher}${pattern_string})?` : `\\/${matcher}${pattern_string}`;
-				} else {
-					nested = false;
-					pattern_string = `\\/${part}${pattern_string}`;
-				}
-			}
-
-			const pattern = new RegExp(`^${pattern_string}\\/?$`);
-
-			const test = (url: string) => pattern.test(url);
-
-			const exec = (url: string) => {
-				const match = pattern.exec(url);
-				if (!match) return;
-
-				const result: Record<string, string> = {};
-				params.forEach((param, i) => {
-					result[param] = match[i + 1];
+					if (part.qualifier && /[\(\)\?\:]/.test(part.qualifier.slice(1, -1))) {
+						throw new Error(`Invalid route ${file} — cannot use (, ), ? or : in route qualifiers`);
+					}
 				});
 
-				return result;
-			};
+				return {
+					basename,
+					parts,
+					file: posixify(file),
+					is_dir,
+					is_index,
+					is_page
+				};
+			})
+			.sort(comparator);
 
-			return {
-				id,
-				base,
-				type,
-				file,
-				pattern,
-				test,
-				exec,
-				parts,
-				params
-			};
+		items.forEach(item => {
+			if (item.basename[0] === '_') return;
+
+			if (item.basename[0] === '.') {
+				if (item.file !== '.well-known') return;
+			}
+
+			const segments = parent_segments.slice();
+
+			if (item.is_index && segments.length > 0) {
+				const last_segment = segments[segments.length - 1].slice();
+				const suffix = item.basename
+					.slice(0, -path.extname(item.basename).length).
+					replace('index', '');
+
+				if (suffix) {
+					const last_part = last_segment[last_segment.length - 1];
+					if (last_part.dynamic) {
+						last_segment.push({ dynamic: false, content: suffix });
+					} else {
+						last_segment[last_segment.length - 1] = {
+							dynamic: false,
+							content: `${last_part.content}${suffix}`
+						};
+					}
+
+					segments[segments.length - 1] = last_segment;
+				}
+			} else {
+				segments.push(item.parts);
+			}
+
+			const params = parent_params.slice();
+			params.push(...item.parts.filter(p => p.dynamic).map(p => p.content));
+
+			if (item.is_dir) {
+				const index = path.join(dir, item.basename, '_layout.html');
+				const layout = fs.existsSync(index)
+					? {
+						name: `${get_slug(item.file)}__layout`,
+						file: `${item.file}/_layout.html`
+					}
+					: null;
+
+				if (layout) {
+					components.push(layout);
+				} else if (components.indexOf(default_layout) === -1) {
+					components.push(default_layout);
+				}
+
+				walk(
+					path.join(dir, item.basename),
+					segments,
+					params,
+					stack.concat({
+						component: layout || default_layout,
+						params
+					})
+				);
+			}
+
+			else if (item.is_page) {
+				const component = {
+					name: get_slug(item.file),
+					file: item.file
+				};
+
+				const parts = stack.concat({
+					component,
+					params
+				});
+
+				components.push(component);
+				if (item.basename === 'index.html') {
+					pages.push({
+						pattern: get_pattern(parent_segments),
+						parts
+					});
+				} else {
+					pages.push({
+						pattern: get_pattern(segments),
+						parts
+					});
+				}
+			}
+
+			else {
+				server_routes.push({
+					name: `route_${get_slug(item.file)}`,
+					pattern: get_pattern(segments),
+					file: item.file,
+					params: params
+				});
+			}
 		});
+	}
 
-	const pages = all_routes
-		.filter(r => r.type === 'page')
-		.sort(comparator);
+	const root_file = path.join(cwd, '_layout.html');
+	const root = fs.existsSync(root_file)
+		? {
+			name: 'main',
+			file: '_layout.html'
+		}
+		: default_layout;
 
-	const server_routes = all_routes
-		.filter(r => r.type === 'route')
-		.sort(comparator);
+	walk(cwd, [], [], []);
 
-	return { pages, server_routes };
+	// check for clashes
+	const seen_pages: Map<string, Page> = new Map();
+	pages.forEach(page => {
+		const pattern = page.pattern.toString();
+		if (seen_pages.has(pattern)) {
+			const file = page.parts.pop().component.file;
+			const other_page = seen_pages.get(pattern);
+			const other_file = other_page.parts.pop().component.file;
+
+			throw new Error(`The ${other_file} and ${file} pages clash`);
+		}
+
+		seen_pages.set(pattern, page);
+	});
+
+	const seen_routes: Map<string, ServerRoute> = new Map();
+	server_routes.forEach(route => {
+		const pattern = route.pattern.toString();
+		if (seen_routes.has(pattern)) {
+			const other_route = seen_routes.get(pattern);
+			throw new Error(`The ${other_route.file} and ${route.file} routes clash`);
+		}
+
+		seen_routes.set(pattern, route);
+	});
+
+	return {
+		root,
+		components,
+		pages,
+		server_routes
+	};
 }
 
-function comparator(a, b) {
-	if (a.parts[0] === '_error') return -1;
-	if (b.parts[0] === '_error') return 1;
+type Part = {
+	content: string;
+	dynamic: boolean;
+	qualifier?: string;
+};
+
+function comparator(
+	a: { basename: string, parts: Part[], file: string, is_index: boolean },
+	b: { basename: string, parts: Part[], file: string, is_index: boolean }
+) {
+	if (a.is_index !== b.is_index) return a.is_index ? -1 : 1;
 
 	const max = Math.max(a.parts.length, b.parts.length);
 
 	for (let i = 0; i < max; i += 1) {
-		const a_part = a.parts[i];
-		const b_part = b.parts[i];
+		const a_sub_part = a.parts[i];
+		const b_sub_part = b.parts[i];
 
-		if (!a_part) return -1;
-		if (!b_part) return 1;
+		if (!a_sub_part) return 1; // b is more specific, so goes first
+		if (!b_sub_part) return -1;
 
-		const a_sub_parts = get_sub_parts(a_part);
-		const b_sub_parts = get_sub_parts(b_part);
-		const max = Math.max(a_sub_parts.length, b_sub_parts.length);
+		if (a_sub_part.dynamic !== b_sub_part.dynamic) {
+			return a_sub_part.dynamic ? 1 : -1;
+		}
 
-		for (let i = 0; i < max; i += 1) {
-			const a_sub_part = a_sub_parts[i];
-			const b_sub_part = b_sub_parts[i];
+		if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
+			return (
+				(b_sub_part.content.length - a_sub_part.content.length) ||
+				(a_sub_part.content < b_sub_part.content ? -1 : 1)
+			);
+		}
 
-			if (!a_sub_part) return 1; // b is more specific, so goes first
-			if (!b_sub_part) return -1;
+		// If both parts dynamic, check for regexp patterns
+		if (a_sub_part.dynamic && b_sub_part.dynamic) {
+			const regexp_pattern = /\((.*?)\)/;
+			const a_match = regexp_pattern.exec(a_sub_part.content);
+			const b_match = regexp_pattern.exec(b_sub_part.content);
 
-			if (a_sub_part.dynamic !== b_sub_part.dynamic) {
-				return a_sub_part.dynamic ? 1 : -1;
+			if (!a_match && b_match) {
+				return 1; // No regexp, so less specific than b
 			}
-
-			if (!a_sub_part.dynamic && a_sub_part.content !== b_sub_part.content) {
-				return (
-					(b_sub_part.content.length - a_sub_part.content.length) ||
-					(a_sub_part.content < b_sub_part.content ? -1 : 1)
-				);
+			if (!b_match && a_match) {
+				return -1;
 			}
-
-			// If both parts dynamic, check for regexp patterns
-			if (a_sub_part.dynamic && b_sub_part.dynamic) {
-				const regexp_pattern = /\((.*?)\)/;
-				const a_match = regexp_pattern.exec(a_sub_part.content);
-				const b_match = regexp_pattern.exec(b_sub_part.content);
-
-				if (!a_match && b_match) {
-					return 1; // No regexp, so less specific than b
-				}
-				if (!b_match && a_match) {
-					return -1;
-				}
-				if (a_match && b_match && a_match[1] !== b_match[1]) {
-					return b_match[1].length - a_match[1].length;
-				}
+			if (a_match && b_match && a_match[1] !== b_match[1]) {
+				return b_match[1].length - a_match[1].length;
 			}
 		}
 	}
-
-	throw new Error(`The ${a.base} and ${b.base} routes clash`);
 }
 
-function get_sub_parts(part: string) {
+function get_parts(part: string): Part[] {
 	return part.split(/\[(.+)\]/)
-		.map((content, i) => {
-			if (!content) return null;
+		.map((str, i) => {
+			if (!str) return null;
+			const dynamic = i % 2 === 1;
+
+			const [, content, qualifier] = dynamic
+				? /([^(]+)(\(.+\))?$/.exec(str)
+				: [, str, null];
+
 			return {
 				content,
-				dynamic: i % 2 === 1
+				dynamic,
+				qualifier
 			};
 		})
 		.filter(Boolean);
+}
+
+function get_slug(file: string) {
+	return file
+		.replace(/[\\\/]index/, '')
+		.replace(/_default([\/\\index])?\.html$/, 'index')
+		.replace(/[\/\\]/g, '_')
+		.replace(/\.\w+$/, '')
+		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
+		.replace(/[^a-zA-Z0-9_$]/g, c => {
+			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
+		});
+}
+
+function get_pattern(segments: Part[][]) {
+	return new RegExp(
+		`^` +
+		segments.map(segment => {
+			return '\\/' + segment.map(part => {
+				return part.dynamic
+					? part.qualifier || '([^\\/]+?)'
+					: encodeURI(part.content.normalize())
+						.replace(/\?/g, '%3F')
+						.replace(/#/g, '%23')
+						.replace(/%5B/g, '[')
+						.replace(/%5D/g, ']');
+			}).join('');
+		}).join('') +
+		'\\\/?$'
+	);
 }
