@@ -292,6 +292,8 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 		let preloaded_chunks = Array.isArray(chunks.main) ? chunks.main : [chunks.main];
 		if (!error) {
 			page.parts.forEach(part => {
+				if (!part) return;
+
 				// using concat because it could be a string or an array. thanks webpack!
 				preloaded_chunks = preloaded_chunks.concat(chunks[part.name]);
 			});
@@ -366,6 +368,8 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 			: {};
 
 		Promise.all([root_preloaded].concat(page.parts.map(part => {
+			if (!part) return null;
+
 			return part.component.preload
 				? part.component.preload.call(preload_context, {
 					path: req.path,
@@ -411,23 +415,28 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 
 			const data = Object.assign({}, props, preloaded[0], {
 				params: {},
-				child: {}
+				child: {
+					segment: segments[0]
+				}
 			});
 
 			let level = data.child;
 			for (let i = 0; i < page.parts.length; i += 1) {
 				const part = page.parts[i];
+				if (!part) continue;
+
 				const get_params = part.params || (() => ({}));
 
 				Object.assign(level, {
-					segment: segments[i],
 					component: part.component,
 					props: Object.assign({}, props, {
 						params: get_params(match)
 					}, preloaded[i + 1])
 				});
 
-				level.props.child = <Props["child"]>{};
+				level.props.child = <Props["child"]>{
+					segment: segments[i + 1]
+				};
 				level = level.props.child;
 			}
 

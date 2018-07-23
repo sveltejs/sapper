@@ -36,6 +36,7 @@ describe('create_routes', () => {
 			{
 				pattern: /^\/blog\/?$/,
 				parts: [
+					null,
 					{ component: blog, params: [] }
 				]
 			},
@@ -43,6 +44,7 @@ describe('create_routes', () => {
 			{
 				pattern: /^\/blog\/([^\/]+?)\/?$/,
 				parts: [
+					null,
 					{ component: blog_$slug, params: ['slug'] }
 				]
 			}
@@ -100,15 +102,15 @@ describe('create_routes', () => {
 	it('sorts routes correctly', () => {
 		const { pages } = create_routes(path.join(__dirname, 'samples/sorting'));
 
-		assert.deepEqual(pages.map(p => p.parts.map(part => part.component.file)), [
+		assert.deepEqual(pages.map(p => p.parts.map(part => part && part.component.file)), [
 			['index.html'],
 			['about.html'],
-			['post/index.html'],
-			['post/bar.html'],
-			['post/foo.html'],
-			['post/f[xx].html'],
-			['post/[id([0-9-a-z]{3,})].html'],
-			['post/[id].html'],
+			[null, 'post/index.html'],
+			[null, 'post/bar.html'],
+			[null, 'post/foo.html'],
+			[null, 'post/f[xx].html'],
+			[null, 'post/[id([0-9-a-z]{3,})].html'],
+			[null, 'post/[id].html'],
 			['[wildcard].html']
 		]);
 	});

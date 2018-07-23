@@ -79,6 +79,8 @@ function generate_client(
 					pattern: ${page.pattern},
 					parts: [
 						${page.parts.map(part => {
+							if (part === null) return 'null';
+
 							if (part.params.length > 0) {
 								const props = part.params.map((param, i) => `${param}: match[${i + 1}]`);
 								return `{ component: ${part.component.name}, params: match => ({ ${props.join(', ')} }) }`;
@@ -150,6 +152,8 @@ function generate_server(
 					pattern: ${page.pattern},
 					parts: [
 						${page.parts.map(part => {
+							if (part === null) return 'null';
+
 							const props = [
 								`name: "${part.component.name}"`,
 								`component: ${part.component.name}`
