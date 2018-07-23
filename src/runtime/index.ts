@@ -233,7 +233,7 @@ function prepare_page(target: Target): Promise<{
 			path,
 			preloading: false,
 			child: Object.assign({}, root_props.child, {
-				segment: new_segments[0]
+				segment: segments[0]
 			})
 		};
 		if (changed(query, root_props.query)) data.query = query;
@@ -260,12 +260,11 @@ function prepare_page(target: Target): Promise<{
 					params: get_params(target.match),
 				}, results[i].preloaded);
 
-				level.props.child = {
-					segment: new_segments[i + 1]
-				};
+				level.props.child = {};
 			}
 
 			level = level.props.child;
+			level.segment = segments[i + 1];
 		}
 
 		return { data, nullable_depth };

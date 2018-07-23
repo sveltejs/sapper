@@ -630,7 +630,8 @@ function run({ mode, basepath = '' }) {
 					.then(text => {
 						assert.deepEqual(text.split('\n').filter(Boolean), [
 							'y: bar 1',
-							'z: baz 1'
+							'z: baz 1',
+							'child segment: baz'
 						]);
 
 						return nightmare.click(`a`)
@@ -642,7 +643,8 @@ function run({ mode, basepath = '' }) {
 					.then(text => {
 						assert.deepEqual(text.split('\n').filter(Boolean), [
 							'y: bar 1',
-							'z: qux 2'
+							'z: qux 2',
+							'child segment: qux'
 						]);
 					});
 			});
