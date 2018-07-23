@@ -4,8 +4,9 @@ const { create_routes } = require('../../../dist/core.ts.js');
 
 
 const _default_layout = {
+	default: true,
 	name: '_default_layout',
-	file: '../../../../../components/default-layout.html'.split('/').join(path.sep)
+	file: null
 };
 
 describe('create_routes', () => {
