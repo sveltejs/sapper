@@ -629,7 +629,6 @@ function run({ mode, basepath = '' }) {
 					.evaluate(() => document.querySelector('#sapper').textContent)
 					.then(text => {
 						assert.deepEqual(text.split('\n').filter(Boolean), [
-							'x: foo 1',
 							'y: bar 1',
 							'z: baz 1'
 						]);
@@ -642,7 +641,6 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(text => {
 						assert.deepEqual(text.split('\n').filter(Boolean), [
-							'x: foo 1',
 							'y: bar 1',
 							'z: qux 2'
 						]);

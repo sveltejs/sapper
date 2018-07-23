@@ -101,27 +101,21 @@ export default function create_routes(cwd = locations.routes()) {
 
 			if (item.is_dir) {
 				const index = path.join(dir, item.basename, '_layout.html');
-				const layout = fs.existsSync(index)
-					? {
-						name: `${get_slug(item.file)}__layout`,
-						file: `${item.file}/_layout.html`
-					}
-					: null;
 
-				if (layout) {
-					components.push(layout);
-				} else if (components.indexOf(default_layout) === -1) {
-					components.push(default_layout);
-				}
+				const component = fs.existsSync(index) && {
+					name: `${get_slug(item.file)}__layout`,
+					file: `${item.file}/_layout.html`
+				};
+
+				if (component) components.push(component);
 
 				walk(
 					path.join(dir, item.basename),
 					segments,
 					params,
-					stack.concat({
-						component: layout || default_layout,
-						params
-					})
+					component
+						? stack.concat({ component, params })
+						: stack.concat(null)
 				);
 			}
 
