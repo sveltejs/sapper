@@ -14,6 +14,10 @@ export function create_main_manifests({ routes, dev_port }: {
 	const client_manifest = generate_client(routes, path_to_routes, dev_port);
 	const server_manifest = generate_server(routes, path_to_routes);
 
+	write_if_changed(
+		`${locations.app()}/manifest/default-layout.html`,
+		`<svelte:component this={child.component} {...child.props}/>`
+	);
 	write_if_changed(`${locations.app()}/manifest/client.js`, client_manifest);
 	write_if_changed(`${locations.app()}/manifest/server.js`, server_manifest);
 }
@@ -63,7 +67,7 @@ function generate_client(
 
 		${routes.components.map(component =>
 		`const ${component.name} = () =>
-			import(/* webpackChunkName: "${component.name}" */ '${posixify(`${path_to_routes}/${component.file}`)}');`)
+			import(/* webpackChunkName: "${component.name}" */ '${get_file(path_to_routes, component)}');`)
 		.join('\n')}
 
 		export const manifest = {
@@ -89,7 +93,10 @@ function generate_client(
 			root,
 
 			error
-		};`.replace(/^\t\t/gm, '').trim();
+		};
+
+		// this is included for legacy reasons
+		export const routes = {};`.replace(/^\t\t/gm, '').trim();
 
 	if (dev()) {
 		const sapper_dev_client = posixify(
@@ -116,7 +123,7 @@ function generate_server(
 		routes.server_routes.map(route =>
 			`import * as ${route.name} from '${posixify(`${path_to_routes}/${route.file}`)}';`),
 		routes.components.map(component =>
-			`import ${component.name} from '${posixify(`${path_to_routes}/${component.file}`)}';`),
+			`import ${component.name} from '${get_file(path_to_routes, component)}';`),
 		`import root from '${posixify(`${path_to_routes}/${routes.root.file}`)}';`,
 		`import error from '${posixify(`${path_to_routes}/_error.html`)}';`
 	);
@@ -162,7 +169,18 @@ function generate_server(
 			root,
 
 			error
-		};`.replace(/^\t\t/gm, '').trim();
+		};
+
+		// this is included for legacy reasons
+		export const routes = {};`.replace(/^\t\t/gm, '').trim();
 
 	return code;
+}
+
+function get_file(path_to_routes: string, component: PageComponent) {
+	if (component.default) {
+		return `./default-layout.html`;
+	}
+
+	return posixify(`${path_to_routes}/${component.file}`);
 }

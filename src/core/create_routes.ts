@@ -14,9 +14,10 @@ export default function create_routes(cwd = locations.routes()) {
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
 
-	const default_layout = {
+	const default_layout: PageComponent = {
+		default: true,
 		name: '_default_layout',
-		file: path.relative(cwd, default_layout_file)
+		file: null
 	};
 
 	function walk(
