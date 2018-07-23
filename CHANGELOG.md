@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.15.1
+
+* Prevent confusing error when no root layout is specified
+
 ## 0.15.0
 
 * Nested routes (consult [migration guide](https://sapper.svelte.technology/guide#0-14-to-0-15) and docs on [layouts](https://sapper.svelte.technology/guide#layouts)) ([#262](https://github.com/sveltejs/sapper/issues/262))
