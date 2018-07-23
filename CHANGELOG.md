@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.15.2
+
+* Collapse component chains where no intermediate layout component is specified ([#312](https://github.com/sveltejs/sapper/issues/312))
+
 ## 0.15.1
 
 * Prevent confusing error when no root layout is specified
