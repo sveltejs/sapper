@@ -73,9 +73,18 @@ interface Component {
 	preload: (data: any) => any | Promise<any>
 }
 
+const IGNORE = '__SAPPER__IGNORE__';
+function toIgnore(uri: string, val: any) {
+	if (Array.isArray(val)) return val.some(x => toIgnore(uri, x));
+	if (val instanceof RegExp) return val.test(uri);
+	if (typeof val === 'function') return val(uri);
+	return uri.startsWith(val.charCodeAt(0) === 47 ? val : `/${val}`);
+}
+
 export default function middleware(opts: {
 	manifest: Manifest,
 	store: (req: Req) => Store,
+	ignore?: any,
 	routes?: any // legacy
 }) {
 	if (opts.routes) {
@@ -84,12 +93,19 @@ export default function middleware(opts: {
 
 	const output = locations.dest();
 
-	const { manifest, store } = opts;
+	const { manifest, store, ignore } = opts;
 
 	let emitted_basepath = false;
 
 	const middleware = compose_handlers([
+		ignore && ((req: Req, res: ServerResponse, next: () => void) => {
+			req[IGNORE] = toIgnore(req.path, ignore);
+			next();
+		}),
+
 		(req: Req, res: ServerResponse, next: () => void) => {
+			if (req[IGNORE]) return next();
+
 			if (req.baseUrl === undefined) {
 				let { originalUrl } = req;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
@@ -163,6 +179,8 @@ function serve({ prefix, pathname, cache_control }: {
 		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(output, file)))).get(file)
 
 	return (req: Req, res: ServerResponse, next: () => void) => {
+		if (req[IGNORE]) return next();
+
 		if (filter(req)) {
 			const type = lookup(req.path);
 
@@ -245,6 +263,8 @@ function get_server_route_handler(routes: ServerRoute[]) {
 	}
 
 	return function find_route(req: Req, res: ServerResponse, next: () => void) {
+		if (req[IGNORE]) return next();
+
 		for (const route of routes) {
 			if (route.pattern.test(req.path)) {
 				handle_route(route, req, res, next);
@@ -494,7 +514,9 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 		});
 	}
 
-	return function find_route(req: Req, res: ServerResponse) {
+	return function find_route(req: Req, res: ServerResponse, next: () => void) {
+		if (req[IGNORE]) return next();
+
 		if (!server_routes.some(route => route.pattern.test(req.path))) {
 			for (const page of pages) {
 				if (page.pattern.test(req.path)) {
