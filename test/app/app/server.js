@@ -91,8 +91,14 @@ const middlewares = [
 			return new Store({
 				title: 'Stored title'
 			});
-		}
-	})
+		},
+		ignore: [
+			/foo/i,
+			'/buzz',
+			'fizz',
+			x => x === '/hello'
+		]
+	}),
 ];
 
 if (BASEPATH) {
@@ -100,5 +106,9 @@ if (BASEPATH) {
 } else {
 	app.use(...middlewares);
 }
+
+['foobar', 'buzz', 'fizzer', 'hello'].forEach(uri => {
+	app.get('/'+uri, (req, res) => res.end(uri));
+});
 
 app.listen(PORT);
