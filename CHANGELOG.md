@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.15.3
+
+* Crawl pages in parallel when exporting ([#329](https://github.com/sveltejs/sapper/pull/329))
+* Don't minify inline JS when exporting ([#328](https://github.com/sveltejs/sapper/pull/328))
+
 ## 0.15.2
 
 * Collapse component chains where no intermediate layout component is specified ([#312](https://github.com/sveltejs/sapper/issues/312))
