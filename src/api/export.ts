@@ -118,9 +118,7 @@ async function execute(emitter: EventEmitter, {
 					}
 				});
 
-				for (const url of urls) {
-					await handle(url);
-				}
+				await Promise.all(urls.map(handle));
 			}
 		}
 	}
