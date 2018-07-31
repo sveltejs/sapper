@@ -93,7 +93,7 @@ const middlewares = [
 			});
 		},
 		ignore: [
-			/foo/i,
+			/foobar/i,
 			'/buzz',
 			'fizz',
 			x => x === '/hello'
