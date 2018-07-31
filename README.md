@@ -31,6 +31,44 @@ npm run build
 npm start
 ```
 
+## Development
+
+Pull requests are encouraged and always welcome. [Pick an issue](https://github.com/sveltejs/sapper/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) and help us out!
+
+To install and work on Sapper locally:
+
+```bash
+git clone git@github.com:sveltejs/sapper.git
+cd sapper
+npm install
+npm run dev
+```
+
+### Linking to a Live Project
+
+You can make changes locally to Sapper and test it against a local Sapper project. For a quick project that takes almost no setup, use the default [sapper-template](https://github.com/sveltejs/sapper-template) project. Instruction on setup are found in that project repository.
+
+To link Sapper to your project, from the root of your local Sapper git checkout:
+
+```bash
+cd sapper
+npm link
+```
+
+Then, to link from `sapper-template` (or any other given project):
+
+```bash
+cd sapper-template
+npm link sapper
+```
+
+You should be good to test changes locally.
+
+### Running Tests
+
+```bash
+npm run test
+```
 
 ## License
 
