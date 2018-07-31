@@ -8,7 +8,7 @@ export function minify_html(html: string) {
 		decodeEntities: true,
 		html5: true,
 		minifyCSS: true,
-		minifyJS: true,
+		minifyJS: false,
 		removeAttributeQuotes: true,
 		removeComments: true,
 		removeOptionalTags: true,

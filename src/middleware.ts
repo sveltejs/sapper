@@ -452,9 +452,9 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 
 			let inline_script = `__SAPPER__={${[
 				error && `error:1`,
-				`baseUrl: "${req.baseUrl}"`,
-				serialized.preloaded && `preloaded: ${serialized.preloaded}`,
-				serialized.store && `store: ${serialized.store}`
+				`baseUrl:"${req.baseUrl}"`,
+				serialized.preloaded && `preloaded:${serialized.preloaded}`,
+				serialized.store && `store:${serialized.store}`
 			].filter(Boolean).join(',')}};`;
 
 			const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));

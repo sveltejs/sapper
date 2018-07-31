@@ -23,7 +23,7 @@
     "cheerio": "^1.0.0-rc.2",
     "chokidar": "^2.0.3",
     "cookie": "^0.3.1",
-    "devalue": "^1.0.1",
+    "devalue": "^1.0.4",
     "glob": "^7.1.2",
     "html-minifier": "^3.5.16",
     "mkdirp": "^0.5.1",
