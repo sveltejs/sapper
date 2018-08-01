@@ -477,6 +477,42 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
+			// Ignores are meant for top-level escape.
+			// ~> Sapper **should** own the entire {basepath} when designated.
+			if (!basepath) {
+				it('respects `options.ignore` values (RegExp)', () => {
+					return nightmare.goto(`${base}/foobar`)
+						.evaluate(() => document.documentElement.textContent)
+						.then(text => {
+							assert.equal(text, 'foobar');
+						});
+				});
+
+				it('respects `options.ignore` values (String #1)', () => {
+					return nightmare.goto(`${base}/buzz`)
+						.evaluate(() => document.documentElement.textContent)
+						.then(text => {
+							assert.equal(text, 'buzz');
+						});
+				});
+
+				it('respects `options.ignore` values (String #2)', () => {
+					return nightmare.goto(`${base}/fizzer`)
+						.evaluate(() => document.documentElement.textContent)
+						.then(text => {
+							assert.equal(text, 'fizzer');
+						});
+				});
+
+				it('respects `options.ignore` values (Function)', () => {
+					return nightmare.goto(`${base}/hello`)
+						.evaluate(() => document.documentElement.textContent)
+						.then(text => {
+							assert.equal(text, 'hello');
+						});
+				});
+			}
+
 			it('does not attempt client-side navigation to server routes', () => {
 				return nightmare.goto(`${base}/blog/how-is-sapper-different-from-next`)
 					.init()
