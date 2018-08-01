@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.15.4
+
+* Add `ignore` option ([#326](https://github.com/sveltejs/sapper/pull/326))
+
 ## 0.15.3
 
 * Crawl pages in parallel when exporting ([#329](https://github.com/sveltejs/sapper/pull/329))
