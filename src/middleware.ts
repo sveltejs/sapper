@@ -8,6 +8,9 @@ import fetch from 'node-fetch';
 import { lookup } from './middleware/mime';
 import { locations, dev } from './config';
 import sourceMapSupport from 'source-map-support';
+import prettyBytes from 'pretty-bytes';
+import { wrap_data } from './middleware/wrap_data';
+import { list_unused_properties } from './middleware/list_unused_properties';
 
 sourceMapSupport.install();
 
@@ -394,11 +397,6 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				return;
 			}
 
-			const serialized = {
-				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
-				store: store && try_serialize(store.get())
-			};
-
 			const segments = req.path.split('/').filter(Boolean);
 
 			const props: Props = {
@@ -420,6 +418,11 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				}
 			});
 
+			let { data: preloaded_proxies, unwrap } = wrap_data(preloaded);
+
+			// this is an easy way to 'reify' top-level values
+			const reified = preloaded_proxies.map((x: any) => x);
+
 			let level = data.child;
 			for (let i = 0; i < page.parts.length; i += 1) {
 				const part = page.parts[i];
@@ -431,7 +434,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 					component: part.component,
 					props: Object.assign({}, props, {
 						params: get_params(match)
-					}, preloaded[i + 1])
+					}, reified[i + 1])
 				});
 
 				level.props.child = <Props["child"]>{
@@ -449,6 +452,41 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				.filter(file => !file.match(/\.map$/))
 				.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 				.join('');
+
+			const unwrapped = unwrap();
+
+			const preloaded_serialized = preloaded.map((data, i) => {
+				const all = try_serialize(data);
+				const used = try_serialize(unwrapped[i]);
+
+				if (all !== used) {
+					const props = list_unused_properties(data, unwrapped[i]);
+
+					const part = page.parts[i - 1] || { file: 'routes/_layout.html' };
+					console.log(`${part.file} is preloading more data (${prettyBytes(all.length)}) than is initially rendered (${prettyBytes(used.length)}). The following properties are unused...`);
+
+					const slice = props.length > 22
+						? props.slice(0, 20)
+						: props;
+
+					console.log(slice.join('\n'));
+
+					if (props.length > slice.length) {
+						console.log(`...and ${props.length - slice.length} more`);
+					}
+				}
+
+				return all;
+			});
+
+			const serialized = {
+				preloaded: `[${preloaded_serialized.join(',')}]`,
+				store: store && try_serialize(store.get())
+			};
+
+			if (serialized.preloaded.length > 10000) {
+				console.log(`preloaded data is ${prettyBytes(serialized.preloaded.length)}. that's too much!`)
+			}
 
 			let inline_script = `__SAPPER__={${[
 				error && `error:1`,

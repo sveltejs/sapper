@@ -156,6 +156,7 @@ function generate_server(
 
 							const props = [
 								`name: "${part.component.name}"`,
+								`file: "${part.component.file}"`,
 								`component: ${part.component.name}`
 							];
 
