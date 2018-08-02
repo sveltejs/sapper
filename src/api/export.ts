@@ -7,7 +7,6 @@ import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { minify_html } from './utils/minify_html';
-import { locations } from '../config';
 import * as events from './interfaces';
 
 export function exporter(opts: {}) {
@@ -51,6 +50,10 @@ async function execute(emitter: EventEmitter, {
 	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
+
+	emitter.emit('info', {
+		message: `Crawling ${origin}`
+	});
 
 	const proc = child_process.fork(path.resolve(`${build}/server.js`), [], {
 		cwd: process.cwd(),

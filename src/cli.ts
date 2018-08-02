@@ -66,8 +66,6 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Specify a custom temporary build directory', '.sapper/prod')
 	.option('--basepath', 'Specify a base path')
 	.action(async (dest = 'export', opts: { build: boolean, 'build-dir': string, basepath?: string }) => {
-		console.log(`> Building...`);
-
 		process.env.NODE_ENV = 'production';
 		process.env.SAPPER_DEST = opts['build-dir'];
 
@@ -75,9 +73,10 @@ prog.command('export [dest]')
 
 		try {
 			if (opts.build) {
+				console.log(`> Building...`);
 				const { build } = await import('./cli/build');
 				await build();
-				console.error(`\n> Built in ${elapsed(start)}. Crawling site...`);
+				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
 			const { exporter } = await import('./cli/export');

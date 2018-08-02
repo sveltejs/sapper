@@ -20,6 +20,10 @@ export function exporter(export_dir: string, { basepath = '' }) {
 				console.log(`${colors.red(`> Received ${event.status} response when fetching ${event.pathname}`)}`);
 			});
 
+			emitter.on('info', event => {
+				console.log(event.message);
+			});
+
 			emitter.on('error', event => {
 				reject(event.error);
 			});
