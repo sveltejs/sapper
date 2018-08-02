@@ -168,8 +168,6 @@ class Watcher extends EventEmitter {
 			},
 
 			result: info => {
-				fs.writeFileSync(path.join(dest, 'server_info.json'), JSON.stringify(info, null, '  '));
-
 				this.deferreds.client.promise.then(() => {
 					const restart = () => {
 						log = '';
