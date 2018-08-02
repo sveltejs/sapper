@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { minify_html } from './utils/minify_html';
+import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 
 export function exporter(opts: {}) {
@@ -67,6 +68,7 @@ async function execute(emitter: EventEmitter, {
 
 	const seen = new Set();
 	const saved = new Set();
+	const deferreds = new Map();
 
 	proc.on('message', message => {
 		if (!message.__sapper__ || message.event !== 'file') return;
@@ -86,23 +88,25 @@ async function execute(emitter: EventEmitter, {
 
 		emitter.emit('file', <events.FileEvent>{
 			file,
-			size: body.length
+			size: body.length,
+			status: message.status
 		});
 
 		sander.writeFileSync(export_dir, file, body);
+
+		const deferred = deferreds.get(message.url);
+		if (deferred) deferred.fulfil();
 	});
 
 	async function handle(url: URL) {
+		if (seen.has(url.pathname)) return;
+		seen.add(url.pathname);
+
+		const deferred = new Deferred();
+		deferreds.set(url.pathname, deferred);
+
 		const r = await fetch(url.href);
 		const range = ~~(r.status / 100);
-
-		if (range >= 4) {
-			emitter.emit('failure', <events.FailureEvent>{
-				status: r.status,
-				pathname: url.pathname
-			});
-			return;
-		}
 
 		if (range === 2) {
 			if (r.headers.get('Content-Type') === 'text/html') {
@@ -114,16 +118,14 @@ async function execute(emitter: EventEmitter, {
 
 				$('a[href]').each((i: number, $a) => {
 					const url = new URL($a.attribs.href, base.href);
-
-					if (url.origin === origin && !seen.has(url.pathname)) {
-						seen.add(url.pathname);
-						urls.push(url);
-					}
+					if (url.origin === origin) urls.push(url);
 				});
 
 				await Promise.all(urls.map(handle));
 			}
 		}
+
+		await deferred.promise;
 	}
 
 	return ports.wait(port)

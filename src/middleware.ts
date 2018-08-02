@@ -498,7 +498,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 					event: 'file',
 					url: req.url,
 					method: req.method,
-					status: 200,
+					status,
 					type: 'text/html',
 					body
 				});
