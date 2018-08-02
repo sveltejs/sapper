@@ -24,7 +24,7 @@ export function exporter(export_dir: string, { basepath = '' }) {
 
 				const file_label = event.status === 200
 					? event.file
-					: colors.bold.red(`(${event.status}) ${event.file}`);
+					: colors.bold[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
 
 				console.log(`${size_label}   ${file_label}`);
 			});

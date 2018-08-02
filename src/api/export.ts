@@ -81,7 +81,8 @@ async function execute(emitter: EventEmitter, {
 	proc.on('message', message => {
 		if (!message.__sapper__ || message.event !== 'file') return;
 
-		let file = new URL(message.url, origin).pathname.slice(1);
+		const pathname = new URL(message.url, origin).pathname;
+		let file = pathname.slice(1);
 		let { body } = message;
 
 		if (saved.has(file)) return;
@@ -102,7 +103,7 @@ async function execute(emitter: EventEmitter, {
 
 		sander.writeFileSync(export_dir, file, body);
 
-		get_deferred(message.url).fulfil();
+		get_deferred(pathname).fulfil();
 	});
 
 	async function handle(url: URL) {
