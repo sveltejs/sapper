@@ -70,6 +70,14 @@ async function execute(emitter: EventEmitter, {
 	const saved = new Set();
 	const deferreds = new Map();
 
+	function get_deferred(pathname: string) {
+		if (!deferreds.has(pathname)) {
+			deferreds.set(pathname, new Deferred())	;
+		}
+
+		return deferreds.get(pathname);
+	}
+
 	proc.on('message', message => {
 		if (!message.__sapper__ || message.event !== 'file') return;
 
@@ -94,16 +102,14 @@ async function execute(emitter: EventEmitter, {
 
 		sander.writeFileSync(export_dir, file, body);
 
-		const deferred = deferreds.get(message.url);
-		if (deferred) deferred.fulfil();
+		get_deferred(message.url).fulfil();
 	});
 
 	async function handle(url: URL) {
 		if (seen.has(url.pathname)) return;
 		seen.add(url.pathname);
 
-		const deferred = new Deferred();
-		deferreds.set(url.pathname, deferred);
+		const deferred = get_deferred(url.pathname);
 
 		const r = await fetch(url.href);
 		const range = ~~(r.status / 100);
