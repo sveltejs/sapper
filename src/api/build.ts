@@ -62,7 +62,6 @@ async function execute(emitter: EventEmitter, {
 	});
 
 	const client_info = client_stats.toJson();
-	fs.writeFileSync(path.join(dest, 'client_info.json'), JSON.stringify(client_info));
 	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
 
 	const server_stats = await compile(server);
