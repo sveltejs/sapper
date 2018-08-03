@@ -28,7 +28,7 @@
     "html-minifier": "^3.5.16",
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.1.1",
-    "port-authority": "^1.0.2",
+    "port-authority": "^1.0.5",
     "pretty-bytes": "^5.0.0",
     "pretty-ms": "^3.1.0",
     "require-relative": "^0.8.7",

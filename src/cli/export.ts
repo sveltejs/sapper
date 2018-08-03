@@ -3,6 +3,11 @@ import * as colors from 'ansi-colors';
 import prettyBytes from 'pretty-bytes';
 import { locations } from '../config';
 
+function left_pad(str: string, len: number) {
+	while (str.length < len) str = ` ${str}`;
+	return str;
+}
+
 export function exporter(export_dir: string, { basepath = '' }) {
 	return new Promise((fulfil, reject) => {
 		try {
@@ -13,11 +18,19 @@ export function exporter(export_dir: string, { basepath = '' }) {
 			});
 
 			emitter.on('file', event => {
-				console.log(`${colors.bold.cyan(event.file)} ${colors.gray(`(${prettyBytes(event.size)})`)}`);
+				const pb = prettyBytes(event.size);
+				const size_color = event.size > 150000 ? colors.bold.red : event.size > 50000 ? colors.bold.yellow : colors.bold.gray;
+				const size_label = size_color(left_pad(prettyBytes(event.size), 10));
+
+				const file_label = event.status === 200
+					? event.file
+					: colors.bold[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+
+				console.log(`${size_label}   ${file_label}`);
 			});
 
-			emitter.on('failure', event => {
-				console.log(`${colors.red(`> Received ${event.status} response when fetching ${event.pathname}`)}`);
+			emitter.on('info', event => {
+				console.log(colors.bold.cyan(`> ${event.message}`));
 			});
 
 			emitter.on('error', event => {
