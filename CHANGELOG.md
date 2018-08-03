@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.15.5
+
+* Faster `export` with more explanatory output ([#335](https://github.com/sveltejs/sapper/pull/335))
+* Only blur `activeElement` if it exists ([#332](https://github.com/sveltejs/sapper/issues/332))
+* Don't emit `client_info.json` or `server_info.json` ([#318](https://github.com/sveltejs/sapper/issues/318))
+
 ## 0.15.4
 
 * Add `ignore` option ([#326](https://github.com/sveltejs/sapper/pull/326))

@@ -298,7 +298,7 @@ async function navigate(target: Target, id: number): Promise<any> {
 		await goto(redirect.location, { replaceState: true });
 	} else {
 		render(data, nullable_depth, scroll_history[id], token);
-		document.activeElement.blur();
+		if (document.activeElement) document.activeElement.blur();
 	}
 }
 
