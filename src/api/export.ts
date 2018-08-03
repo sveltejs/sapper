@@ -133,7 +133,7 @@ async function execute(emitter: EventEmitter, {
 		}
 
 		const timeout = setTimeout(() => {
-			console.log(`looks like we timed out waiting for ${url.pathname}`);
+			console.log(`looks like we timed out waiting for "${url.pathname}"`, url);
 		}, 1000);
 		await deferred.promise;
 		clearTimeout(timeout);
