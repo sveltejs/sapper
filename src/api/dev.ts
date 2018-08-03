@@ -9,6 +9,7 @@ import format_messages from 'webpack-format-messages';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 
 export function dev(opts) {
@@ -396,19 +397,6 @@ function mungeWebpackError(message: string, duplicate: boolean) {
 		originalMessage: message,
 		duplicate
 	};
-}
-
-class Deferred {
-	promise: Promise<any>;
-	fulfil: (value?: any) => void;
-	reject: (error: Error) => void;
-
-	constructor() {
-		this.promise = new Promise((fulfil, reject) => {
-			this.fulfil = fulfil;
-			this.reject = reject;
-		});
-	}
 }
 
 const INTERVAL = 10000;

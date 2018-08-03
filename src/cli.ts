@@ -1,11 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as child_process from 'child_process';
 import sade from 'sade';
 import * as colors from 'ansi-colors';
 import prettyMs from 'pretty-ms';
-// import upgrade from './cli/upgrade';
-import * as ports from 'port-authority';
 import * as pkg from '../package.json';
 
 const prog = sade('sapper').version(pkg.version);
@@ -65,19 +62,22 @@ prog.command('start [dir]')
 
 prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
+	.option('--build', '(Re)build app before exporting', true)
+	.option('--build-dir', 'Specify a custom temporary build directory', '.sapper/prod')
 	.option('--basepath', 'Specify a base path')
-	.action(async (dest = 'export', opts: { basepath?: string }) => {
-		console.log(`> Building...`);
-
+	.action(async (dest = 'export', opts: { build: boolean, 'build-dir': string, basepath?: string }) => {
 		process.env.NODE_ENV = 'production';
-		process.env.SAPPER_DEST = '.sapper/.export';
+		process.env.SAPPER_DEST = opts['build-dir'];
 
 		const start = Date.now();
 
 		try {
-			const { build } = await import('./cli/build');
-			await build();
-			console.error(`\n> Built in ${elapsed(start)}. Crawling site...`);
+			if (opts.build) {
+				console.log(`> Building...`);
+				const { build } = await import('./cli/build');
+				await build();
+				console.error(`\n> Built in ${elapsed(start)}`);
+			}
 
 			const { exporter } = await import('./cli/export');
 			await exporter(dest, opts);

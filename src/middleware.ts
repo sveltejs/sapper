@@ -402,9 +402,23 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 			return []; // appease TypeScript
 		}).then(preloaded => {
 			if (redirect) {
+				const location = `${req.baseUrl}/${redirect.location}`;
+
 				res.statusCode = redirect.statusCode;
-				res.setHeader('Location', `${req.baseUrl}/${redirect.location}`);
+				res.setHeader('Location', location);
 				res.end();
+
+				if (process.send) {
+					process.send({
+						__sapper__: true,
+						event: 'file',
+						url: req.url,
+						method: req.method,
+						status: redirect.statusCode,
+						type: 'text/html',
+						body: `<script>window.location.href = "${location}"</script>`
+					});
+				}
 
 				return;
 			}
@@ -498,7 +512,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 					event: 'file',
 					url: req.url,
 					method: req.method,
-					status: 200,
+					status,
 					type: 'text/html',
 					body
 				});
