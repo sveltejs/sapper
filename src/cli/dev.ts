@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as colors from 'ansi-colors';
 import * as child_process from 'child_process';
 import prettyMs from 'pretty-ms';
+import pb from 'pretty-bytes';
 import { dev as _dev } from '../api/dev';
 import * as events from '../api/interfaces';
 
@@ -42,6 +43,32 @@ export function dev(opts: { port: number, open: boolean }) {
 		watcher.on('fatal', (event: events.FatalEvent) => {
 			console.log(`${colors.bold.red(`> ${event.message}`)}`);
 			if (event.log) console.log(event.log);
+		});
+
+		watcher.on('preload', (event) => {
+			if (event.size > 25000) {
+				console.log(colors.bold.yellow(`${event.url} — large amount of preloaded data`));
+				console.log(`${colors.bold(pb(event.size))} of data was preloaded in total, above the recommended limit of ${pb(25000)}`);
+			}
+		});
+
+		watcher.on('unused_data', (event) => {
+			console.log(colors.bold.yellow(`${event.url} — unused preloaded data`));
+			console.log(`More data was returned from \`preload\` than was used during the initial render. Consider only returning essential data.`);
+
+			event.discrepancies.forEach(discrepancy => {
+				console.log(`${colors.bold(discrepancy.file)} loaded ${colors.bold(pb(discrepancy.preloaded))}, of which ${discrepancy.rendered > 2 ? `only ${colors.bold(pb(discrepancy.rendered))}` : 'none'} was used. The following properties were not referenced:`);
+
+				const slice = discrepancy.props.length > 12
+					? discrepancy.props.slice(0, 10)
+					: discrepancy.props;
+
+				console.log(slice.map((prop: string) => `• ${prop}`).join('\n'));
+
+				if (discrepancy.props.length > slice.length) {
+					console.log(`...and ${discrepancy.props.length - slice.length} more`);
+				}
+			});
 		});
 
 		watcher.on('build', (event: events.BuildEvent) => {

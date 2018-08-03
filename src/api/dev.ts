@@ -224,11 +224,8 @@ class Watcher extends EventEmitter {
 					});
 
 					this.proc.on('message', message => {
-						if (message.__sapper__ && message.event === 'basepath') {
-							this.emit('basepath', {
-								basepath: message.basepath
-							});
-						}
+						if (!message.__sapper__) return;
+						this.emit(message.event, message);
 					});
 
 					this.proc.on('exit', emitFatal);
