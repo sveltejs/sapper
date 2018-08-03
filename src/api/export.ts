@@ -132,10 +132,17 @@ async function execute(emitter: EventEmitter, {
 			}
 		}
 
+		const timeout = setTimeout(() => {
+			console.log(`looks like we timed out waiting for ${url.pathname}`);
+		}, 1000);
 		await deferred.promise;
+		clearTimeout(timeout);
 	}
 
 	return ports.wait(port)
 		.then(() => handle(new URL(`/${basepath}`, origin))) // TODO all static routes
+		.then(() => {
+			console.log('completed export');
+		})
 		.then(() => proc.kill());
 }

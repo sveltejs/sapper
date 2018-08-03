@@ -38,6 +38,7 @@ export function exporter(export_dir: string, { basepath = '' }) {
 			});
 
 			emitter.on('done', event => {
+				console.log('>>>done');
 				fulfil();
 			});
 		} catch (err) {
