@@ -293,6 +293,8 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;
 
+	const should_wrap_data = dev() || process.env.SAPPER_EXPORT;
+
 	function handle_error(req: Req, res: ServerResponse, statusCode: number, error: Error | string) {
 		handle_page({
 			pattern: null,
@@ -452,10 +454,14 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				}
 			});
 
-			let { data: preloaded_proxies, unwrap } = wrap_data(preloaded);
+			// in dev and export modes, we wrap data in proxies to see
+			// how much of it is used in the initial render
+			const wrapped = should_wrap_data && wrap_data(preloaded);
 
 			// this is an easy way to 'reify' top-level values
-			const reified = preloaded_proxies.map((x: any) => x);
+			const _preloaded = should_wrap_data
+				? wrapped.data.map((x: any) => x)
+				: preloaded;
 
 			let level = data.child;
 			for (let i = 0; i < page.parts.length; i += 1) {
@@ -468,7 +474,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 					component: part.component,
 					props: Object.assign({}, props, {
 						params: get_params(match)
-					}, reified[i + 1])
+					}, _preloaded[i + 1])
 				});
 
 				level.props.child = <Props["child"]>{
@@ -487,40 +493,46 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 				.join('');
 
-			const unwrapped = unwrap();
+			const unwrapped = should_wrap_data && wrapped.unwrap();
 
-			const preloaded_serialized = preloaded.map((data, i) => {
-				const all = try_serialize(data);
-				const used = try_serialize(unwrapped[i]);
+			const preloaded_serialized = preloaded.map(try_serialize);
 
-				if (all !== used) {
-					const props = list_unused_properties(data, unwrapped[i]);
+			if (should_wrap_data && process.send) {
+				const discrepancies = [];
 
-					const part = page.parts[i - 1] || { file: 'routes/_layout.html' };
-					console.log(`${part.file} is preloading more data (${prettyBytes(all.length)}) than is initially rendered (${prettyBytes(used.length)}). The following properties are unused...`);
+				unwrapped.forEach((clone, i) => {
+					const loaded = preloaded_serialized[i];
+					if (!loaded) return;
 
-					const slice = props.length > 22
-						? props.slice(0, 20)
-						: props;
+					const rendered = try_serialize(clone);
 
-					console.log(slice.join('\n'));
+					if (rendered !== loaded) {
+						const part = page.parts[i - 1];
+						const file = part ? part.file : '_layout.html';
 
-					if (props.length > slice.length) {
-						console.log(`...and ${props.length - slice.length} more`);
+						discrepancies.push({
+							file,
+							preloaded: loaded.length,
+							rendered: rendered.length,
+							props: list_unused_properties(preloaded[i], clone)
+						});
 					}
-				}
+				});
 
-				return all;
-			});
+				if (discrepancies.length) {
+					process.send({
+						__sapper__: true,
+						event: 'unused_data',
+						url: req.url,
+						discrepancies
+					});
+				}
+			}
 
 			const serialized = {
 				preloaded: `[${preloaded_serialized.join(',')}]`,
 				store: store && try_serialize(store.get())
 			};
-
-			if (serialized.preloaded.length > 10000) {
-				console.log(`preloaded data is ${prettyBytes(serialized.preloaded.length)}. that's too much!`)
-			}
 
 			let inline_script = `__SAPPER__={${[
 				error && `error:1`,
@@ -545,6 +557,13 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 			res.end(body);
 
 			if (process.send) {
+				process.send({
+					__sapper__: true,
+					event: 'preload',
+					url: req.url,
+					size: serialized.preloaded.length
+				});
+
 				process.send({
 					__sapper__: true,
 					event: 'file',
