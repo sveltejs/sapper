@@ -107,10 +107,12 @@ async function execute(emitter: EventEmitter, {
 	});
 
 	async function handle(url: URL) {
-		if (seen.has(url.pathname)) return;
-		seen.add(url.pathname);
+		const pathname = url.pathname || '/';
 
-		const deferred = get_deferred(url.pathname);
+		if (seen.has(pathname)) return;
+		seen.add(pathname);
+
+		const deferred = get_deferred(pathname);
 
 		const r = await fetch(url.href);
 		const range = ~~(r.status / 100);
@@ -133,7 +135,7 @@ async function execute(emitter: EventEmitter, {
 		}
 
 		const timeout = setTimeout(() => {
-			console.log(`looks like we timed out waiting for "${url.pathname}"`, url);
+			console.log(`looks like we timed out waiting for "${pathname}"`, url);
 		}, 1000);
 		await deferred.promise;
 		clearTimeout(timeout);
