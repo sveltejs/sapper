@@ -71,8 +71,9 @@ async function execute(emitter: EventEmitter, {
 	const deferreds = new Map();
 
 	function get_deferred(pathname: string) {
+		pathname = pathname.replace(`/${basepath}`, '')
 		if (!deferreds.has(pathname)) {
-			deferreds.set(pathname, new Deferred())	;
+			deferreds.set(pathname, new Deferred());
 		}
 
 		return deferreds.get(pathname);
@@ -138,6 +139,13 @@ async function execute(emitter: EventEmitter, {
 	}
 
 	return ports.wait(port)
-		.then(() => handle(new URL(`/${basepath}`, origin))) // TODO all static routes
+		.then(() => {
+			// TODO all static routes
+			if (basepath) {
+				return handle(new URL(`/${basepath}/`, origin));
+			} else {
+				return handle(new URL('/', origin));
+			}
+		})
 		.then(() => proc.kill());
 }
