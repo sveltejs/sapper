@@ -51,9 +51,10 @@ async function execute(emitter: EventEmitter, {
 	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
+	const root = new URL(basepath || '', origin);
 
 	emitter.emit('info', {
-		message: `Crawling ${origin}`
+		message: `Crawling ${root.href}`
 	});
 
 	const proc = child_process.fork(path.resolve(`${build}/server.js`), [], {
@@ -71,7 +72,8 @@ async function execute(emitter: EventEmitter, {
 	const deferreds = new Map();
 
 	function get_deferred(pathname: string) {
-		pathname = pathname.replace(`/${basepath}`, '')
+		pathname = pathname.replace(root.pathname, '');
+
 		if (!deferreds.has(pathname)) {
 			deferreds.set(pathname, new Deferred());
 		}
@@ -108,7 +110,7 @@ async function execute(emitter: EventEmitter, {
 	});
 
 	async function handle(url: URL) {
-		const pathname = url.pathname || '/';
+		const pathname = (url.pathname.replace(root.pathname, '') || '/');
 
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
@@ -141,11 +143,7 @@ async function execute(emitter: EventEmitter, {
 	return ports.wait(port)
 		.then(() => {
 			// TODO all static routes
-			if (basepath) {
-				return handle(new URL(`/${basepath}/`, origin));
-			} else {
-				return handle(new URL('/', origin));
-			}
+			return handle(root);
 		})
 		.then(() => proc.kill());
 }

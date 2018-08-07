@@ -59,9 +59,19 @@ describe('sapper', function() {
 		basepath: '/custom-basepath'
 	});
 
-	describe('export', () => {
+	testExport({});
+
+	testExport({ basepath: '/custom-basepath' });
+});
+
+function testExport({ basepath = '' }) {
+	describe(basepath ? `export --basepath ${basepath}` : 'export', () => {
 		before(() => {
-			return exec(`node ${cli} export`);
+			if (basepath) {
+				process.env.BASEPATH = basepath;
+			}
+
+			return exec(`node ${cli} export ${basepath ? `--basepath ${basepath}` : ''}`);
 		});
 
 		it('export all pages', () => {
@@ -96,7 +106,10 @@ describe('sapper', function() {
 				'service-worker.js',
 				'svelte-logo-192.png',
 				'svelte-logo-512.png',
-			];
+			].map(file => {
+				return basepath ? path.join(basepath.replace(/^\//, ''), file) : file;
+			});
+
 			// Client scripts that should show up in the extraction directory.
 			const expectedClientRegexes = [
 				/client\/[^/]+\/main(\.\d+)?\.js/,
@@ -126,7 +139,7 @@ describe('sapper', function() {
 			});
 		});
 	});
-});
+}
 
 function run({ mode, basepath = '' }) {
 	describe(`mode=${mode}`, function () {
