@@ -336,6 +336,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
 					throw new Error(`Conflicting redirects`);
 				}
+				location = location.replace(/^\//g, ''); // leading slash (only)
 				redirect = { statusCode, location };
 			},
 			error: (statusCode: number, message: Error | string) => {
