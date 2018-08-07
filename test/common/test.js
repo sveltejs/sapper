@@ -436,6 +436,33 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
+			it('redirects on server (root)', () => {
+				return nightmare.goto(`${base}/redirect-root`)
+					.path()
+					.then(path => {
+						assert.equal(path, `${basepath}/`);
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Great success!');
+					});
+			});
+
+			it('redirects in client (root)', () => {
+				return nightmare.goto(base)
+					.wait('[href="redirect-root"]')
+					.click('[href="redirect-root"]')
+					.wait(200)
+					.path()
+					.then(path => {
+						assert.equal(path, `${basepath}/`);
+					})
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'Great success!');
+					});
+			});
+
 			it('handles 4xx error on server', () => {
 				return nightmare.goto(`${base}/blog/nope`)
 					.path()
