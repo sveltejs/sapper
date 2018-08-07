@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.15.6
+
+* Fix exporting with custom basepath ([#342](https://github.com/sveltejs/sapper/pull/342))
+
 ## 0.15.5
 
 * Faster `export` with more explanatory output ([#335](https://github.com/sveltejs/sapper/pull/335))
