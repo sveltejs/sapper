@@ -107,7 +107,7 @@ function testExport({ basepath = '' }) {
 				'svelte-logo-192.png',
 				'svelte-logo-512.png',
 			].map(file => {
-				return basepath ? path.join(basepath.replace(/^\//, ''), file) : file;
+				return basepath ? `${basepath.replace(/^[\/\\]/, '')}/${file}` : file;
 			});
 
 			// Client scripts that should show up in the extraction directory.
