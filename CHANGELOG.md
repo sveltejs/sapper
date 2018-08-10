@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.15.7
+
+* Strip leading slash from redirects ([#291](https://github.com/sveltejs/sapper/issues/291))
+* Pass `(req, res)` to store getter ([#344](https://github.com/sveltejs/sapper/issues/344))
+
 ## 0.15.6
 
 * Fix exporting with custom basepath ([#342](https://github.com/sveltejs/sapper/pull/342))
