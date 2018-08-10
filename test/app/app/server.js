@@ -85,11 +85,18 @@ const middlewares = [
 		next();
 	},
 
+	// set up some values for the store
+	(req, res, next) => {
+		req.hello = 'hello';
+		res.locals = { name: 'world' };
+		next();
+	},
+
 	sapper({
 		manifest,
-		store: () => {
+		store: (req, res) => {
 			return new Store({
-				title: 'Stored title'
+				title: `${req.hello} ${res.locals.name}`
 			});
 		},
 		ignore: [

@@ -83,7 +83,7 @@ function toIgnore(uri: string, val: any) {
 
 export default function middleware(opts: {
 	manifest: Manifest,
-	store: (req: Req) => Store,
+	store: (req: Req, res: ServerResponse) => Store,
 	ignore?: any,
 	routes?: any // legacy
 }) {
@@ -276,7 +276,10 @@ function get_server_route_handler(routes: ServerRoute[]) {
 	};
 }
 
-function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store) {
+function get_page_handler(
+	manifest: Manifest,
+	store_getter: (req: Req, res: ServerResponse) => Store
+) {
 	const output = locations.dest();
 
 	const get_chunks = dev()
@@ -326,7 +329,7 @@ function get_page_handler(manifest: Manifest, store_getter: (req: Req) => Store)
 
 		res.setHeader('Link', link);
 
-		const store = store_getter ? store_getter(req) : null;
+		const store = store_getter ? store_getter(req, res) : null;
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };

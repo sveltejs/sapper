@@ -608,11 +608,11 @@ function run({ mode, basepath = '' }) {
 				return nightmare.goto(`${base}/store`)
 					.page.title()
 					.then(title => {
-						assert.equal(title, 'Stored title');
+						assert.equal(title, 'hello world');
 						return nightmare.init().page.title();
 					})
 					.then(title => {
-						assert.equal(title, 'Stored title');
+						assert.equal(title, 'hello world');
 					});
 			});
 
