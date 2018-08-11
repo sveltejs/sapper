@@ -226,8 +226,8 @@ function prepare_page(target: Target): Promise<{
 
 		const props = { path, query };
 		const data = {
-			preloading: false,
 			path,
+			preloading: false,
 			child: Object.assign({}, root_props.child, {
 				segment: segments[0]
 			})
