@@ -136,10 +136,6 @@ function prepare_page(target: Target): Promise<{
 	data?: any;
 	nullable_depth?: number;
 }> {
-	if (root) {
-		root.set({ preloading: true });
-	}
-
 	const { page, path, query } = target;
 	const new_segments = path.split('/').filter(Boolean);
 	let changed_from = 0;
@@ -219,7 +215,6 @@ function prepare_page(target: Target): Promise<{
 
 			return {
 				data: Object.assign({}, props, {
-					preloading: false,
 					child: {
 						component: manifest.error,
 						props
@@ -231,7 +226,6 @@ function prepare_page(target: Target): Promise<{
 		const props = { path, query };
 		const data = {
 			path,
-			preloading: false,
 			child: Object.assign({}, root_props.child, {
 				segment: segments[0]
 			})
@@ -285,6 +279,9 @@ async function navigate(target: Target, id: number): Promise<any> {
 
 	cid = id;
 
+	if (root) {
+		root.set({ preloading: true });
+	}
 	const loaded = prefetching && prefetching.href === target.url.href ?
 		prefetching.promise :
 		prepare_page(target);
@@ -293,6 +290,9 @@ async function navigate(target: Target, id: number): Promise<any> {
 
 	const token = current_token = {};
 	const { redirect, data, nullable_depth } = await loaded;
+	if (root) {
+		root.set({ preloading: false });
+	}
 
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
