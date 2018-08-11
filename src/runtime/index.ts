@@ -215,6 +215,7 @@ function prepare_page(target: Target): Promise<{
 
 			return {
 				data: Object.assign({}, props, {
+					preloading: false,
 					child: {
 						component: manifest.error,
 						props
@@ -225,6 +226,7 @@ function prepare_page(target: Target): Promise<{
 
 		const props = { path, query };
 		const data = {
+			preloading: false,
 			path,
 			child: Object.assign({}, root_props.child, {
 				segment: segments[0]
