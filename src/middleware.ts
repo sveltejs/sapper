@@ -4,7 +4,7 @@ import { URL } from 'url';
 import { ClientRequest, ServerResponse } from 'http';
 import cookie from 'cookie';
 import devalue from 'devalue';
-import fetch from 'node-fetch';
+import got from 'got';
 import { lookup } from './middleware/mime';
 import { locations, dev } from './config';
 import sourceMapSupport from 'source-map-support';
@@ -306,6 +306,11 @@ function get_page_handler(
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const match = error ? null : page.pattern.exec(req.path);
 
+		// listenAddress is an object for TCP listeners and a string for socket files.
+		// e.g. address { address: '::', family: 'IPv6', port: 3000 } vs
+		// /tmp/server-phmo9c75rvf.sock
+		const listenAddress = req.socket.server.address();
+
 		const chunks: Record<string, string | string[]> = get_chunks();
 
 		res.setHeader('Content-Type', 'text/html');
@@ -346,7 +351,17 @@ function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
+
 				const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+				let fetchUrl;
+
+				if(typeof listenAddress == 'string') {
+					// socket
+					fetchUrl = `unix:${listenAddress}:${parsed.pathname}${parsed.hash}`;
+				} else {
+					// http
+					fetchUrl = parsed.href;
+				}
 
 				if (opts) {
 					opts = Object.assign({}, opts);
@@ -377,8 +392,9 @@ function get_page_handler(
 						opts.headers.cookie = str;
 					}
 				}
+				// move to got because node-fetch doesnt support unix socket connections
+				return got(fetchUrl, opts).then( res => ({ json: () => JSON.parse(res.body), status: res.statusCode}));
 
-				return fetch(parsed.href, opts);
 			},
 			store
 		};
