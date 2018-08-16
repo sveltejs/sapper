@@ -299,13 +299,10 @@ function get_page_handler(
 			parts: [
 				{ name: null, component: error_route }
 			]
-		}, req, res, statusCode, error);
+		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
 
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
-		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
-		const match = error ? null : page.pattern.exec(req.path);
-
 		const chunks: Record<string, string | string[]> = get_chunks();
 
 		res.setHeader('Content-Type', 'text/html');
@@ -390,6 +387,8 @@ function get_page_handler(
 				params: {}
 			})
 			: {};
+
+		const match = error ? null : page.pattern.exec(req.path);
 
 		Promise.all([root_preloaded].concat(page.parts.map(part => {
 			if (!part) return null;
