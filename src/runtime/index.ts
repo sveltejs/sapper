@@ -292,9 +292,6 @@ async function navigate(target: Target, id: number): Promise<any> {
 
 	const token = current_token = {};
 	const { redirect, data, nullable_depth } = await loaded;
-	if (root) {
-		root.set({ preloading: false });
-	}
 
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
