@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.15.8
+
+* Only set `preloading: true` on navigation, not prefetch ([#352](https://github.com/sveltejs/sapper/issues/352))
+* Provide fallback for missing preload errors ([#361](https://github.com/sveltejs/sapper/pull/361))
+
 ## 0.15.7
 
 * Strip leading slash from redirects ([#291](https://github.com/sveltejs/sapper/issues/291))
