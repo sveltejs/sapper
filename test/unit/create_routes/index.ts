@@ -1,6 +1,6 @@
-const path = require('path');
-const assert = require('assert');
-const { create_routes } = require('../../../dist/core.ts.js');
+import * as path from 'path';
+import * as assert from 'assert';
+import create_routes from '../../../src/core/create_routes';
 
 describe('create_routes', () => {
 	it('creates routes', () => {

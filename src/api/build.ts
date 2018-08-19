@@ -3,7 +3,7 @@ import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
-import { minify_html } from './utils/minify_html';
+import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 import * as events from './interfaces';
 

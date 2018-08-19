@@ -1,4 +1,5 @@
 --require source-map-support/register
+--require ts-node/register
 --recursive
-test/unit/*/*.js
+test/unit/*/*.ts
 test/common/test.js
