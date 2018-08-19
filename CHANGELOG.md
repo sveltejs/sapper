@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.16.1
+
+* Fix file watching regression in previous version
+
 ## 0.16.0
 
 * Slim down installed package ([#363](https://github.com/sveltejs/sapper/pull/363))
