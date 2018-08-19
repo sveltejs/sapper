@@ -455,8 +455,9 @@ function noop() {}
 
 function watch_files(pattern: string, events: string[], callback: () => void) {
 	let watcher;
+	let closed = false;
 
-	import('chokidar').then(({ default: chokidar }) => {
+	import('chokidar').then((chokidar) => {
 		if (closed) return;
 
 		watcher = chokidar.watch(pattern, {
