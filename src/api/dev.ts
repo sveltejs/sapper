@@ -119,21 +119,30 @@ class Watcher extends EventEmitter {
 		this.dev_server = new DevServer(dev_port);
 
 		this.filewatchers.push(
-			watch_files(locations.routes(), ['add', 'unlink'], () => {
-				const routes = create_routes();
-				create_main_manifests({ routes, dev_port });
-
-				try {
+			watch_dir(
+				locations.routes(),
+				({ path: file, stats }) => {
+					if (stats.isDirectory()) {
+						return path.basename(file)[0] !== '_';
+					}
+					return true;
+				},
+				() => {
 					const routes = create_routes();
 					create_main_manifests({ routes, dev_port });
-				} catch (err) {
-					this.emit('error', <events.ErrorEvent>{
-						message: err.message
-					});
-				}
-			}),
 
-			watch_files(`${locations.app()}/template.html`, ['change'], () => {
+					try {
+						const routes = create_routes();
+						create_main_manifests({ routes, dev_port });
+					} catch (err) {
+						this.emit('error', <events.ErrorEvent>{
+							message: err.message
+						});
+					}
+				}
+			),
+
+			fs.watch(`${locations.app()}/template.html`, () => {
 				this.dev_server.send({
 					action: 'reload'
 				});
@@ -453,24 +462,32 @@ class DevServer {
 
 function noop() {}
 
-function watch_files(pattern: string, events: string[], callback: () => void) {
-	let watcher;
+function watch_dir(
+	dir: string,
+	filter: ({ path, stats }: { path: string, stats: fs.Stats }) => boolean,
+	callback: () => void
+) {
+	let watch;
+	let closed = false;
 
-	import('chokidar').then(({ default: chokidar }) => {
+	import('cheap-watch').then(CheapWatch => {
 		if (closed) return;
 
-		watcher = chokidar.watch(pattern, {
-			persistent: true,
-			ignoreInitial: true,
-			disableGlobbing: true
+		watch = new CheapWatch({ dir, filter, debounce: 50 });
+
+		watch.on('+', ({ isNew }) => {
+			if (isNew) callback();
 		});
 
-		events.forEach(event => {
-			watcher.on(event, callback);
-		});
+		watch.on('-', callback);
+
+		watch.init();
 	});
 
 	return {
-		close: () => watcher && watcher.close()
+		close: () => {
+			if (watch) watch.close();
+			closed = true;
+		}
 	};
 }
