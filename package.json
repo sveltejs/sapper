@@ -62,7 +62,8 @@
     "svelte-loader": "^2.9.0",
     "typescript": "^2.8.3",
     "walk-sync": "^0.3.2",
-    "webpack": "^4.8.3"
+    "webpack": "^4.8.3",
+    "yootils": "0.0.11"
   },
   "scripts": {
     "cy:open": "cypress open",

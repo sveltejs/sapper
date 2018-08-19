@@ -4,6 +4,7 @@ import * as sander from 'sander';
 import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
+import * as yootils from 'yootils';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { minify_html } from './utils/minify_html';
@@ -128,12 +129,17 @@ async function execute(emitter: EventEmitter, {
 
 				const base = new URL($('base').attr('href') || '/', url.href);
 
+				const q = yootils.queue(8);
+				let promise;
+
 				$('a[href]').each((i: number, $a) => {
 					const url = new URL($a.attribs.href, base.href);
-					if (url.origin === origin) urls.push(url);
+					if (url.origin === origin) {
+						promise = q.add(() => handle(url));
+					}
 				});
 
-				await Promise.all(urls.map(handle));
+				await promise;
 			}
 		}
 
