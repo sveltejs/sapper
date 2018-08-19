@@ -4,11 +4,6 @@ import { locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 import { posixify } from './utils';
 
-const default_layout_file = posixify(path.resolve(
-	__dirname,
-	'../components/default-layout.html'
-));
-
 export default function create_routes(cwd = locations.routes()) {
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];

@@ -1,6 +1,7 @@
 import typescript from 'rollup-plugin-typescript';
 import string from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
+import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
 
@@ -44,6 +45,7 @@ export default [
 				include: '**/*.md'
 			}),
 			json(),
+			resolve(),
 			commonjs(),
 			typescript({
 				typescript: require('typescript')

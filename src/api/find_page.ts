@@ -1,4 +1,3 @@
-import * as glob from 'glob';
 import { locations } from '../config';
 import { create_routes } from '../core';
 

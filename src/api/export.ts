@@ -1,12 +1,12 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
-import cheerio from 'cheerio';
 import URL from 'url-parse';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
-import { minify_html } from './utils/minify_html';
+import clean_html from './utils/clean_html';
+import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 
@@ -123,15 +123,26 @@ async function execute(emitter: EventEmitter, {
 		if (range === 2) {
 			if (r.headers.get('Content-Type') === 'text/html') {
 				const body = await r.text();
-				const $ = cheerio.load(body);
 				const urls: URL[] = [];
 
-				const base = new URL($('base').attr('href') || '/', url.href);
+				const cleaned = clean_html(body);
 
-				$('a[href]').each((i: number, $a) => {
-					const url = new URL($a.attribs.href, base.href);
-					if (url.origin === origin) urls.push(url);
-				});
+				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
+				const base_href = base_match && get_href(base_match[1]);
+				const base = new URL(base_href || '/', url.href);
+
+				let match;
+				let pattern = /<a ([\s\S]+?)>/gm;
+
+				while (match = pattern.exec(cleaned)) {
+					const attrs = match[1];
+					const href = get_href(attrs);
+
+					if (href) {
+						const url = new URL(href, base.href);
+						if (url.origin === origin) urls.push(url);
+					}
+				}
 
 				await Promise.all(urls.map(handle));
 			}
@@ -146,4 +157,9 @@ async function execute(emitter: EventEmitter, {
 			return handle(root);
 		})
 		.then(() => proc.kill());
+}
+
+function get_href(attrs: string) {
+	const match = /href\s*=\s*(?:"(.+?)"|'(.+?)'|([^\s>]+))/.exec(attrs);
+	return match[1] || match[2] || match[3];
 }

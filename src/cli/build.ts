@@ -1,5 +1,5 @@
 import { build as _build } from '../api/build';
-import * as colors from 'ansi-colors';
+import colors from 'kleur';
 import { locations } from '../config';
 
 export function build() {

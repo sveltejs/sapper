@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
-import * as colors from 'ansi-colors';
+import colors from 'kleur';
 import * as ports from 'port-authority';
 
 export async function start(dir: string, opts: { port: number, open: boolean }) {

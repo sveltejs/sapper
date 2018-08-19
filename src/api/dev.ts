@@ -454,19 +454,23 @@ class DevServer {
 function noop() {}
 
 function watch_files(pattern: string, events: string[], callback: () => void) {
-	const chokidar = require('chokidar');
+	let watcher;
 
-	const watcher = chokidar.watch(pattern, {
-		persistent: true,
-		ignoreInitial: true,
-		disableGlobbing: true
-	});
+	import('chokidar').then(({ default: chokidar }) => {
+		if (closed) return;
 
-	events.forEach(event => {
-		watcher.on(event, callback);
+		watcher = chokidar.watch(pattern, {
+			persistent: true,
+			ignoreInitial: true,
+			disableGlobbing: true
+		});
+
+		events.forEach(event => {
+			watcher.on(event, callback);
+		});
 	});
 
 	return {
-		close: () => watcher.close()
+		close: () => watcher && watcher.close()
 	};
 }
