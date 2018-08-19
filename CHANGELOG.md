@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.16.0
+
+* Slim down installed package ([#363](https://github.com/sveltejs/sapper/pull/363))
+
 ## 0.15.8
 
 * Only set `preloading: true` on navigation, not prefetch ([#352](https://github.com/sveltejs/sapper/issues/352))
