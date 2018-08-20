@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.17.0
+
+* Use `cheap-watch` instead of `chokidar` ([#364](https://github.com/sveltejs/sapper/issues/364))
+
 ## 0.16.1
 
 * Fix file watching regression in previous version
