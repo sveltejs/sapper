@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as colors from 'ansi-colors';
+import colors from 'kleur';
 import * as child_process from 'child_process';
 import prettyMs from 'pretty-ms';
 import { dev as _dev } from '../api/dev';

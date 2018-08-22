@@ -1,6 +1,6 @@
 import { minify } from 'html-minifier';
 
-export function minify_html(html: string) {
+export default function minify_html(html: string) {
 	return minify(html, {
 		collapseBooleanAttributes: true,
 		collapseWhitespace: true,

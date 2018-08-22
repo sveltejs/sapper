@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import sade from 'sade';
-import * as colors from 'ansi-colors';
+import colors from 'kleur';
 import prettyMs from 'pretty-ms';
 import * as pkg from '../package.json';
 

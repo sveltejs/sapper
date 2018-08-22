@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as colors from 'ansi-colors';
+import colors from 'kleur';
 
 export default async function upgrade() {
 	const upgraded = [
