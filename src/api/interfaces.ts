@@ -26,8 +26,8 @@ export type InvalidEvent = {
 
 export type BuildEvent = {
 	type: string;
-	errors: Array<{ message: string, duplicate: boolean }>;
-	warnings: Array<{ message: string, duplicate: boolean }>;
+	errors: Array<{ file: string, message: string, duplicate: boolean }>;
+	warnings: Array<{ file: string, message: string, duplicate: boolean }>;
 	duration: number;
 	webpack_stats: any;
 }
