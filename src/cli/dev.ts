@@ -13,7 +13,7 @@ export function dev(opts: { port: number, open: boolean }) {
 
 		watcher.on('ready', (event: events.ReadyEvent) => {
 			if (first) {
-				console.log(`${colors.bold.cyan(`> Listening on http://localhost:${event.port}`)}`);
+				console.log(colors.bold.cyan(`> Listening on http://localhost:${event.port}`));
 				if (opts.open) child_process.exec(`open http://localhost:${event.port}`);
 				first = false;
 			}
@@ -35,20 +35,21 @@ export function dev(opts: { port: number, open: boolean }) {
 		});
 
 		watcher.on('error', (event: events.ErrorEvent) => {
-			console.log(`${colors.red(`✗ ${event.type}`)}`);
-			console.log(`${colors.red(event.message)}`);
+			console.log(colors.red(`✗ ${event.type}`));
+			console.log(colors.red(event.message));
 		});
 
 		watcher.on('fatal', (event: events.FatalEvent) => {
-			console.log(`${colors.bold.red(`> ${event.message}`)}`);
+			console.log(colors.bold.red(`> ${event.message}`));
 			if (event.log) console.log(event.log);
 		});
 
 		watcher.on('build', (event: events.BuildEvent) => {
 			if (event.errors.length) {
-				console.log(`${colors.bold.red(`✗ ${event.type}`)}`);
+				console.log(colors.bold.red(`✗ ${event.type}`));
 
 				event.errors.filter(e => !e.duplicate).forEach(error => {
+					if (error.file) console.log(colors.bold(error.file));
 					console.log(error.message);
 				});
 
@@ -57,9 +58,10 @@ export function dev(opts: { port: number, open: boolean }) {
 					console.log(`${hidden} duplicate ${hidden === 1 ? 'error' : 'errors'} hidden\n`);
 				}
 			} else if (event.warnings.length) {
-				console.log(`${colors.bold.yellow(`• ${event.type}`)}`);
+				console.log(colors.bold.yellow(`• ${event.type}`));
 
 				event.warnings.filter(e => !e.duplicate).forEach(warning => {
+					if (warning.file) console.log(colors.bold(warning.file));
 					console.log(warning.message);
 				});
 
@@ -72,7 +74,7 @@ export function dev(opts: { port: number, open: boolean }) {
 			}
 		});
 	} catch (err) {
-		console.log(`${colors.bold.red(`> ${err.message}`)}`);
+		console.log(colors.bold.red(`> ${err.message}`));
 		process.exit(1);
 	}
 }
