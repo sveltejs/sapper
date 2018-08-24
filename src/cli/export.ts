@@ -8,13 +8,20 @@ function left_pad(str: string, len: number) {
 	return str;
 }
 
-export function exporter(export_dir: string, { basepath = '' }) {
+export function exporter(export_dir: string, {
+	basepath = '',
+	timeout
+}: {
+	basepath: string,
+	timeout: number | false
+}) {
 	return new Promise((fulfil, reject) => {
 		try {
 			const emitter = _exporter({
 				build: locations.dest(),
 				dest: export_dir,
-				basepath
+				basepath,
+				timeout
 			});
 
 			emitter.on('file', event => {

@@ -10,7 +10,14 @@ import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 
-export function exporter(opts: {}) {
+type Opts = {
+	build: string,
+	dest: string,
+	basepath: string,
+	timeout: number | false
+};
+
+export function exporter(opts: Opts) {
 	const emitter = new EventEmitter();
 
 	execute(emitter, opts).then(
@@ -27,42 +34,38 @@ export function exporter(opts: {}) {
 	return emitter;
 }
 
-async function execute(emitter: EventEmitter, {
-	build = 'build',
-	dest = 'export',
-	basepath = ''
-} = {}) {
-	const export_dir = path.join(dest, basepath);
+async function execute(emitter: EventEmitter, opts: Opts) {
+	const export_dir = path.join(opts.dest, opts.basepath);
 
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 
 	sander.copydirSync('assets').to(export_dir);
-	sander.copydirSync(build, 'client').to(export_dir, 'client');
+	sander.copydirSync(opts.build, 'client').to(export_dir, 'client');
 
-	if (sander.existsSync(build, 'service-worker.js')) {
-		sander.copyFileSync(build, 'service-worker.js').to(export_dir, 'service-worker.js');
+	if (sander.existsSync(opts.build, 'service-worker.js')) {
+		sander.copyFileSync(opts.build, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
-	if (sander.existsSync(build, 'service-worker.js.map')) {
-		sander.copyFileSync(build, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
+	if (sander.existsSync(opts.build, 'service-worker.js.map')) {
+		sander.copyFileSync(opts.build, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
 	}
 
 	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
-	const root = new URL(basepath || '', origin);
+	const root = new URL(opts.basepath || '', origin);
 
 	emitter.emit('info', {
 		message: `Crawling ${root.href}`
 	});
 
-	const proc = child_process.fork(path.resolve(`${build}/server.js`), [], {
+	const proc = child_process.fork(path.resolve(`${opts.build}/server.js`), [], {
 		cwd: process.cwd(),
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_DEST: build,
+			SAPPER_DEST: opts.build,
 			SAPPER_EXPORT: 'true'
 		}, process.env)
 	});
@@ -117,7 +120,18 @@ async function execute(emitter: EventEmitter, {
 
 		const deferred = get_deferred(pathname);
 
-		const r = await fetch(url.href);
+		const timeout_deferred = new Deferred();
+		const timeout = setTimeout(() => {
+			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
+		}, opts.timeout);
+
+		const r = await Promise.race([
+			fetch(url.href),
+			timeout_deferred.promise
+		]);
+
+		clearTimeout(timeout); // prevent it hanging at the end
+
 		const range = ~~(r.status / 100);
 
 		if (range === 2) {
@@ -152,11 +166,12 @@ async function execute(emitter: EventEmitter, {
 	}
 
 	return ports.wait(port)
-		.then(() => {
-			// TODO all static routes
-			return handle(root);
-		})
-		.then(() => proc.kill());
+		.then(() => handle(root))
+		.then(() => proc.kill())
+		.catch(err => {
+			proc.kill();
+			throw err;
+		});
 }
 
 function get_href(attrs: string) {

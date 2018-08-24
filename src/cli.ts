@@ -65,7 +65,13 @@ prog.command('export [dest]')
 	.option('--build', '(Re)build app before exporting', true)
 	.option('--build-dir', 'Specify a custom temporary build directory', '.sapper/prod')
 	.option('--basepath', 'Specify a base path')
-	.action(async (dest = 'export', opts: { build: boolean, 'build-dir': string, basepath?: string }) => {
+	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
+	.action(async (dest = 'export', opts: {
+		build: boolean,
+		'build-dir': string,
+		basepath?: string,
+		timeout: number | false
+	}) => {
 		process.env.NODE_ENV = 'production';
 		process.env.SAPPER_DEST = opts['build-dir'];
 
@@ -83,7 +89,7 @@ prog.command('export [dest]')
 			await exporter(dest, opts);
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
-			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			console.error(colors.bold.red(`> ${err.message}`));
 			process.exit(1);
 		}
 	});
