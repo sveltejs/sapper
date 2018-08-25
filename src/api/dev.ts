@@ -9,6 +9,7 @@ import format_messages from 'webpack-format-messages';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { Compiler, Compilers } from '../core/create_compilers';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 
@@ -155,7 +156,10 @@ class Watcher extends EventEmitter {
 		};
 
 		// TODO watch the configs themselves?
-		const compilers = create_compilers({ webpack: this.dirs.webpack });
+		const compilers: Compilers = create_compilers({
+			webpack: this.dirs.webpack,
+			rollup: this.dirs.rollup
+		});
 
 		let log = '';
 
@@ -332,16 +336,14 @@ class Watcher extends EventEmitter {
 		}
 	}
 
-	watch(compiler: any, { name, invalid = noop, result }: {
+	watch(compiler: Compiler, { name, invalid = noop, result }: {
 		name: string,
 		invalid?: (filename: string) => void;
 		result: (stats: any) => void;
 	}) {
-		compiler.hooks.invalid.tap('sapper', (filename: string) => {
-			invalid(filename);
-		});
+		compiler.oninvalid(invalid);
 
-		compiler.watch({}, (err: Error, stats: any) => {
+		compiler.watch((err: Error, stats: any) => {
 			if (err) {
 				this.emit('error', <events.ErrorEvent>{
 					type: name,

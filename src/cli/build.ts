@@ -9,7 +9,8 @@ export function build() {
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
-				webpack: 'webpack'
+				webpack: 'webpack',
+				rollup: 'rollup'
 			});
 
 			emitter.on('build', event => {

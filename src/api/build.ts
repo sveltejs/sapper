@@ -5,6 +5,7 @@ import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
+import { Compilers, Compiler } from '../core/create_compilers';
 import * as events from './interfaces';
 
 export function build(opts: {}) {
@@ -28,6 +29,7 @@ async function execute(emitter: EventEmitter, {
 	dest = 'build',
 	app = 'app',
 	webpack = 'webpack',
+	rollup = 'rollup',
 	routes = 'routes'
 } = {}) {
 	mkdirp.sync(dest);
@@ -51,9 +53,9 @@ async function execute(emitter: EventEmitter, {
 	// create app/manifest/client.js and app/manifest/server.js
 	create_main_manifests({ routes: route_objects });
 
-	const { client, server, serviceworker } = create_compilers({ webpack });
+	const { client, server, serviceworker } = create_compilers({ webpack, rollup });
 
-	const client_stats = await compile(client);
+	const client_stats = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'client',
 		// TODO duration/warnings
@@ -63,7 +65,7 @@ async function execute(emitter: EventEmitter, {
 	const client_info = client_stats.toJson();
 	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
 
-	const server_stats = await compile(server);
+	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'server',
 		// TODO duration/warnings
@@ -78,7 +80,7 @@ async function execute(emitter: EventEmitter, {
 			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
 		});
 
-		serviceworker_stats = await compile(serviceworker);
+		serviceworker_stats = await serviceworker.compile();
 
 		emitter.emit('build', <events.BuildEvent>{
 			type: 'serviceworker',
@@ -86,24 +88,4 @@ async function execute(emitter: EventEmitter, {
 			webpack_stats: serviceworker_stats
 		});
 	}
-}
-
-function compile(compiler: any) {
-	return new Promise((fulfil, reject) => {
-		compiler.run((err: Error, stats: any) => {
-			if (err) {
-				reject(err);
-				process.exit(1);
-			}
-
-			if (stats.hasErrors()) {
-				console.error(stats.toString({ colors: true }));
-				reject(new Error(`Encountered errors while building app`));
-			}
-
-			else {
-				fulfil(stats);
-			}
-		});
-	});
 }
