@@ -484,7 +484,7 @@ function get_page_handler(
 			let scripts = []
 				.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
 				.filter(file => !file.match(/\.map$/))
-				.map(file => `<script type="module" src='${req.baseUrl}/client/${file}'></script>`)
+				.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
 				.join('');
 
 			let inline_script = `__SAPPER__={${[

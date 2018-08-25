@@ -17,7 +17,7 @@ export class CompileResult {
 	duration: number;
 	errors: CompileError[];
 	warnings: CompileError[];
-	assets: Array<{ name: string }>;
+	assets: string[];
 	assetsByChunkName: Record<string, string>;
 }
 
@@ -64,7 +64,7 @@ class WebpackResult extends CompileResult {
 
 		this.duration = info.time;
 
-		this.assets = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
+		this.assets = info.assets.map((chunk: { name: string }) => chunk.name);
 		this.assetsByChunkName = info.assetsByChunkName;
 	}
 

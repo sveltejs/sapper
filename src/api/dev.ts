@@ -268,7 +268,7 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(result.assetsByChunkName, null, '  '));
 				this.deferreds.client.fulfil();
 
-				const client_files = result.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
+				const client_files = result.assets.map((file: string) => `client/${file}`);
 
 				create_serviceworker_manifest({
 					routes: create_routes(),

@@ -76,7 +76,7 @@ async function execute(emitter: EventEmitter, {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes: route_objects,
-			client_files: client_result.assets.map((chunk: { name: string }) => `client/${chunk.name}`)
+			client_files: client_result.assets.map((file: string) => `client/${file}`)
 		});
 
 		serviceworker_stats = await serviceworker.compile();
