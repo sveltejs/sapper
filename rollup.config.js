@@ -32,6 +32,7 @@ export default [
 			`src/cli.ts`,
 			`src/core.ts`,
 			`src/middleware.ts`,
+			`src/rollup.ts`,
 			`src/webpack.ts`
 		],
 		output: {

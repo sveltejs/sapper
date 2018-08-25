@@ -1,4 +1,5 @@
 import * as child_process from 'child_process';
+import { CompileResult } from '../core/create_compilers';
 
 export type ReadyEvent = {
 	port: number;
@@ -29,7 +30,7 @@ export type BuildEvent = {
 	errors: Array<{ file: string, message: string, duplicate: boolean }>;
 	warnings: Array<{ file: string, message: string, duplicate: boolean }>;
 	duration: number;
-	webpack_stats: any;
+	result: CompileResult;
 }
 
 export type FileEvent = {

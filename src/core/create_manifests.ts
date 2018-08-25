@@ -105,11 +105,9 @@ function generate_client(
 
 		code += `
 
-			if (module.hot) {
-				import('${sapper_dev_client}').then(client => {
-					client.connect(${dev_port});
-				});
-			}`.replace(/^\t{3}/gm, '');
+			import('${sapper_dev_client}').then(client => {
+				client.connect(${dev_port});
+			});`.replace(/^\t{3}/gm, '');
 	}
 
 	return code;

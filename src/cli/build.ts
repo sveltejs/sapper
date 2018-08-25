@@ -15,7 +15,7 @@ export function build() {
 
 			emitter.on('build', event => {
 				console.log(colors.inverse(`\nbuilt ${event.type}`));
-				console.log(event.webpack_stats.toString({ colors: true }));
+				console.log(event.result.print());
 			});
 
 			emitter.on('error', event => {

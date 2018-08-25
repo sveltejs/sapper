@@ -55,21 +55,20 @@ async function execute(emitter: EventEmitter, {
 
 	const { client, server, serviceworker } = create_compilers({ webpack, rollup });
 
-	const client_stats = await client.compile();
+	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'client',
 		// TODO duration/warnings
-		webpack_stats: client_stats
+		result: client_result
 	});
 
-	const client_info = client_stats.toJson();
-	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
+	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_result.assetsByChunkName));
 
 	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'server',
 		// TODO duration/warnings
-		webpack_stats: server_stats
+		result: server_stats
 	});
 
 	let serviceworker_stats;
@@ -77,7 +76,7 @@ async function execute(emitter: EventEmitter, {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes: route_objects,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
+			client_files: client_result.assets.map((chunk: { name: string }) => `client/${chunk.name}`)
 		});
 
 		serviceworker_stats = await serviceworker.compile();
@@ -85,7 +84,7 @@ async function execute(emitter: EventEmitter, {
 		emitter.emit('build', <events.BuildEvent>{
 			type: 'serviceworker',
 			// TODO duration/warnings
-			webpack_stats: serviceworker_stats
+			result: serviceworker_stats
 		});
 	}
 }
