@@ -217,7 +217,7 @@ function get_server_route_handler(routes: ServerRoute[]) {
 
 				// intercept data so that it can be exported
 				res.write = function(chunk: any) {
-					chunks.push(new Buffer(chunk));
+					chunks.push(Buffer.from(chunk));
 					write.apply(res, arguments);
 				};
 
@@ -227,7 +227,7 @@ function get_server_route_handler(routes: ServerRoute[]) {
 				};
 
 				res.end = function(chunk?: any) {
-					if (chunk) chunks.push(new Buffer(chunk));
+					if (chunk) chunks.push(Buffer.from(chunk));
 					end.apply(res, arguments);
 
 					process.send({
