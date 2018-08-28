@@ -105,6 +105,13 @@ export class RollupCompiler {
 		const mod: any = require(input);
 		delete require.cache[input];
 
+		(mod.plugins || (mod.plugins = [])).push({
+			name: 'sapper-internal',
+			watchChange: (file: string) => {
+				this._oninvalid(file);
+			}
+		});
+
 		return mod;
 	}
 
@@ -147,8 +154,6 @@ export class RollupCompiler {
 
 				case 'BUNDLE_START':
 					this._start = Date.now();
-					// TODO figure out which file changed
-					this._oninvalid('[TODO] unknown file');
 					break;
 
 				case 'BUNDLE_END':
