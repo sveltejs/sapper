@@ -11,16 +11,19 @@ import { create_routes, create_main_manifests, create_compilers, create_servicew
 import { Compiler, Compilers, CompileResult, CompileError } from '../core/create_compilers';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
+import validate_bundler from '../cli/utils/validate_bundler';
 
 export function dev(opts) {
 	return new Watcher(opts);
 }
 
 class Watcher extends EventEmitter {
+	bundler: string;
 	dirs: {
 		app: string;
 		dest: string;
 		routes: string;
+		rollup: string;
 		webpack: string;
 	}
 	port: number;
@@ -47,6 +50,7 @@ class Watcher extends EventEmitter {
 		app = locations.app(),
 		dest = locations.dest(),
 		routes = locations.routes(),
+		bundler,
 		webpack = 'webpack',
 		rollup = 'rollup',
 		port = +process.env.PORT
@@ -54,12 +58,14 @@ class Watcher extends EventEmitter {
 		app: string,
 		dest: string,
 		routes: string,
+		bundler?: string,
 		webpack: string,
 		rollup: string,
 		port: number
 	}) {
 		super();
 
+		this.bundler = validate_bundler(bundler);
 		this.dirs = { app, dest, routes, webpack, rollup };
 		this.port = port;
 		this.closed = false;
@@ -157,7 +163,7 @@ class Watcher extends EventEmitter {
 		};
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = create_compilers({
+		const compilers: Compilers = create_compilers(this.bundler, {
 			webpack: this.dirs.webpack,
 			rollup: this.dirs.rollup
 		});

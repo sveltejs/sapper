@@ -1,5 +1,5 @@
 import { exporter as _exporter } from '../api/export';
-import colors from 'kleur';
+import * as colors from 'kleur';
 import prettyBytes from 'pretty-bytes';
 import { locations } from '../config';
 

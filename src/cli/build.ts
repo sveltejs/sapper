@@ -1,14 +1,18 @@
 import { build as _build } from '../api/build';
-import colors from 'kleur';
+import * as colors from 'kleur';
 import { locations } from '../config';
+import validate_bundler from './utils/validate_bundler';
 
-export function build() {
+export function build(opts: { bundler?: string }) {
+	const bundler = validate_bundler(opts.bundler);
+
 	return new Promise((fulfil, reject) => {
 		try {
 			const emitter = _build({
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
+				bundler,
 				webpack: 'webpack',
 				rollup: 'rollup'
 			});

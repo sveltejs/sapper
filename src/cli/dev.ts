@@ -5,7 +5,7 @@ import prettyMs from 'pretty-ms';
 import { dev as _dev } from '../api/dev';
 import * as events from '../api/interfaces';
 
-export function dev(opts: { port: number, open: boolean }) {
+export function dev(opts: { port: number, open: boolean, bundler?: string }) {
 	try {
 		const watcher = _dev(opts);
 

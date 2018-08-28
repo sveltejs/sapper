@@ -211,8 +211,8 @@ export type Compilers = {
 	serviceworker?: Compiler;
 }
 
-export default function create_compilers({ webpack, rollup }: { webpack: string, rollup: string }): Compilers {
-	if (fs.existsSync(rollup)) {
+export default function create_compilers(bundler: string, { webpack, rollup }: { webpack: string, rollup: string }): Compilers {
+	if (bundler === 'rollup') {
 		if (!r) r = relative('rollup', process.cwd());
 
 		const sw = `${rollup}/service-worker.config.js`;
@@ -224,7 +224,7 @@ export default function create_compilers({ webpack, rollup }: { webpack: string,
 		};
 	}
 
-	if (fs.existsSync(webpack)) {
+	if (bundler === 'webpack') {
 		if (!wp) wp = relative('webpack', process.cwd());
 
 		const sw = `${webpack}/service-worker.config.js`;
@@ -236,7 +236,8 @@ export default function create_compilers({ webpack, rollup }: { webpack: string,
 		};
 	}
 
-	throw new Error(`Could not find config files for rollup or webpack`);
+	// this shouldn't be possible...
+	throw new Error(`Invalid bundler option '${bundler}'`);
 }
 
 const locPattern = /\((\d+):(\d+)\)$/;

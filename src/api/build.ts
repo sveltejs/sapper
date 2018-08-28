@@ -7,6 +7,7 @@ import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 import { Compilers, Compiler } from '../core/create_compilers';
 import * as events from './interfaces';
+import validate_bundler from '../cli/utils/validate_bundler';
 
 export function build(opts: {}) {
 	const emitter = new EventEmitter();
@@ -28,6 +29,7 @@ export function build(opts: {}) {
 async function execute(emitter: EventEmitter, {
 	dest = 'build',
 	app = 'app',
+	bundler,
 	webpack = 'webpack',
 	rollup = 'rollup',
 	routes = 'routes'
@@ -53,7 +55,7 @@ async function execute(emitter: EventEmitter, {
 	// create app/manifest/client.js and app/manifest/server.js
 	create_main_manifests({ routes: route_objects });
 
-	const { client, server, serviceworker } = create_compilers({ webpack, rollup });
+	const { client, server, serviceworker } = create_compilers(validate_bundler(bundler), { webpack, rollup });
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
