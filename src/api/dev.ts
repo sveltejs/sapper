@@ -271,7 +271,10 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
-				fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(result.assetsByChunkName, null, '  '));
+				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
+					bundler: this.bundler,
+					assets: result.assetsByChunkName
+				}, null, '  '));
 				this.deferreds.client.fulfil();
 
 				const client_files = result.assets.map((file: string) => `client/${file}`);

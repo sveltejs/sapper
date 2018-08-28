@@ -64,7 +64,10 @@ async function execute(emitter: EventEmitter, {
 		result: client_result
 	});
 
-	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_result.assetsByChunkName));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
+		bundler,
+		assets: client_result.assetsByChunkName
+	}));
 
 	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{

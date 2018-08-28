@@ -1,5 +1,5 @@
 import { build as _build } from '../api/build';
-import * as colors from 'kleur';
+import colors from 'kleur';
 import { locations } from '../config';
 import validate_bundler from './utils/validate_bundler';
 

@@ -20,7 +20,7 @@ prog.command('dev')
 prog.command('build [dest]')
 	.describe('Create a production-ready version of your app')
 	.option('-p, --port', 'Default of process.env.PORT', '3000')
-	.option('--bundler', 'Specify a bundler (rollup or webpack)', 'auto')
+	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = 'build', opts: { port: string, bundler?: string }) => {
 		console.log(`> Building...`);
@@ -68,7 +68,7 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Specify a custom temporary build directory', '.sapper/prod')
 	.option('--basepath', 'Specify a base path')
 	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
-	.option('--bundler', 'Specify a bundler (rollup or webpack)', 'auto')
+	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
 	.action(async (dest = 'export', opts: {
 		build: boolean,
 		bundler?: string,

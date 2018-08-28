@@ -282,9 +282,9 @@ function get_page_handler(
 ) {
 	const output = locations.dest();
 
-	const get_chunks = dev()
-		? () => JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8'))
-		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'client_assets.json'), 'utf-8')));
+	const get_build_info = dev()
+		? () => JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8'))
+		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8')));
 
 	const template = dev()
 		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
@@ -303,19 +303,22 @@ function get_page_handler(
 	}
 
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
-		const chunks: Record<string, string | string[]> = get_chunks();
+		const build_info: {
+			bundler: 'rollup' | 'webpack',
+			assets: Record<string, string | string[]>
+		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
-		let preloaded_chunks = Array.isArray(chunks.main) ? chunks.main : [chunks.main];
+		let preloaded_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
 		if (!error) {
 			page.parts.forEach(part => {
 				if (!part) return;
 
 				// using concat because it could be a string or an array. thanks webpack!
-				preloaded_chunks = preloaded_chunks.concat(chunks[part.name]);
+				preloaded_chunks = preloaded_chunks.concat(build_info.assets[part.name]);
 			});
 		}
 
@@ -481,11 +484,12 @@ function get_page_handler(
 				store
 			});
 
-			let scripts = []
-				.concat(chunks.main) // chunks main might be an array. it might not! thanks, webpack
-				.filter(file => !file.match(/\.map$/))
-				.map(file => `<script src='${req.baseUrl}/client/${file}'></script>`)
-				.join('');
+			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
+			const main = `${req.baseUrl}/client/${file}`;
+
+			const script = build_info.bundler === 'rollup'
+				? `<script>try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="client/shimport.js";s.setAttribute('data-main',"${main}");document.head.appendChild(s)}</script>`
+				: `<script src="${main}"></script>`;
 
 			let inline_script = `__SAPPER__={${[
 				error && `error:1`,
@@ -501,7 +505,7 @@ function get_page_handler(
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script>${inline_script}</script>${scripts}`)
+				.replace('%sapper.scripts%', () => `<script>${inline_script}</script>${script}`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				.replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
