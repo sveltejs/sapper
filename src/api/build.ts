@@ -35,8 +35,8 @@ async function execute(emitter: EventEmitter, {
 	rollup = 'rollup',
 	routes = 'routes'
 } = {}) {
-	mkdirp.sync(`${dest}/client`);
 	rimraf.sync(path.join(dest, '**/*'));
+	mkdirp.sync(`${dest}/client`);
 	copy_shimport(dest);
 
 	// minify app/template.html
