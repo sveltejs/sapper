@@ -1,3 +1,4 @@
+import path from 'path';
 import typescript from 'rollup-plugin-typescript';
 import string from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
@@ -36,7 +37,7 @@ export default [
 			`src/webpack.ts`
 		],
 		output: {
-			dir: 'dist',
+			dir: path.join(__dirname, 'dist'),
 			format: 'cjs',
 			sourcemap: true
 		},
