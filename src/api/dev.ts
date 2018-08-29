@@ -256,8 +256,6 @@ class Watcher extends EventEmitter {
 			}
 		});
 
-		let first = true;
-
 		this.watch(compilers.client, {
 			name: 'client',
 
@@ -426,7 +424,7 @@ function noop() {}
 
 function watch_dir(
 	dir: string,
-	filter: ({ path, stats }: { path: string, stats: fs.CompileResult }) => boolean,
+	filter: ({ path, stats }: { path: string, stats: fs.Stats }) => boolean,
 	callback: () => void
 ) {
 	let watch;

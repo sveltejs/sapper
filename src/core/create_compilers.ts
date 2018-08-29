@@ -8,8 +8,6 @@ let wp: any;
 
 export class CompileError {
 	file: string;
-	line: number;
-	column: number;
 	message: string;
 }
 
@@ -22,22 +20,22 @@ export class CompileResult {
 }
 
 class RollupResult extends CompileResult {
-	constructor(duration: number, { input, chunks }: { input: string, chunks: any[] }) {
+	constructor(duration: number, compiler: RollupCompiler) {
 		super();
 
 		this.duration = duration;
 
-		this.errors = [];
-		this.warnings = [];
+		this.errors = compiler.errors.map(munge_rollup_warning_or_error);
+		this.warnings = compiler.warnings.map(munge_rollup_warning_or_error); // TODO emit this as they happen
 
-		this.assets = chunks.map(chunk => chunk.fileName);
+		this.assets = compiler.chunks.map(chunk => chunk.fileName);
 
-		// TODO populate this properly. We don't have named chunks, as in
+		// TODO populate this properly. We don't have namedcompiler. chunks, as in
 		// webpack, but we can have a route -> [chunk] map or something
 		this.assetsByChunkName = {};
 
-		chunks.forEach(chunk => {
-			if (input in chunk.modules) {
+		compiler.chunks.forEach(chunk => {
+			if (compiler.input in chunk.modules) {
 				this.assetsByChunkName.main = chunk.fileName;
 			}
 		});
@@ -62,8 +60,8 @@ class WebpackResult extends CompileResult {
 		const format_messages = require('webpack-format-messages');
 		const messages = format_messages(stats);
 
-		this.errors = messages.errors.map(mungeWebpackError);
-		this.warnings = messages.warnings.map(mungeWebpackError);
+		this.errors = messages.errors.map(munge_webpack_warning_or_error);
+		this.warnings = messages.warnings.map(munge_webpack_warning_or_error);
 
 		this.duration = info.time;
 
@@ -81,11 +79,15 @@ export class RollupCompiler {
 	_oninvalid: (filename: string) => void;
 	_start: number;
 	input: string;
+	warnings: any[];
+	errors: any[];
 	chunks: any[]; // TODO types
 
 	constructor(config: any) {
 		this._ = this.get_config(path.resolve(config));
 		this.input = null;
+		this.warnings = [];
+		this.errors = [];
 		this.chunks = [];
 	}
 
@@ -124,6 +126,16 @@ export class RollupCompiler {
 			}
 		});
 
+		const onwarn = mod.onwarn || ((warning: any, handler: (warning: any) => void) => {
+			handler(warning);
+		});
+
+		mod.onwarn = (warning: any) => {
+			onwarn(warning, (warning: any) => {
+				this.warnings.push(warning);
+			});
+		};
+
 		return mod;
 	}
 
@@ -148,6 +160,9 @@ export class RollupCompiler {
 		const watcher = r.watch(config);
 
 		watcher.on('change', (id: string) => {
+			this.chunks = [];
+			this.warnings = [];
+			this.errors = [];
 			this._oninvalid(id);
 		});
 
@@ -155,12 +170,21 @@ export class RollupCompiler {
 			switch (event.code) {
 				case 'FATAL':
 					// TODO kill the process?
+					if (event.error.filename) {
+						// TODO this is a bit messy. Also, can
+						// Rollup emit other kinds of error?
+						event.error.message = [
+							`Failed to build — error in ${event.error.filename}: ${event.error.message}`,
+							event.error.frame
+						].filter(Boolean).join('\n');
+					}
+
 					cb(event.error);
 					break;
 
 				case 'ERROR':
-					// TODO print warnings as well?
-					cb(event.error);
+					this.errors.push(event.error);
+					cb(null, new RollupResult(Date.now() - this._start, this));
 					break;
 
 				case 'START':
@@ -173,10 +197,7 @@ export class RollupCompiler {
 					break;
 
 				case 'BUNDLE_END':
-					cb(null, new RollupResult(Date.now() - this._start, {
-						input: this.input,
-						chunks: this.chunks
-					}));
+					cb(null, new RollupResult(Date.now() - this._start, this));
 					break;
 
 				default:
@@ -266,7 +287,7 @@ export default function create_compilers(bundler: string, { webpack, rollup }: {
 
 const locPattern = /\((\d+):(\d+)\)$/;
 
-function mungeWebpackError(message: string) {
+function munge_webpack_warning_or_error(message: string) {
 	// TODO this is all a bit rube goldberg...
 	const lines = message.split('\n');
 
@@ -287,9 +308,13 @@ function mungeWebpackError(message: string) {
 
 	return {
 		file,
-		line,
-		column,
-		message: lines.join('\n'),
-		originalMessage: message
+		message: lines.join('\n')
+	};
+}
+
+function munge_rollup_warning_or_error(warning_or_error: any) {
+	return {
+		file: warning_or_error.filename,
+		message: [warning_or_error.message, warning_or_error.frame].filter(Boolean).join('\n')
 	};
 }
