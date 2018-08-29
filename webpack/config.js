@@ -1,2 +1,1 @@
-// TODO deprecate this file in favour of sapper/webpack.js
-module.exports = require('../dist/webpack.js');
+throw new Error(`As of Sapper 0.18, webpack config must be loaded from sapper/config/webpack.js`);

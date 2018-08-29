@@ -1,12 +1,9 @@
-import path from 'path';
 import typescript from 'rollup-plugin-typescript';
 import string from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
-
-console.log('WE ARE INSIDE THE ROLLUP CONFIG');
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
@@ -18,7 +15,7 @@ export default [
 	{
 		input: `src/runtime/index.ts`,
 		output: {
-			file: `./runtime.js`,
+			file: `runtime.js`,
 			format: 'es'
 		},
 		plugins: [
@@ -39,7 +36,7 @@ export default [
 			`src/webpack.ts`
 		],
 		output: {
-			dir: './dist',
+			dir: 'dist',
 			format: 'cjs',
 			sourcemap: true
 		},

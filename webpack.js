@@ -1,2 +1,1 @@
-// TODO write to this file, instead of webpack.js
-module.exports = require('./dist/webpack.js');
+throw new Error(`As of Sapper 0.18, webpack config must be loaded from sapper/config/webpack.js`);
