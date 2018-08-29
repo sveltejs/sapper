@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
+const path = require('path');
 console.log('dist files:');
-console.log(fs.readdirSync('dist'));
+console.log(fs.readdirSync(path.join(__dirname, 'dist')));
 
 require('./dist/cli.js');
