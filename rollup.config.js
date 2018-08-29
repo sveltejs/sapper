@@ -16,7 +16,7 @@ export default [
 	{
 		input: `src/runtime/index.ts`,
 		output: {
-			file: `runtime.js`,
+			file: path.join(__dirname, `runtime.js`),
 			format: 'es'
 		},
 		plugins: [
