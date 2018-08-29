@@ -1,10 +1,2 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-console.log('wtf:');
-console.log(process.cwd());
-console.log(fs.readdirSync(__dirname));
-console.log('dist files:');
-console.log(fs.readdirSync(path.join(__dirname, 'dist')));
-
 require('./dist/cli.js');

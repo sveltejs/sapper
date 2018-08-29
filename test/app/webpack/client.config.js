@@ -1,4 +1,4 @@
-const config = require('../../../webpack/config.js');
+const config = require('../../../config/webpack.js');
 const webpack = require('webpack');
 
 const mode = process.env.NODE_ENV;
