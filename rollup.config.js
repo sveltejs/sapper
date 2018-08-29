@@ -52,7 +52,6 @@ export default [
 				typescript: require('typescript')
 			})
 		],
-		experimentalCodeSplitting: true,
-		experimentalDynamicImport: true
+		experimentalCodeSplitting: true
 	}
 ];

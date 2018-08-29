@@ -1,1 +1,1 @@
-module.exports = require('./dist/rollup.ts.js');
+module.exports = require('./dist/rollup.js');
