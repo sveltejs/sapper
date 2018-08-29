@@ -11,6 +11,8 @@ export default {
 		output: () => {
 			return {
 				dir: `${locations.dest()}/client`,
+				entryFileNames: '[name].[hash].js',
+				chunkFileNames: '[name].[hash].js',
 				format: 'esm'
 			};
 		}

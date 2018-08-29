@@ -22,7 +22,7 @@ export class CompileResult {
 }
 
 class RollupResult extends CompileResult {
-	constructor(duration: number, stats: any) {
+	constructor(duration: number, { input, chunks }: { input: string, chunks: any[] }) {
 		super();
 
 		this.duration = duration;
@@ -30,14 +30,17 @@ class RollupResult extends CompileResult {
 		this.errors = [];
 		this.warnings = [];
 
-		// TODO
-		this.assets = [];
+		this.assets = chunks.map(chunk => chunk.fileName);
 
-		this.assetsByChunkName = {
-			// TODO need to hash these filenames and
-			// expose the info in the Rollup output
-			main: `client.js`
-		};
+		// TODO populate this properly. We don't have named chunks, as in
+		// webpack, but we can have a route -> [chunk] map or something
+		this.assetsByChunkName = {};
+
+		chunks.forEach(chunk => {
+			if (input in chunk.modules) {
+				this.assetsByChunkName.main = chunk.fileName;
+			}
+		});
 	}
 
 	print() {
@@ -77,9 +80,13 @@ export class RollupCompiler {
 	_: Promise<any>;
 	_oninvalid: (filename: string) => void;
 	_start: number;
+	input: string;
+	chunks: any[]; // TODO types
 
 	constructor(config: any) {
 		this._ = this.get_config(path.resolve(config));
+		this.input = null;
+		this.chunks = [];
 	}
 
 	async get_config(input: string) {
@@ -107,8 +114,13 @@ export class RollupCompiler {
 
 		(mod.plugins || (mod.plugins = [])).push({
 			name: 'sapper-internal',
-			watchChange: (file: string) => {
-				this._oninvalid(file);
+			options: (opts: any) => {
+				this.input = opts.input;
+			},
+			renderChunk: (code: string, chunk: any) => {
+				if (chunk.isEntry) {
+					this.chunks.push(chunk);
+				}
 			}
 		});
 
@@ -135,6 +147,10 @@ export class RollupCompiler {
 
 		const watcher = r.watch(config);
 
+		watcher.on('change', (id: string) => {
+			this._oninvalid(id);
+		});
+
 		watcher.on('event', (event: any) => {
 			switch (event.code) {
 				case 'FATAL':
@@ -157,7 +173,10 @@ export class RollupCompiler {
 					break;
 
 				case 'BUNDLE_END':
-					cb(null, new RollupResult(Date.now() - this._start, event.result));
+					cb(null, new RollupResult(Date.now() - this._start, {
+						input: this.input,
+						chunks: this.chunks
+					}));
 					break;
 
 				default:
