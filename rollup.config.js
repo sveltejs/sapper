@@ -16,7 +16,7 @@ export default [
 	{
 		input: `src/runtime/index.ts`,
 		output: {
-			file: path.join(__dirname, `runtime.js`),
+			file: `./runtime.js`,
 			format: 'es'
 		},
 		plugins: [
@@ -37,7 +37,7 @@ export default [
 			`src/webpack.ts`
 		],
 		output: {
-			dir: path.join(__dirname, 'dist'),
+			dir: './dist',
 			format: 'cjs',
 			sourcemap: true
 		},
