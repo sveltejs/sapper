@@ -48,7 +48,7 @@ prog.command('build [dest]')
 
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
-			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			console.log(`${colors.bold.red(`> ${err.message}`)}`);
 			process.exit(1);
 		}
 	});
