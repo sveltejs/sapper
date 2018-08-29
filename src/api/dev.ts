@@ -12,6 +12,7 @@ import { Compiler, Compilers, CompileResult, CompileError } from '../core/create
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
+import { copy_shimport } from './utils/copy_shimport';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -110,7 +111,8 @@ class Watcher extends EventEmitter {
 
 		const { dest } = this.dirs;
 		rimraf.sync(dest);
-		mkdirp.sync(dest);
+		mkdirp.sync(`${dest}/client`);
+		if (this.bundler === 'rollup') copy_shimport(dest);
 
 		const dev_port = await ports.find(10000);
 
@@ -271,6 +273,7 @@ class Watcher extends EventEmitter {
 			handle_result: (result: CompileResult) => {
 				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
 					bundler: this.bundler,
+					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
 					assets: result.assetsByChunkName
 				}, null, '  '));
 				this.deferreds.client.fulfil();

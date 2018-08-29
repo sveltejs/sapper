@@ -305,6 +305,7 @@ function get_page_handler(
 	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
+			shimport: string | null,
 			assets: Record<string, string | string[]>
 		 } = get_build_info();
 
@@ -357,7 +358,6 @@ function get_page_handler(
 					);
 
 					if (include_cookies) {
-						const cookies: Record<string, string> = {};
 						if (!opts.headers) opts.headers = {};
 
 						const str = []
@@ -488,7 +488,7 @@ function get_page_handler(
 			const main = `${req.baseUrl}/client/${file}`;
 
 			const script = build_info.bundler === 'rollup'
-				? `<script>try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="client/shimport.js";s.setAttribute('data-main',"${main}");document.head.appendChild(s)}</script>`
+				? `<script>try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}");document.head.appendChild(s);}</script>`
 				: `<script src="${main}"></script>`;
 
 			let inline_script = `__SAPPER__={${[

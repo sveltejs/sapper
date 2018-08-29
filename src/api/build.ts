@@ -8,6 +8,7 @@ import { create_compilers, create_main_manifests, create_routes, create_servicew
 import { Compilers, Compiler } from '../core/create_compilers';
 import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
+import { copy_shimport } from './utils/copy_shimport';
 
 export function build(opts: {}) {
 	const emitter = new EventEmitter();
@@ -34,8 +35,9 @@ async function execute(emitter: EventEmitter, {
 	rollup = 'rollup',
 	routes = 'routes'
 } = {}) {
-	mkdirp.sync(dest);
+	mkdirp.sync(`${dest}/client`);
 	rimraf.sync(path.join(dest, '**/*'));
+	copy_shimport(dest);
 
 	// minify app/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
@@ -66,6 +68,7 @@ async function execute(emitter: EventEmitter, {
 
 	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
 		bundler,
+		shimport: bundler === 'rollup' && require('shimport/package.json').version,
 		assets: client_result.assetsByChunkName
 	}));
 
