@@ -6,6 +6,8 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
 
+console.log('WE ARE INSIDE THE ROLLUP CONFIG');
+
 const external = [].concat(
 	Object.keys(pkg.dependencies),
 	Object.keys(process.binding('natives')),
