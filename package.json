@@ -63,7 +63,6 @@
     "tiny-glob": "^0.2.2",
     "ts-node": "^7.0.1",
     "typescript": "^2.8.3",
-    "url-parse": "^1.2.0",
     "walk-sync": "^0.3.2",
     "webpack": "^4.8.3",
     "webpack-format-messages": "^2.0.1"
