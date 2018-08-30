@@ -414,18 +414,6 @@ function get_page_handler(
 				res.setHeader('Location', location);
 				res.end();
 
-				if (process.send) {
-					process.send({
-						__sapper__: true,
-						event: 'file',
-						url: req.url,
-						method: req.method,
-						status: redirect.statusCode,
-						type: 'text/html',
-						body: `<script>window.location.href = "${location}"</script>`
-					});
-				}
-
 				return;
 			}
 
@@ -512,18 +500,6 @@ function get_page_handler(
 
 			res.statusCode = status;
 			res.end(body);
-
-			if (process.send) {
-				process.send({
-					__sapper__: true,
-					event: 'file',
-					url: req.url,
-					method: req.method,
-					status,
-					type: 'text/html',
-					body
-				});
-			}
 		}).catch(err => {
 			if (error) {
 				// we encountered an error while rendering the error page — oops

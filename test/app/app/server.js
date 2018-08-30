@@ -108,6 +108,13 @@ const middlewares = [
 	}),
 ];
 
+app.get(`${BASEPATH}/non-sapper-redirect-from`, (req, res) => {
+	res.writeHead(301, {
+		Location: `${BASEPATH}/non-sapper-redirect-to`
+	});
+	res.end();
+});
+
 if (BASEPATH) {
 	app.use(BASEPATH, ...middlewares);
 } else {

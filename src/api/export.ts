@@ -54,7 +54,9 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 	const port = await ports.find(3000);
 
 	const origin = `http://localhost:${port}`;
-	const root = new URL(opts.basepath || '', origin);
+	let basepath = opts.basepath || '/';
+	if (!basepath.endsWith('/')) basepath += '/';
+	let root = new URL(basepath, origin);
 
 	emitter.emit('info', {
 		message: `Crawling ${root.href}`
@@ -72,29 +74,15 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 
 	const seen = new Set();
 	const saved = new Set();
-	const deferreds = new Map();
 
-	function get_deferred(pathname: string) {
-		pathname = pathname.replace(root.pathname, '');
-
-		if (!deferreds.has(pathname)) {
-			deferreds.set(pathname, new Deferred());
-		}
-
-		return deferreds.get(pathname);
-	}
-
-	proc.on('message', message => {
-		if (!message.__sapper__ || message.event !== 'file') return;
-
-		const pathname = new URL(message.url, origin).pathname;
+	function save(url: string, status: number, type: string, body: string) {
+		const pathname = new URL(url, origin).pathname;
 		let file = pathname.slice(1);
-		let { body } = message;
 
 		if (saved.has(file)) return;
 		saved.add(file);
 
-		const is_html = message.type === 'text/html';
+		const is_html = type === 'text/html';
 
 		if (is_html) {
 			file = file === '' ? 'index.html' : `${file}/index.html`;
@@ -104,12 +92,15 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 		emitter.emit('file', <events.FileEvent>{
 			file,
 			size: body.length,
-			status: message.status
+			status
 		});
 
 		sander.writeFileSync(export_dir, file, body);
+	}
 
-		get_deferred(pathname).fulfil();
+	proc.on('message', message => {
+		if (!message.__sapper__ || message.event !== 'file') return;
+		save(message.url, message.status, message.type, message.body);
 	});
 
 	async function handle(url: URL) {
@@ -118,25 +109,27 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
 
-		const deferred = get_deferred(pathname);
-
 		const timeout_deferred = new Deferred();
 		const timeout = setTimeout(() => {
 			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
 		}, opts.timeout);
 
 		const r = await Promise.race([
-			fetch(url.href),
+			fetch(url.href, {
+				redirect: 'manual'
+			}),
 			timeout_deferred.promise
 		]);
 
 		clearTimeout(timeout); // prevent it hanging at the end
 
+		let type = r.headers.get('Content-Type');
+		let body = await r.text();
+
 		const range = ~~(r.status / 100);
 
 		if (range === 2) {
-			if (r.headers.get('Content-Type') === 'text/html') {
-				const body = await r.text();
+			if (type === 'text/html') {
 				const urls: URL[] = [];
 
 				const cleaned = clean_html(body);
@@ -162,7 +155,16 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			}
 		}
 
-		await deferred.promise;
+		if (range === 3) {
+			const location = r.headers.get('Location');
+
+			type = 'text/html';
+			body = `<script>window.location.href = "${location}"</script>`;
+
+			await handle(new URL(location, root));
+		}
+
+		save(pathname, r.status, type, body);
 	}
 
 	return ports.wait(port)
