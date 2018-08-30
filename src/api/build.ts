@@ -5,7 +5,10 @@ import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
+import { Compilers, Compiler } from '../core/create_compilers';
 import * as events from './interfaces';
+import validate_bundler from '../cli/utils/validate_bundler';
+import { copy_shimport } from './utils/copy_shimport';
 
 export function build(opts: {}) {
 	const emitter = new EventEmitter();
@@ -27,11 +30,14 @@ export function build(opts: {}) {
 async function execute(emitter: EventEmitter, {
 	dest = 'build',
 	app = 'app',
+	bundler,
 	webpack = 'webpack',
+	rollup = 'rollup',
 	routes = 'routes'
 } = {}) {
-	mkdirp.sync(dest);
 	rimraf.sync(path.join(dest, '**/*'));
+	mkdirp.sync(`${dest}/client`);
+	copy_shimport(dest);
 
 	// minify app/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
@@ -51,23 +57,26 @@ async function execute(emitter: EventEmitter, {
 	// create app/manifest/client.js and app/manifest/server.js
 	create_main_manifests({ routes: route_objects });
 
-	const { client, server, serviceworker } = create_compilers({ webpack });
+	const { client, server, serviceworker } = create_compilers(validate_bundler(bundler), { webpack, rollup });
 
-	const client_stats = await compile(client);
+	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'client',
 		// TODO duration/warnings
-		webpack_stats: client_stats
+		result: client_result
 	});
 
-	const client_info = client_stats.toJson();
-	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
+		bundler,
+		shimport: bundler === 'rollup' && require('shimport/package.json').version,
+		assets: client_result.assetsByChunkName
+	}));
 
-	const server_stats = await compile(server);
+	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{
 		type: 'server',
 		// TODO duration/warnings
-		webpack_stats: server_stats
+		result: server_stats
 	});
 
 	let serviceworker_stats;
@@ -75,35 +84,15 @@ async function execute(emitter: EventEmitter, {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes: route_objects,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
+			client_files: client_result.assets.map((file: string) => `client/${file}`)
 		});
 
-		serviceworker_stats = await compile(serviceworker);
+		serviceworker_stats = await serviceworker.compile();
 
 		emitter.emit('build', <events.BuildEvent>{
 			type: 'serviceworker',
 			// TODO duration/warnings
-			webpack_stats: serviceworker_stats
+			result: serviceworker_stats
 		});
 	}
-}
-
-function compile(compiler: any) {
-	return new Promise((fulfil, reject) => {
-		compiler.run((err: Error, stats: any) => {
-			if (err) {
-				reject(err);
-				process.exit(1);
-			}
-
-			if (stats.hasErrors()) {
-				console.error(stats.toString({ colors: true }));
-				reject(new Error(`Encountered errors while building app`));
-			}
-
-			else {
-				fulfil(stats);
-			}
-		});
-	});
 }

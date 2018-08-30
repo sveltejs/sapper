@@ -1,20 +1,39 @@
 import { build as _build } from '../api/build';
 import colors from 'kleur';
 import { locations } from '../config';
+import validate_bundler from './utils/validate_bundler';
+import { repeat } from '../utils';
 
-export function build() {
+export function build(opts: { bundler?: string }) {
+	const bundler = validate_bundler(opts.bundler);
+
 	return new Promise((fulfil, reject) => {
 		try {
 			const emitter = _build({
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
-				webpack: 'webpack'
+				bundler,
+				webpack: 'webpack',
+				rollup: 'rollup'
 			});
 
 			emitter.on('build', event => {
-				console.log(colors.inverse(`\nbuilt ${event.type}`));
-				console.log(event.webpack_stats.toString({ colors: true }));
+				let banner = `built ${event.type}`;
+				let c = colors.cyan;
+
+				const { warnings } = event.result;
+				if (warnings.length > 0) {
+					banner += ` with ${warnings.length} ${warnings.length === 1 ? 'warning' : 'warnings'}`;
+					c = colors.yellow;
+				}
+
+				console.log();
+				console.log(c(`┌─${repeat('─', banner.length)}─┐`));
+				console.log(c(`│ ${colors.bold(banner)       } │`));
+				console.log(c(`└─${repeat('─', banner.length)}─┘`));
+
+				console.log(event.result.print());
 			});
 
 			emitter.on('error', event => {
@@ -25,8 +44,7 @@ export function build() {
 				fulfil();
 			});
 		} catch (err) {
-			console.log(`${colors.bold.red(`> ${err.message}`)}`);
-			process.exit(1);
+			reject(err);
 		}
 	});
 }

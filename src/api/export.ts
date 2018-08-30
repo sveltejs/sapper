@@ -13,7 +13,7 @@ import * as events from './interfaces';
 type Opts = {
 	build: string,
 	dest: string,
-	basepath: string,
+	basepath?: string,
 	timeout: number | false
 };
 

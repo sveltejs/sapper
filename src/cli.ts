@@ -11,7 +11,8 @@ prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
-	.action(async (opts: { port: number, open: boolean }) => {
+	.option('--bundler', 'Specify a bundler (rollup or webpack)')
+	.action(async (opts: { port: number, open: boolean, bundler?: string }) => {
 		const { dev } = await import('./cli/dev');
 		dev(opts);
 	});
@@ -19,8 +20,9 @@ prog.command('dev')
 prog.command('build [dest]')
 	.describe('Create a production-ready version of your app')
 	.option('-p, --port', 'Default of process.env.PORT', '3000')
+	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
 	.example(`build custom-dir -p 4567`)
-	.action(async (dest = 'build', opts: { port: string }) => {
+	.action(async (dest = 'build', opts: { port: string, bundler?: string }) => {
 		console.log(`> Building...`);
 
 		process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -30,7 +32,7 @@ prog.command('build [dest]')
 
 		try {
 			const { build } = await import('./cli/build');
-			await build();
+			await build(opts);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -46,7 +48,7 @@ prog.command('build [dest]')
 
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
-			console.error(err ? err.details || err.stack || err.message || err : 'Unknown error');
+			console.log(`${colors.bold.red(`> ${err.message}`)}`);
 			process.exit(1);
 		}
 	});
@@ -66,8 +68,10 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Specify a custom temporary build directory', '.sapper/prod')
 	.option('--basepath', 'Specify a base path')
 	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
+	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
 	.action(async (dest = 'export', opts: {
 		build: boolean,
+		bundler?: string,
 		'build-dir': string,
 		basepath?: string,
 		timeout: number | false
@@ -81,7 +85,7 @@ prog.command('export [dest]')
 			if (opts.build) {
 				console.log(`> Building...`);
 				const { build } = await import('./cli/build');
-				await build();
+				await build(opts);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 

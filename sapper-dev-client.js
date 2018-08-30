@@ -1,6 +1,8 @@
 let source;
 
 function check() {
+	if (typeof module === 'undefined') return;
+
 	if (module.hot.status() === 'idle') {
 		module.hot.check(true).then(modules => {
 			console.log(`[SAPPER] applied HMR update`);

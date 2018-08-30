@@ -5,22 +5,26 @@ import * as child_process from 'child_process';
 import * as ports from 'port-authority';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import format_messages from 'webpack-format-messages';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { Compiler, Compilers, CompileResult, CompileError } from '../core/create_compilers';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
+import validate_bundler from '../cli/utils/validate_bundler';
+import { copy_shimport } from './utils/copy_shimport';
 
 export function dev(opts) {
 	return new Watcher(opts);
 }
 
 class Watcher extends EventEmitter {
+	bundler: string;
 	dirs: {
 		app: string;
 		dest: string;
 		routes: string;
+		rollup: string;
 		webpack: string;
 	}
 	port: number;
@@ -47,18 +51,23 @@ class Watcher extends EventEmitter {
 		app = locations.app(),
 		dest = locations.dest(),
 		routes = locations.routes(),
+		bundler,
 		webpack = 'webpack',
+		rollup = 'rollup',
 		port = +process.env.PORT
 	}: {
 		app: string,
 		dest: string,
 		routes: string,
+		bundler?: string,
 		webpack: string,
+		rollup: string,
 		port: number
 	}) {
 		super();
 
-		this.dirs = { app, dest, routes, webpack };
+		this.bundler = validate_bundler(bundler);
+		this.dirs = { app, dest, routes, webpack, rollup };
 		this.port = port;
 		this.closed = false;
 
@@ -102,7 +111,8 @@ class Watcher extends EventEmitter {
 
 		const { dest } = this.dirs;
 		rimraf.sync(dest);
-		mkdirp.sync(dest);
+		mkdirp.sync(`${dest}/client`);
+		if (this.bundler === 'rollup') copy_shimport(dest);
 
 		const dev_port = await ports.find(10000);
 
@@ -155,7 +165,10 @@ class Watcher extends EventEmitter {
 		};
 
 		// TODO watch the configs themselves?
-		const compilers = create_compilers({ webpack: this.dirs.webpack });
+		const compilers: Compilers = create_compilers(this.bundler, {
+			webpack: this.dirs.webpack,
+			rollup: this.dirs.rollup
+		});
 
 		let log = '';
 
@@ -177,7 +190,7 @@ class Watcher extends EventEmitter {
 				this.deferreds.server = new Deferred();
 			},
 
-			result: info => {
+			handle_result: (result: CompileResult) => {
 				this.deferreds.client.promise.then(() => {
 					const restart = () => {
 						log = '';
@@ -245,8 +258,6 @@ class Watcher extends EventEmitter {
 			}
 		});
 
-		let first = true;
-
 		this.watch(compilers.client, {
 			name: 'client',
 
@@ -259,11 +270,15 @@ class Watcher extends EventEmitter {
 				// quite difficult
 			},
 
-			result: info => {
-				fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(info.assetsByChunkName, null, '  '));
+			handle_result: (result: CompileResult) => {
+				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
+					bundler: this.bundler,
+					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
+					assets: result.assetsByChunkName
+				}, null, '  '));
 				this.deferreds.client.fulfil();
 
-				const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
+				const client_files = result.assets.map((file: string) => `client/${file}`);
 
 				create_serviceworker_manifest({
 					routes: create_routes(),
@@ -281,11 +296,7 @@ class Watcher extends EventEmitter {
 				watch_serviceworker = noop;
 
 				this.watch(compilers.serviceworker, {
-					name: 'service worker',
-
-					result: info => {
-						fs.writeFileSync(path.join(dest, 'serviceworker_info.json'), JSON.stringify(info, null, '  '));
-					}
+					name: 'service worker'
 				});
 			}
 			: noop;
@@ -332,80 +343,32 @@ class Watcher extends EventEmitter {
 		}
 	}
 
-	watch(compiler: any, { name, invalid = noop, result }: {
+	watch(compiler: Compiler, { name, invalid = noop, handle_result = noop }: {
 		name: string,
 		invalid?: (filename: string) => void;
-		result: (stats: any) => void;
+		handle_result?: (result: CompileResult) => void;
 	}) {
-		compiler.hooks.invalid.tap('sapper', (filename: string) => {
-			invalid(filename);
-		});
+		compiler.oninvalid(invalid);
 
-		compiler.watch({}, (err: Error, stats: any) => {
+		compiler.watch((err?: Error, result?: CompileResult) => {
 			if (err) {
 				this.emit('error', <events.ErrorEvent>{
 					type: name,
 					message: err.message
 				});
 			} else {
-				const messages = format_messages(stats);
-				const info = stats.toJson();
-
 				this.emit('build', {
 					type: name,
 
-					duration: info.time,
-
-					errors: messages.errors.map((message: string) => {
-						const duplicate = this.current_build.unique_errors.has(message);
-						this.current_build.unique_errors.add(message);
-
-						return mungeWebpackError(message, duplicate);
-					}),
-
-					warnings: messages.warnings.map((message: string) => {
-						const duplicate = this.current_build.unique_warnings.has(message);
-						this.current_build.unique_warnings.add(message);
-
-						return mungeWebpackError(message, duplicate);
-					}),
+					duration: result.duration,
+					errors: result.errors,
+					warnings: result.warnings
 				});
 
-				result(info);
+				handle_result(result);
 			}
 		});
 	}
-}
-
-const locPattern = /\((\d+):(\d+)\)$/;
-
-function mungeWebpackError(message: string, duplicate: boolean) {
-	// TODO this is all a bit rube goldberg...
-	const lines = message.split('\n');
-
-	const file = lines.shift()
-		.replace('[7m', '') // careful — there is a special character at the beginning of this string
-		.replace('[27m', '')
-		.replace('./', '');
-
-	let line = null;
-	let column = null;
-
-	const match = locPattern.exec(lines[0]);
-	if (match) {
-		lines[0] = lines[0].replace(locPattern, '');
-		line = +match[1];
-		column = +match[2];
-	}
-
-	return {
-		file,
-		line,
-		column,
-		message: lines.join('\n'),
-		originalMessage: message,
-		duplicate
-	};
 }
 
 const INTERVAL = 10000;

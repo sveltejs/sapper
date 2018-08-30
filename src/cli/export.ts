@@ -1,12 +1,8 @@
 import { exporter as _exporter } from '../api/export';
 import colors from 'kleur';
-import prettyBytes from 'pretty-bytes';
+import pb from 'pretty-bytes';
 import { locations } from '../config';
-
-function left_pad(str: string, len: number) {
-	while (str.length < len) str = ` ${str}`;
-	return str;
-}
+import { left_pad } from '../utils';
 
 export function exporter(export_dir: string, {
 	basepath = '',
@@ -25,9 +21,8 @@ export function exporter(export_dir: string, {
 			});
 
 			emitter.on('file', event => {
-				const pb = prettyBytes(event.size);
 				const size_color = event.size > 150000 ? colors.bold.red : event.size > 50000 ? colors.bold.yellow : colors.bold.gray;
-				const size_label = size_color(left_pad(prettyBytes(event.size), 10));
+				const size_label = size_color(left_pad(pb(event.size), 10));
 
 				const file_label = event.status === 200
 					? event.file

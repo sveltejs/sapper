@@ -1,4 +1,4 @@
-const config = require('../../../webpack/config.js');
+const config = require('../../../config/webpack.js');
 
 module.exports = {
 	entry: config.serviceworker.entry(),

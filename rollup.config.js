@@ -32,6 +32,7 @@ export default [
 			`src/cli.ts`,
 			`src/core.ts`,
 			`src/middleware.ts`,
+			`src/rollup.ts`,
 			`src/webpack.ts`
 		],
 		output: {
@@ -51,7 +52,6 @@ export default [
 				typescript: require('typescript')
 			})
 		],
-		experimentalCodeSplitting: true,
-		experimentalDynamicImport: true
+		experimentalCodeSplitting: true
 	}
 ];
