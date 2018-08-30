@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.2
+
+* Update `pkg.files`
+
 ## 0.18.1
 
 * Add live reloading ([#385](https://github.com/sveltejs/sapper/issues/385))

@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "description": "Military-grade apps, engineered by Svelte",
   "main": "dist/middleware.js",
   "bin": {
@@ -10,6 +10,7 @@
     "*.js",
     "runtime",
     "webpack",
+    "config",
     "sapper",
     "components",
     "dist"
