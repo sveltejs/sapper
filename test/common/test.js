@@ -2,9 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const Nightmare = require('nightmare');
-const serve = require('serve-static');
 const walkSync = require('walk-sync');
-const fetch = require('node-fetch');
 const rimraf = require('rimraf');
 const ports = require('port-authority');
 
@@ -82,6 +80,11 @@ function testExport({ basepath = '' }) {
 				'index.html',
 				'about/index.html',
 				'slow-preload/index.html',
+
+				'redirect-from/index.html',
+				'redirect-to/index.html',
+				'non-sapper-redirect-from/index.html',
+				'non-sapper-redirect-to/index.html',
 
 				'blog/index.html',
 				'blog/a-very-long-post/index.html',
