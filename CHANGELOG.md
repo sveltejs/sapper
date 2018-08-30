@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.3
+
+* Fix service worker Rollup build config
+
 ## 0.18.2
 
 * Update `pkg.files`

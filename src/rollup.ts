@@ -38,7 +38,7 @@ export default {
 
 		output: () => {
 			return {
-				dir: locations.dest(),
+				file: `${locations.dest()}/service-worker.js`,
 				format: 'iife'
 			}
 		}
