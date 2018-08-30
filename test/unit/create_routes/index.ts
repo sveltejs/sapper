@@ -53,14 +53,14 @@ describe('create_routes', () => {
 		assert.deepEqual(server_routes, [
 			{
 				name: 'route_blog_json',
-				pattern: /^\/blog.json\/?$/,
+				pattern: /^\/blog.json$/,
 				file: 'blog/index.json.js',
 				params: []
 			},
 
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?).json\/?$/,
+				pattern: /^\/blog\/([^\/]+?).json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}

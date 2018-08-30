@@ -17,8 +17,8 @@ export class CompileResult {
 	duration: number;
 	errors: CompileError[];
 	warnings: CompileError[];
-	assets: string[];
-	assetsByChunkName: Record<string, string>;
+	chunks: string[];
+	assets: Record<string, string>;
 }
 
 class RollupResult extends CompileResult {
@@ -32,15 +32,15 @@ class RollupResult extends CompileResult {
 		this.errors = compiler.errors.map(munge_rollup_warning_or_error);
 		this.warnings = compiler.warnings.map(munge_rollup_warning_or_error); // TODO emit this as they happen
 
-		this.assets = compiler.chunks.map(chunk => chunk.fileName);
+		this.chunks = compiler.chunks.map(chunk => chunk.fileName);
 
 		// TODO populate this properly. We don't have namedcompiler. chunks, as in
 		// webpack, but we can have a route -> [chunk] map or something
-		this.assetsByChunkName = {};
+		this.assets = {};
 
 		compiler.chunks.forEach(chunk => {
 			if (compiler.input in chunk.modules) {
-				this.assetsByChunkName.main = chunk.fileName;
+				this.assets.main = chunk.fileName;
 			}
 		});
 
@@ -110,8 +110,8 @@ class WebpackResult extends CompileResult {
 
 		this.duration = info.time;
 
-		this.assets = info.assets.map((chunk: { name: string }) => chunk.name);
-		this.assetsByChunkName = info.assetsByChunkName;
+		this.chunks = info.assets.map((chunk: { name: string }) => chunk.name);
+		this.assets = info.assetsByChunkName;
 	}
 
 	print() {

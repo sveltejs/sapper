@@ -129,7 +129,7 @@ class Watcher extends EventEmitter {
 
 		try {
 			const routes = create_routes();
-			create_main_manifests({ routes, dev_port: this.dev_port });
+			create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
 				message: err.message
@@ -150,11 +150,11 @@ class Watcher extends EventEmitter {
 				},
 				() => {
 					const routes = create_routes();
-					create_main_manifests({ routes, dev_port: this.dev_port });
+					create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 
 					try {
 						const routes = create_routes();
-						create_main_manifests({ routes, dev_port: this.dev_port });
+						create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 					} catch (err) {
 						this.emit('error', <events.ErrorEvent>{
 							message: err.message
@@ -285,7 +285,7 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
 					bundler: this.bundler,
 					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
-					assets: result.assetsByChunkName
+					assets: result.assets
 				}, null, '  '));
 
 				const client_files = result.assets.map((file: string) => `client/${file}`);

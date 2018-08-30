@@ -128,12 +128,12 @@ export default function create_routes(cwd = locations.routes()) {
 				components.push(component);
 				if (item.basename === 'index.html') {
 					pages.push({
-						pattern: get_pattern(parent_segments),
+						pattern: get_pattern(parent_segments, true),
 						parts
 					});
 				} else {
 					pages.push({
-						pattern: get_pattern(segments),
+						pattern: get_pattern(segments, true),
 						parts
 					});
 				}
@@ -142,7 +142,7 @@ export default function create_routes(cwd = locations.routes()) {
 			else {
 				server_routes.push({
 					name: `route_${get_slug(item.file)}`,
-					pattern: get_pattern(segments),
+					pattern: get_pattern(segments, false),
 					file: item.file,
 					params: params
 				});
@@ -276,7 +276,7 @@ function get_slug(file: string) {
 		});
 }
 
-function get_pattern(segments: Part[][]) {
+function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
 	return new RegExp(
 		`^` +
 		segments.map(segment => {
@@ -290,6 +290,6 @@ function get_pattern(segments: Part[][]) {
 						.replace(/%5D/g, ']');
 			}).join('');
 		}).join('') +
-		'\\\/?$'
+		(add_trailing_slash ? '\\\/?$' : '$')
 	);
 }

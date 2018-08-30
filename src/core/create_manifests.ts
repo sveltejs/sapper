@@ -5,7 +5,8 @@ import { posixify, write_if_changed } from './utils';
 import { dev, locations } from '../config';
 import { Page, PageComponent, ServerRoute } from '../interfaces';
 
-export function create_main_manifests({ routes, dev_port }: {
+export function create_main_manifests({ bundler, routes, dev_port }: {
+	bundler: string,
 	routes: { components: PageComponent[], pages: Page[], server_routes: ServerRoute[] };
 	dev_port?: number;
 }) {
@@ -14,7 +15,7 @@ export function create_main_manifests({ routes, dev_port }: {
 
 	const path_to_routes = path.relative(manifest_dir, locations.routes());
 
-	const client_manifest = generate_client(routes, path_to_routes, dev_port);
+	const client_manifest = generate_client(routes, path_to_routes, bundler, dev_port);
 	const server_manifest = generate_server(routes, path_to_routes);
 
 	write_if_changed(
@@ -48,6 +49,7 @@ export function create_serviceworker_manifest({ routes, client_files }: {
 function generate_client(
 	routes: { root: PageComponent, components: PageComponent[], pages: Page[], server_routes: ServerRoute[] },
 	path_to_routes: string,
+	bundler: string,
 	dev_port?: number
 ) {
 	const page_ids = new Set(routes.pages.map(page =>
@@ -61,10 +63,15 @@ function generate_client(
 		import root from '${get_file(path_to_routes, routes.root)}';
 		import error from '${posixify(`${path_to_routes}/_error.html`)}';
 
-		${routes.components.map(component =>
-		`const ${component.name} = () =>
-			import(/* webpackChunkName: "${component.name}" */ '${get_file(path_to_routes, component)}');`)
-		.join('\n')}
+		${routes.components.map(component => {
+			const annotation = bundler === 'webpack'
+				? `/* webpackChunkName: "${component.name}" */ `
+				: '';
+
+			const source = get_file(path_to_routes, component);
+
+			return `const ${component.name} = () => import(${annotation}'${source}');`;
+		}).join('\n')}
 
 		export const manifest = {
 			ignore: [${server_routes_to_ignore.map(route => route.pattern).join(', ')}],
