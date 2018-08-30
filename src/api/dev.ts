@@ -280,7 +280,7 @@ class Watcher extends EventEmitter {
 				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
 					bundler: this.bundler,
 					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
-					assets: result.assetsByChunkName
+					assets: result.assets
 				}, null, '  '));
 
 				const client_files = result.assets.map((file: string) => `client/${file}`);
