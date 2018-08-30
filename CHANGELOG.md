@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.1
+
+* Add live reloading ([#385](https://github.com/sveltejs/sapper/issues/385))
+
 ## 0.18.0
 
 * Rollup support ([#379](https://github.com/sveltejs/sapper/pull/379))
