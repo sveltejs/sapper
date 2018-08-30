@@ -29,14 +29,13 @@ class Watcher extends EventEmitter {
 	}
 	port: number;
 	closed: boolean;
+	live: boolean;
+	hot: boolean;
 
 	dev_server: DevServer;
 	proc: child_process.ChildProcess;
 	filewatchers: Array<{ close: () => void }>;
-	deferreds: {
-		client: Deferred;
-		server: Deferred;
-	};
+	deferred: Deferred;
 
 	crashed: boolean;
 	restarting: boolean;
@@ -51,6 +50,8 @@ class Watcher extends EventEmitter {
 		app = locations.app(),
 		dest = locations.dest(),
 		routes = locations.routes(),
+		live,
+		hot,
 		bundler,
 		webpack = 'webpack',
 		rollup = 'rollup',
@@ -59,6 +60,8 @@ class Watcher extends EventEmitter {
 		app: string,
 		dest: string,
 		routes: string,
+		live: boolean,
+		hot: boolean,
 		bundler?: string,
 		webpack: string,
 		rollup: string,
@@ -70,6 +73,9 @@ class Watcher extends EventEmitter {
 		this.dirs = { app, dest, routes, webpack, rollup };
 		this.port = port;
 		this.closed = false;
+
+		this.live = live;
+		this.hot = hot;
 
 		this.filewatchers = [];
 
@@ -159,10 +165,7 @@ class Watcher extends EventEmitter {
 			})
 		);
 
-		this.deferreds = {
-			server: new Deferred(),
-			client: new Deferred()
-		};
+		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
 		const compilers: Compilers = create_compilers(this.bundler, {
@@ -187,11 +190,10 @@ class Watcher extends EventEmitter {
 
 			invalid: filename => {
 				this.restart(filename, 'server');
-				this.deferreds.server = new Deferred();
 			},
 
 			handle_result: (result: CompileResult) => {
-				this.deferreds.client.promise.then(() => {
+				deferred.promise.then(() => {
 					const restart = () => {
 						log = '';
 						this.crashed = false;
@@ -203,11 +205,15 @@ class Watcher extends EventEmitter {
 									process: this.proc
 								});
 
-								this.deferreds.server.fulfil();
-
-								this.dev_server.send({
-									status: 'completed'
-								});
+								if (this.hot && this.bundler === 'webpack') {
+									this.dev_server.send({
+										status: 'completed'
+									});
+								} else {
+									this.dev_server.send({
+										action: 'reload'
+									});
+								}
 							}))
 							.catch(err => {
 								if (this.crashed) return;
@@ -263,7 +269,7 @@ class Watcher extends EventEmitter {
 
 			invalid: filename => {
 				this.restart(filename, 'client');
-				this.deferreds.client = new Deferred();
+				deferred = new Deferred();
 
 				// TODO we should delete old assets. due to a webpack bug
 				// i don't even begin to comprehend, this is apparently
@@ -276,7 +282,6 @@ class Watcher extends EventEmitter {
 					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
 					assets: result.assetsByChunkName
 				}, null, '  '));
-				this.deferreds.client.fulfil();
 
 				const client_files = result.assets.map((file: string) => `client/${file}`);
 
@@ -284,6 +289,8 @@ class Watcher extends EventEmitter {
 					routes: create_routes(),
 					client_files
 				});
+
+				deferred.fulfil();
 
 				// we need to wait a beat before watching the service
 				// worker, because of some webpack nonsense
