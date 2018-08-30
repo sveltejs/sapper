@@ -124,7 +124,7 @@ class Watcher extends EventEmitter {
 
 		try {
 			const routes = create_routes();
-			create_main_manifests({ routes, dev_port });
+			create_main_manifests({ bundler: this.bundler, routes, dev_port });
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
 				message: err.message
@@ -145,11 +145,11 @@ class Watcher extends EventEmitter {
 				},
 				() => {
 					const routes = create_routes();
-					create_main_manifests({ routes, dev_port });
+					create_main_manifests({ bundler: this.bundler, routes, dev_port });
 
 					try {
 						const routes = create_routes();
-						create_main_manifests({ routes, dev_port });
+						create_main_manifests({ bundler: this.bundler, routes, dev_port });
 					} catch (err) {
 						this.emit('error', <events.ErrorEvent>{
 							message: err.message

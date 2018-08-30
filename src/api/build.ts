@@ -55,7 +55,7 @@ async function execute(emitter: EventEmitter, {
 	const route_objects = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ routes: route_objects });
+	create_main_manifests({ bundler, routes: route_objects });
 
 	const { client, server, serviceworker } = create_compilers(validate_bundler(bundler), { webpack, rollup });
 
