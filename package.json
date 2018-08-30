@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "html-minifier": "^3.5.16",
-    "shimport": "^0.0.8",
+    "shimport": "^0.0.9",
     "source-map-support": "^0.5.6",
     "tslib": "^1.9.1"
   },
