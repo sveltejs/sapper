@@ -1,7 +1,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
-import URL from 'url-parse';
+import * as url from 'url';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
@@ -34,6 +34,12 @@ export function exporter(opts: Opts) {
 	return emitter;
 }
 
+function resolve(from: string, to: string) {
+	return url.parse(url.resolve(from, to));
+}
+
+type URL = url.UrlWithStringQuery;
+
 async function execute(emitter: EventEmitter, opts: Opts) {
 	const export_dir = path.join(opts.dest, opts.basepath);
 
@@ -53,10 +59,12 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 
 	const port = await ports.find(3000);
 
-	const origin = `http://localhost:${port}`;
-	let basepath = opts.basepath || '/';
-	if (!basepath.endsWith('/')) basepath += '/';
-	let root = new URL(basepath, origin);
+	const protocol = 'http:';
+	const host = `localhost:${port}`;
+	const origin = `${protocol}//${host}`;
+
+	const root = resolve(origin, opts.basepath || '');
+	if (!root.href.endsWith('/')) root.href += '/';
 
 	emitter.emit('info', {
 		message: `Crawling ${root.href}`
@@ -75,8 +83,8 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 	const seen = new Set();
 	const saved = new Set();
 
-	function save(url: string, status: number, type: string, body: string) {
-		const pathname = new URL(url, origin).pathname;
+	function save(path: string, status: number, type: string, body: string) {
+		const { pathname } = resolve(origin, path);
 		let file = pathname.slice(1);
 
 		if (saved.has(file)) return;
@@ -136,7 +144,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 				const base_href = base_match && get_href(base_match[1]);
-				const base = new URL(base_href || '/', url.href);
+				const base = resolve(url.href, base_href);
 
 				let match;
 				let pattern = /<a ([\s\S]+?)>/gm;
@@ -146,8 +154,11 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 					const href = get_href(attrs);
 
 					if (href) {
-						const url = new URL(href, base.href);
-						if (url.origin === origin) urls.push(url);
+						const url = resolve(base.href, href);
+
+						if (url.protocol === protocol && url.host === host) {
+							urls.push(url);
+						}
 					}
 				}
 
@@ -161,7 +172,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			type = 'text/html';
 			body = `<script>window.location.href = "${location}"</script>`;
 
-			await handle(new URL(location, root));
+			await handle(resolve(root.href, location));
 		}
 
 		save(pathname, r.status, type, body);
