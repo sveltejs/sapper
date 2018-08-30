@@ -55,7 +55,7 @@ async function execute(emitter: EventEmitter, {
 	const route_objects = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ routes: route_objects });
+	create_main_manifests({ bundler, routes: route_objects });
 
 	const { client, server, serviceworker } = create_compilers(validate_bundler(bundler), { webpack, rollup });
 
@@ -69,7 +69,7 @@ async function execute(emitter: EventEmitter, {
 	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
 		bundler,
 		shimport: bundler === 'rollup' && require('shimport/package.json').version,
-		assets: client_result.assetsByChunkName
+		assets: client_result.assets
 	}));
 
 	const server_stats = await server.compile();
@@ -84,7 +84,7 @@ async function execute(emitter: EventEmitter, {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			routes: route_objects,
-			client_files: client_result.assets.map((file: string) => `client/${file}`)
+			client_files: client_result.chunks.map((file: string) => `client/${file}`)
 		});
 
 		serviceworker_stats = await serviceworker.compile();
