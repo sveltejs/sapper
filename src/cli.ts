@@ -11,12 +11,14 @@ prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
+	.option('--dev-port', 'Specify a port for development server')
 	.option('--hot', 'Use hot module replacement (requires webpack)', true)
-	.option('-l --live', 'Reload on changes if not using --hot', true)
+	.option('--live', 'Reload on changes if not using --hot', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
 	.action(async (opts: {
 		port: number,
 		open: boolean,
+		'dev-port': number,
 		live: boolean,
 		hot: boolean,
 		bundler?: string

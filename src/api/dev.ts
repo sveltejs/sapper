@@ -29,6 +29,8 @@ class Watcher extends EventEmitter {
 	}
 	port: number;
 	closed: boolean;
+
+	dev_port: number;
 	live: boolean;
 	hot: boolean;
 
@@ -50,6 +52,7 @@ class Watcher extends EventEmitter {
 		app = locations.app(),
 		dest = locations.dest(),
 		routes = locations.routes(),
+		'dev-port': dev_port,
 		live,
 		hot,
 		bundler,
@@ -60,6 +63,7 @@ class Watcher extends EventEmitter {
 		app: string,
 		dest: string,
 		routes: string,
+		'dev-port': number,
 		live: boolean,
 		hot: boolean,
 		bundler?: string,
@@ -74,6 +78,7 @@ class Watcher extends EventEmitter {
 		this.port = port;
 		this.closed = false;
 
+		this.dev_port = dev_port;
 		this.live = live;
 		this.hot = hot;
 
@@ -120,11 +125,11 @@ class Watcher extends EventEmitter {
 		mkdirp.sync(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);
 
-		const dev_port = await ports.find(10000);
+		if (!this.dev_port) this.dev_port = await ports.find(10000);
 
 		try {
 			const routes = create_routes();
-			create_main_manifests({ bundler: this.bundler, routes, dev_port });
+			create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
 				message: err.message
@@ -132,7 +137,7 @@ class Watcher extends EventEmitter {
 			return;
 		}
 
-		this.dev_server = new DevServer(dev_port);
+		this.dev_server = new DevServer(this.dev_port);
 
 		this.filewatchers.push(
 			watch_dir(
@@ -145,11 +150,11 @@ class Watcher extends EventEmitter {
 				},
 				() => {
 					const routes = create_routes();
-					create_main_manifests({ bundler: this.bundler, routes, dev_port });
+					create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 
 					try {
 						const routes = create_routes();
-						create_main_manifests({ bundler: this.bundler, routes, dev_port });
+						create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
 					} catch (err) {
 						this.emit('error', <events.ErrorEvent>{
 							message: err.message
