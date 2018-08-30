@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.18.0
+
+* Rollup support ([#379](https://github.com/sveltejs/sapper/pull/379))
+* Fail `export` if a page times out (configurable with `--timeout`) ([#378](https://github.com/sveltejs/sapper/pull/378))
+
 ## 0.17.1
 
 * Print which file is causing build errors/warnings ([#371](https://github.com/sveltejs/sapper/pull/371))
