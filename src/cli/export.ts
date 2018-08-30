@@ -2,7 +2,7 @@ import { exporter as _exporter } from '../api/export';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
 import { locations } from '../config';
-import { right_pad } from '../utils';
+import { left_pad } from '../utils';
 
 export function exporter(export_dir: string, {
 	basepath = '',
@@ -22,7 +22,7 @@ export function exporter(export_dir: string, {
 
 			emitter.on('file', event => {
 				const size_color = event.size > 150000 ? colors.bold.red : event.size > 50000 ? colors.bold.yellow : colors.bold.gray;
-				const size_label = size_color(right_pad(pb(event.size), 10));
+				const size_label = size_color(left_pad(pb(event.size), 10));
 
 				const file_label = event.status === 200
 					? event.file

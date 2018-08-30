@@ -2,9 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
-import { locations } from '../config';
 import relative from 'require-relative';
-import { left_pad, right_pad } from '../utils';
+import { left_pad } from '../utils';
 
 let r: any;
 let wp: any;
