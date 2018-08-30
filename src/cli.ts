@@ -11,8 +11,16 @@ prog.command('dev')
 	.describe('Start a development server')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
+	.option('-l --live', 'Reload on changes', false)
+	.option('--hot', 'Use hot module replacement', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
-	.action(async (opts: { port: number, open: boolean, bundler?: string }) => {
+	.action(async (opts: {
+		port: number,
+		open: boolean,
+		live: boolean,
+		hot: boolean,
+		bundler?: string
+	}) => {
 		const { dev } = await import('./cli/dev');
 		dev(opts);
 	});
