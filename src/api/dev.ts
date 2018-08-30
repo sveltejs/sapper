@@ -205,13 +205,13 @@ class Watcher extends EventEmitter {
 									process: this.proc
 								});
 
-								if (this.live) {
+								if (this.hot && this.bundler === 'webpack') {
 									this.dev_server.send({
-										action: 'reload'
+										status: 'completed'
 									});
 								} else {
 									this.dev_server.send({
-										status: 'completed'
+										action: 'reload'
 									});
 								}
 							}))
