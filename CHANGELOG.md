@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.5
+
+* Bugfix
+
 ## 0.18.4
 
 * Handle non-Sapper responses when exporting ([#382](https://github.com/sveltejs/sapper/issues/392))
