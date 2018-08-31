@@ -9,8 +9,11 @@ export default {
 		},
 
 		output: () => {
+			let dir = `${locations.dest()}/client`;
+			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
+
 			return {
-				dir: `${locations.dest()}/client`,
+				dir,
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm'
