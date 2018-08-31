@@ -70,7 +70,10 @@ function generate_client(
 
 			const source = get_file(path_to_routes, component);
 
-			return `const ${component.name} = () => import(${annotation}'${source}');`;
+			return `const ${component.name} = {
+			js: () => import(${annotation}'${source}'),
+			css: "__SAPPER_PLACEHOLDER:${component.file}__"
+		};`;
 		}).join('\n')}
 
 		export const manifest = {

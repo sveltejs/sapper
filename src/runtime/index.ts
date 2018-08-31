@@ -177,7 +177,7 @@ function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		const { default: Component } = await part.component();
+		const { default: Component } = await part.component.js();
 		const req = {
 			path,
 			query,

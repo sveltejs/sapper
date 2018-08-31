@@ -18,7 +18,9 @@ export interface Component {
 export type Page = {
 	pattern: RegExp;
 	parts: Array<{
-		component: () => Promise<{ default: ComponentConstructor }>;
+		component: {
+			js: () => Promise<{ default: ComponentConstructor }>
+		};
 		params?: (match: RegExpExecArray) => Record<string, string>;
 	}>;
 };

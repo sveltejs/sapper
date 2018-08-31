@@ -164,6 +164,7 @@ export class RollupCompiler {
 				this.input = opts.input;
 			},
 			renderChunk: (code: string, chunk: any) => {
+				console.log(chunk);
 				if (chunk.isEntry) {
 					this.chunks.push(chunk);
 				}

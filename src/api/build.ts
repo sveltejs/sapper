@@ -8,10 +8,23 @@ import { create_compilers, create_main_manifests, create_routes, create_servicew
 import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 
-export function build(opts: {}) {
+type Opts = {
+	legacy: boolean;
+	bundler: string;
+};
+
+type Dirs = {
+	dest: string,
+	app: string,
+	routes: string,
+	webpack: string,
+	rollup: string
+};
+
+export function build(opts: Opts, dirs: Dirs) {
 	const emitter = new EventEmitter();
 
-	execute(emitter, opts).then(
+	execute(emitter, opts, dirs).then(
 		() => {
 			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
 		},
@@ -25,22 +38,14 @@ export function build(opts: {}) {
 	return emitter;
 }
 
-async function execute(emitter: EventEmitter, {
-	dest = 'build',
-	app = 'app',
-	legacy,
-	bundler,
-	webpack = 'webpack',
-	rollup = 'rollup',
-	routes = 'routes'
-} = {}) {
-	rimraf.sync(path.join(dest, '**/*'));
-	mkdirp.sync(`${dest}/client`);
-	copy_shimport(dest);
+async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
+	rimraf.sync(path.join(dirs.dest, '**/*'));
+	mkdirp.sync(`${dirs.dest}/client`);
+	copy_shimport(dirs.dest);
 
 	// minify app/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${app}/template.html`, 'utf-8');
+	const template = fs.readFileSync(`${dirs.app}/template.html`, 'utf-8');
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -49,14 +54,14 @@ async function execute(emitter: EventEmitter, {
 		throw error;
 	}
 
-	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
+	fs.writeFileSync(`${dirs.dest}/template.html`, minify_html(template));
 
 	const route_objects = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ bundler, routes: route_objects });
+	create_main_manifests({ bundler: opts.bundler, routes: route_objects });
 
-	const { client, server, serviceworker } = create_compilers(bundler, { webpack, rollup });
+	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
@@ -71,14 +76,14 @@ async function execute(emitter: EventEmitter, {
 		assets: Record<string, string>;
 		legacy_assets?: Record<string, string>;
 	} = {
-		bundler,
-		shimport: bundler === 'rollup' && require('shimport/package.json').version,
+		bundler: opts.bundler,
+		shimport: opts.bundler === 'rollup' && require('shimport/package.json').version,
 		assets: client_result.assets
 	};
 
-	if (legacy) {
+	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = create_compilers(bundler, { webpack, rollup });
+		const { client } = create_compilers(opts.bundler, dirs);
 
 		const client_result = await client.compile();
 
@@ -92,7 +97,7 @@ async function execute(emitter: EventEmitter, {
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+	fs.writeFileSync(path.join(dirs.dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{
