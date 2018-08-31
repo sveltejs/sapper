@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.18.4
+
+* Handle non-Sapper responses when exporting ([#382](https://github.com/sveltejs/sapper/issues/392))
+* Add `--dev-port` flag to `sapper dev` ([#381](https://github.com/sveltejs/sapper/issues/381))
+
 ## 0.18.3
 
 * Fix service worker Rollup build config
