@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.6
+
+* Bundle missing dependency
+
 ## 0.18.5
 
 * Bugfix
