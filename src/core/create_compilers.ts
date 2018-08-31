@@ -3,6 +3,7 @@ import * as path from 'path';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
 import relative from 'require-relative';
+import format_messages from 'webpack-format-messages';
 import { left_pad } from '../utils';
 
 let r: any;
@@ -101,8 +102,6 @@ class WebpackResult extends CompileResult {
 
 		const info = stats.toJson();
 
-		// TODO use import()
-		const format_messages = require('webpack-format-messages');
 		const messages = format_messages(stats);
 
 		this.errors = messages.errors.map(munge_webpack_warning_or_error);
