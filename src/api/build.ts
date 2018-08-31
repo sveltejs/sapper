@@ -5,9 +5,7 @@ import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
-import { Compilers, Compiler } from '../core/create_compilers';
 import * as events from './interfaces';
-import validate_bundler from '../cli/utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 
 export function build(opts: {}) {
@@ -30,6 +28,7 @@ export function build(opts: {}) {
 async function execute(emitter: EventEmitter, {
 	dest = 'build',
 	app = 'app',
+	legacy,
 	bundler,
 	webpack = 'webpack',
 	rollup = 'rollup',
@@ -57,7 +56,7 @@ async function execute(emitter: EventEmitter, {
 	// create app/manifest/client.js and app/manifest/server.js
 	create_main_manifests({ bundler, routes: route_objects });
 
-	const { client, server, serviceworker } = create_compilers(validate_bundler(bundler), { webpack, rollup });
+	const { client, server, serviceworker } = create_compilers(bundler, { webpack, rollup });
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
@@ -66,11 +65,34 @@ async function execute(emitter: EventEmitter, {
 		result: client_result
 	});
 
-	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
+	const build_info: {
+		bundler: string;
+		shimport: string;
+		assets: Record<string, string>;
+		legacy_assets?: Record<string, string>;
+	} = {
 		bundler,
 		shimport: bundler === 'rollup' && require('shimport/package.json').version,
 		assets: client_result.assets
-	}));
+	};
+
+	if (legacy) {
+		process.env.SAPPER_LEGACY_BUILD = 'true';
+		const { client } = create_compilers(bundler, { webpack, rollup });
+
+		const client_result = await client.compile();
+
+		emitter.emit('build', <events.BuildEvent>{
+			type: 'client (legacy)',
+			// TODO duration/warnings
+			result: client_result
+		});
+
+		build_info.legacy_assets = client_result.assets;
+		delete process.env.SAPPER_LEGACY_BUILD;
+	}
+
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
 	emitter.emit('build', <events.BuildEvent>{

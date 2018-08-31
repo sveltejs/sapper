@@ -4,8 +4,12 @@ import { locations } from '../config';
 import validate_bundler from './utils/validate_bundler';
 import { repeat } from '../utils';
 
-export function build(opts: { bundler?: string }) {
+export function build(opts: { bundler?: string, legacy?: boolean }) {
 	const bundler = validate_bundler(opts.bundler);
+
+	if (opts.legacy && bundler === 'webpack') {
+		throw new Error(`Legacy builds are not supported for projects using webpack`);
+	}
 
 	return new Promise((fulfil, reject) => {
 		try {
@@ -13,6 +17,7 @@ export function build(opts: { bundler?: string }) {
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
+				legacy: opts.legacy,
 				bundler,
 				webpack: 'webpack',
 				rollup: 'rollup'

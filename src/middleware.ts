@@ -306,7 +306,8 @@ function get_page_handler(
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
-			assets: Record<string, string | string[]>
+			assets: Record<string, string | string[]>,
+			legacy_assets?: Record<string, string>
 		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
@@ -472,14 +473,7 @@ function get_page_handler(
 				store
 			});
 
-			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
-			const main = `${req.baseUrl}/client/${file}`;
-
-			const script = build_info.bundler === 'rollup'
-				? `<script>try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}");document.head.appendChild(s);}</script>`
-				: `<script src="${main}"></script>`;
-
-			let inline_script = `__SAPPER__={${[
+			let script = `__SAPPER__={${[
 				error && `error:1`,
 				`baseUrl:"${req.baseUrl}"`,
 				serialized.preloaded && `preloaded:${serialized.preloaded}`,
@@ -488,12 +482,26 @@ function get_page_handler(
 
 			const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
 			if (has_service_worker) {
-				inline_script += `if ('serviceWorker' in navigator) navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
+				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
+			}
+
+			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
+			const main = `${req.baseUrl}/client/${file}`;
+
+			if (build_info.bundler === 'rollup') {
+				if (build_info.legacy_assets) {
+					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
+					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};try{new Function("import('"+main+"')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);document.head.appendChild(s);}}());`;
+				} else {
+					script += `try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}");document.head.appendChild(s);}`;
+				}
+			} else {
+				script += `</script><script src="${main}">`;
 			}
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script>${inline_script}</script>${script}`)
+				.replace('%sapper.scripts%', () => `<script>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				.replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
