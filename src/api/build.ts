@@ -7,18 +7,11 @@ import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
 import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
+import { Dirs } from '../interfaces';
 
 type Opts = {
 	legacy: boolean;
 	bundler: string;
-};
-
-type Dirs = {
-	dest: string,
-	app: string,
-	routes: string,
-	webpack: string,
-	rollup: string
 };
 
 export function build(opts: Opts, dirs: Dirs) {
@@ -56,10 +49,10 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	fs.writeFileSync(`${dirs.dest}/template.html`, minify_html(template));
 
-	const route_objects = create_routes();
+	const routes = create_routes();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ bundler: opts.bundler, routes: route_objects });
+	create_main_manifests({ bundler: opts.bundler, routes });
 
 	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
 
@@ -110,7 +103,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	if (serviceworker) {
 		create_serviceworker_manifest({
-			routes: route_objects,
+			routes,
 			client_files: client_result.chunks.map((file: string) => `client/${file}`)
 		});
 

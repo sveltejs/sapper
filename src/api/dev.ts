@@ -173,10 +173,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = create_compilers(this.bundler, {
-			webpack: this.dirs.webpack,
-			rollup: this.dirs.rollup
-		});
+		const compilers: Compilers = create_compilers(this.bundler, this.dirs);
 
 		let log = '';
 

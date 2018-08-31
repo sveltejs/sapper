@@ -40,3 +40,11 @@ export type ServerRoute = {
 	file: string;
 	params: string[];
 };
+
+export type Dirs = {
+	dest: string,
+	app: string,
+	routes: string,
+	webpack: string,
+	rollup: string
+};

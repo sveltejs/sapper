@@ -5,6 +5,7 @@ import pb from 'pretty-bytes';
 import relative from 'require-relative';
 import format_messages from 'webpack-format-messages';
 import { left_pad } from '../utils';
+import { Dirs } from '../interfaces';
 
 let r: any;
 let wp: any;
@@ -314,15 +315,15 @@ export type Compilers = {
 	serviceworker?: Compiler;
 }
 
-export default function create_compilers(bundler: string, { webpack, rollup }: { webpack: string, rollup: string }): Compilers {
+export default function create_compilers(bundler: string, dirs: Dirs): Compilers {
 	if (bundler === 'rollup') {
 		if (!r) r = relative('rollup', process.cwd());
 
-		const sw = `${rollup}/service-worker.config.js`;
+		const sw = `${dirs.rollup}/service-worker.config.js`;
 
 		return {
-			client: new RollupCompiler(`${rollup}/client.config.js`),
-			server: new RollupCompiler(`${rollup}/server.config.js`),
+			client: new RollupCompiler(`${dirs.rollup}/client.config.js`),
+			server: new RollupCompiler(`${dirs.rollup}/server.config.js`),
 			serviceworker: fs.existsSync(sw) && new RollupCompiler(sw)
 		};
 	}
@@ -330,11 +331,11 @@ export default function create_compilers(bundler: string, { webpack, rollup }: {
 	if (bundler === 'webpack') {
 		if (!wp) wp = relative('webpack', process.cwd());
 
-		const sw = `${webpack}/service-worker.config.js`;
+		const sw = `${dirs.webpack}/service-worker.config.js`;
 
 		return {
-			client: new WebpackCompiler(`${webpack}/client.config.js`),
-			server: new WebpackCompiler(`${webpack}/server.config.js`),
+			client: new WebpackCompiler(`${dirs.webpack}/client.config.js`),
+			server: new WebpackCompiler(`${dirs.webpack}/server.config.js`),
 			serviceworker: fs.existsSync(sw) && new WebpackCompiler(sw)
 		};
 	}
@@ -353,9 +354,6 @@ function munge_webpack_warning_or_error(message: string) {
 		.replace('[7m', '') // careful — there is a special character at the beginning of this string
 		.replace('[27m', '')
 		.replace('./', '');
-
-	let line = null;
-	let column = null;
 
 	const match = locPattern.exec(lines[0]);
 	if (match) {
