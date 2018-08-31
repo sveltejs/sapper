@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.18.7
+
+* Support differential bundling for Rollup apps via a `--legacy` flag ([#280](https://github.com/sveltejs/sapper/issues/280))
+
 ## 0.18.6
 
 * Bundle missing dependency
