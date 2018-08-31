@@ -355,6 +355,9 @@ function munge_webpack_warning_or_error(message: string) {
 		.replace('[27m', '')
 		.replace('./', '');
 
+	let line = null;
+	let column = null;
+
 	const match = locPattern.exec(lines[0]);
 	if (match) {
 		lines[0] = lines[0].replace(locPattern, '');
