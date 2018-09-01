@@ -285,7 +285,7 @@ class Watcher extends EventEmitter {
 					assets: result.assets
 				}, null, '  '));
 
-				const client_files = result.chunks.map((file: string) => `client/${file}`);
+				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 
 				create_serviceworker_manifest({
 					routes: create_routes(),

@@ -10,6 +10,17 @@ import { Dirs } from '../interfaces';
 let r: any;
 let wp: any;
 
+type Chunk = {
+	file: string;
+	imports: string[];
+	modules: string[];
+}
+
+type CssFile = {
+	id: string;
+	code: string;
+};
+
 export class CompileError {
 	file: string;
 	message: string;
@@ -19,8 +30,9 @@ export class CompileResult {
 	duration: number;
 	errors: CompileError[];
 	warnings: CompileError[];
-	chunks: string[];
+	chunks: Chunk[];
 	assets: Record<string, string>;
+	css_files: CssFile[];
 }
 
 class RollupResult extends CompileResult {
@@ -34,9 +46,15 @@ class RollupResult extends CompileResult {
 		this.errors = compiler.errors.map(munge_rollup_warning_or_error);
 		this.warnings = compiler.warnings.map(munge_rollup_warning_or_error); // TODO emit this as they happen
 
-		this.chunks = compiler.chunks.map(chunk => chunk.fileName);
+		this.chunks = compiler.chunks.map(chunk => ({
+			file: chunk.fileName,
+			imports: chunk.imports.filter(Boolean),
+			modules: Object.keys(chunk.modules)
+		}));
 
-		// TODO populate this properly. We don't have namedcompiler. chunks, as in
+		this.css_files = compiler.css_files;
+
+		// TODO populate this properly. We don't have named chunks, as in
 		// webpack, but we can have a route -> [chunk] map or something
 		this.assets = {};
 
@@ -126,7 +144,8 @@ export class RollupCompiler {
 	input: string;
 	warnings: any[];
 	errors: any[];
-	chunks: any[]; // TODO types
+	chunks: any[];
+	css_files: Array<{ id: string, code: string }>;
 
 	constructor(config: any) {
 		this._ = this.get_config(path.resolve(config));
@@ -134,6 +153,7 @@ export class RollupCompiler {
 		this.warnings = [];
 		this.errors = [];
 		this.chunks = [];
+		this.css_files = [];
 	}
 
 	async get_config(input: string) {
@@ -165,9 +185,12 @@ export class RollupCompiler {
 				this.input = opts.input;
 			},
 			renderChunk: (code: string, chunk: any) => {
-				console.log(chunk);
-				if (chunk.isEntry) {
-					this.chunks.push(chunk);
+				this.chunks.push(chunk);
+			},
+			transform: (code: string, id: string) => {
+				if (/\.css$/.test(id)) {
+					this.css_files.push({ id, code });
+					return ``;
 				}
 			}
 		});

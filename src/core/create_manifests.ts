@@ -72,7 +72,7 @@ function generate_client(
 
 			return `const ${component.name} = {
 			js: () => import(${annotation}'${source}'),
-			css: "__SAPPER_PLACEHOLDER:${component.file}__"
+			css: "__SAPPER_CSS_PLACEHOLDER:${component.file}__"
 		};`;
 		}).join('\n')}
 
