@@ -16,7 +16,8 @@ export default {
 				dir,
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
-				format: 'esm'
+				format: 'esm',
+				sourcemap: dev()
 			};
 		}
 	},

@@ -195,7 +195,10 @@ function prepare_page(target: Target): Promise<{
 
 		const [{ default: Component }] = await Promise.all([
 			part.component.js(),
-			Promise.all(part.component.css.map(load_css))
+
+			// TODO this is temporary — once placeholders are
+			// always rewritten, scratch the ternary
+			Promise.all(typeof part.component.css === 'string' ? [] : part.component.css.map(load_css))
 		]);
 		const req = {
 			path,

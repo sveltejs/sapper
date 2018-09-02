@@ -94,6 +94,8 @@ function extract_css(client_result: CompileResult, components: PageComponent[], 
 		chunks: {}
 	};
 
+	if (!client_result.css_files) return; // Rollup-only for now
+
 	const unaccounted_for = new Set();
 
 	const css_map = new Map();
