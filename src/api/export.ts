@@ -170,7 +170,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			const location = r.headers.get('Location');
 
 			type = 'text/html';
-			body = `<script>window.location.href = "${location}"</script>`;
+			body = `<script>window.location.href = "${location.replace(root.href, '')}"</script>`;
 
 			await handle(resolve(root.href, location));
 		}
