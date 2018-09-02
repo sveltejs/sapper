@@ -13,7 +13,7 @@
     "config",
     "sapper",
     "components",
-    "dist"
+    "dist/*.js"
   ],
   "directories": {
     "test": "test"
