@@ -14,11 +14,12 @@ export function build(opts: { bundler?: string, legacy?: boolean }) {
 	return new Promise((fulfil, reject) => {
 		try {
 			const emitter = _build({
+				legacy: opts.legacy,
+				bundler
+			}, {
 				dest: locations.dest(),
 				app: locations.app(),
 				routes: locations.routes(),
-				legacy: opts.legacy,
-				bundler,
 				webpack: 'webpack',
 				rollup: 'rollup'
 			});

@@ -15,10 +15,15 @@ export interface Component {
 	destroy: () => void;
 }
 
+export type ComponentLoader = {
+	js: () => Promise<{ default: ComponentConstructor }>,
+	css: string[]
+};
+
 export type Page = {
 	pattern: RegExp;
 	parts: Array<{
-		component: () => Promise<{ default: ComponentConstructor }>;
+		component: ComponentLoader;
 		params?: (match: RegExpExecArray) => Record<string, string>;
 	}>;
 };

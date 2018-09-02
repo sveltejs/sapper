@@ -7,12 +7,14 @@ import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
-import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
-import { Compiler, Compilers, CompileResult, CompileError } from '../core/create_compilers';
+import { create_manifest_data, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { Compiler, Compilers } from '../core/create_compilers';
+import { CompileResult, CompileError } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
+import { ManifestData } from '../interfaces';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -127,9 +129,11 @@ class Watcher extends EventEmitter {
 
 		if (!this.dev_port) this.dev_port = await ports.find(10000);
 
+		let manifest_data: ManifestData;
+
 		try {
-			const routes = create_routes();
-			create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
+			manifest_data = create_manifest_data();
+			create_main_manifests({ bundler: this.bundler, manifest_data, dev_port: this.dev_port });
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
 				message: err.message
@@ -149,12 +153,11 @@ class Watcher extends EventEmitter {
 					return true;
 				},
 				() => {
-					const routes = create_routes();
-					create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
-
 					try {
-						const routes = create_routes();
-						create_main_manifests({ bundler: this.bundler, routes, dev_port: this.dev_port });
+						const new_manifest_data = create_manifest_data();
+						create_main_manifests({ bundler: this.bundler, manifest_data, dev_port: this.dev_port });
+
+						manifest_data = new_manifest_data;
 					} catch (err) {
 						this.emit('error', <events.ErrorEvent>{
 							message: err.message
@@ -173,10 +176,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = create_compilers(this.bundler, {
-			webpack: this.dirs.webpack,
-			rollup: this.dirs.rollup
-		});
+		const compilers: Compilers = create_compilers(this.bundler, this.dirs);
 
 		let log = '';
 
@@ -282,16 +282,17 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
-				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
-					bundler: this.bundler,
-					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
-					assets: result.assets
-				}, null, '  '));
+				fs.writeFileSync(
+					path.join(dest, 'build.json'),
 
-				const client_files = result.chunks.map((file: string) => `client/${file}`);
+					// TODO should be more explicit that to_json has effects
+					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+				);
+
+				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 
 				create_serviceworker_manifest({
-					routes: create_routes(),
+					manifest_data,
 					client_files
 				});
 

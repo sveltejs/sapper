@@ -42,4 +42,4 @@ export type FailureEvent = {
 
 }
 
-export type DoneEvent = {}
+export type DoneEvent = {};

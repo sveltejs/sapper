@@ -40,3 +40,18 @@ export type ServerRoute = {
 	file: string;
 	params: string[];
 };
+
+export type Dirs = {
+	dest: string,
+	app: string,
+	routes: string,
+	webpack: string,
+	rollup: string
+};
+
+export type ManifestData = {
+	root: PageComponent;
+	components: PageComponent[];
+	pages: Page[];
+	server_routes: ServerRoute[];
+};

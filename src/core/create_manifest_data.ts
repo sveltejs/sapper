@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { locations } from '../config';
-import { Page, PageComponent, ServerRoute } from '../interfaces';
+import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify } from './utils';
 
-export default function create_routes(cwd = locations.routes()) {
+export default function create_manifest_data(cwd = locations.routes()): ManifestData {
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
