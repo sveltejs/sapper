@@ -13,6 +13,7 @@ import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
+import { ManifestData } from '../interfaces';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -127,8 +128,10 @@ class Watcher extends EventEmitter {
 
 		if (!this.dev_port) this.dev_port = await ports.find(10000);
 
+		let manifest_data: ManifestData;
+
 		try {
-			const manifest_data = create_manifest_data();
+			manifest_data = create_manifest_data();
 			create_main_manifests({ bundler: this.bundler, manifest_data, dev_port: this.dev_port });
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
@@ -149,12 +152,11 @@ class Watcher extends EventEmitter {
 					return true;
 				},
 				() => {
-					const manifest_data = create_manifest_data();
-					create_main_manifests({ bundler: this.bundler, manifest_data, dev_port: this.dev_port });
-
 					try {
-						const manifest_data = create_manifest_data();
+						const new_manifest_data = create_manifest_data();
 						create_main_manifests({ bundler: this.bundler, manifest_data, dev_port: this.dev_port });
+
+						manifest_data = new_manifest_data;
 					} catch (err) {
 						this.emit('error', <events.ErrorEvent>{
 							message: err.message
@@ -288,7 +290,7 @@ class Watcher extends EventEmitter {
 				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 
 				create_serviceworker_manifest({
-					manifest_data: create_manifest_data(),
+					manifest_data,
 					client_files
 				});
 

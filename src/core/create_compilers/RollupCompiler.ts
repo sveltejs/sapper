@@ -15,7 +15,7 @@ export default class RollupCompiler {
 	chunks: any[];
 	css_files: Array<{ id: string, code: string }>;
 
-	constructor(config: any) {
+	constructor(config: string) {
 		this._ = this.get_config(path.resolve(config));
 		this.input = null;
 		this.warnings = [];

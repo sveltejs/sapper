@@ -8,7 +8,7 @@ let webpack: any;
 export class WebpackCompiler {
 	_: any;
 
-	constructor(config: any) {
+	constructor(config: string) {
 		if (!webpack) webpack = relative('webpack', process.cwd());
 		this._ = webpack(require(path.resolve(config)));
 	}
