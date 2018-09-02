@@ -499,8 +499,19 @@ function get_page_handler(
 				script += `</script><script src="${main}">`;
 			}
 
-			const css = [];
-			if (build_info.main_css) css.push(build_info.main_css);
+			const css_chunks = new Set();
+			if (build_info.css.main) css_chunks.add(build_info.css.main);
+			page.parts.forEach(part => {
+				if (!part) return;
+				const css_chunks_for_part = build_info.css.chunks[part.file];
+
+				if (css_chunks_for_part) {
+					css_chunks_for_part.forEach(file => {
+						css_chunks.add(file);
+					});
+				}
+			});
+			const css_hrefs = Array.from(css_chunks).map(file => `client/${file}`);
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
@@ -508,7 +519,7 @@ function get_page_handler(
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				// .replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
-				.replace('%sapper.styles%', () => css.map(file => `<link rel="stylesheet" href="${req.baseUrl}/client/${file}">`).join(''));
+				.replace('%sapper.styles%', () => css_hrefs.map(href => `<link rel="stylesheet" href="${href}">`).join(''));
 
 			res.statusCode = status;
 			res.end(body);

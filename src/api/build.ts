@@ -17,6 +17,17 @@ type Opts = {
 	bundler: string;
 };
 
+type BuildInfo = {
+	bundler: string;
+	shimport: string;
+	assets: Record<string, string>;
+	legacy_assets?: Record<string, string>;
+	css: {
+		main: string | null,
+		chunks: Record<string, string[]>
+	}
+};
+
 export function build(opts: Opts, dirs: Dirs) {
 	const emitter = new EventEmitter();
 
@@ -75,6 +86,14 @@ type SourceMap = {
 };
 
 function extract_css(client_result: CompileResult, components: PageComponent[], dirs: Dirs) {
+	const result: {
+		main: string | null;
+		chunks: Record<string, string[]>
+	} = {
+		main: null,
+		chunks: {}
+	};
+
 	const unaccounted_for = new Set();
 
 	const css_map = new Map();
@@ -205,17 +224,21 @@ function extract_css(client_result: CompileResult, components: PageComponent[], 
 				map.file = output_file_name;
 				map.sources = map.sources.map(source => path.relative(`${dirs.dest}/client`, source));
 
-				fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=${output_file_name}.map */`);
+				fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
 				fs.writeFileSync(`${dirs.dest}/client/${output_file_name}.map`, JSON.stringify(map, null, '  '));
 
 				return true;
 			}
 		});
 
+		const files = chunks_with_css.map(chunk => chunk.file.replace(/\.js$/, '.css'));
+
 		replacements.set(
 			component.file,
-			chunks_with_css.map(chunk => chunk.file.replace(/\.js$/, '.css'))
+			files
 		);
+
+		result.chunks[component.file] = files;
 	});
 
 	const replaced = entry.replace(/["']__SAPPER_CSS_PLACEHOLDER:(.+?)__["']/g, (m, route) => {
@@ -235,13 +258,13 @@ function extract_css(client_result: CompileResult, components: PageComponent[], 
 		map.file = output_file_name;
 		map.sources = map.sources.map(source => path.relative(`${dirs.dest}/client`, source));
 
-		fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=${output_file_name}.map */`);
+		fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
 		fs.writeFileSync(`${dirs.dest}/client/${output_file_name}.map`, JSON.stringify(map, null, '  '));
 
-		return output_file_name;
+		result.main = output_file_name;
 	}
 
-	return null;
+	return result;
 }
 
 async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
@@ -276,19 +299,13 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 		result: client_result
 	});
 
-	const main_css = extract_css(client_result, routes.components, dirs);
+	const css = extract_css(client_result, routes.components, dirs);
 
-	const build_info: {
-		bundler: string;
-		shimport: string;
-		assets: Record<string, string>;
-		legacy_assets?: Record<string, string>;
-		main_css: string | null
-	} = {
+	const build_info: BuildInfo = {
 		bundler: opts.bundler,
 		shimport: opts.bundler === 'rollup' && require('shimport/package.json').version,
 		assets: client_result.assets,
-		main_css
+		css
 	};
 
 	if (opts.legacy) {

@@ -193,8 +193,6 @@ function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		console.log(part.component);
-
 		const [{ default: Component }] = await Promise.all([
 			part.component.js(),
 			Promise.all(part.component.css.map(load_css))
