@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.19.1
+
+* Don't include local origin in export redirects ([#409](https://github.com/sveltejs/sapper/pull/409))
+
 ## 0.19.0
 
 * Extract styles out of JS into .css files, for Rollup apps ([#388](https://github.com/sveltejs/sapper/issues/388))
