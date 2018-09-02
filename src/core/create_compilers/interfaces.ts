@@ -1,3 +1,5 @@
+import { ManifestData, Dirs } from '../../interfaces';
+
 export type Chunk = {
 	file: string;
 	imports: string[];
@@ -22,7 +24,7 @@ export interface CompileResult {
 	assets: Record<string, string>;
 	css_files: CssFile[];
 
-	to_json: () => BuildInfo
+	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
 }
 
 export type BuildInfo = {

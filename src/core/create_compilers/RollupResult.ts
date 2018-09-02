@@ -2,15 +2,10 @@ import * as path from 'path';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
 import RollupCompiler from './RollupCompiler';
+import extract_css from './extract_css';
 import { left_pad } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
-
-function munge_warning_or_error(warning_or_error: any) {
-	return {
-		file: warning_or_error.filename,
-		message: [warning_or_error.message, warning_or_error.frame].filter(Boolean).join('\n')
-	};
-}
+import { ManifestData, Dirs, PageComponent } from '../../interfaces';
 
 export default class RollupResult implements CompileResult {
 	duration: number;
@@ -49,8 +44,6 @@ export default class RollupResult implements CompileResult {
 			}
 		});
 
-		this.css = this.extract_css();
-
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold.red : chunk.code.length > 50000 ? colors.bold.yellow : colors.bold.white;
 			const size_label = left_pad(pb(chunk.code.length), 10);
@@ -85,27 +78,14 @@ export default class RollupResult implements CompileResult {
 		}).join('\n');
 	}
 
-	extract_css() {
-		let main: string = null;
-		const chunks = {};
-
-
-
-		return {
-			main,
-			chunks
-		};
-	}
-
-	to_json(): BuildInfo {
+	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
+		// TODO extract_css has side-effects that don't belong
+		// in a method called to_json
 		return {
 			bundler: 'rollup',
 			shimport: require('shimport/package.json').version,
 			assets: this.assets,
-			css: {
-				main: null,
-				chunks: {}
-			}
+			css: extract_css(this, manifest_data.components, dirs)
 		};
 	}
 
@@ -121,3 +101,11 @@ export default class RollupResult implements CompileResult {
 		return blocks.join('\n\n');
 	}
 }
+
+function munge_warning_or_error(warning_or_error: any) {
+	return {
+		file: warning_or_error.filename,
+		message: [warning_or_error.message, warning_or_error.frame].filter(Boolean).join('\n')
+	};
+}
+

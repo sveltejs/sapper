@@ -1,5 +1,6 @@
 import format_messages from 'webpack-format-messages';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
+import { ManifestData, Dirs } from '../../interfaces';
 
 const locPattern = /\((\d+):(\d+)\)$/;
 
@@ -53,7 +54,7 @@ export default class WebpackResult implements CompileResult {
 		this.assets = info.assetsByChunkName;
 	}
 
-	to_json(): BuildInfo {
+	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
 		return {
 			bundler: 'webpack',
 			shimport: null, // webpack has its own loader
