@@ -3,7 +3,7 @@ import colors from 'kleur';
 import pb from 'pretty-bytes';
 import RollupCompiler from './RollupCompiler';
 import { left_pad } from '../../utils';
-import { CompileResult } from './interfaces';
+import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 
 function munge_warning_or_error(warning_or_error: any) {
 	return {
@@ -12,12 +12,20 @@ function munge_warning_or_error(warning_or_error: any) {
 	};
 }
 
-export default class RollupResult extends CompileResult {
+export default class RollupResult implements CompileResult {
+	duration: number;
+	errors: CompileError[];
+	warnings: CompileError[];
+	chunks: Chunk[];
+	assets: Record<string, string>;
+	css_files: CssFile[];
+	css: {
+		main: string,
+		chunks: Record<string, string[]>
+	};
 	summary: string;
 
 	constructor(duration: number, compiler: RollupCompiler) {
-		super();
-
 		this.duration = duration;
 
 		this.errors = compiler.errors.map(munge_warning_or_error);
@@ -40,6 +48,8 @@ export default class RollupResult extends CompileResult {
 				this.assets.main = chunk.fileName;
 			}
 		});
+
+		this.css = this.extract_css();
 
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold.red : chunk.code.length > 50000 ? colors.bold.yellow : colors.bold.white;
@@ -73,6 +83,30 @@ export default class RollupResult extends CompileResult {
 
 			return lines.join('\n');
 		}).join('\n');
+	}
+
+	extract_css() {
+		let main: string = null;
+		const chunks = {};
+
+
+
+		return {
+			main,
+			chunks
+		};
+	}
+
+	to_json(): BuildInfo {
+		return {
+			bundler: 'rollup',
+			shimport: require('shimport/package.json').version,
+			assets: this.assets,
+			css: {
+				main: null,
+				chunks: {}
+			}
+		};
 	}
 
 	print() {

@@ -10,22 +10,11 @@ import { create_compilers, create_main_manifests, create_routes, create_servicew
 import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 import { Dirs, PageComponent } from '../interfaces';
-import { CompileResult } from '../core/create_compilers';
+import { CompileResult } from '../core/create_compilers/interfaces';
 
 type Opts = {
 	legacy: boolean;
 	bundler: string;
-};
-
-type BuildInfo = {
-	bundler: string;
-	shimport: string;
-	assets: Record<string, string>;
-	legacy_assets?: Record<string, string>;
-	css: {
-		main: string | null,
-		chunks: Record<string, string[]>
-	}
 };
 
 export function build(opts: Opts, dirs: Dirs) {
@@ -301,14 +290,10 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 		result: client_result
 	});
 
+	// TODO as much of this into the compiler facade as possible
 	const css = extract_css(client_result, routes.components, dirs);
 
-	const build_info: BuildInfo = {
-		bundler: opts.bundler,
-		shimport: opts.bundler === 'rollup' && require('shimport/package.json').version,
-		assets: client_result.assets,
-		css
-	};
+	const build_info = client_result.to_json();
 
 	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';

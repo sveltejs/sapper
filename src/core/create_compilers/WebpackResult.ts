@@ -1,5 +1,5 @@
 import format_messages from 'webpack-format-messages';
-import { CompileResult } from './interfaces';
+import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 
 const locPattern = /\((\d+):(\d+)\)$/;
 
@@ -28,12 +28,16 @@ function munge_warning_or_error(message: string) {
 	};
 }
 
-export default class WebpackResult extends CompileResult {
+export default class WebpackResult implements CompileResult {
+	duration: number;
+	errors: CompileError[];
+	warnings: CompileError[];
+	chunks: Chunk[];
+	assets: Record<string, string>;
+	css_files: CssFile[];
 	stats: any;
 
 	constructor(stats: any) {
-		super();
-
 		this.stats = stats;
 
 		const info = stats.toJson();
@@ -47,6 +51,19 @@ export default class WebpackResult extends CompileResult {
 
 		this.chunks = info.assets.map((chunk: { name: string }) => ({ file: chunk.name }));
 		this.assets = info.assetsByChunkName;
+	}
+
+	to_json(): BuildInfo {
+		return {
+			bundler: 'webpack',
+			shimport: null, // webpack has its own loader
+			assets: this.assets,
+			css: {
+				// TODO
+				main: null,
+				chunks: {}
+			}
+		};
 	}
 
 	print() {
