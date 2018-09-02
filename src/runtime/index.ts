@@ -1,5 +1,5 @@
 import { detach, findAnchor, scroll_state, which } from './utils';
-import { Component, ComponentConstructor, Params, Query, Redirect, Manifest, RouteData, ScrollPosition, Store, Target } from './interfaces';
+import { Component, ComponentConstructor, Params, Query, Redirect, Manifest, RouteData, ScrollPosition, Store, Target, ComponentLoader } from './interfaces';
 
 const initial_data = typeof window !== 'undefined' && window.__SAPPER__;
 
@@ -147,6 +147,14 @@ function load_css(chunk: string) {
 	});
 }
 
+function load_component(component: ComponentLoader): Promise<ComponentConstructor> {
+	// TODO this is temporary — once placeholders are
+	// always rewritten, scratch the ternary
+	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
+	promises.unshift(component.js());
+	return Promise.all(promises).then(values => values[0].default);
+}
+
 function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
 	data?: any;
@@ -193,13 +201,8 @@ function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		const [{ default: Component }] = await Promise.all([
-			part.component.js(),
+		const Component = await load_component(part.component);
 
-			// TODO this is temporary — once placeholders are
-			// always rewritten, scratch the ternary
-			Promise.all(typeof part.component.css === 'string' ? [] : part.component.css.map(load_css))
-		]);
 		const req = {
 			path,
 			query,
@@ -490,9 +493,9 @@ export function prefetchRoutes(pathnames: string[]) {
 			if (!pathnames) return true;
 			return pathnames.some(pathname => route.pattern.test(pathname));
 		})
-		.reduce((promise: Promise<any>, route) => {
-			return promise.then(route.load);
-		}, Promise.resolve());
+		.reduce((promise: Promise<any>, route) => promise.then(() => {
+			return Promise.all(route.parts.map(part => part && load_component(part.component)));
+		}), Promise.resolve());
 }
 
 // remove this in 0.9

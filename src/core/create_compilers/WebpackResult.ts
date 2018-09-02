@@ -45,7 +45,7 @@ export default class WebpackResult extends CompileResult {
 
 		this.duration = info.time;
 
-		this.chunks = info.assets.map((chunk: { name: string }) => chunk.name);
+		this.chunks = info.assets.map((chunk: { name: string }) => ({ file: chunk.name }));
 		this.assets = info.assetsByChunkName;
 	}
 
