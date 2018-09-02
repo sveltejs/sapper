@@ -8,7 +8,8 @@ import rimraf from 'rimraf';
 import { locations } from '../config';
 import { EventEmitter } from 'events';
 import { create_manifest_data, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
-import { Compiler, Compilers, CompileResult, CompileError } from '../core/create_compilers';
+import { Compiler, Compilers } from '../core/create_compilers';
+import { CompileResult, CompileError } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
@@ -281,11 +282,12 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
-				fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify({
-					bundler: this.bundler,
-					shimport: this.bundler === 'rollup' && require('shimport/package.json').version,
-					assets: result.assets
-				}, null, '  '));
+				fs.writeFileSync(
+					path.join(dest, 'build.json'),
+
+					// TODO should be more explicit that to_json has effects
+					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+				);
 
 				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 

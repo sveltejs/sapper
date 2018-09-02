@@ -66,10 +66,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 		result: client_result
 	});
 
-	// TODO as much of this into the compiler facade as possible
-	const css = extract_css(client_result, manifest_data.components, dirs);
-
-	const build_info = client_result.to_json();
+	const build_info = client_result.to_json(manifest_data, dirs);
 
 	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';

@@ -109,7 +109,7 @@ export default class RollupCompiler {
 	async watch(cb: (err?: Error, stats?: any) => void) {
 		const config = await this._;
 
-		const watcher = r.watch(config);
+		const watcher = rollup.watch(config);
 
 		watcher.on('change', (id: string) => {
 			this.chunks = [];
