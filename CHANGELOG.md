@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.19.0
+
+* Extract styles out of JS into .css files, for Rollup apps ([#388](https://github.com/sveltejs/sapper/issues/388))
+* Fix `prefetchRoutes` ([#380](https://github.com/sveltejs/sapper/issues/380))
+
 ## 0.18.7
 
 * Support differential bundling for Rollup apps via a `--legacy` flag ([#280](https://github.com/sveltejs/sapper/issues/280))
