@@ -499,12 +499,16 @@ function get_page_handler(
 				script += `</script><script src="${main}">`;
 			}
 
+			const css = [];
+			if (build_info.main_css) css.push(build_info.main_css);
+
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
 				.replace('%sapper.scripts%', () => `<script>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
+				// .replace('%sapper.styles%', () => (css && css.code ? `<style>${css.code}</style>` : ''));
+				.replace('%sapper.styles%', () => css.map(file => `<link rel="stylesheet" href="${req.baseUrl}/client/${file}">`).join(''));
 
 			res.statusCode = status;
 			res.end(body);

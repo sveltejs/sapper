@@ -131,6 +131,22 @@ function changed(a: Record<string, string | true>, b: Record<string, string | tr
 let root_preload: Promise<any>;
 let root_data: any;
 
+function load_css(chunk: string) {
+	const href = `${initial_data.baseUrl}client/${chunk}`;
+	if (document.querySelector(`link[href="${href}"]`)) return;
+
+	return new Promise((fulfil, reject) => {
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = href;
+
+		link.onload = () => fulfil();
+		link.onerror = reject;
+
+		document.head.appendChild(link);
+	});
+}
+
 function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
 	data?: any;
@@ -177,7 +193,12 @@ function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		const { default: Component } = await part.component.js();
+		console.log(part.component);
+
+		const [{ default: Component }] = await Promise.all([
+			part.component.js(),
+			Promise.all(part.component.css.map(load_css))
+		]);
 		const req = {
 			path,
 			query,
