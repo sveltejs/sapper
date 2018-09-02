@@ -48,3 +48,10 @@ export type Dirs = {
 	webpack: string,
 	rollup: string
 };
+
+export type ManifestData = {
+	root: PageComponent;
+	components: PageComponent[];
+	pages: Page[];
+	server_routes: ServerRoute[];
+};

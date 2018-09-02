@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as assert from 'assert';
-import create_routes from '../../../src/core/create_routes';
+import manifest_data from '../../../src/core/create_manifest_data';
 
-describe('create_routes', () => {
+describe('manifest_data', () => {
 	it('creates routes', () => {
-		const { components, pages, server_routes } = create_routes(path.join(__dirname, 'samples/basic'));
+		const { components, pages, server_routes } = manifest_data(path.join(__dirname, 'samples/basic'));
 
 		const index = { name: 'index', file: 'index.html' };
 		const about = { name: 'about', file: 'about.html' };
@@ -68,7 +68,7 @@ describe('create_routes', () => {
 	});
 
 	it('encodes invalid characters', () => {
-		const { components, pages } = create_routes(path.join(__dirname, 'samples/encoding'));
+		const { components, pages } = manifest_data(path.join(__dirname, 'samples/encoding'));
 
 		// had to remove ? and " because windows
 
@@ -90,7 +90,7 @@ describe('create_routes', () => {
 	});
 
 	it('allows regex qualifiers', () => {
-		const { pages } = create_routes(path.join(__dirname, 'samples/qualifiers'));
+		const { pages } = manifest_data(path.join(__dirname, 'samples/qualifiers'));
 
 		assert.deepEqual(pages.map(p => p.pattern), [
 			/^\/([0-9-a-z]{3,})\/?$/,
@@ -100,7 +100,7 @@ describe('create_routes', () => {
 	});
 
 	it('sorts routes correctly', () => {
-		const { pages } = create_routes(path.join(__dirname, 'samples/sorting'));
+		const { pages } = manifest_data(path.join(__dirname, 'samples/sorting'));
 
 		assert.deepEqual(pages.map(p => p.parts.map(part => part && part.component.file)), [
 			['index.html'],
@@ -116,7 +116,7 @@ describe('create_routes', () => {
 	});
 
 	it('ignores files and directories with leading underscores', () => {
-		const { server_routes } = create_routes(path.join(__dirname, 'samples/hidden-underscore'));
+		const { server_routes } = manifest_data(path.join(__dirname, 'samples/hidden-underscore'));
 
 		assert.deepEqual(server_routes.map(r => r.file), [
 			'index.js',
@@ -125,7 +125,7 @@ describe('create_routes', () => {
 	});
 
 	it('ignores files and directories with leading dots except .well-known', () => {
-		const { server_routes } = create_routes(path.join(__dirname, 'samples/hidden-dot'));
+		const { server_routes } = manifest_data(path.join(__dirname, 'samples/hidden-dot'));
 
 		assert.deepEqual(server_routes.map(r => r.file), [
 			'.well-known/dnt-policy.txt.js'
@@ -134,24 +134,24 @@ describe('create_routes', () => {
 
 	it('fails on clashes', () => {
 		assert.throws(() => {
-			const { pages } = create_routes(path.join(__dirname, 'samples/clash-pages'));
+			const { pages } = manifest_data(path.join(__dirname, 'samples/clash-pages'));
 		}, /The \[bar\]\/index\.html and \[foo\]\.html pages clash/);
 
 		assert.throws(() => {
-			const { server_routes } = create_routes(path.join(__dirname, 'samples/clash-routes'));
+			const { server_routes } = manifest_data(path.join(__dirname, 'samples/clash-routes'));
 			console.log(server_routes);
 		}, /The \[bar\]\/index\.js and \[foo\]\.js routes clash/);
 	});
 
 	it('fails if dynamic params are not separated', () => {
 		assert.throws(() => {
-			create_routes(path.join(__dirname, 'samples/invalid-params'));
+			manifest_data(path.join(__dirname, 'samples/invalid-params'));
 		}, /Invalid route \[foo\]\[bar\]\.js — parameters must be separated/);
 	});
 
 	it('errors when trying to use reserved characters in route regexp', () => {
 		assert.throws(() => {
-			create_routes(path.join(__dirname, 'samples/invalid-qualifier'));
+			manifest_data(path.join(__dirname, 'samples/invalid-qualifier'));
 		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
 	});
 });

@@ -6,7 +6,7 @@ import { EventEmitter } from 'events';
 import * as codec from 'sourcemap-codec';
 import hash from 'string-hash';
 import minify_html from './utils/minify_html';
-import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
+import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
 import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 import { Dirs, PageComponent } from '../interfaces';
@@ -276,10 +276,10 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	fs.writeFileSync(`${dirs.dest}/template.html`, minify_html(template));
 
-	const routes = create_routes();
+	const manifest_data = create_manifest_data();
 
 	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ bundler: opts.bundler, routes });
+	create_main_manifests({ bundler: opts.bundler, manifest_data });
 
 	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
 
@@ -291,7 +291,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	});
 
 	// TODO as much of this into the compiler facade as possible
-	const css = extract_css(client_result, routes.components, dirs);
+	const css = extract_css(client_result, manifest_data.components, dirs);
 
 	const build_info = client_result.to_json();
 
@@ -324,7 +324,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	if (serviceworker) {
 		create_serviceworker_manifest({
-			routes,
+			manifest_data,
 			client_files: client_result.chunks.map(chunk => `client/${chunk.file}`)
 		});
 
