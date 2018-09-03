@@ -15,7 +15,7 @@ prog.command('dev')
 	.option('--hot', 'Use hot module replacement (requires webpack)', true)
 	.option('--live', 'Reload on changes if not using --hot', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
-	.option('--stream', 'Stream logs, inside of boxing them', false)
+	.option('--stream', 'Stream logs, instead of boxing them', false)
 	.action(async (opts: {
 		port: number,
 		open: boolean,
