@@ -743,6 +743,14 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, 'root preload function ran: true');
 					});
 			});
+
+			it('allows reserved words as route names', () => {
+				return nightmare.goto(`${base}/const`).init()
+					.then(() => nightmare.page.title())
+					.then(title => {
+						assert.equal(title, 'reserved words are okay as routes');
+					});
+			});
 		});
 
 		describe('headers', () => {
