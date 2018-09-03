@@ -1,4 +1,4 @@
-import { init, prefetchRoutes } from '../../../runtime.js';
+import { init, goto, prefetchRoutes } from '../../../runtime.js';
 import { Store } from 'svelte/store.js';
 import { manifest } from './manifest/client.js';
 
@@ -11,3 +11,4 @@ window.init = () => {
 };
 
 window.prefetchRoutes = prefetchRoutes;
+window.goto = goto;
