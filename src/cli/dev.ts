@@ -11,35 +11,65 @@ function boxed_output() {
 		smartCSR: true
 	});
 
-	const status_box = blessed.log({
-		width: '100%',
-		height: '50%',
-		scrollable: true,
-		style: {
-			scrollbar: {
-				bg: 'black'
-			}
-		},
-		scrollbar: {},
-		input: true,
-		mouse: true,
-		keys: true,
-		scrollOnInput: false
+	function box(opts) {
+		opts = Object.assign({
+			width: '100%',
+			height: '50%',
+			scrollable: true,
+			style: {
+				scrollbar: {
+					bg: 'black'
+				}
+			},
+			scrollbar: {},
+			input: true,
+			mouse: true,
+			keys: true,
+			scrollOnInput: false
+		}, opts);
+
+		return blessed.box(opts);
+	}
+
+	const status_box = box({});
+	const log_box = box({
+		bottom: '0'
 	});
 
 	let mouse_is_down = false;
 	let dragging = false;
+	let did_drag = false;
+
+	let divider_is_horizontal = true;
+
+	function update_split(x: number, y: number) {
+		if (divider_is_horizontal) {
+			horizontal_divider.top = y;
+			status_box.width = log_box.width = '100%';
+			status_box.height = y;
+			log_box.height = screen.height - (y + 1);
+			log_box.top = y + 1;
+			log_box.left = 0;
+		} else {
+			vertical_divider.left = x;
+			status_box.height = log_box.height = '100%';
+			status_box.width = x;
+			log_box.width = screen.width - (x + 1);
+			log_box.left = x + 1;
+			log_box.top = 0;
+		}
+
+		screen.render();
+	}
 
 	screen.on('mousedown', data => {
 		if (mouse_is_down) {
 			if (dragging) {
-				divider.top = data.y;
-				status_box.height = data.y;
-				log_box.height = screen.height - (data.y + 1);
-				screen.render();
+				update_split(data.x, data.y);
+				did_drag = true;
 			}
 		} else {
-			if (data.y === divider.top) {
+			if (data.y === horizontal_divider.top) {
 				dragging = true;
 			}
 
@@ -50,33 +80,43 @@ function boxed_output() {
 	screen.on('mouseup', data => {
 		mouse_is_down = false;
 		dragging = false;
+		did_drag = false;
 	});
 
-	const log_box = blessed.log({
-		bottom: '0',
-		width: '100%',
-		height: '50%',
-		scrollable: true,
-		style: {
-			scrollbar: {
-				bg: 'black'
-			}
-		},
-		scrollbar: {},
-		input: true,
-		mouse: true,
-		keys: true,
-		scrollOnInput: false
-	});
-
-	const divider = blessed.line({
+	const horizontal_divider = blessed.line({
 		top: '50%',
 		orientation: 'horizontal'
 	});
 
+	const vertical_divider = blessed.line({
+		left: '50%',
+		orientation: 'vertical'
+	});
+
+	horizontal_divider.on('click', event => {
+		if (!did_drag) {
+			horizontal_divider.hide();
+			vertical_divider.show();
+			divider_is_horizontal = false;
+			update_split(event.x, event.y);
+		}
+	});
+
+	vertical_divider.on('click', event => {
+		if (!did_drag) {
+			vertical_divider.hide();
+			horizontal_divider.show();
+			divider_is_horizontal = true;
+			update_split(event.x, event.y);
+		}
+	});
+
+	vertical_divider.hide();
+
 	screen.append(status_box);
 	screen.append(log_box);
-	screen.append(divider);
+	screen.append(horizontal_divider);
+	screen.append(vertical_divider);
 
 	screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 		return process.exit(0);
@@ -92,13 +132,21 @@ function boxed_output() {
 		screen.render();
 	};
 
+	let first = true;
+
 	return {
 		stdout: append_log,
 
 		stderr: append_log,
 
 		clear_logs: () => {
-			log_box.setContent(`${colors.inverse(` server log • ${new Date().toISOString()}\n`)} \n`);
+			let content = `${colors.inverse(` server log • ${new Date().toISOString()}\n`)} \n`;
+			if (first) {
+				content += colors.gray(`> Click/drag the divider to adjust the split\n\n`);
+				first = false;
+			}
+
+			log_box.setContent(content);
 			screen.render();
 		},
 
