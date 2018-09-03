@@ -28,8 +28,7 @@ export class WebpackCompiler {
 				const result = new WebpackResult(stats);
 
 				if (result.errors.length) {
-					// TODO print errors
-					// console.error(stats.toString({ colors: true }));
+					console.error(stats.toString({ colors: true }));
 					reject(new Error(`Encountered errors while building app`));
 				}
 
