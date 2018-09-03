@@ -118,6 +118,8 @@ function boxed_output() {
 	screen.append(horizontal_divider);
 	screen.append(vertical_divider);
 
+	update_split(process.stdout.columns >> 1, process.stdout.rows >> 1);
+
 	screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 		return process.exit(0);
 	});
