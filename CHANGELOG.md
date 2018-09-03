@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.19.3
+
+* Better unicode route handling ([#347](https://github.com/sveltejs/sapper/issues/347))
+
 ## 0.19.2
 
 * Ignore editor tmp files ([#220](https://github.com/sveltejs/sapper/issues/220))
