@@ -85,7 +85,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 
 	function save(path: string, status: number, type: string, body: string) {
 		const { pathname } = resolve(origin, path);
-		let file = pathname.slice(1);
+		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
 		saved.add(file);
