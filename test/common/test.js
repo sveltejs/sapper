@@ -746,7 +746,7 @@ function run({ mode, basepath = '' }) {
 
 			it('allows reserved words as route names', () => {
 				return nightmare.goto(`${base}/const`).init()
-					.then(() => nightmare.page.title())
+					.page.title()
 					.then(title => {
 						assert.equal(title, 'reserved words are okay as routes');
 					});
