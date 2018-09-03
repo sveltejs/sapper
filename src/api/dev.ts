@@ -200,6 +200,8 @@ class Watcher extends EventEmitter {
 			handle_result: (result: CompileResult) => {
 				deferred.promise.then(() => {
 					const restart = () => {
+						this.emit('restart');
+
 						log = '';
 						this.crashed = false;
 
