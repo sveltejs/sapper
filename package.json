@@ -19,6 +19,8 @@
     "test": "test"
   },
   "dependencies": {
+    "@types/blessed": "^0.1.10",
+    "blessed": "^0.1.81",
     "html-minifier": "^3.5.16",
     "shimport": "^0.0.10",
     "source-map-support": "^0.5.6",
