@@ -1,5 +1,12 @@
 # sapper changelog
 
+## 0.19.2
+
+* Ignore editor tmp files ([#220](https://github.com/sveltejs/sapper/issues/220))
+* Ignore clicks an `<a>` element without `href` ([#235](https://github.com/sveltejs/sapper/issues/235))
+* Allow routes that are reserved JavaScript words ([#315](https://github.com/sveltejs/sapper/issues/315))
+* Print out webpack errors ([#403](https://github.com/sveltejs/sapper/issues/403))
+
 ## 0.19.1
 
 * Don't include local origin in export redirects ([#409](https://github.com/sveltejs/sapper/pull/409))
