@@ -30,13 +30,16 @@ export default function create_manifest_data(cwd = locations.routes()): Manifest
 				const file = path.relative(cwd, resolved);
 				const is_dir = fs.statSync(resolved).isDirectory();
 
+				const ext = path.extname(basename);
+				if (!is_dir && !/^\.[a-z]+$/i.test(ext)) return null; // filter out tmp files etc
+
 				const segment = is_dir
 					? basename
 					: basename.slice(0, -path.extname(basename).length);
 
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
-				const is_page = path.extname(basename) === '.html';
+				const is_page = ext === '.html';
 
 				parts.forEach(part => {
 					if (/\]\[/.test(part.content)) {
@@ -57,6 +60,7 @@ export default function create_manifest_data(cwd = locations.routes()): Manifest
 					is_page
 				};
 			})
+			.filter(Boolean)
 			.sort(comparator);
 
 		items.forEach(item => {
