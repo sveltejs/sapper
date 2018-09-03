@@ -336,6 +336,8 @@ function handle_click(event: MouseEvent) {
 	const a: HTMLAnchorElement | SVGAElement = <HTMLAnchorElement | SVGAElement>findAnchor(<Node>event.target);
 	if (!a) return;
 
+	if (!a.href) return;
+
 	// check if link is inside an svg
 	// in this case, both href and target are always inside an object
 	const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
