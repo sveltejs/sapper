@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { locations } from '../config';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
-import { posixify } from './utils';
+import { posixify, reserved_words } from './utils';
 
 export default function create_manifest_data(cwd = locations.routes()): ManifestData {
 	const components: PageComponent[] = [];
@@ -269,7 +269,7 @@ function get_parts(part: string): Part[] {
 }
 
 function get_slug(file: string) {
-	return file
+	let name = file
 		.replace(/[\\\/]index/, '')
 		.replace(/_default([\/\\index])?\.html$/, 'index')
 		.replace(/[\/\\]/g, '_')
@@ -278,6 +278,9 @@ function get_slug(file: string) {
 		.replace(/[^a-zA-Z0-9_$]/g, c => {
 			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
 		});
+
+	if (reserved_words.has(name)) name += '_';
+	return name;
 }
 
 function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
