@@ -185,7 +185,8 @@ function serve({ prefix, pathname, cache_control }: {
 			const type = lookup(req.path);
 
 			try {
-				const data = read(req.path.slice(1));
+				const file = decodeURIComponent(req.path.slice(1));
+				const data = read(file);
 
 				res.setHeader('Content-Type', type);
 				res.setHeader('Cache-Control', cache_control);
