@@ -753,6 +753,32 @@ function run({ mode, basepath = '' }) {
 						assert.equal(title, 'reserved words are okay as routes');
 					});
 			});
+
+			it('encodes req.params and req.query for server-rendered pages', () => {
+				return nightmare.goto(`${base}/echo/page/encöded?message=hëllö+wörld`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'encöded (hëllö wörld)');
+					});
+			});
+
+			it('encodes req.params and req.query for client-rendered pages', () => {
+				return nightmare.goto(base).init()
+					.click('a[href="echo/page/encöded?message=hëllö+wörld"]')
+					.wait(100)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'encöded (hëllö wörld)');
+					});
+			});
+
+			it('encodes req.params for server routes', () => {
+				return nightmare.goto(`${base}/echo/server-route/encöded`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'encöded');
+					});
+			});
 		});
 
 		describe('headers', () => {
