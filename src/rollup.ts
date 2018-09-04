@@ -30,7 +30,8 @@ export default {
 		output: () => {
 			return {
 				dir: locations.dest(),
-				format: 'cjs'
+				format: 'cjs',
+				sourcemap: dev()
 			};
 		}
 	},
