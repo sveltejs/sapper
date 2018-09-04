@@ -67,7 +67,7 @@ function select_route(url: URL): Target {
 			if (url.search.length > 0) {
 				url.search.slice(1).split('&').forEach(searchParam => {
 					const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
-					query[key] = value || true;
+					query[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : true;
 				});
 			}
 			return { url, path, page, match, query };

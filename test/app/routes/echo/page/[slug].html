@@ -1,10 +1,11 @@
-<h1>{slug}</h1>
+<h1>{slug} ({message})</h1>
 
 <script>
 	export default {
-		preload({ params }) {
+		preload({ params, query }) {
 			return {
-				slug: params.slug
+				slug: params.slug,
+				message: query.message
 			};
 		}
 	};

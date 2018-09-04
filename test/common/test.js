@@ -752,21 +752,21 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('encodes req.params for server-rendered pages', () => {
-				return nightmare.goto(`${base}/echo/page/encöded`)
+			it('encodes req.params and req.query for server-rendered pages', () => {
+				return nightmare.goto(`${base}/echo/page/encöded?message=hëllö+wörld`)
 					.page.title()
 					.then(title => {
-						assert.equal(title, 'encöded');
+						assert.equal(title, 'encöded (hëllö wörld)');
 					});
 			});
 
-			it('encodes req.params for client-rendered pages', () => {
+			it('encodes req.params and req.query for client-rendered pages', () => {
 				return nightmare.goto(base).init()
-					.click('a[href="echo/page/encöding"]')
+					.click('a[href="echo/page/encöded?message=hëllö+wörld"]')
 					.wait(100)
 					.page.title()
 					.then(title => {
-						assert.equal(title, 'encöding');
+						assert.equal(title, 'encöded (hëllö wörld)');
 					});
 			});
 
