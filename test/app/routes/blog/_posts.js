@@ -106,6 +106,14 @@ const posts = [
 			<p>If you didn't have adult onset diabetes, I wouldn't mind giving you a little sugar. Everybody dance NOW. And the soup of the day is bread. Great, now I'm gonna smell to high heaven like a tuna melt!</p>
 			<p>That's how Tony Wonder lost a nut. She calls it a Mayonegg. Go ahead, touch the Cornballer. There's a new daddy in town. A discipline daddy.</p>
 		`
+	},
+
+	{
+		title: 'Encödïng test',
+		slug: 'encödïng-test',
+		html: `
+			<p>It works</p>
+		`
 	}
 ];
 

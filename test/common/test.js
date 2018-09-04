@@ -93,6 +93,7 @@ function testExport({ basepath = '' }) {
 				'blog/how-to-use-sapper/index.html',
 				'blog/what-is-sapper/index.html',
 				'blog/why-the-name/index.html',
+				'blog/encödïng-test/index.html',
 
 				'blog.json',
 				'blog/a-very-long-post.json',
@@ -101,6 +102,7 @@ function testExport({ basepath = '' }) {
 				'blog/how-to-use-sapper.json',
 				'blog/what-is-sapper.json',
 				'blog/why-the-name.json',
+				'blog/encödïng-test.json',
 
 				'favicon.png',
 				'global.css',
