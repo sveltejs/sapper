@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.20.0
+
+* Decode `req.params` and `req.query` ([#417](https://github.com/sveltejs/sapper/issues/417))
+* Decode URLs before writing files in `sapper export` ([#414](https://github.com/sveltejs/sapper/pull/414))
+* Generate server sourcemaps for Rollup apps in dev mode ([#418](https://github.com/sveltejs/sapper/pull/418))
+
 ## 0.19.3
 
 * Better unicode route handling ([#347](https://github.com/sveltejs/sapper/issues/347))
