@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.20.1
+
+* Update shimport
+
 ## 0.20.0
 
 * Decode `req.params` and `req.query` ([#417](https://github.com/sveltejs/sapper/issues/417))
