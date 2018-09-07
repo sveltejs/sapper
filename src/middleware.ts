@@ -136,7 +136,7 @@ export default function middleware(opts: {
 
 		fs.existsSync(path.join(output, 'index.html')) && serve({
 			pathname: '/index.html',
-			cache_control: 'max-age=600'
+			cache_control: dev() ? 'no-cache' : 'max-age=600'
 		}),
 
 		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
@@ -532,6 +532,7 @@ function get_page_handler(
 				.replace('%sapper.styles%', () => styles);
 
 			res.statusCode = status;
+			res.setHeader('Cache-Control', dev() ? 'no-cache' : 'max-age=600');
 			res.end(body);
 		}).catch(err => {
 			if (error) {
