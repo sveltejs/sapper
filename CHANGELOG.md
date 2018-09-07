@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.20.2
+
+* Add `immutable` cache control header for hashed assets ([#425](https://github.com/sveltejs/sapper/pull/425))
+* Handle value-less query string params ([#426](https://github.com/sveltejs/sapper/issues/426))
+
 ## 0.20.1
 
 * Update shimport
