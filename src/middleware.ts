@@ -524,9 +524,12 @@ function get_page_handler(
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');
 			}
 
+			// users can set a CSP nonce using res.locals.nonce
+			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
+
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script>${script}</script>`)
+				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				.replace('%sapper.styles%', () => styles);
