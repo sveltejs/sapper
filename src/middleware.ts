@@ -141,12 +141,12 @@ export default function middleware(opts: {
 
 		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
 			pathname: '/service-worker.js',
-			cache_control: 'max-age=600'
+			cache_control: 'max-age=0'
 		}),
 
 		fs.existsSync(path.join(output, 'service-worker.js.map')) && serve({
 			pathname: '/service-worker.js.map',
-			cache_control: 'max-age=600'
+			cache_control: 'max-age=0'
 		}),
 
 		serve({
