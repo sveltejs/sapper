@@ -772,6 +772,24 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
+			it('accepts value-less query string parameter on server', () => {
+				return nightmare.goto(`${base}/echo/page/empty?message`)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'empty ()');
+					});
+			});
+
+			it('accepts value-less query string parameter on client', () => {
+				return nightmare.goto(base).init()
+					.click('a[href="echo/page/empty?message"]')
+					.wait(100)
+					.page.title()
+					.then(title => {
+						assert.equal(title, 'empty ()');
+					});
+			});
+
 			it('encodes req.params for server routes', () => {
 				return nightmare.goto(`${base}/echo/server-route/encöded`)
 					.page.title()
