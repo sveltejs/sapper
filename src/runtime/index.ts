@@ -66,8 +66,8 @@ function select_route(url: URL): Target {
 			const query: Record<string, string | true> = {};
 			if (url.search.length > 0) {
 				url.search.slice(1).split('&').forEach(searchParam => {
-					const [, key, value] = /([^=]+)=(.*)/.exec(searchParam);
-					query[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : true;
+					const [, key, value] = /([^=]+)(?:=(.*))?/.exec(searchParam);
+					query[key] = decodeURIComponent((value || '').replace(/\+/g, ' '));
 				});
 			}
 			return { url, path, page, match, query };
