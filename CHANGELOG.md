@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.20.3
+
+* Inject `nonce` attribute if `res.locals.nonce` is present ([#424](https://github.com/sveltejs/sapper/pull/424))
+* Prevent service worker caching ([#428](https://github.com/sveltejs/sapper/pull/428))
+* Consistent caching for HTML responses ([#429](https://github.com/sveltejs/sapper/pull/429))
+
 ## 0.20.2
 
 * Add `immutable` cache control header for hashed assets ([#425](https://github.com/sveltejs/sapper/pull/425))
