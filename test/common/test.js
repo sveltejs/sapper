@@ -5,6 +5,7 @@ const Nightmare = require('nightmare');
 const walkSync = require('walk-sync');
 const rimraf = require('rimraf');
 const ports = require('port-authority');
+const fetch = require('node-fetch');
 
 Nightmare.action('page', {
 	title(done) {
@@ -800,13 +801,18 @@ function run({ mode, basepath = '' }) {
 		});
 
 		describe('headers', () => {
-			it('sets Content-Type and Link...preload headers', () => {
-				return capture(() => nightmare.goto(base)).then(requests => {
-					const { headers } = requests[0];
+			it('sets Content-Type, Link...preload, and Cache-Control headers', () => {
+				return capture(() => fetch(base)).then(responses => {
+					const { headers } = responses[0];
 
 					assert.equal(
 						headers['content-type'],
 						'text/html'
+					);
+
+					assert.equal(
+						headers['cache-control'],
+						'max-age=600'
 					);
 
 					const str = ['main', '.+?\\.\\d+']

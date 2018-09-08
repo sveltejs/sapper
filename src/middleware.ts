@@ -312,6 +312,7 @@ function get_page_handler(
 		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
+		res.setHeader('Cache-Control', dev() ? 'no-cache' : 'max-age=600');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
@@ -532,7 +533,6 @@ function get_page_handler(
 				.replace('%sapper.styles%', () => styles);
 
 			res.statusCode = status;
-			res.setHeader('Cache-Control', dev() ? 'no-cache' : 'max-age=600');
 			res.end(body);
 		}).catch(err => {
 			if (error) {
