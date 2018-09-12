@@ -36,6 +36,8 @@ class Watcher extends EventEmitter {
 	live: boolean;
 	hot: boolean;
 
+	devtools_port: number;
+
 	dev_server: DevServer;
 	proc: child_process.ChildProcess;
 	filewatchers: Array<{ close: () => void }>;
@@ -57,6 +59,7 @@ class Watcher extends EventEmitter {
 		'dev-port': dev_port,
 		live,
 		hot,
+		'devtools-port': devtools_port,
 		bundler,
 		webpack = 'webpack',
 		rollup = 'rollup',
@@ -68,6 +71,7 @@ class Watcher extends EventEmitter {
 		'dev-port': number,
 		live: boolean,
 		hot: boolean,
+		'devtools-port': number,
 		bundler?: string,
 		webpack: string,
 		rollup: string,
@@ -83,6 +87,8 @@ class Watcher extends EventEmitter {
 		this.dev_port = dev_port;
 		this.live = live;
 		this.hot = hot;
+
+		this.devtools_port = devtools_port;
 
 		this.filewatchers = [];
 
@@ -128,6 +134,9 @@ class Watcher extends EventEmitter {
 		if (this.bundler === 'rollup') copy_shimport(dest);
 
 		if (!this.dev_port) this.dev_port = await ports.find(10000);
+
+		// Chrome looks for debugging targets on ports 9222 and 9229 by default
+		if (!this.devtools_port) this.devtools_port = await ports.find(9222);
 
 		let manifest_data: ManifestData;
 
@@ -238,12 +247,21 @@ class Watcher extends EventEmitter {
 						restart();
 					}
 
+					// we need to give the child process its own DevTools port,
+					// otherwise Node will try to use the parent's (and fail)
+					const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
+					const execArgv = process.execArgv.slice();
+					if (execArgv.some((arg: string) => !!arg.match(debugArgRegex))) {
+						execArgv.push(`--inspect-port=${this.devtools_port}`);
+					}
+
 					this.proc = child_process.fork(`${dest}/server.js`, [], {
 						cwd: process.cwd(),
 						env: Object.assign({
 							PORT: this.port
 						}, process.env),
-						stdio: ['ipc']
+						stdio: ['ipc'],
+						execArgv
 					});
 
 					this.proc.stdout.on('data', chunk => {
