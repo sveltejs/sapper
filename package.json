@@ -74,6 +74,7 @@
     "test": "mocha --opts mocha.opts",
     "pretest": "npm run build",
     "build": "rm -rf dist && rollup -c",
+    "prepare": "npm run build",
     "dev": "rollup -cw",
     "prepublishOnly": "npm test",
     "update_mime_types": "curl http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types | grep -e \"^[^#]\" > src/middleware/mime-types.md"
