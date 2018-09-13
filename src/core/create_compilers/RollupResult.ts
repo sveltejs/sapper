@@ -6,16 +6,18 @@ import extract_css from './extract_css';
 import { left_pad } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 import { ManifestData, Dirs, PageComponent } from '../../interfaces';
+import { locations } from '../../config';
+import { get_slug } from '../utils';
 
 export default class RollupResult implements CompileResult {
 	duration: number;
 	errors: CompileError[];
 	warnings: CompileError[];
 	chunks: Chunk[];
-	assets: Record<string, string>;
+	assets: Record<string, string | string[]>;
 	css_files: CssFile[];
 	css: {
-		main: string,
+		main: string | null,
 		chunks: Record<string, string[]>
 	};
 	summary: string;
@@ -33,14 +35,21 @@ export default class RollupResult implements CompileResult {
 		}));
 
 		this.css_files = compiler.css_files;
-
-		// TODO populate this properly. We don't have named chunks, as in
-		// webpack, but we can have a route -> [chunk] map or something
 		this.assets = {};
+
+		const routes_dir = locations.routes();
 
 		compiler.chunks.forEach(chunk => {
 			if (compiler.input in chunk.modules) {
 				this.assets.main = chunk.fileName;
+			} else {
+				Object.keys(chunk.modules).forEach((module: string) => {
+					if (!module.startsWith(routes_dir)) return;
+					if (/\.css$/.test(module)) return;
+
+					const page_slug = get_slug(path.relative(routes_dir, module));
+					this.assets[page_slug] = [...chunk.imports, chunk.fileName];
+				});
 			}
 		});
 

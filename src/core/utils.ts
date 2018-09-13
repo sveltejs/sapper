@@ -24,6 +24,21 @@ export function fudge_mtime(file: string) {
 	);
 }
 
+export function get_slug(file: string) {
+	let name = file
+		.replace(/[\\\/]index/, '')
+		.replace(/_default([\/\\index])?\.html$/, 'index')
+		.replace(/[\/\\]/g, '_')
+		.replace(/\.\w+$/, '')
+		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
+		.replace(/[^a-zA-Z0-9_$]/g, c => {
+			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
+		});
+
+	if (reserved_words.has(name)) name += '_';
+	return name;
+}
+
 export const reserved_words = new Set([
 	'arguments',
 	'await',

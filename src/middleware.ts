@@ -21,6 +21,7 @@ type Page = {
 	pattern: RegExp;
 	parts: Array<{
 		name: string;
+		file: string | null;
 		component: Component;
 		params?: (match: RegExpMatchArray) => Record<string, string>;
 	}>
@@ -308,28 +309,43 @@ function get_page_handler(
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
-			legacy_assets?: Record<string, string>
+			legacy_assets?: Record<string, string>,
+			css: {
+				main: string | null,
+				chunks: Record<string, string[]>
+			}
 		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 		res.setHeader('Cache-Control', dev() ? 'no-cache' : 'max-age=600');
 
-		// preload main.js and current route
-		// TODO detect other stuff we can preload? images, CSS, fonts?
-		let preloaded_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
+		// preload main js/css and current route
+		// TODO detect other stuff we can preload? images, fonts?
+		let preloaded_script_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
+		let preloaded_style_chunks = [build_info.css.main];
 		if (!error) {
 			page.parts.forEach(part => {
 				if (!part) return;
 
 				// using concat because it could be a string or an array. thanks webpack!
-				preloaded_chunks = preloaded_chunks.concat(build_info.assets[part.name]);
+				preloaded_script_chunks = preloaded_script_chunks.concat(build_info.assets[part.name]);
+				preloaded_style_chunks = preloaded_style_chunks.concat(build_info.css.chunks[part.file]);
 			});
 		}
 
-		const link = preloaded_chunks
+		preloaded_script_chunks = Array.from(new Set(preloaded_script_chunks));
+
+		const script_links = preloaded_script_chunks
 			.filter(file => file && !file.match(/\.map$/))
 			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
 			.join(', ');
+
+		const style_links = preloaded_style_chunks
+			.filter(file => file && !file.match(/\.map$/))
+			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="style"`)
+			.join(', ');
+
+		const link = [script_links, style_links].join(', ');
 
 		res.setHeader('Link', link);
 

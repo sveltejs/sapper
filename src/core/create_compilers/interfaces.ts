@@ -21,7 +21,7 @@ export interface CompileResult {
 	errors: CompileError[];
 	warnings: CompileError[];
 	chunks: Chunk[];
-	assets: Record<string, string>;
+	assets: Record<string, string | string[]>;
 	css_files: CssFile[];
 
 	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
