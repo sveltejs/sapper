@@ -4,7 +4,7 @@ yarn-error.log
 node_modules
 cypress/screenshots
 test/app/.sapper
-test/app/app/manifest
+test/app/src/manifest
 test/app/export
 test/app/build
 sapper
