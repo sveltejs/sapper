@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.20.4
+
+* Fix legacy build CSS ([#439](https://github.com/sveltejs/sapper/issues/439))
+* Enable debugging in Chrome and VSCode ([#435](https://github.com/sveltejs/sapper/issues/435))
+
 ## 0.20.3
 
 * Inject `nonce` attribute if `res.locals.nonce` is present ([#424](https://github.com/sveltejs/sapper/pull/424))
