@@ -18,7 +18,7 @@ export function build(opts: { bundler?: string, legacy?: boolean }) {
 				bundler
 			}, {
 				dest: locations.dest(),
-				app: locations.app(),
+				src: locations.src(),
 				routes: locations.routes(),
 				webpack: 'webpack',
 				rollup: 'rollup'

@@ -288,7 +288,7 @@ function get_page_handler(
 		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8')));
 
 	const template = dev()
-		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
+		? () => fs.readFileSync(`${locations.src()}/template.html`, 'utf-8')
 		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
 
 	const { server_routes, pages } = manifest;

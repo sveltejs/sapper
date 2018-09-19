@@ -39,9 +39,9 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	mkdirp.sync(`${dirs.dest}/client`);
 	copy_shimport(dirs.dest);
 
-	// minify app/template.html
+	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${dirs.app}/template.html`, 'utf-8');
+	const template = fs.readFileSync(`${dirs.src}/template.html`, 'utf-8');
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -54,7 +54,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	const manifest_data = create_manifest_data();
 
-	// create app/manifest/client.js and app/manifest/server.js
+	// create src/manifest/client.js and src/manifest/server.js
 	create_main_manifests({ bundler: opts.bundler, manifest_data });
 
 	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
@@ -79,7 +79,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 			// TODO duration/warnings
 			result: client_result
 		});
-		
+
 		client_result.to_json(manifest_data, dirs);
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;

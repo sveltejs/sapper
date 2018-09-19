@@ -43,7 +43,7 @@ export type ServerRoute = {
 
 export type Dirs = {
 	dest: string,
-	app: string,
+	src: string,
 	routes: string,
 	webpack: string,
 	rollup: string

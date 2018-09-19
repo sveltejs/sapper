@@ -6,7 +6,7 @@ export default {
 	client: {
 		entry: () => {
 			return {
-				main: `${locations.app()}/client`
+				main: `${locations.src()}/client`
 			};
 		},
 
@@ -23,7 +23,7 @@ export default {
 	server: {
 		entry: () => {
 			return {
-				server: `${locations.app()}/server`
+				server: `${locations.src()}/server`
 			};
 		},
 
@@ -40,7 +40,7 @@ export default {
 	serviceworker: {
 		entry: () => {
 			return {
-				'service-worker': `${locations.app()}/service-worker`
+				'service-worker': `${locations.src()}/service-worker`
 			};
 		},
 

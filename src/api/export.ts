@@ -13,6 +13,7 @@ import * as events from './interfaces';
 type Opts = {
 	build: string,
 	dest: string,
+	static: string,
 	basepath?: string,
 	timeout: number | false
 };
@@ -46,7 +47,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 
-	sander.copydirSync('assets').to(export_dir);
+	sander.copydirSync(opts.static).to(export_dir);
 	sander.copydirSync(opts.build, 'client').to(export_dir, 'client');
 
 	if (sander.existsSync(opts.build, 'service-worker.js')) {

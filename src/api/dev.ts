@@ -23,7 +23,7 @@ export function dev(opts) {
 class Watcher extends EventEmitter {
 	bundler: string;
 	dirs: {
-		app: string;
+		src: string;
 		dest: string;
 		routes: string;
 		rollup: string;
@@ -53,7 +53,7 @@ class Watcher extends EventEmitter {
 	}
 
 	constructor({
-		app = locations.app(),
+		src = locations.src(),
 		dest = locations.dest(),
 		routes = locations.routes(),
 		'dev-port': dev_port,
@@ -65,7 +65,7 @@ class Watcher extends EventEmitter {
 		rollup = 'rollup',
 		port = +process.env.PORT
 	}: {
-		app: string,
+		src: string,
 		dest: string,
 		routes: string,
 		'dev-port': number,
@@ -80,7 +80,7 @@ class Watcher extends EventEmitter {
 		super();
 
 		this.bundler = validate_bundler(bundler);
-		this.dirs = { app, dest, routes, webpack, rollup };
+		this.dirs = { src, dest, routes, webpack, rollup };
 		this.port = port;
 		this.closed = false;
 
@@ -100,7 +100,7 @@ class Watcher extends EventEmitter {
 		};
 
 		// remove this in a future version
-		const template = fs.readFileSync(path.join(app, 'template.html'), 'utf-8');
+		const template = fs.readFileSync(path.join(src, 'template.html'), 'utf-8');
 		if (template.indexOf('%sapper.base%') === -1) {
 			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
 			error.code = `missing-sapper-base`;
@@ -175,7 +175,7 @@ class Watcher extends EventEmitter {
 				}
 			),
 
-			fs.watch(`${locations.app()}/template.html`, () => {
+			fs.watch(`${locations.src()}/template.html`, () => {
 				this.dev_server.send({
 					action: 'reload'
 				});
