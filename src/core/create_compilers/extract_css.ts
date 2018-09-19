@@ -170,6 +170,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 	}
 
 	const main = client_result.assets.main;
+	if (process.env.SAPPER_LEGACY_BUILD) main = `legacy/${main}`;
 	const entry = fs.readFileSync(`${dirs.dest}/client/${main}`, 'utf-8');
 
 	const replacements = new Map();

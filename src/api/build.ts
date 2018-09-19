@@ -79,7 +79,8 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 			// TODO duration/warnings
 			result: client_result
 		});
-
+		
+		client_result.to_json(manifest_data, dirs);
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
