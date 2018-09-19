@@ -11,6 +11,7 @@ import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 import { Dirs, PageComponent } from '../interfaces';
 import { CompileResult } from '../core/create_compilers/interfaces';
+import read_template from '../core/read_template';
 
 type Opts = {
 	legacy: boolean;
@@ -41,7 +42,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${dirs.src}/template.html`, 'utf-8');
+	const template = read_template();
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -57,7 +58,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	// create src/manifest/client.js and src/manifest/server.js
 	create_main_manifests({ bundler: opts.bundler, manifest_data });
 
-	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
+	const { client, server, serviceworker } = await create_compilers(opts.bundler, dirs);
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
@@ -70,7 +71,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = create_compilers(opts.bundler, dirs);
+		const { client } = await create_compilers(opts.bundler, dirs);
 
 		const client_result = await client.compile();
 

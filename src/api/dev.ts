@@ -15,6 +15,7 @@ import * as events from './interfaces';
 import validate_bundler from '../cli/utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData } from '../interfaces';
+import read_template from '../core/read_template';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -100,7 +101,7 @@ class Watcher extends EventEmitter {
 		};
 
 		// remove this in a future version
-		const template = fs.readFileSync(path.join(src, 'template.html'), 'utf-8');
+		const template = read_template();
 		if (template.indexOf('%sapper.base%') === -1) {
 			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
 			error.code = `missing-sapper-base`;
@@ -185,7 +186,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = create_compilers(this.bundler, this.dirs);
+		const compilers: Compilers = await create_compilers(this.bundler, this.dirs);
 
 		let log = '';
 
