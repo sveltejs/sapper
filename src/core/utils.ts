@@ -14,6 +14,11 @@ export function posixify(file: string) {
 	return file.replace(/[/\\]/g, '/');
 }
 
+export function stringify(string: string, includeQuotes: boolean = true) {
+	const quoted = JSON.stringify(string);
+	return includeQuotes ? quoted : quoted.slice(1, -1);
+}
+
 export function fudge_mtime(file: string) {
 	// need to fudge the mtime so that webpack doesn't go doolally
 	const { atime, mtime } = fs.statSync(file);
