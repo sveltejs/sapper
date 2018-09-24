@@ -290,7 +290,7 @@ function get_page_handler(
 
 	const template = dev()
 		? () => read_template()
-		: (str => () => str)(read_template());
+		: (str => () => str)(read_template(output));
 
 	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;

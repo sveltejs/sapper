@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.21.1
+
+* Read template from build directory in production
+
 ## 0.21.0
 
 * Change project folder structure ([#432](https://github.com/sveltejs/sapper/issues/432))
