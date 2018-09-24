@@ -8,6 +8,7 @@ import fetch from 'node-fetch';
 import { lookup } from './middleware/mime';
 import { locations, dev } from './config';
 import sourceMapSupport from 'source-map-support';
+import read_template from './core/read_template';
 
 sourceMapSupport.install();
 
@@ -288,8 +289,8 @@ function get_page_handler(
 		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8')));
 
 	const template = dev()
-		? () => fs.readFileSync(`${locations.app()}/template.html`, 'utf-8')
-		: (str => () => str)(fs.readFileSync(`${locations.dest()}/template.html`, 'utf-8'));
+		? () => read_template()
+		: (str => () => str)(read_template());
 
 	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;

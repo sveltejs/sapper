@@ -15,8 +15,8 @@ export default class RollupCompiler {
 	chunks: any[];
 	css_files: Array<{ id: string, code: string }>;
 
-	constructor(config: string) {
-		this._ = this.get_config(path.resolve(config));
+	constructor(config: any) {
+		this._ = this.get_config(config);
 		this.input = null;
 		this.warnings = [];
 		this.errors = [];
@@ -24,31 +24,8 @@ export default class RollupCompiler {
 		this.css_files = [];
 	}
 
-	async get_config(input: string) {
-		if (!rollup) rollup = relative('rollup', process.cwd());
-
-		const bundle = await rollup.rollup({
-			input,
-			external: (id: string) => {
-				return (id[0] !== '.' && !path.isAbsolute(id)) || id.slice(-5, id.length) === '.json';
-			}
-		});
-
-		const { code } = await bundle.generate({ format: 'cjs' });
-
-		// temporarily override require
-		const defaultLoader = require.extensions['.js'];
-		require.extensions['.js'] = (module: any, filename: string) => {
-			if (filename === input) {
-				module._compile(code, filename);
-			} else {
-				defaultLoader(module, filename);
-			}
-		};
-
-		const mod: any = require(input);
-		delete require.cache[input];
-
+	async get_config(mod: any) {
+		// TODO this is hacky, and doesn't need to apply to all three compilers
 		(mod.plugins || (mod.plugins = [])).push({
 			name: 'sapper-internal',
 			options: (opts: any) => {
@@ -156,5 +133,35 @@ export default class RollupCompiler {
 					console.log(`Unexpected event ${event.code}`);
 			}
 		});
+	}
+
+	static async load_config() {
+		if (!rollup) rollup = relative('rollup', process.cwd());
+
+		const input = path.resolve('rollup.config.js');
+
+		const bundle = await rollup.rollup({
+			input,
+			external: (id: string) => {
+				return (id[0] !== '.' && !path.isAbsolute(id)) || id.slice(-5, id.length) === '.json';
+			}
+		});
+
+		const { code } = await bundle.generate({ format: 'cjs' });
+
+		// temporarily override require
+		const defaultLoader = require.extensions['.js'];
+		require.extensions['.js'] = (module: any, filename: string) => {
+			if (filename === input) {
+				module._compile(code, filename);
+			} else {
+				defaultLoader(module, filename);
+			}
+		};
+
+		const config: any = require(input);
+		delete require.cache[input];
+
+		return config;
 	}
 }

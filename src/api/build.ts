@@ -11,6 +11,7 @@ import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 import { Dirs, PageComponent } from '../interfaces';
 import { CompileResult } from '../core/create_compilers/interfaces';
+import read_template from '../core/read_template';
 
 type Opts = {
 	legacy: boolean;
@@ -39,9 +40,9 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	mkdirp.sync(`${dirs.dest}/client`);
 	copy_shimport(dirs.dest);
 
-	// minify app/template.html
+	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${dirs.app}/template.html`, 'utf-8');
+	const template = read_template();
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -54,10 +55,10 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	const manifest_data = create_manifest_data();
 
-	// create app/manifest/client.js and app/manifest/server.js
+	// create src/manifest/client.js and src/manifest/server.js
 	create_main_manifests({ bundler: opts.bundler, manifest_data });
 
-	const { client, server, serviceworker } = create_compilers(opts.bundler, dirs);
+	const { client, server, serviceworker } = await create_compilers(opts.bundler, dirs);
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
@@ -70,7 +71,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = create_compilers(opts.bundler, dirs);
+		const { client } = await create_compilers(opts.bundler, dirs);
 
 		const client_result = await client.compile();
 
@@ -79,7 +80,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 			// TODO duration/warnings
 			result: client_result
 		});
-		
+
 		client_result.to_json(manifest_data, dirs);
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
