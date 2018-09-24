@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.21.0
+
+* Change project folder structure ([#432](https://github.com/sveltejs/sapper/issues/432))
+* Escape filenames ([#446](https://github.com/sveltejs/sapper/pull/446/))
+
 ## 0.20.4
 
 * Fix legacy build CSS ([#439](https://github.com/sveltejs/sapper/issues/439))
