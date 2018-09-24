@@ -1,5 +1,4 @@
-import * as fs from 'fs';
-import { Dirs } from '../../interfaces';
+import * as path from 'path';
 import RollupCompiler from './RollupCompiler';
 import { WebpackCompiler } from './WebpackCompiler';
 
@@ -11,27 +10,35 @@ export type Compilers = {
 	serviceworker?: Compiler;
 }
 
-export default function create_compilers(bundler: string, dirs: Dirs): Compilers {
+export default async function create_compilers(bundler: 'rollup' | 'webpack'): Promise<Compilers> {
 	if (bundler === 'rollup') {
-		const sw = `${dirs.rollup}/service-worker.config.js`;
+		const config = await RollupCompiler.load_config();
+		validate_config(config, 'rollup');
 
 		return {
-			client: new RollupCompiler(`${dirs.rollup}/client.config.js`),
-			server: new RollupCompiler(`${dirs.rollup}/server.config.js`),
-			serviceworker: fs.existsSync(sw) && new RollupCompiler(sw)
+			client: new RollupCompiler(config.client),
+			server: new RollupCompiler(config.server),
+			serviceworker: config.serviceworker && new RollupCompiler(config.serviceworker)
 		};
 	}
 
 	if (bundler === 'webpack') {
-		const sw = `${dirs.webpack}/service-worker.config.js`;
+		const config = require(path.resolve('webpack.config.js'));
+		validate_config(config, 'webpack');
 
 		return {
-			client: new WebpackCompiler(`${dirs.webpack}/client.config.js`),
-			server: new WebpackCompiler(`${dirs.webpack}/server.config.js`),
-			serviceworker: fs.existsSync(sw) && new WebpackCompiler(sw)
+			client: new WebpackCompiler(config.client),
+			server: new WebpackCompiler(config.server),
+			serviceworker: config.serviceworker && new WebpackCompiler(config.serviceworker)
 		};
 	}
 
 	// this shouldn't be possible...
 	throw new Error(`Invalid bundler option '${bundler}'`);
+}
+
+function validate_config(config: any, bundler: 'rollup' | 'webpack') {
+	if (!config.client || !config.server) {
+		throw new Error(`${bundler}.config.js must export a { client, server, serviceworker? } object`);
+	}
 }

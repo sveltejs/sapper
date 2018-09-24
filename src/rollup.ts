@@ -5,7 +5,7 @@ export default {
 
 	client: {
 		input: () => {
-			return `${locations.app()}/client.js`
+			return `${locations.src()}/client.js`
 		},
 
 		output: () => {
@@ -24,7 +24,7 @@ export default {
 
 	server: {
 		input: () => {
-			return `${locations.app()}/server.js`
+			return `${locations.src()}/server.js`
 		},
 
 		output: () => {
@@ -38,7 +38,7 @@ export default {
 
 	serviceworker: {
 		input: () => {
-			return `${locations.app()}/service-worker.js`;
+			return `${locations.src()}/service-worker.js`;
 		},
 
 		output: () => {

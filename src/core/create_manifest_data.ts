@@ -5,6 +5,11 @@ import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from './utils';
 
 export default function create_manifest_data(cwd = locations.routes()): ManifestData {
+	// TODO remove in a future version
+	if (!fs.existsSync(cwd)) {
+		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);
+	}
+
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];

@@ -15,6 +15,7 @@ export function exporter(export_dir: string, {
 		try {
 			const emitter = _exporter({
 				build: locations.dest(),
+				static: locations.static(),
 				dest: export_dir,
 				basepath,
 				timeout

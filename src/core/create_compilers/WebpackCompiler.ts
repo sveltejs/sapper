@@ -1,4 +1,3 @@
-import * as path from 'path';
 import relative from 'require-relative';
 import { CompileResult } from './interfaces';
 import WebpackResult from './WebpackResult';
@@ -8,9 +7,9 @@ let webpack: any;
 export class WebpackCompiler {
 	_: any;
 
-	constructor(config: string) {
+	constructor(config: any) {
 		if (!webpack) webpack = relative('webpack', process.cwd());
-		this._ = webpack(require(path.resolve(config)));
+		this._ = webpack(config);
 	}
 
 	oninvalid(cb: (filename: string) => void) {

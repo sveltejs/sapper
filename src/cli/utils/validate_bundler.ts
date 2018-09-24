@@ -1,15 +1,19 @@
 import * as fs from 'fs';
 
-export default function validate_bundler(bundler?: string) {
+export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
 	if (!bundler) {
 		bundler = (
-			fs.existsSync('rollup') ? 'rollup' :
-			fs.existsSync('webpack') ? 'webpack' :
+			fs.existsSync('rollup.config.js') ? 'rollup' :
+			fs.existsSync('webpack.config.js') ? 'webpack' :
 			null
 		);
 
 		if (!bundler) {
-			throw new Error(`Could not find a 'rollup' or 'webpack' directory`);
+			// TODO remove in a future version
+			deprecate_dir('rollup');
+			deprecate_dir('webpack');
+
+			throw new Error(`Could not find rollup.config.js or webpack.config.js`);
 		}
 	}
 
@@ -18,4 +22,17 @@ export default function validate_bundler(bundler?: string) {
 	}
 
 	return bundler;
+}
+
+function deprecate_dir(bundler: 'rollup' | 'webpack') {
+	try {
+		const stats = fs.statSync(bundler);
+		if (!stats.isDirectory()) return;
+	} catch (err) {
+		// do nothing
+		return;
+	}
+
+	// TODO link to docs, once those docs exist
+	throw new Error(`As of Sapper 0.21, build configuration should be placed in a single ${bundler}.config.js file`);
 }
