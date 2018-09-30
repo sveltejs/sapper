@@ -29,6 +29,9 @@ module.exports = {
 			]
 		},
 		mode,
+		optimization: {
+			minimize: false
+		},
 		plugins: [
 			isDev && new webpack.HotModuleReplacementPlugin()
 		].filter(Boolean),
@@ -64,6 +67,9 @@ module.exports = {
 			]
 		},
 		mode,
+		optimization: {
+			minimize: false
+		},
 		performance: {
 			hints: false // it doesn't matter if server.js is large
 		}

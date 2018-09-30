@@ -73,24 +73,30 @@ function generate_client(
 	const server_routes_to_ignore = manifest_data.server_routes.filter(route =>
 		!page_ids.has(route.pattern.toString()));
 
+	const component_indexes: Record<string, number> = {};
+
 	let code = `
 		import root from ${stringify(get_file(path_to_routes, manifest_data.root))};
 		import error from ${stringify(posixify(`${path_to_routes}/_error.html`))};
 
 		const d = decodeURIComponent;
 
-		${manifest_data.components.map(component => {
-			const annotation = bundler === 'webpack'
-				? `/* webpackChunkName: "${component.name}" */ `
-				: '';
+		const components = [
+			${manifest_data.components.map((component, i) => {
+				const annotation = bundler === 'webpack'
+					? `/* webpackChunkName: "${component.name}" */ `
+					: '';
 
-			const source = get_file(path_to_routes, component);
+				const source = get_file(path_to_routes, component);
 
-			return `const ${component.name} = {
-			js: () => import(${annotation}${stringify(source)}),
-			css: "__SAPPER_CSS_PLACEHOLDER:${stringify(component.file, false)}__"
-		};`;
-		}).join('\n')}
+				component_indexes[component.name] = i;
+
+				return `{
+				js: () => import(${annotation}${stringify(source)}),
+				css: "__SAPPER_CSS_PLACEHOLDER:${stringify(component.file, false)}__"
+			}`;
+			}).join(',\n\t\t\t')}
+		];
 
 		const manifest = {
 			ignore: [${server_routes_to_ignore.map(route => route.pattern).join(', ')}],
@@ -105,10 +111,10 @@ function generate_client(
 
 							if (part.params.length > 0) {
 								const props = part.params.map((param, i) => `${param}: d(match[${i + 1}])`);
-								return `{ component: ${part.component.name}, params: match => ({ ${props.join(', ')} }) }`;
+								return `{ component: components[${component_indexes[part.component.name]}], params: match => ({ ${props.join(', ')} }) }`;
 							}
 
-							return `{ component: ${part.component.name} }`;
+							return `{ component: components[${component_indexes[part.component.name]}] }`;
 						}).join(',\n\t\t\t\t\t\t')}
 					]
 				}`).join(',\n\n\t\t\t\t')}
@@ -144,9 +150,9 @@ function generate_server(
 
 	const imports = [].concat(
 		manifest_data.server_routes.map(route =>
-			`import * as ${route.name} from ${stringify(posixify(`${path_to_routes}/${route.file}`))};`),
+			`import * as __${route.name} from ${stringify(posixify(`${path_to_routes}/${route.file}`))};`),
 		manifest_data.components.map(component =>
-			`import ${component.name} from ${stringify(get_file(path_to_routes, component))};`),
+			`import __${component.name} from ${stringify(get_file(path_to_routes, component))};`),
 		`import root from ${stringify(get_file(path_to_routes, manifest_data.root))};`,
 		`import error from ${stringify(posixify(`${path_to_routes}/_error.html`))};`
 	);
@@ -161,7 +167,7 @@ function generate_server(
 				${manifest_data.server_routes.map(route => `{
 					// ${route.file}
 					pattern: ${route.pattern},
-					handlers: ${route.name},
+					handlers: __${route.name},
 					params: ${route.params.length > 0
 						? `match => ({ ${route.params.map((param, i) => `${param}: d(match[${i + 1}])`).join(', ')} })`
 						: `() => ({})`}
@@ -179,7 +185,7 @@ function generate_server(
 							const props = [
 								`name: "${part.component.name}"`,
 								`file: ${stringify(part.component.file)}`,
-								`component: ${part.component.name}`
+								`component: __${part.component.name}`
 							];
 
 							if (part.params.length > 0) {
