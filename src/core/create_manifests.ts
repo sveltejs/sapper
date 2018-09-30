@@ -10,7 +10,7 @@ export function create_main_manifests({ bundler, manifest_data, dev_port }: {
 	manifest_data: ManifestData;
 	dev_port?: number;
 }) {
-	const manifest_dir = path.join(locations.src(), '__sapper__');
+	const manifest_dir = '__sapper__';
 	if (!fs.existsSync(manifest_dir)) fs.mkdirSync(manifest_dir);
 
 	const path_to_routes = path.relative(manifest_dir, locations.routes());
@@ -55,7 +55,7 @@ export function create_serviceworker_manifest({ manifest_data, client_files }: {
 		export const routes = [\n\t${manifest_data.pages.map((r: Page) => `{ pattern: ${r.pattern} }`).join(',\n\t')}\n];
 	`.replace(/^\t\t/gm, '').trim();
 
-	write_if_changed(`${locations.src()}/__sapper__/service-worker.js`, code);
+	write_if_changed(`__sapper__/service-worker.js`, code);
 }
 
 function generate_client(

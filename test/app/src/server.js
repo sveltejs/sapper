@@ -3,7 +3,7 @@ import { resolve } from 'url';
 import express from 'express';
 import serve from 'serve-static';
 import { Store } from 'svelte/store.js';
-import * as sapper from './__sapper__/server.js';
+import * as sapper from '../__sapper__/server.js';
 
 let pending;
 let ended;
