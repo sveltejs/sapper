@@ -71,7 +71,7 @@
   },
   "scripts": {
     "cy:open": "cypress open",
-    "test": "mocha --opts mocha.opts && agadoo templates/dist/client.js",
+    "test": "mocha --opts mocha.opts",
     "pretest": "npm run build",
     "build": "rm -rf dist && rollup -c",
     "prepare": "npm run build",
