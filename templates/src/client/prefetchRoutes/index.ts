@@ -1,14 +1,12 @@
-import { manifest, load_component } from "../app";
+import { components, pages, load_component } from "../app";
 
 export default function prefetchRoutes(pathnames: string[]) {
-	if (!manifest) throw new Error(`You must call init() first`);
-
-	return manifest.pages
+	return pages
 		.filter(route => {
 			if (!pathnames) return true;
 			return pathnames.some(pathname => route.pattern.test(pathname));
 		})
 		.reduce((promise: Promise<any>, route) => promise.then(() => {
-			return Promise.all(route.parts.map(part => part && load_component(part.component)));
+			return Promise.all(route.parts.map(part => part && load_component(components[part.i])));
 		}), Promise.resolve());
 }

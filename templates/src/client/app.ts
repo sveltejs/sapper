@@ -1,7 +1,20 @@
-import { Manifest, Target, ScrollPosition, Component, Redirect, ComponentLoader, ComponentConstructor, RootProps } from './types';
+import RootComponent from '__ROOT__';
+import ErrorComponent from '__ERROR__';
+import {
+	Target,
+	ScrollPosition,
+	Component,
+	Redirect,
+	ComponentLoader,
+	ComponentConstructor,
+	RootProps,
+	Page
+} from './types';
 import goto from './goto';
 
-export const manifest: Manifest = __MANIFEST__;
+const ignore = __IGNORE__;
+export const components: ComponentLoader[] = __COMPONENTS__;
+export const pages: Page[] = __PAGES__;
 
 let ready = false;
 let root_component: Component;
@@ -61,16 +74,16 @@ export { _history as history };
 export const scroll_history: Record<string, ScrollPosition> = {};
 
 export function select_route(url: URL): Target {
-	if (url.origin !== window.location.origin) return null;
+	if (url.origin !== location.origin) return null;
 	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 
 	const path = url.pathname.slice(initial_data.baseUrl.length);
 
 	// avoid accidental clashes between server routes and pages
-	if (manifest.ignore.some(pattern => pattern.test(path))) return;
+	if (ignore.some(pattern => pattern.test(path))) return;
 
-	for (let i = 0; i < manifest.pages.length; i += 1) {
-		const page = manifest.pages[i];
+	for (let i = 0; i < pages.length; i += 1) {
+		const page = pages[i];
 
 		const match = page.pattern.exec(path);
 		if (match) {
@@ -88,8 +101,8 @@ export function select_route(url: URL): Target {
 
 export function scroll_state() {
 	return {
-		x: window.scrollX,
-		y: window.scrollY
+		x: scrollX,
+		y: scrollY
 	};
 }
 
@@ -159,7 +172,7 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, token
 
 		Object.assign(data, root_data);
 
-		root_component = new manifest.root({
+		root_component = new RootComponent({
 			target,
 			data,
 			store,
@@ -168,7 +181,7 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, token
 	}
 
 	if (scroll) {
-		window.scrollTo(scroll.x, scroll.y);
+		scrollTo(scroll.x, scroll.y);
 	}
 
 	Object.assign(root_props, data);
@@ -195,7 +208,7 @@ export function prepare_page(target: Target): Promise<{
 
 	const preload_context = {
 		store,
-		fetch: (url: string, opts?: any) => window.fetch(url, opts),
+		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
 			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
 				throw new Error(`Conflicting redirects`);
@@ -208,8 +221,8 @@ export function prepare_page(target: Target): Promise<{
 	};
 
 	if (!root_preload) {
-		root_preload = manifest.root.preload
-			? initial_data.preloaded[0] || manifest.root.preload.call(preload_context, {
+		root_preload = RootComponent.preload
+			? initial_data.preloaded[0] || RootComponent.preload.call(preload_context, {
 				path,
 				query,
 				params: {}
@@ -221,7 +234,7 @@ export function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		return load_component(part.component).then(Component => {
+		return load_component(components[part.i]).then(Component => {
 			const req = {
 				path,
 				query,
@@ -276,7 +289,7 @@ export function prepare_page(target: Target): Promise<{
 				data: Object.assign({}, props, {
 					preloading: false,
 					child: {
-						component: manifest.error,
+						component: ErrorComponent,
 						props
 					}
 				})

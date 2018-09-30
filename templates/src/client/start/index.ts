@@ -26,15 +26,15 @@ export default function start(opts: {
 	set_target(opts.target);
 	if (opts.store) set_store(opts.store);
 
-	window.addEventListener('click', handle_click);
-	window.addEventListener('popstate', handle_popstate);
+	addEventListener('click', handle_click);
+	addEventListener('popstate', handle_popstate);
 
 	// prefetch
-	window.addEventListener('touchstart', trigger_prefetch);
-	window.addEventListener('mousemove', handle_mousemove);
+	addEventListener('touchstart', trigger_prefetch);
+	addEventListener('mousemove', handle_mousemove);
 
 	return Promise.resolve().then(() => {
-		const { hash, href } = window.location;
+		const { hash, href } = location;
 
 		const deep_linked = hash && document.getElementById(hash.slice(1));
 		scroll_history[uid] = deep_linked ?
@@ -44,7 +44,7 @@ export default function start(opts: {
 		history.replaceState({ id: uid }, '', href);
 
 		if (!initial_data.error) {
-			const target = select_route(new URL(window.location.href));
+			const target = select_route(new URL(location.href));
 			if (target) return navigate(target, uid);
 		}
 	});
@@ -83,7 +83,7 @@ function handle_click(event: MouseEvent) {
 	const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
 	const href = String(svg ? (<SVGAElement>a).href.baseVal : a.href);
 
-	if (href === window.location.href) {
+	if (href === location.href) {
 		event.preventDefault();
 		return;
 	}
@@ -99,7 +99,7 @@ function handle_click(event: MouseEvent) {
 	const url = new URL(href);
 
 	// Don't handle hash changes
-	if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+	if (url.pathname === location.pathname && url.search === location.search) return;
 
 	const target = select_route(url);
 	if (target) {
@@ -122,17 +122,17 @@ function handle_popstate(event: PopStateEvent) {
 	scroll_history[cid] = scroll_state();
 
 	if (event.state) {
-		const url = new URL(window.location.href);
+		const url = new URL(location.href);
 		const target = select_route(url);
 		if (target) {
 			navigate(target, event.state.id);
 		} else {
-			window.location.href = window.location.href;
+			location.href = location.href;
 		}
 	} else {
 		// hashchange
 		set_uid(uid + 1);
 		set_cid(uid);
-		history.replaceState({ id: cid }, '', window.location.href);
+		history.replaceState({ id: cid }, '', location.href);
 	}
 }

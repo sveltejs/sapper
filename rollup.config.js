@@ -35,7 +35,7 @@ function template(kind, external) {
 }
 
 export default [
-	template('client', []),
+	template('client', ['__ROOT__', '__ERROR__']),
 	template('server', builtinModules),
 
 	{

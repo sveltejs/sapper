@@ -8,7 +8,7 @@ export default function goto(href: string, opts = { replaceState: false }) {
 		promise = navigate(target, null).then(() => {});
 		if (history) history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 	} else {
-		window.location.href = href;
+		location.href = href;
 		promise = new Promise(f => {}); // never resolves
 	}
 

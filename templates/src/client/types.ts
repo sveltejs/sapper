@@ -33,7 +33,7 @@ export type ComponentLoader = {
 export type Page = {
 	pattern: RegExp;
 	parts: Array<{
-		component: ComponentLoader;
+		i: number;
 		params?: (match: RegExpExecArray) => Record<string, string>;
 	}>;
 };
