@@ -49,13 +49,14 @@ export function set_cid(n) {
 	cid = n;
 }
 
-export const initial_data = typeof window !== 'undefined' && window.__SAPPER__;
+export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
-export const history = typeof window !== 'undefined' ? window.history : {
+const _history = typeof history !== 'undefined' ? history : {
 	pushState: (state: any, title: string, href: string) => {},
 	replaceState: (state: any, title: string, href: string) => {},
 	scrollRestoration: ''
 };
+export { _history as history };
 
 export const scroll_history: Record<string, ScrollPosition> = {};
 

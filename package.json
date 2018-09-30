@@ -31,6 +31,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.7.1",
     "@types/rimraf": "^2.0.2",
+    "agadoo": "^1.0.1",
     "cheap-watch": "^0.3.0",
     "compression": "^1.7.1",
     "cookie": "^0.3.1",
@@ -70,7 +71,7 @@
   },
   "scripts": {
     "cy:open": "cypress open",
-    "test": "mocha --opts mocha.opts",
+    "test": "mocha --opts mocha.opts && agadoo templates/dist/client.js",
     "pretest": "npm run build",
     "build": "rm -rf dist && rollup -c",
     "prepare": "npm run build",
