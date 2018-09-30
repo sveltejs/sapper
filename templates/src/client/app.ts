@@ -93,7 +93,7 @@ export function scroll_state() {
 	};
 }
 
-export async function navigate(target: Target, id: number): Promise<any> {
+export function navigate(target: Target, id: number): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
@@ -117,14 +117,15 @@ export async function navigate(target: Target, id: number): Promise<any> {
 	prefetching = null;
 
 	const token = current_token = {};
-	const { redirect, data, nullable_depth } = await loaded;
 
-	if (redirect) {
-		await goto(redirect.location, { replaceState: true });
-	} else {
+	return loaded.then(({ redirect, data, nullable_depth }) => {
+		if (redirect) {
+			return goto(redirect.location, { replaceState: true });
+		}
+
 		render(data, nullable_depth, scroll_history[id], token);
 		if (document.activeElement) document.activeElement.blur();
-	}
+	});
 }
 
 function render(data: any, nullable_depth: number, scroll: ScrollPosition, token: {}) {
@@ -216,29 +217,43 @@ export function prepare_page(target: Target): Promise<{
 			: {};
 	}
 
-	return Promise.all(page.parts.map(async (part, i) => {
+	return Promise.all(page.parts.map((part, i) => {
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		const Component = await load_component(part.component);
+		return load_component(part.component).then(Component => {
+			const req = {
+				path,
+				query,
+				params: part.params ? part.params(target.match) : {}
+			};
 
-		const req = {
-			path,
-			query,
-			params: part.params ? part.params(target.match) : {}
-		};
+			let preloaded;
+			if (ready || !initial_data.preloaded[i + 1]) {
+				preloaded = Component.preload
+					? Component.preload.call(preload_context, req)
+					: {};
+			} else {
+				preloaded = initial_data.preloaded[i + 1];
+			}
 
-		const preloaded = ready || !initial_data.preloaded[i + 1]
-			? Component.preload ? await Component.preload.call(preload_context, req) : {}
-			: initial_data.preloaded[i + 1];
-
-		return { Component, preloaded };
+			return Promise.resolve(preloaded).then(preloaded => {
+				return { Component, preloaded };
+			});
+		});
 	})).catch(err => {
 		error = { statusCode: 500, message: err };
 		return [];
-	}).then(async results => {
-		if (!root_data) root_data = await root_preload;
-
+	}).then(results => {
+		if (root_data) {
+			return results;
+		} else {
+			return Promise.resolve(root_preload).then(value => {
+				root_data = value;
+				return results;
+			});
+		}
+	}).then(results => {
 		if (redirect) {
 			return { redirect };
 		}
