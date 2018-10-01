@@ -38,11 +38,18 @@ export default class RollupResult implements CompileResult {
 		// webpack, but we can have a route -> [chunk] map or something
 		this.assets = {};
 
-		compiler.chunks.forEach(chunk => {
-			if (compiler.input in chunk.modules) {
-				this.assets.main = chunk.fileName;
+		if (typeof compiler.input === 'string') {
+			compiler.chunks.forEach(chunk => {
+				if (compiler.input in chunk.modules) {
+					this.assets.main = chunk.fileName;
+				}
+			});
+		} else {
+			for (const name in compiler.input) {
+				const file = compiler.input[name];
+				this.assets[name] = compiler.chunks.find(chunk => file in chunk.modules).fileName;
 			}
-		});
+		}
 
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold.red : chunk.code.length > 50000 ? colors.bold.yellow : colors.bold.white;
