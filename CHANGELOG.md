@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.22.0
+
+* Move generated files into `__sapper__` ([#453](https://github.com/sveltejs/sapper/pull/453))
+* Change default build and export directories to `__sapper__/build` and `__sapper__/export` ([#453](https://github.com/sveltejs/sapper/pull/453))
+
 ## 0.21.1
 
 * Read template from build directory in production
