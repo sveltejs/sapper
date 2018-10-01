@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.5
+
+* Fix `sapper dev`. Oops.
+
 ## 0.22.4
 
 * Ensure launcher does not overwrite a module ([#455](https://github.com/sveltejs/sapper/pull/455))
