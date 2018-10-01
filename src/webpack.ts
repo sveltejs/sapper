@@ -23,7 +23,7 @@ export default {
 	server: {
 		entry: () => {
 			return {
-				index: `${locations.src()}/server`
+				server: `${locations.src()}/server`
 			};
 		},
 

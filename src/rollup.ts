@@ -25,7 +25,7 @@ export default {
 	server: {
 		input: () => {
 			return {
-				index: `${locations.src()}/server.js`
+				server: `${locations.src()}/server.js`
 			};
 		},
 
