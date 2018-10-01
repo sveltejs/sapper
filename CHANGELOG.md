@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.4
+
+* Ensure launcher does not overwrite a module ([#455](https://github.com/sveltejs/sapper/pull/455))
+
 ## 0.22.3
 
 * Prevent server from accidentally importing dev client
