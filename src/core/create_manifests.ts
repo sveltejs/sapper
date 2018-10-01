@@ -64,7 +64,7 @@ function generate_client(
 	bundler: string,
 	dev_port?: number
 ) {
-	const template_file = path.resolve(__dirname, '../templates/dist/client.js');
+	const template_file = path.resolve(__dirname, '../templates/client.js');
 	const template = fs.readFileSync(template_file, 'utf-8');
 
 	const page_ids = new Set(manifest_data.pages.map(page =>
@@ -145,7 +145,7 @@ function generate_server(
 	manifest_data: ManifestData,
 	path_to_routes: string
 ) {
-	const template_file = path.resolve(__dirname, '../templates/dist/server.js');
+	const template_file = path.resolve(__dirname, '../templates/server.js');
 	const template = fs.readFileSync(template_file, 'utf-8');
 
 	const imports = [].concat(

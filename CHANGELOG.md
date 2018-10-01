@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.1
+
+* Fix `pkg.files`
+
 ## 0.22.0
 
 * Move generated files into `__sapper__` ([#453](https://github.com/sveltejs/sapper/pull/453))

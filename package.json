@@ -1,18 +1,17 @@
 {
   "name": "sapper",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "description": "Military-grade apps, engineered by Svelte",
   "bin": {
     "sapper": "./sapper"
   },
   "files": [
     "*.js",
-    "runtime",
     "webpack",
     "config",
     "sapper",
-    "components",
-    "dist/*.js"
+    "dist/*.js",
+    "templates/*.js"
   ],
   "directories": {
     "test": "test"
