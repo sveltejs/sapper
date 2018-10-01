@@ -222,9 +222,9 @@ export function get_page_handler(
 			if (build_info.bundler === 'rollup') {
 				if (build_info.legacy_assets) {
 					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
-					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};try{new Function("import('"+main+"')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);document.head.appendChild(s);}}());`;
+					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
 				} else {
-					script += `try{new Function("import('${main}')")();}catch(e){var s=document.createElement("script");s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}");document.head.appendChild(s);}`;
+					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){console.error(e);s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
 				script += `</script><script src="${main}">`;
