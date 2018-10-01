@@ -24,12 +24,14 @@ export default {
 
 	server: {
 		input: () => {
-			return `${locations.src()}/server.js`
+			return {
+				server: `${locations.src()}/server.js`
+			};
 		},
 
 		output: () => {
 			return {
-				dir: locations.dest(),
+				dir: `${locations.dest()}/server`,
 				format: 'cjs',
 				sourcemap: dev()
 			};

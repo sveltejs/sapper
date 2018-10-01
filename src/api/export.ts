@@ -71,7 +71,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 		message: `Crawling ${root.href}`
 	});
 
-	const proc = child_process.fork(path.resolve(`${opts.build}/server.js`), [], {
+	const proc = child_process.fork(path.resolve(`${opts.build}/server/server.js`), [], {
 		cwd: process.cwd(),
 		env: Object.assign({
 			PORT: port,

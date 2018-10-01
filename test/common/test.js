@@ -184,7 +184,7 @@ function run({ mode, basepath = '' }) {
 					assert.ok(fs.existsSync('__sapper__/build/index.js'));
 				}
 
-				proc = require('child_process').fork(`${dir}/server.js`, {
+				proc = require('child_process').fork(`${dir}/server/server.js`, {
 					cwd: process.cwd(),
 					env: {
 						NODE_ENV: mode,

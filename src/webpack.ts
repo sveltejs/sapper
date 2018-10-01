@@ -29,7 +29,7 @@ export default {
 
 		output: () => {
 			return {
-				path: locations.dest(),
+				path: `${locations.dest()}/server`,
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'
