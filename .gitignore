@@ -12,3 +12,4 @@ sapper
 runtime.js
 dist
 !rollup.config.js
+templates/*.js
