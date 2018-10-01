@@ -23,13 +23,13 @@ export default {
 	server: {
 		entry: () => {
 			return {
-				server: `${locations.src()}/server`
+				index: `${locations.src()}/server`
 			};
 		},
 
 		output: () => {
 			return {
-				path: locations.dest(),
+				path: `${locations.dest()}/server`,
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'
