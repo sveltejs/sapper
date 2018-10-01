@@ -1,9 +1,19 @@
-import { Store } from '../interfaces';
-
-export { Store };
 export type Params = Record<string, string>;
 export type Query = Record<string, string | true>;
 export type RouteData = { params: Params, query: Query, path: string };
+
+type Child = {
+	segment?: string;
+	props?: any;
+	component?: Component;
+};
+
+export type RootProps = {
+	path: string;
+	params: Record<string, string>;
+	query: Record<string, string>;
+	child: Child;
+};
 
 export interface ComponentConstructor {
 	new (options: { target: Node, data: any, store: Store, hydrate: boolean }): Component;
@@ -23,7 +33,7 @@ export type ComponentLoader = {
 export type Page = {
 	pattern: RegExp;
 	parts: Array<{
-		component: ComponentLoader;
+		i: number;
 		params?: (match: RegExpExecArray) => Record<string, string>;
 	}>;
 };
@@ -52,3 +62,7 @@ export type Redirect = {
 	statusCode: number;
 	location: string;
 };
+
+export type Store = {
+	get: () => any;
+}

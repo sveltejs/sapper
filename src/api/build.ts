@@ -3,19 +3,16 @@ import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
-import * as codec from 'sourcemap-codec';
-import hash from 'string-hash';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
 import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
-import { Dirs, PageComponent } from '../interfaces';
-import { CompileResult } from '../core/create_compilers/interfaces';
+import { Dirs } from '../interfaces';
 import read_template from '../core/read_template';
 
 type Opts = {
 	legacy: boolean;
-	bundler: string;
+	bundler: 'rollup' | 'webpack';
 };
 
 export function build(opts: Opts, dirs: Dirs) {
@@ -58,7 +55,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	// create src/manifest/client.js and src/manifest/server.js
 	create_main_manifests({ bundler: opts.bundler, manifest_data });
 
-	const { client, server, serviceworker } = await create_compilers(opts.bundler, dirs);
+	const { client, server, serviceworker } = await create_compilers(opts.bundler);
 
 	const client_result = await client.compile();
 	emitter.emit('build', <events.BuildEvent>{
@@ -71,7 +68,7 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 	if (opts.legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(opts.bundler, dirs);
+		const { client } = await create_compilers(opts.bundler);
 
 		const client_result = await client.compile();
 

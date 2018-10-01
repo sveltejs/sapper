@@ -9,17 +9,9 @@
 <button class='prefetch' on:click='prefetch("blog/why-the-name")'>Why the name?</button>
 
 <script>
-	import { goto, prefetch } from '../../../../runtime.js';
+	import { prefetch } from '../../__sapper__/client.js';
 
 	export default {
-		oncreate() {
-			window.goto = goto;
-		},
-
-		ondestroy() {
-			window.goto = null;
-		},
-
 		methods: {
 			prefetch
 		}

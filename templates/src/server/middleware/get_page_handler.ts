@@ -1,301 +1,30 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { URL } from 'url';
-import { ClientRequest, ServerResponse } from 'http';
 import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
-import { lookup } from './middleware/mime';
-import { locations, dev } from './config';
-import sourceMapSupport from 'source-map-support';
-import read_template from './core/read_template';
+import { URL } from 'url';
+import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
+import { Manifest, Page, Props, Req, Res, Store } from './types';
 
-sourceMapSupport.install();
-
-type ServerRoute = {
-	pattern: RegExp;
-	handlers: Record<string, Handler>;
-	params: (match: RegExpMatchArray) => Record<string, string>;
-};
-
-type Page = {
-	pattern: RegExp;
-	parts: Array<{
-		name: string;
-		component: Component;
-		params?: (match: RegExpMatchArray) => Record<string, string>;
-	}>
-};
-
-type Manifest = {
-	server_routes: ServerRoute[];
-	pages: Page[];
-	root: Component;
-	error: Component;
-}
-
-type Handler = (req: Req, res: ServerResponse, next: () => void) => void;
-
-type Store = {
-	get: () => any
-};
-
-type Props = {
-	path: string;
-	query: Record<string, string>;
-	params: Record<string, string>;
-	error?: { message: string };
-	status?: number;
-	child: {
-		segment: string;
-		component: Component;
-		props: Props;
-	};
-	[key: string]: any;
-};
-
-interface Req extends ClientRequest {
-	url: string;
-	baseUrl: string;
-	originalUrl: string;
-	method: string;
-	path: string;
-	params: Record<string, string>;
-	query: Record<string, string>;
-	headers: Record<string, string>;
-}
-
-interface Component {
-	render: (data: any, opts: { store: Store }) => {
-		head: string;
-		css: { code: string, map: any };
-		html: string
-	},
-	preload: (data: any) => any | Promise<any>
-}
-
-const IGNORE = '__SAPPER__IGNORE__';
-function toIgnore(uri: string, val: any) {
-	if (Array.isArray(val)) return val.some(x => toIgnore(uri, x));
-	if (val instanceof RegExp) return val.test(uri);
-	if (typeof val === 'function') return val(uri);
-	return uri.startsWith(val.charCodeAt(0) === 47 ? val : `/${val}`);
-}
-
-export default function middleware(opts: {
+export function get_page_handler(
 	manifest: Manifest,
-	store: (req: Req, res: ServerResponse) => Store,
-	ignore?: any,
-	routes?: any // legacy
-}) {
-	if (opts.routes) {
-		throw new Error(`As of Sapper 0.15, opts.routes should be opts.manifest`);
-	}
-
-	const output = locations.dest();
-
-	const { manifest, store, ignore } = opts;
-
-	let emitted_basepath = false;
-
-	const middleware = compose_handlers([
-		ignore && ((req: Req, res: ServerResponse, next: () => void) => {
-			req[IGNORE] = toIgnore(req.path, ignore);
-			next();
-		}),
-
-		(req: Req, res: ServerResponse, next: () => void) => {
-			if (req[IGNORE]) return next();
-
-			if (req.baseUrl === undefined) {
-				let { originalUrl } = req;
-				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
-					originalUrl += '/';
-				}
-
-				req.baseUrl = originalUrl
-					? originalUrl.slice(0, -req.url.length)
-					: '';
-			}
-
-			if (!emitted_basepath && process.send) {
-				process.send({
-					__sapper__: true,
-					event: 'basepath',
-					basepath: req.baseUrl
-				});
-
-				emitted_basepath = true;
-			}
-
-			if (req.path === undefined) {
-				req.path = req.url.replace(/\?.*/, '');
-			}
-
-			next();
-		},
-
-		fs.existsSync(path.join(output, 'index.html')) && serve({
-			pathname: '/index.html',
-			cache_control: dev() ? 'no-cache' : 'max-age=600'
-		}),
-
-		fs.existsSync(path.join(output, 'service-worker.js')) && serve({
-			pathname: '/service-worker.js',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
-		fs.existsSync(path.join(output, 'service-worker.js.map')) && serve({
-			pathname: '/service-worker.js.map',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
-		serve({
-			prefix: '/client/',
-			cache_control: dev() ? 'no-cache' : 'max-age=31536000, immutable'
-		}),
-
-		get_server_route_handler(manifest.server_routes),
-		get_page_handler(manifest, store)
-	].filter(Boolean));
-
-	return middleware;
-}
-
-function serve({ prefix, pathname, cache_control }: {
-	prefix?: string,
-	pathname?: string,
-	cache_control: string
-}) {
-	const filter = pathname
-		? (req: Req) => req.path === pathname
-		: (req: Req) => req.path.startsWith(prefix);
-
-	const output = locations.dest();
-
-	const cache: Map<string, Buffer> = new Map();
-
-	const read = dev()
-		? (file: string) => fs.readFileSync(path.resolve(output, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(output, file)))).get(file)
-
-	return (req: Req, res: ServerResponse, next: () => void) => {
-		if (req[IGNORE]) return next();
-
-		if (filter(req)) {
-			const type = lookup(req.path);
-
-			try {
-				const file = decodeURIComponent(req.path.slice(1));
-				const data = read(file);
-
-				res.setHeader('Content-Type', type);
-				res.setHeader('Cache-Control', cache_control);
-				res.end(data);
-			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
-			}
-		} else {
-			next();
-		}
-	};
-}
-
-function get_server_route_handler(routes: ServerRoute[]) {
-	function handle_route(route: ServerRoute, req: Req, res: ServerResponse, next: () => void) {
-		req.params = route.params(route.pattern.exec(req.path));
-
-		const method = req.method.toLowerCase();
-		// 'delete' cannot be exported from a module because it is a keyword,
-		// so check for 'del' instead
-		const method_export = method === 'delete' ? 'del' : method;
-		const handle_method = route.handlers[method_export];
-		if (handle_method) {
-			if (process.env.SAPPER_EXPORT) {
-				const { write, end, setHeader } = res;
-				const chunks: any[] = [];
-				const headers: Record<string, string> = {};
-
-				// intercept data so that it can be exported
-				res.write = function(chunk: any) {
-					chunks.push(Buffer.from(chunk));
-					write.apply(res, arguments);
-				};
-
-				res.setHeader = function(name: string, value: string) {
-					headers[name.toLowerCase()] = value;
-					setHeader.apply(res, arguments);
-				};
-
-				res.end = function(chunk?: any) {
-					if (chunk) chunks.push(Buffer.from(chunk));
-					end.apply(res, arguments);
-
-					process.send({
-						__sapper__: true,
-						event: 'file',
-						url: req.url,
-						method: req.method,
-						status: res.statusCode,
-						type: headers['content-type'],
-						body: Buffer.concat(chunks).toString()
-					});
-				};
-			}
-
-			const handle_next = (err?: Error) => {
-				if (err) {
-					res.statusCode = 500;
-					res.end(err.message);
-				} else {
-					process.nextTick(next);
-				}
-			};
-
-			try {
-				handle_method(req, res, handle_next);
-			} catch (err) {
-				handle_next(err);
-			}
-		} else {
-			// no matching handler for method
-			process.nextTick(next);
-		}
-	}
-
-	return function find_route(req: Req, res: ServerResponse, next: () => void) {
-		if (req[IGNORE]) return next();
-
-		for (const route of routes) {
-			if (route.pattern.test(req.path)) {
-				handle_route(route, req, res, next);
-				return;
-			}
-		}
-
-		next();
-	};
-}
-
-function get_page_handler(
-	manifest: Manifest,
-	store_getter: (req: Req, res: ServerResponse) => Store
+	store_getter: (req: Req, res: Res) => Store
 ) {
-	const output = locations.dest();
+	const get_build_info = dev
+		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
+		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8')));
 
-	const get_build_info = dev()
-		? () => JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8'))
-		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(output, 'build.json'), 'utf-8')));
+	const template = dev
+		? () => read_template(src_dir)
+		: (str => () => str)(read_template(build_dir));
 
-	const template = dev()
-		? () => read_template()
-		: (str => () => str)(read_template(output));
+	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
 
 	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;
 
-	function handle_error(req: Req, res: ServerResponse, statusCode: number, error: Error | string) {
+	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
 		handle_page({
 			pattern: null,
 			parts: [
@@ -304,7 +33,7 @@ function get_page_handler(
 		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
 
-	function handle_page(page: Page, req: Req, res: ServerResponse, status = 200, error: Error | string = null) {
+	function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
@@ -313,7 +42,7 @@ function get_page_handler(
 		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
-		res.setHeader('Cache-Control', dev() ? 'no-cache' : 'max-age=600');
+		res.setHeader('Cache-Control', dev ? 'no-cache' : 'max-age=600');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
@@ -483,7 +212,6 @@ function get_page_handler(
 				serialized.store && `store:${serialized.store}`
 			].filter(Boolean).join(',')}};`;
 
-			const has_service_worker = fs.existsSync(path.join(locations.dest(), 'service-worker.js'));
 			if (has_service_worker) {
 				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
 			}
@@ -505,6 +233,7 @@ function get_page_handler(
 			let styles: string;
 
 			// TODO make this consistent across apps
+			// TODO embed build_info in placeholder.ts
 			if (build_info.css && build_info.css.main) {
 				const css_chunks = new Set();
 				if (build_info.css.main) css_chunks.add(build_info.css.main);
@@ -549,7 +278,7 @@ function get_page_handler(
 		});
 	}
 
-	return function find_route(req: Req, res: ServerResponse, next: () => void) {
+	return function find_route(req: Req, res: Res, next: () => void) {
 		if (req[IGNORE]) return next();
 
 		if (!server_routes.some(route => route.pattern.test(req.path))) {
@@ -565,24 +294,8 @@ function get_page_handler(
 	};
 }
 
-function compose_handlers(handlers: Handler[]) {
-	return (req: Req, res: ServerResponse, next: () => void) => {
-		let i = 0;
-		function go() {
-			const handler = handlers[i];
-
-			if (handler) {
-				handler(req, res, () => {
-					i += 1;
-					go();
-				});
-			} else {
-				next();
-			}
-		}
-
-		go();
-	};
+function read_template(dir = build_dir) {
+	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
 }
 
 function try_serialize(data: any) {

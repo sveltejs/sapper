@@ -1,0 +1,1 @@
+throw new Error(`As of Sapper 0.22, you should not import 'sapper' directly. See https://sapper.svelte.technology/guide#0-21-to-0-22 for more information`);

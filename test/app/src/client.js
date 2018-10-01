@@ -1,14 +1,12 @@
-import { init, goto, prefetchRoutes } from '../../../runtime.js';
 import { Store } from 'svelte/store.js';
-import { manifest } from './manifest/client.js';
+import * as sapper from '../__sapper__/client.js';
 
 window.init = () => {
-	return init({
+	return sapper.start({
 		target: document.querySelector('#sapper'),
-		manifest,
 		store: data => new Store(data)
 	});
 };
 
-window.prefetchRoutes = prefetchRoutes;
-window.goto = goto;
+window.prefetchRoutes = sapper.prefetchRoutes;
+window.goto = sapper.goto;

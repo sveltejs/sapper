@@ -2,7 +2,6 @@
   "name": "sapper",
   "version": "0.21.1",
   "description": "Military-grade apps, engineered by Svelte",
-  "main": "dist/middleware.js",
   "bin": {
     "sapper": "./sapper"
   },
@@ -32,6 +31,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.7.1",
     "@types/rimraf": "^2.0.2",
+    "agadoo": "^1.0.1",
     "cheap-watch": "^0.3.0",
     "compression": "^1.7.1",
     "cookie": "^0.3.1",

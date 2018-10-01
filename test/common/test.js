@@ -37,10 +37,7 @@ describe('sapper', function() {
 	process.chdir(path.resolve(__dirname, '../app'));
 
 	// clean up after previous test runs
-	rimraf.sync('export');
-	rimraf.sync('build');
-	rimraf.sync('.sapper');
-	rimraf.sync('start.js');
+	rimraf.sync('__sapper__');
 
 	this.timeout(process.env.CI ? 30000 : 15000);
 
@@ -74,7 +71,7 @@ function testExport({ basepath = '' }) {
 		});
 
 		it('export all pages', () => {
-			const dest = path.resolve(__dirname, '../app/export');
+			const dest = path.resolve(__dirname, '../app/__sapper__/export');
 
 			// Pages that should show up in the extraction directory.
 			const expectedPages = [
@@ -181,10 +178,10 @@ function run({ mode, basepath = '' }) {
 				base = `http://localhost:${port}`;
 				if (basepath) base += basepath;
 
-				const dir = mode === 'production' ? 'build' : '.sapper';
+				const dir = mode === 'production' ? '__sapper__/build' : '__sapper__/dev';
 
 				if (mode === 'production') {
-					assert.ok(fs.existsSync('build/index.js'));
+					assert.ok(fs.existsSync('__sapper__/build/index.js'));
 				}
 
 				proc = require('child_process').fork(`${dir}/server.js`, {

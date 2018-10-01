@@ -1,3 +1,4 @@
+const path = require('path');
 const webpack = require('webpack');
 const config = require('../../config/webpack.js');
 const sapper_pkg = require('../../package.json');
@@ -29,6 +30,9 @@ module.exports = {
 			]
 		},
 		mode,
+		optimization: {
+			minimize: false
+		},
 		plugins: [
 			isDev && new webpack.HotModuleReplacementPlugin()
 		].filter(Boolean),
@@ -64,6 +68,9 @@ module.exports = {
 			]
 		},
 		mode,
+		optimization: {
+			minimize: false
+		},
 		performance: {
 			hints: false // it doesn't matter if server.js is large
 		}

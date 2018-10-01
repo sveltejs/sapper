@@ -2,9 +2,8 @@ import fs from 'fs';
 import { resolve } from 'url';
 import express from 'express';
 import serve from 'serve-static';
-import sapper from '../../../dist/middleware.js';
 import { Store } from 'svelte/store.js';
-import { manifest } from './manifest/server.js';
+import * as sapper from '../__sapper__/server.js';
 
 let pending;
 let ended;
@@ -92,8 +91,7 @@ const middlewares = [
 		next();
 	},
 
-	sapper({
-		manifest,
+	sapper.middleware({
 		store: (req, res) => {
 			return new Store({
 				title: `${req.hello} ${res.locals.name}`

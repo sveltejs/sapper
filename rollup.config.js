@@ -4,6 +4,7 @@ import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
+import { builtinModules } from 'module';
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
@@ -11,27 +12,37 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-export default [
-	{
-		input: `src/runtime/index.ts`,
+function template(kind, external) {
+	return {
+		input: `templates/src/${kind}/index.ts`,
 		output: {
-			file: `runtime.js`,
+			file: `templates/dist/${kind}.js`,
 			format: 'es'
 		},
+		external,
 		plugins: [
+			resolve(),
+			commonjs(),
+			string({
+				include: '**/*.md'
+			}),
 			typescript({
 				typescript: require('typescript'),
 				target: "ES2017"
 			})
 		]
-	},
+	};
+}
+
+export default [
+	template('client', ['__ROOT__', '__ERROR__']),
+	template('server', builtinModules),
 
 	{
 		input: [
 			`src/api.ts`,
 			`src/cli.ts`,
 			`src/core.ts`,
-			`src/middleware.ts`,
 			`src/rollup.ts`,
 			`src/webpack.ts`
 		],
@@ -42,9 +53,6 @@ export default [
 		},
 		external,
 		plugins: [
-			string({
-				include: '**/*.md'
-			}),
 			json(),
 			resolve(),
 			commonjs(),

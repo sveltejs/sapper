@@ -5,6 +5,7 @@ node_modules
 cypress/screenshots
 test/app/.sapper
 test/app/src/manifest
+__sapper__
 test/app/export
 test/app/build
 sapper
