@@ -256,7 +256,7 @@ class Watcher extends EventEmitter {
 						execArgv.push(`--inspect-port=${this.devtools_port}`);
 					}
 
-					this.proc = child_process.fork(`${dest}/server.js`, [], {
+					this.proc = child_process.fork(`${dest}/server/server.js`, [], {
 						cwd: process.cwd(),
 						env: Object.assign({
 							PORT: this.port
