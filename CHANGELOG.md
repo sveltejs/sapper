@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.3
+
+* Prevent server from accidentally importing dev client
+
 ## 0.22.2
 
 * Make paths in generated code relative to project
