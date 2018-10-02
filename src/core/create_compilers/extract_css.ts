@@ -205,11 +205,15 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		result.chunks[component.file] = files;
 	});
 
-	const replaced = entry.replace(/["']__SAPPER_CSS_PLACEHOLDER:(.+?)__["']/g, (m, route) => {
-		return JSON.stringify(replacements.get(route));
-	});
+	fs.readdirSync(`${dirs.dest}/client`).forEach(file => {
+		const source = fs.readFileSync(`${dirs.dest}/client/${file}`, 'utf-8');
 
-	fs.writeFileSync(`${dirs.dest}/client/${main}`, replaced);
+		const replaced = source.replace(/["']__SAPPER_CSS_PLACEHOLDER:(.+?)__["']/g, (m, route) => {
+			return JSON.stringify(replacements.get(route));
+		});
+
+		fs.writeFileSync(`${dirs.dest}/client/${file}`, replaced);
+	});
 
 	const leftover = get_css_from_modules(Array.from(unaccounted_for));
 	if (leftover) {
