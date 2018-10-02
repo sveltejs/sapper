@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.9
+
+* Fix legacy builds ([#462](https://github.com/sveltejs/sapper/pull/462))
+
 ## 0.22.8
 
 * Ensure CSS placeholders are overwritten ([#462](https://github.com/sveltejs/sapper/pull/462))
