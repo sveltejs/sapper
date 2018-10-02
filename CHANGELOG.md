@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.22.7
+
+* Fix cookies ([#460](https://github.com/sveltejs/sapper/pull/460))
+
 ## 0.22.6
 
 * Normalise chunk filenames on Windows ([#456](https://github.com/sveltejs/sapper/pull/456))
