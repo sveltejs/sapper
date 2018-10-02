@@ -170,9 +170,8 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		return null;
 	}
 
-	let main = client_result.assets.main;
-	if (process.env.SAPPER_LEGACY_BUILD) main = `legacy/${main}`;
-	const entry = fs.readFileSync(`${dirs.dest}/client/${main}`, 'utf-8');
+	let asset_dir = `${dirs.dest}/client`;
+	if (process.env.SAPPER_LEGACY_BUILD) asset_dir += '/legacy';
 
 	const replacements = new Map();
 
@@ -186,10 +185,10 @@ export default function extract_css(client_result: CompileResult, components: Pa
 				const output_file_name = chunk.file.replace(/\.js$/, '.css');
 
 				map.file = output_file_name;
-				map.sources = map.sources.map(source => path.relative(`${dirs.dest}/client`, source));
+				map.sources = map.sources.map(source => path.relative(`${asset_dir}`, source));
 
-				fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
-				fs.writeFileSync(`${dirs.dest}/client/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+				fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=./${output_file_name}.map */`);
+				fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
 
 				return true;
 			}
@@ -205,14 +204,16 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		result.chunks[component.file] = files;
 	});
 
-	fs.readdirSync(`${dirs.dest}/client`).forEach(file => {
-		const source = fs.readFileSync(`${dirs.dest}/client/${file}`, 'utf-8');
+	fs.readdirSync(asset_dir).forEach(file => {
+		if (fs.statSync(`${asset_dir}/${file}`).isDirectory()) return;
+
+		const source = fs.readFileSync(`${asset_dir}/${file}`, 'utf-8');
 
 		const replaced = source.replace(/["']__SAPPER_CSS_PLACEHOLDER:(.+?)__["']/g, (m, route) => {
 			return JSON.stringify(replacements.get(route));
 		});
 
-		fs.writeFileSync(`${dirs.dest}/client/${file}`, replaced);
+		fs.writeFileSync(`${asset_dir}/${file}`, replaced);
 	});
 
 	const leftover = get_css_from_modules(Array.from(unaccounted_for));
@@ -224,10 +225,10 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		const output_file_name = `main.${main_hash}.css`;
 
 		map.file = output_file_name;
-		map.sources = map.sources.map(source => path.relative(`${dirs.dest}/client`, source));
+		map.sources = map.sources.map(source => path.relative(asset_dir, source));
 
-		fs.writeFileSync(`${dirs.dest}/client/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
-		fs.writeFileSync(`${dirs.dest}/client/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+		fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
+		fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
 
 		result.main = output_file_name;
 	}
