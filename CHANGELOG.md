@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.22.6
+
+* Normalise chunk filenames on Windows ([#456](https://github.com/sveltejs/sapper/pull/456))
+* Load modules with credentials ([#458](https://github.com/sveltejs/sapper/pull/458))
+
 ## 0.22.5
 
 * Fix `sapper dev`. Oops.
