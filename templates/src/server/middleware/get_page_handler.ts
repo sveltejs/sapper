@@ -93,19 +93,21 @@ export function get_page_handler(
 					if (include_cookies) {
 						if (!opts.headers) opts.headers = {};
 
-						const str = []
-							.concat(
-								cookie.parse(req.headers.cookie || ''),
-								cookie.parse(opts.headers.cookie || ''),
-								cookie.parse(res.getHeader('Set-Cookie') || '')
-							)
-							.map(cookie => {
-								return Object.keys(cookie)
-									.map(name => `${name}=${encodeURIComponent(cookie[name])}`)
-									.join('; ');
-							})
-							.filter(Boolean)
-							.join(', ');
+						const cookies = Object.assign(
+							{},
+							cookie.parse(req.headers.cookie || ''),
+							cookie.parse(opts.headers.cookie || '')
+						);
+
+						const set_cookie = res.getHeader('Set-Cookie');
+						(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
+							const match = /([^=]+)=([^;]+)/.exec(<string>str);
+							if (match) cookies[match[1]] = match[2];
+						});
+
+						const str = Object.keys(cookies)
+							.map(key => `${key}=${cookies[key]}`)
+							.join('; ');
 
 						opts.headers.cookie = str;
 					}

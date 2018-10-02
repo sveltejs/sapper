@@ -1,20 +1,15 @@
-export function get(req, res) {
-	const cookies = req.headers.cookie
-		? req.headers.cookie.split(/,\s+/).reduce((cookies, cookie) => {
-			const [pair] = cookie.split('; ');
-			const [name, value] = pair.split('=');
-			cookies[name] = value;
-			return cookies;
-		}, {})
-		: {};
+import cookie from 'cookie';
 
-	if (cookies.test) {
+export function get(req, res) {
+	if (req.headers.cookie) {
+		const cookies = cookie.parse(req.headers.cookie);
+
 		res.writeHead(200, {
 			'Content-Type': 'application/json'
 		});
 
 		res.end(JSON.stringify({
-			message: cookies.test
+			message: `a: ${cookies.a}, b: ${cookies.b}, max-age: ${cookies['max-age']}`
 		}));
 	} else {
 		res.writeHead(403, {

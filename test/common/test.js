@@ -623,7 +623,7 @@ function run({ mode, basepath = '' }) {
 				return nightmare.goto(`${base}/credentials?creds=include`)
 					.page.title()
 					.then(title => {
-						assert.equal(title, 'woohoo!');
+						assert.equal(title, 'a: 1, b: 2, max-age: undefined');
 					});
 			});
 
@@ -641,7 +641,7 @@ function run({ mode, basepath = '' }) {
 					.wait(100)
 					.page.title()
 					.then(title => {
-						assert.equal(title, 'woohoo!');
+						assert.equal(title, 'a: 1, b: 2, max-age: undefined');
 					});
 			});
 
