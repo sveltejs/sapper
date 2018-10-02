@@ -44,7 +44,7 @@ const middlewares = [
 
 	// set test cookie
 	(req, res, next) => {
-		res.setHeader('Set-Cookie', 'test=woohoo!; Max-Age=3600');
+		res.setHeader('Set-Cookie', ['a=1; Path=/', 'b=2; Path=/']);
 		next();
 	},
 
