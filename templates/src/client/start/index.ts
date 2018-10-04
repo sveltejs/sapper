@@ -102,8 +102,9 @@ function handle_click(event: MouseEvent) {
 	if (url.pathname === location.pathname && url.search === location.search) return;
 
 	const target = select_route(url);
+	const has_scroll = a.hasAttribute('sapper-noscroll')
 	if (target) {
-		navigate(target, null);
+		navigate(target, null, has_scroll);
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
 	}

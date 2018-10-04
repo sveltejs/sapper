@@ -106,16 +106,17 @@ export function scroll_state() {
 	};
 }
 
-export function navigate(target: Target, id: number): Promise<any> {
+export function navigate(target: Target, id: number, has_scroll = false): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
 	} else {
+		const current_scroll = scroll_state()
 		// clicked on a link. preserve scroll state
-		scroll_history[cid] = scroll_state();
+		scroll_history[cid] = current_scroll;
 
 		id = cid = ++uid;
-		scroll_history[cid] = { x: 0, y: 0 };
+		scroll_history[cid] = has_scroll ? current_scroll : { x: 0, y: 0 };
 	}
 
 	cid = id;
