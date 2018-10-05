@@ -340,7 +340,7 @@ export function prepare_page(target: Target): Promise<{
 }
 
 function load_css(chunk: string) {
-	const href = `${initial_data.baseUrl}client/${chunk}`;
+	const href = `${initial_data.baseUrl}/client/${chunk}`;
 	if (document.querySelector(`link[href="${href}"]`)) return;
 
 	return new Promise((fulfil, reject) => {
