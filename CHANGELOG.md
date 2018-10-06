@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.22.10
+
+* Handle `sapper-noscroll` attribute on `<a>` elements ([#376](https://github.com/sveltejs/sapper/issues/376))
+* Fix CSS paths when using a base path ([#466](https://github.com/sveltejs/sapper/pull/466))
+
 ## 0.22.9
 
 * Fix legacy builds ([#462](https://github.com/sveltejs/sapper/pull/462))
