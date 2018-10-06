@@ -4,7 +4,7 @@ import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../../utils';
 
-describe.only('basics', function() {
+describe('basics', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
@@ -35,7 +35,7 @@ describe.only('basics', function() {
 					await runner.start();
 
 					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch();
+					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
 
 					fulfil();
 				} catch (err) {
