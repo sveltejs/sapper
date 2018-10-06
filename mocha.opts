@@ -3,3 +3,4 @@
 --recursive
 test/unit/*/*.ts
 test/common/test.js
+test/apps/*/__test__.ts

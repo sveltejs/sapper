@@ -19,9 +19,7 @@ export function build(opts: { bundler?: string, legacy?: boolean }) {
 			}, {
 				dest: locations.dest(),
 				src: locations.src(),
-				routes: locations.routes(),
-				webpack: 'webpack',
-				rollup: 'rollup'
+				routes: locations.routes()
 			});
 
 			emitter.on('build', event => {

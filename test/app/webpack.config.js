@@ -1,4 +1,3 @@
-const path = require('path');
 const webpack = require('webpack');
 const config = require('../../config/webpack.js');
 const sapper_pkg = require('../../package.json');
