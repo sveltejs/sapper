@@ -2,13 +2,12 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
+import { AppRunner } from '../AppRunner';
 
 describe('ignore', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
 
@@ -33,15 +32,7 @@ describe('ignore', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -51,10 +42,7 @@ describe('ignore', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
+	after(() => runner.end());
 
 	it('respects `options.ignore` values (RegExp)', async () => {
 		await page.goto(`${base}/foobar`);

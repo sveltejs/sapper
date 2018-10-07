@@ -2,17 +2,17 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
-
-declare const start: () => Promise<void>;
+import { AppRunner } from '../AppRunner';
 
 describe('layout', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -35,15 +35,7 @@ describe('layout', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -53,17 +45,11 @@ describe('layout', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
+	after(() => runner.end());
 
 	it('only recreates components when necessary', async () => {
 		await page.goto(`${base}/foo/bar/baz`);
-		await _start();
+		await start();
 
 		const text1 = await page.evaluate(() => document.querySelector('#sapper').textContent);
 		assert.deepEqual(text1.split('\n').filter(Boolean), [

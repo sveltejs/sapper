@@ -2,18 +2,18 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
+import { AppRunner } from '../AppRunner';
 
 describe('errors', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
+	let prefetchRoutes: () => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -36,15 +36,7 @@ describe('errors', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start, prefetchRoutes } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -54,14 +46,7 @@ describe('errors', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
-	const _prefetchRoutes = () => page.evaluate(() => prefetchRoutes());
+	after(() => runner.end());
 
 	it('handles missing route on server', async () => {
 		await page.goto(`${base}/nope`);
@@ -74,7 +59,7 @@ describe('errors', function() {
 
 	it('handles missing route on client', async () => {
 		await page.goto(base);
-		await _start();
+		await start();
 
 		await page.click('[href="nope"]');
 
@@ -95,8 +80,8 @@ describe('errors', function() {
 
 	it('handles explicit 4xx on client', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('[href="blog/nope"]');
 
@@ -117,8 +102,8 @@ describe('errors', function() {
 
 	it('handles error on client', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('[href="throw"]');
 

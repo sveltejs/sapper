@@ -2,10 +2,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
+import { AppRunner } from '../AppRunner';
 
 describe('redirects', function() {
 	this.timeout(10000);
@@ -14,6 +11,10 @@ describe('redirects', function() {
 	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
+	let prefetchRoutes: () => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -36,15 +37,7 @@ describe('redirects', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start, prefetchRoutes } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -54,14 +47,7 @@ describe('redirects', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
-	const _prefetchRoutes = () => page.evaluate(() => prefetchRoutes());
+	after(() => runner.end());
 
 	it('redirects on server', async () => {
 		await page.goto(`${base}/redirect-from`);
@@ -79,8 +65,8 @@ describe('redirects', function() {
 
 	it('redirects in client', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('[href="redirect-from"]');
 
@@ -111,8 +97,8 @@ describe('redirects', function() {
 
 	it('redirects to root in client', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('[href="redirect-to-root"]');
 

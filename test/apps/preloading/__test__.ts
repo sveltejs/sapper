@@ -2,12 +2,8 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner, wait } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
-declare const prefetch: (href: string) => Promise<void>;
-declare const goto: (href: string) => Promise<void>;
+import { wait } from '../../utils';
+import { AppRunner } from '../AppRunner';
 
 declare const fulfil: () => Promise<void>;
 
@@ -15,9 +11,12 @@ describe('preloading', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
+	let prefetchRoutes: () => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -40,15 +39,7 @@ describe('preloading', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start, prefetchRoutes } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -58,65 +49,7 @@ describe('preloading', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
-	const _prefetchRoutes = () => page.evaluate(() => prefetchRoutes());
-	const _prefetch = (href: string) => page.evaluate((href: string) => prefetch(href), href);
-	const _goto = (href: string) => page.evaluate((href: string) => goto(href), href);
-
-	function capture(fn: () => any): Promise<string[]> {
-		return new Promise((fulfil, reject) => {
-			const requests: string[] = [];
-			const pending: Set<string> = new Set();
-			let done = false;
-
-			function handle_request(request: puppeteer.Request) {
-				const url = request.url();
-				requests.push(url);
-				pending.add(url);
-			}
-
-			function handle_requestfinished(request: puppeteer.Request) {
-				const url = request.url();
-				pending.delete(url);
-
-				if (done && pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-			}
-
-			function handle_requestfailed(request: puppeteer.Request) {
-				cleanup();
-				reject(new Error(`failed to fetch ${request.url()}`))
-			}
-
-			function cleanup() {
-				page.removeListener('request', handle_request);
-				page.removeListener('requestfinished', handle_requestfinished);
-				page.removeListener('requestfailed', handle_requestfailed);
-			}
-
-			page.on('request', handle_request);
-			page.on('requestfinished', handle_requestfinished);
-			page.on('requestfailed', handle_requestfailed);
-
-			return Promise.resolve(fn()).then(() => {
-				if (pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-
-				done = true;
-			});
-		});
-
-	}
+	after(() => runner.end());
 
 	const title = () => page.$eval('h1', node => node.textContent);
 
@@ -125,7 +58,7 @@ describe('preloading', function() {
 
 		assert.equal(await title(), 'true');
 
-		await _start();
+		await start();
 		assert.equal(await title(), 'true');
 	});
 
@@ -134,14 +67,14 @@ describe('preloading', function() {
 
 		assert.equal(await title(), '42');
 
-		await _start();
+		await start();
 		assert.equal(await title(), '42');
 	});
 
 	it('sets preloading true when appropriate', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('a[href="slow-preload"]');
 
@@ -158,8 +91,8 @@ describe('preloading', function() {
 
 	it('cancels navigation if subsequent navigation occurs during preload', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('a[href="slow-preload"]');
 		await wait(100);

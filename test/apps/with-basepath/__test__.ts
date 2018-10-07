@@ -2,12 +2,8 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as api from '../../../api';
-import { AppRunner, walk } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
-declare const prefetch: (href: string) => Promise<void>;
-declare const goto: (href: string) => Promise<void>;
+import { walk } from '../../utils';
+import { AppRunner } from '../AppRunner';
 
 describe('with-basepath', function() {
 	this.timeout(10000);
@@ -53,15 +49,7 @@ describe('with-basepath', function() {
 				exporter.on('done', async () => {
 					try {
 						runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-						await runner.start();
-
-						base = `http://localhost:${runner.port}`;
-						browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-						page = await browser.newPage();
-						page.on('console', msg => {
-							console.log(msg.text());
-						});
+						({ base, page } = await runner.start());
 
 						fulfil();
 					} catch (err) {
@@ -72,65 +60,7 @@ describe('with-basepath', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
-	const _prefetchRoutes = () => page.evaluate(() => prefetchRoutes());
-	const _prefetch = (href: string) => page.evaluate((href: string) => prefetch(href), href);
-	const _goto = (href: string) => page.evaluate((href: string) => goto(href), href);
-
-	function capture(fn: () => any): Promise<string[]> {
-		return new Promise((fulfil, reject) => {
-			const requests: string[] = [];
-			const pending: Set<string> = new Set();
-			let done = false;
-
-			function handle_request(request: puppeteer.Request) {
-				const url = request.url();
-				requests.push(url);
-				pending.add(url);
-			}
-
-			function handle_requestfinished(request: puppeteer.Request) {
-				const url = request.url();
-				pending.delete(url);
-
-				if (done && pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-			}
-
-			function handle_requestfailed(request: puppeteer.Request) {
-				cleanup();
-				reject(new Error(`failed to fetch ${request.url()}`))
-			}
-
-			function cleanup() {
-				page.removeListener('request', handle_request);
-				page.removeListener('requestfinished', handle_requestfinished);
-				page.removeListener('requestfailed', handle_requestfailed);
-			}
-
-			page.on('request', handle_request);
-			page.on('requestfinished', handle_requestfinished);
-			page.on('requestfailed', handle_requestfailed);
-
-			return Promise.resolve(fn()).then(() => {
-				if (pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-
-				done = true;
-			});
-		});
-
-	}
+	after(() => runner.end());
 
 	it('serves /custom-basepath', async () => {
 		await page.goto(`${base}/custom-basepath`);

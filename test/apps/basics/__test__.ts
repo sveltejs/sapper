@@ -3,12 +3,7 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as http from 'http';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
-declare const prefetch: (href: string) => Promise<void>;
-declare const goto: (href: string) => Promise<void>;
+import { AppRunner } from '../AppRunner';
 
 declare let deleted: { id: number };
 declare let el: any;
@@ -17,9 +12,14 @@ describe('basics', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
+	let prefetchRoutes: () => Promise<void>;
+	let prefetch: (href: string) => Promise<void>;
+	let goto: (href: string) => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -42,15 +42,7 @@ describe('basics', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start, prefetchRoutes, prefetch, goto } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -60,66 +52,9 @@ describe('basics', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
-	const _prefetchRoutes = () => page.evaluate(() => prefetchRoutes());
-	const _prefetch = (href: string) => page.evaluate((href: string) => prefetch(href), href);
-	const _goto = (href: string) => page.evaluate((href: string) => goto(href), href);
+	after(() => runner.end());
 
 	const title = () => page.$eval('h1', node => node.textContent);
-
-	function capture(fn: () => any): Promise<string[]> {
-		return new Promise((fulfil, reject) => {
-			const requests: string[] = [];
-			const pending: Set<string> = new Set();
-			let done = false;
-
-			function handle_request(request: puppeteer.Request) {
-				const url = request.url();
-				requests.push(url);
-				pending.add(url);
-			}
-
-			function handle_requestfinished(request: puppeteer.Request) {
-				const url = request.url();
-				pending.delete(url);
-
-				if (done && pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-			}
-
-			function handle_requestfailed(request: puppeteer.Request) {
-				cleanup();
-				reject(new Error(`failed to fetch ${request.url()}`))
-			}
-
-			function cleanup() {
-				page.removeListener('request', handle_request);
-				page.removeListener('requestfinished', handle_requestfinished);
-				page.removeListener('requestfailed', handle_requestfailed);
-			}
-
-			page.on('request', handle_request);
-			page.on('requestfinished', handle_requestfinished);
-			page.on('requestfailed', handle_requestfailed);
-
-			return Promise.resolve(fn()).then(() => {
-				if (pending.size === 0) {
-					cleanup();
-					fulfil(requests);
-				}
-
-				done = true;
-			});
-		});
-	}
 
 	it('serves /', async () => {
 		await page.goto(base);
@@ -168,10 +103,10 @@ describe('basics', function() {
 
 	it('navigates to a new page without reloading', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
-		const requests: string[] = await capture(async () => {
+		const requests: string[] = await runner.capture(async () => {
 			await page.click('a[href="a"]');
 		});
 
@@ -185,9 +120,9 @@ describe('basics', function() {
 
 	it('navigates programmatically', async () => {
 		await page.goto(`${base}/a`);
-		await _start();
+		await start();
 
-		await _goto('b');
+		await goto('b');
 
 		assert.equal(
 			await title(),
@@ -197,9 +132,9 @@ describe('basics', function() {
 
 	it('prefetches programmatically', async () => {
 		await page.goto(`${base}/a`);
-		await _start();
+		await start();
 
-		const requests = await capture(() => _prefetch('b'));
+		const requests = await runner.capture(() => prefetch('b'));
 
 		assert.equal(requests.length, 2);
 		assert.equal(requests[1], `${base}/b.json`);
@@ -241,7 +176,7 @@ describe('basics', function() {
 
 	it('calls a delete handler', async () => {
 		await page.goto(`${base}/delete-test`);
-		await _start();
+		await start();
 
 		await page.click('.del');
 		await page.waitForFunction(() => deleted);
@@ -256,7 +191,7 @@ describe('basics', function() {
 			el = document.querySelector('.hydrate-test');
 		});
 
-		await _start();
+		await start();
 
 		assert.ok(await page.evaluate(() => {
 			return document.querySelector('.hydrate-test') === el;
@@ -265,8 +200,8 @@ describe('basics', function() {
 
 	it('does not attempt client-side navigation to server routes', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click(`[href="ambiguous/ok.json"]`);
 
@@ -278,7 +213,7 @@ describe('basics', function() {
 
 	it('allows reserved words as route names', async () => {
 		await page.goto(`${base}/const`);
-		await _start();
+		await start();
 
 		assert.equal(
 			await title(),
@@ -297,8 +232,8 @@ describe('basics', function() {
 
 	it('accepts value-less query string parameter on client', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('a[href="echo-query?message"]')
 
@@ -311,8 +246,8 @@ describe('basics', function() {
 	// skipped because Nightmare doesn't seem to focus the <a> correctly
 	it('resets the active element after navigation', async () => {
 		await page.goto(base);
-		await _start();
-		await _prefetchRoutes();
+		await start();
+		await prefetchRoutes();
 
 		await page.click('[href="a"]');
 
@@ -324,7 +259,7 @@ describe('basics', function() {
 
 	it('replaces %sapper.xxx% tags safely', async () => {
 		await page.goto(`${base}/unsafe-replacement`);
-		await _start();
+		await start();
 
 		const html = await page.evaluate(() => document.body.innerHTML);
 		assert.equal(html.indexOf('%sapper'), -1);

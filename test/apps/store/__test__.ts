@@ -2,20 +2,17 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { AppRunner } from '../../utils';
-
-declare const start: () => Promise<void>;
-declare const prefetchRoutes: () => Promise<void>;
-declare const prefetch: (href: string) => Promise<void>;
-declare const goto: (href: string) => Promise<void>;
+import { AppRunner } from '../AppRunner';
 
 describe('store', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
 
 	// hooks
 	before(() => {
@@ -38,15 +35,7 @@ describe('store', function() {
 			emitter.on('done', async () => {
 				try {
 					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					await runner.start();
-
-					base = `http://localhost:${runner.port}`;
-					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-
-					page = await browser.newPage();
-					page.on('console', msg => {
-						console.log(msg.text());
-					});
+					({ base, page, start } = await runner.start());
 
 					fulfil();
 				} catch (err) {
@@ -56,13 +45,7 @@ describe('store', function() {
 		});
 	});
 
-	after(async () => {
-		await browser.close();
-		await runner.end();
-	});
-
-	// helpers
-	const _start = () => page.evaluate(() => start());
+	after(() => runner.end());
 
 	const title = () => page.$eval('h1', node => node.textContent);
 
@@ -71,7 +54,7 @@ describe('store', function() {
 
 		assert.equal(await title(), 'hello world');
 
-		await _start();
+		await start();
 		assert.equal(await title(), 'hello world');
 	});
 });
