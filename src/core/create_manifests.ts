@@ -10,7 +10,7 @@ export function create_main_manifests({ bundler, manifest_data, dev_port }: {
 	manifest_data: ManifestData;
 	dev_port?: number;
 }) {
-	const manifest_dir = '__sapper__';
+	const manifest_dir = path.resolve('__sapper__');
 	if (!fs.existsSync(manifest_dir)) fs.mkdirSync(manifest_dir);
 
 	const path_to_routes = path.relative(manifest_dir, locations.routes());
