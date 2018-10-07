@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 describe('errors', function() {
 	this.timeout(10000);
@@ -84,6 +85,7 @@ describe('errors', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="blog/nope"]');
+		await wait(50);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),

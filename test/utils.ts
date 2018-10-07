@@ -11,13 +11,13 @@ export function walk(cwd: string, dir = cwd, files: string[] = []) {
 		if (fs.statSync(resolved).isDirectory()) {
 			walk(cwd, resolved, files);
 		} else {
-			files.push(path.relative(cwd, resolved));
+			files.push(posixify(path.relative(cwd, resolved)));
 		}
 	});
 
 	return files;
 }
 
-export function posixify(str: string) {
+function posixify(str: string) {
 	return str.replace(/\\/g, '/');
 }

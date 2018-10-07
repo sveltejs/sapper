@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as api from '../../../api';
-import { posixify, walk } from '../../utils';
+import { walk } from '../../utils';
 import { AppRunner } from '../AppRunner';
 
 describe('with-basepath', function() {
@@ -88,7 +88,7 @@ describe('with-basepath', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets.map(posixify), [
+		assert.deepEqual(non_client_assets, [
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
 			'custom-basepath/service-worker.js'
