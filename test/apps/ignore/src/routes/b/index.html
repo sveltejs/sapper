@@ -2,12 +2,10 @@
 
 <script>
 	export default {
-		async preload() {
-			const letter = await this.fetch('b.json').then(r => r.json());
-
-			return {
-				letter
-			};
+		preload() {
+			return this.fetch('b.json').then(r => r.json()).then(letter => {
+				return { letter };
+			});
 		}
 	};
 </script>

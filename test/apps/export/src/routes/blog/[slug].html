@@ -2,9 +2,10 @@
 
 <script>
 	export default {
-		async preload({ params }) {
-			const post = await this.fetch(`blog/${params.slug}.json`).then(r => r.json());
-			return { post };
+		preload({ params }) {
+			return this.fetch(`blog/${params.slug}.json`).then(r => r.json()).then(post => {
+				return { post };
+			});
 		}
 	};
 </script>

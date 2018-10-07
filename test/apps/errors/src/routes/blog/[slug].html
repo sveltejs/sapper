@@ -2,17 +2,18 @@
 
 <script>
 	export default {
-		async preload({ params }) {
+		preload({ params }) {
 			const { slug } = params;
 
-			const r = await this.fetch(`blog/${slug}.json`);
-			const data = await r.json();
+			return this.fetch(`blog/${slug}.json`).then(r => {
+				return r.json().then(data => {
+					if (r.status !== 200) {
+						this.error(r.status, data);
+					}
 
-			if (r.status !== 200) {
-				this.error(r.status, data);
-			}
-
-			return data;
+					return data;
+				});
+			});
 		}
 	};
 </script>
