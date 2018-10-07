@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 describe('layout', function() {
 	this.timeout(10000);
@@ -60,6 +61,7 @@ describe('layout', function() {
 		]);
 
 		await page.click('[href="foo/bar/qux"]');
+		await wait(50);
 
 		const text2 = await page.evaluate(() => document.querySelector('#sapper').textContent);
 		assert.deepEqual(text2.split('\n').filter(Boolean), [

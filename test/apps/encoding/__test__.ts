@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 describe('encoding', function() {
 	this.timeout(10000);
@@ -71,7 +72,8 @@ describe('encoding', function() {
 		await start();
 		await prefetchRoutes();
 
-		await page.click('a[href="echo/page/encöded?message=hëllö+wörld"]')
+		await page.click('a[href="echo/page/encöded?message=hëllö+wörld"]');
+		await wait(50);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),

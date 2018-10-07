@@ -4,6 +4,7 @@ import * as puppeteer from 'puppeteer';
 import * as http from 'http';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 declare let deleted: { id: number };
 declare let el: any;
@@ -204,6 +205,7 @@ describe('basics', function() {
 		await prefetchRoutes();
 
 		await page.click(`[href="ambiguous/ok.json"]`);
+		await wait(50);
 
 		assert.equal(
 			await page.evaluate(() => document.body.textContent),
@@ -250,6 +252,7 @@ describe('basics', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="a"]');
+		await wait(50);
 
 		assert.equal(
 			await page.evaluate(() => document.activeElement.nodeName),

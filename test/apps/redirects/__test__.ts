@@ -70,6 +70,7 @@ describe('redirects', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="redirect-from"]');
+		await wait(50);
 
 		assert.equal(
 			page.url(),

@@ -63,6 +63,7 @@ describe('errors', function() {
 		await start();
 
 		await page.click('[href="nope"]');
+		await wait(50);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),
@@ -108,6 +109,7 @@ describe('errors', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="throw"]');
+		await wait(50);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),
