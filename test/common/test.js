@@ -57,7 +57,7 @@ describe('sapper', function() {
 });
 
 function run({ mode, basepath = '' }) {
-	describe(`mode=${mode}`, function () {
+	describe.skip(`mode=${mode}`, function () {
 		let proc;
 		let capture;
 
@@ -265,14 +265,6 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('encodes routes', () => {
-				return nightmare.goto(`${base}/fünke`)
-					.page.title()
-					.then(title => {
-						assert.equal(title, `I'm afraid I just blue myself`);
-					});
-			});
-
 			it('serializes Set objects returned from preload', () => {
 				return nightmare.goto(`${base}/preload-values/set`)
 					.page.title()
@@ -307,38 +299,6 @@ function run({ mode, basepath = '' }) {
 					.then(title => {
 						assert.equal(title, 'hello world');
 					});
-			});
-
-			it('sends cookies when using this.fetch with credentials: "include"', () => {
-				return nightmare.goto(`${base}/credentials?creds=include`)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'a: 1, b: 2, max-age: undefined');
-					});
-			});
-
-			it('does not send cookies when using this.fetch without credentials', () => {
-				return nightmare.goto(`${base}/credentials`)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'unauthorized');
-					});
-			});
-
-			it('delegates to fetch on the client', () => {
-				return nightmare.goto(base).init()
-					.click('[href="credentials?creds=include"]')
-					.wait(100)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'a: 1, b: 2, max-age: undefined');
-					});
-			});
-
-			it('includes service worker', () => {
-				return nightmare.goto(base).page.html().then(html => {
-					assert.ok(html.indexOf('service-worker.js') !== -1);
-				});
 			});
 
 			it('sets preloading true when appropriate', () => {
@@ -442,24 +402,6 @@ function run({ mode, basepath = '' }) {
 					});
 			});
 
-			it('encodes req.params and req.query for server-rendered pages', () => {
-				return nightmare.goto(`${base}/echo/page/encöded?message=hëllö+wörld`)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'encöded (hëllö wörld)');
-					});
-			});
-
-			it('encodes req.params and req.query for client-rendered pages', () => {
-				return nightmare.goto(base).init()
-					.click('a[href="echo/page/encöded?message=hëllö+wörld"]')
-					.wait(100)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'encöded (hëllö wörld)');
-					});
-			});
-
 			it('accepts value-less query string parameter on server', () => {
 				return nightmare.goto(`${base}/echo/page/empty?message`)
 					.page.title()
@@ -476,45 +418,6 @@ function run({ mode, basepath = '' }) {
 					.then(title => {
 						assert.equal(title, 'empty ()');
 					});
-			});
-
-			it('encodes req.params for server routes', () => {
-				return nightmare.goto(`${base}/echo/server-route/encöded`)
-					.page.title()
-					.then(title => {
-						assert.equal(title, 'encöded');
-					});
-			});
-		});
-
-		describe('headers', () => {
-			it('sets Content-Type, Link...preload, and Cache-Control headers', () => {
-				return capture(() => fetch(base)).then(responses => {
-					const { headers } = responses[0];
-
-					assert.equal(
-						headers['content-type'],
-						'text/html'
-					);
-
-					assert.equal(
-						headers['cache-control'],
-						'max-age=600'
-					);
-
-					const str = ['main', '.+?\\.\\d+']
-						.map(file => {
-							return `<${basepath}/client/[^/]+/${file}\\.js>;rel="preload";as="script"`;
-						})
-						.join(', ');
-
-					const regex = new RegExp(str);
-
-					assert.ok(
-						regex.test(headers['link']),
-						headers['link']
-					);
-				});
 			});
 		});
 	});

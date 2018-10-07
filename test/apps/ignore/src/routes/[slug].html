@@ -1,0 +1,1 @@
+<h1>{params.slug.toUpperCase()}</h1>
