@@ -1,0 +1,11 @@
+<h1>{letter}</h1>
+
+<script>
+	export default {
+		preload() {
+			return this.fetch('b.json').then(r => r.json()).then(letter => {
+				return { letter };
+			});
+		}
+	};
+</script>

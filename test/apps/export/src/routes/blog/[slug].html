@@ -1,0 +1,11 @@
+<h1>{post.title}</h1>
+
+<script>
+	export default {
+		preload({ params }) {
+			return this.fetch(`blog/${params.slug}.json`).then(r => r.json()).then(post => {
+				return { post };
+			});
+		}
+	};
+</script>

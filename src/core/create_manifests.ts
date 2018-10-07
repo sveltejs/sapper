@@ -10,7 +10,7 @@ export function create_main_manifests({ bundler, manifest_data, dev_port }: {
 	manifest_data: ManifestData;
 	dev_port?: number;
 }) {
-	const manifest_dir = '__sapper__';
+	const manifest_dir = path.resolve('__sapper__');
 	if (!fs.existsSync(manifest_dir)) fs.mkdirSync(manifest_dir);
 
 	const path_to_routes = path.relative(manifest_dir, locations.routes());
@@ -19,7 +19,7 @@ export function create_main_manifests({ bundler, manifest_data, dev_port }: {
 	const server_manifest = generate_server(manifest_data, path_to_routes);
 
 	write_if_changed(
-		`${manifest_dir}/default-layout.html`,
+		`${manifest_dir}/_layout.html`,
 		`<svelte:component this={child.component} {...child.props}/>`
 	);
 	write_if_changed(`${manifest_dir}/client.js`, client_manifest);
@@ -218,7 +218,7 @@ function generate_server(
 
 function get_file(path_to_routes: string, component: PageComponent) {
 	if (component.default) {
-		return `./default-layout.html`;
+		return `./_layout.html`;
 	}
 
 	return posixify(`${path_to_routes}/${component.file}`);

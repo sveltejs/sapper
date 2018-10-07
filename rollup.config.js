@@ -12,7 +12,7 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-function template(kind, external) {
+function template(kind, external, target) {
 	return {
 		input: `templates/src/${kind}/index.ts`,
 		output: {
@@ -28,15 +28,15 @@ function template(kind, external) {
 			}),
 			typescript({
 				typescript: require('typescript'),
-				target: "ES2017"
+				target
 			})
 		]
 	};
 }
 
 export default [
-	template('client', ['__ROOT__', '__ERROR__']),
-	template('server', builtinModules),
+	template('client', ['__ROOT__', '__ERROR__'], 'ES2017'),
+	template('server', builtinModules, 'ES2015'),
 
 	{
 		input: [

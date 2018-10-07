@@ -33,7 +33,7 @@ export function get_page_handler(
 		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
 
-	function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
+	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
@@ -56,12 +56,22 @@ export function get_page_handler(
 			});
 		}
 
-		const link = preloaded_chunks
-			.filter(file => file && !file.match(/\.map$/))
-			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
-			.join(', ');
+		if (build_info.bundler === 'rollup') {
+			// TODO add dependencies and CSS
+			const link = preloaded_chunks
+				.filter(file => file && !file.match(/\.map$/))
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="modulepreload"`)
+				.join(', ');
 
-		res.setHeader('Link', link);
+			res.setHeader('Link', link);
+		} else {
+			const link = preloaded_chunks
+				.filter(file => file && !file.match(/\.map$/))
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
+				.join(', ');
+
+			res.setHeader('Link', link);
+		}
 
 		const store = store_getter ? store_getter(req, res) : null;
 
@@ -118,30 +128,37 @@ export function get_page_handler(
 			store
 		};
 
-		const root_preloaded = manifest.root.preload
-			? manifest.root.preload.call(preload_context, {
-				path: req.path,
-				query: req.query,
-				params: {}
-			})
-			: {};
+		let preloaded;
+		let match;
 
-		const match = error ? null : page.pattern.exec(req.path);
-
-		Promise.all([root_preloaded].concat(page.parts.map(part => {
-			if (!part) return null;
-
-			return part.component.preload
-				? part.component.preload.call(preload_context, {
+		try {
+			const root_preloaded = manifest.root.preload
+				? manifest.root.preload.call(preload_context, {
 					path: req.path,
 					query: req.query,
-					params: part.params ? part.params(match) : {}
+					params: {}
 				})
 				: {};
-		}))).catch(err => {
+
+			match = error ? null : page.pattern.exec(req.path);
+
+			preloaded = await Promise.all([root_preloaded].concat(page.parts.map(part => {
+				if (!part) return null;
+
+				return part.component.preload
+					? part.component.preload.call(preload_context, {
+						path: req.path,
+						query: req.query,
+						params: part.params ? part.params(match) : {}
+					})
+					: {};
+			})));
+		} catch (err) {
 			preload_error = { statusCode: 500, message: err };
-			return []; // appease TypeScript
-		}).then(preloaded => {
+			preloaded = []; // appease TypeScript
+		}
+
+		try {
 			if (redirect) {
 				const location = `${req.baseUrl}/${redirect.location}`;
 
@@ -269,7 +286,7 @@ export function get_page_handler(
 
 			res.statusCode = status;
 			res.end(body);
-		}).catch(err => {
+		} catch(err) {
 			if (error) {
 				// we encountered an error while rendering the error page — oops
 				res.statusCode = 500;
@@ -277,7 +294,7 @@ export function get_page_handler(
 			} else {
 				handle_error(req, res, 500, err);
 			}
-		});
+		}
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
