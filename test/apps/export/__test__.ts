@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as assert from 'assert';
-import { walk } from '../../utils';
+import { posixify, walk } from '../../utils';
 import * as api from '../../../api';
 
 describe('export', function() {
@@ -51,7 +51,7 @@ describe('export', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets, [
+		assert.deepEqual(non_client_assets.map(posixify), [
 			'blog.json',
 			'blog/bar.json',
 			'blog/bar/index.html',

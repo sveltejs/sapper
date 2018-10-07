@@ -2,14 +2,13 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as api from '../../../api';
-import { walk } from '../../utils';
+import { posixify, walk } from '../../utils';
 import { AppRunner } from '../AppRunner';
 
 describe('with-basepath', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
-	let browser: puppeteer.Browser;
 	let page: puppeteer.Page;
 	let base: string;
 
@@ -89,7 +88,7 @@ describe('with-basepath', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets, [
+		assert.deepEqual(non_client_assets.map(posixify), [
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
 			'custom-basepath/service-worker.js'

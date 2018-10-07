@@ -17,3 +17,7 @@ export function walk(cwd: string, dir = cwd, files: string[] = []) {
 
 	return files;
 }
+
+export function posixify(str: string) {
+	return str.replace(/\\/g, '/');
+}
