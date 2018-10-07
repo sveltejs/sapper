@@ -2,9 +2,13 @@
 
 <script>
 	export default {
+		oncreate() {
+			window.deleted = null;
+		},
+
 		methods: {
 			del() {
-				fetch(`api/delete/42`, { method: 'DELETE' })
+				fetch(`delete-test/42.json`, { method: 'DELETE' })
 					.then(r => r.json())
 					.then(data => {
 						window.deleted = data;

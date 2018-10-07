@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as ports from 'port-authority';
 import { fork, ChildProcess } from 'child_process';
@@ -7,10 +8,12 @@ export class AppRunner {
 	entry: string;
 	port: number;
 	proc: ChildProcess;
+	messages: any[];
 
 	constructor(cwd: string, entry: string) {
 		this.cwd = cwd;
 		this.entry = path.join(cwd, entry);
+		this.messages = [];
 	}
 
 	async start() {
@@ -21,6 +24,11 @@ export class AppRunner {
 			env: {
 				PORT: String(this.port)
 			}
+		});
+
+		this.proc.on('message', message => {
+			if (!message.__sapper__) return;
+			this.messages.push(message);
 		});
 	}
 
@@ -34,4 +42,17 @@ export class AppRunner {
 
 export function wait(ms: number) {
 	return new Promise(fulfil => setTimeout(fulfil, ms));
+}
+
+export function walk(cwd: string, dir = cwd, files: string[] = []) {
+	fs.readdirSync(dir).forEach(file => {
+		const resolved = path.resolve(dir, file);
+		if (fs.statSync(resolved).isDirectory()) {
+			walk(cwd, resolved, files);
+		} else {
+			files.push(path.relative(cwd, resolved));
+		}
+	});
+
+	return files;
 }

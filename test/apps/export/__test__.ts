@@ -1,20 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'assert';
+import { walk } from '../../utils';
 import * as api from '../../../api';
-
-function walk(cwd: string, dir = cwd, files: string[] = []) {
-	fs.readdirSync(dir).forEach(file => {
-		const resolved = path.resolve(dir, file);
-		if (fs.statSync(resolved).isDirectory()) {
-			walk(cwd, resolved, files);
-		} else {
-			files.push(path.relative(cwd, resolved));
-		}
-	});
-
-	return files;
-}
 
 describe('export', function() {
 	this.timeout(10000);

@@ -10,6 +10,9 @@ declare const prefetchRoutes: () => Promise<void>;
 declare const prefetch: (href: string) => Promise<void>;
 declare const goto: (href: string) => Promise<void>;
 
+declare let deleted: { id: number };
+declare let el: any;
+
 describe('basics', function() {
 	this.timeout(10000);
 
@@ -68,6 +71,8 @@ describe('basics', function() {
 	const _prefetch = (href: string) => page.evaluate((href: string) => prefetch(href), href);
 	const _goto = (href: string) => page.evaluate((href: string) => goto(href), href);
 
+	const title = () => page.$eval('h1', node => node.textContent);
+
 	function capture(fn: () => any): Promise<string[]> {
 		return new Promise((fulfil, reject) => {
 			const requests: string[] = [];
@@ -114,14 +119,13 @@ describe('basics', function() {
 				done = true;
 			});
 		});
-
 	}
 
 	it('serves /', async () => {
 		await page.goto(base);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'Great success!'
 		);
 	});
@@ -130,7 +134,7 @@ describe('basics', function() {
 		await page.goto(`${base}?`);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'Great success!'
 		);
 	});
@@ -139,7 +143,7 @@ describe('basics', function() {
 		await page.goto(`${base}/a`);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'a'
 		);
 	});
@@ -148,7 +152,7 @@ describe('basics', function() {
 		await page.goto(`${base}/b`);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'b'
 		);
 	});
@@ -157,7 +161,7 @@ describe('basics', function() {
 		await page.goto(`${base}/test-slug`);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'TEST-SLUG'
 		);
 	});
@@ -174,7 +178,7 @@ describe('basics', function() {
 		assert.deepEqual(requests, []);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'a'
 		);
 	});
@@ -186,7 +190,7 @@ describe('basics', function() {
 		await _goto('b');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'b'
 		);
 	});
@@ -201,32 +205,6 @@ describe('basics', function() {
 		assert.equal(requests[1], `${base}/b.json`);
 	});
 
-	// it('cancels navigation if subsequent navigation occurs during preload', () => {
-	// 	return nightmare
-	// 		.goto(base)
-	// 		.init()
-	// 		.click('a[href="slow-preload"]')
-	// 		.wait(100)
-	// 		.click('a[href="about"]')
-	// 		.wait(100)
-	// 		.then(() => nightmare.path())
-	// 		.then(path => {
-	// 			assert.equal(path, `${basepath}/about`);
-	// 			return nightmare.title();
-	// 		})
-	// 		.then(title => {
-	// 			assert.equal(title, 'About');
-	// 			return nightmare.evaluate(() => window.fulfil({})).wait(100);
-	// 		})
-	// 		.then(() => nightmare.path())
-	// 		.then(path => {
-	// 			assert.equal(path, `${basepath}/about`);
-	// 			return nightmare.title();
-	// 		})
-	// 		.then(title => {
-	// 			assert.equal(title, 'About');
-	// 		});
-	// });
 
 	// TODO equivalent test for a webpack app
 	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', () => {
@@ -259,5 +237,96 @@ describe('basics', function() {
 
 			req.on('error', reject);
 		});
+	});
+
+	it('calls a delete handler', async () => {
+		await page.goto(`${base}/delete-test`);
+		await _start();
+
+		await page.click('.del');
+		await page.waitForFunction(() => deleted);
+
+		assert.equal(await page.evaluate(() => deleted.id), 42);
+	});
+
+	it('hydrates initial route', async () => {
+		await page.goto(base);
+
+		await page.evaluate(() => {
+			el = document.querySelector('.hydrate-test');
+		});
+
+		await _start();
+
+		assert.ok(await page.evaluate(() => {
+			return document.querySelector('.hydrate-test') === el;
+		}));
+	});
+
+	it('does not attempt client-side navigation to server routes', async () => {
+		await page.goto(base);
+		await _start();
+		await _prefetchRoutes();
+
+		await page.click(`[href="ambiguous/ok.json"]`);
+
+		assert.equal(
+			await page.evaluate(() => document.body.textContent),
+			'ok'
+		);
+	});
+
+	it('allows reserved words as route names', async () => {
+		await page.goto(`${base}/const`);
+		await _start();
+
+		assert.equal(
+			await title(),
+			'reserved words are okay as routes'
+		);
+	});
+
+	it('accepts value-less query string parameter on server', async () => {
+		await page.goto(`${base}/echo-query?message`);
+
+		assert.equal(
+			await title(),
+			'message: ""'
+		);
+	});
+
+	it('accepts value-less query string parameter on client', async () => {
+		await page.goto(base);
+		await _start();
+		await _prefetchRoutes();
+
+		await page.click('a[href="echo-query?message"]')
+
+		assert.equal(
+			await title(),
+			'message: ""'
+		);
+	});
+
+	// skipped because Nightmare doesn't seem to focus the <a> correctly
+	it('resets the active element after navigation', async () => {
+		await page.goto(base);
+		await _start();
+		await _prefetchRoutes();
+
+		await page.click('[href="a"]');
+
+		assert.equal(
+			await page.evaluate(() => document.activeElement.nodeName),
+			'BODY'
+		);
+	});
+
+	it('replaces %sapper.xxx% tags safely', async () => {
+		await page.goto(`${base}/unsafe-replacement`);
+		await _start();
+
+		const html = await page.evaluate(() => document.body.innerHTML);
+		assert.equal(html.indexOf('%sapper'), -1);
 	});
 });
