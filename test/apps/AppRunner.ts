@@ -44,7 +44,10 @@ export class AppRunner {
 		this.page = await this.browser.newPage();
 		this.page.on('console', msg => {
 			const text = msg.text();
-			if (!text.startsWith('Failed to load resource')) console.log(msg.text());
+
+			if (!text.startsWith('Failed to load resource')) {
+				console.log(text);
+			}
 		});
 
 		return {
