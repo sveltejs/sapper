@@ -4,7 +4,11 @@ import { Target } from '../types';
 export default function prefetch(href: string) {
 	const target: Target = select_route(new URL(href, document.baseURI));
 
-	if (target && (!prefetching || href !== prefetching.href)) {
-		set_prefetching(href, prepare_page(target));
+	if (target) {
+		if (!prefetching || href !== prefetching.href) {
+			set_prefetching(href, prepare_page(target));
+		}
+
+		return prefetching.promise;
 	}
 }

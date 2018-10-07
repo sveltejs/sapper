@@ -252,138 +252,44 @@ function run({ mode, basepath = '' }) {
 		});
 
 		describe('basic functionality', () => {
-			it('serves /', () => {
-				return nightmare.goto(base).page.title().then(title => {
-					assert.equal(title, 'Great success!');
-				});
-			});
+			// it('scrolls to active deeplink', () => {
+			// 	return nightmare
+			// 		.goto(`${base}/blog/a-very-long-post#four`)
+			// 		.init()
+			// 		.evaluate(() => window.scrollY)
+			// 		.then(scrollY => {
+			// 			assert.ok(scrollY > 0, scrollY);
+			// 		});
+			// });
 
-			it('serves /?', () => {
-				return nightmare.goto(`${base}?`).page.title().then(title => {
-					assert.equal(title, 'Great success!');
-				});
-			});
 
-			it('serves static route', () => {
-				return nightmare.goto(`${base}/about`).page.title().then(title => {
-					assert.equal(title, 'About this site');
-				});
-			});
 
-			it('serves dynamic route', () => {
-				return nightmare.goto(`${base}/blog/what-is-sapper`).page.title().then(title => {
-					assert.equal(title, 'What is Sapper?');
-				});
-			});
-
-			it('navigates to a new page without reloading', () => {
-				return nightmare.goto(base).init().prefetchRoutes()
-					.then(() => {
-						return capture(() => nightmare.click('a[href="about"]'));
-					})
-					.then(requests => {
-						assert.deepEqual(requests.map(r => r.url), []);
-					})
-					.then(() => wait(100))
-					.then(() => nightmare.path())
-					.then(path => {
-						assert.equal(path, `${basepath}/about`);
-						return nightmare.title();
-					})
-					.then(title => {
-						assert.equal(title, 'About');
-					});
-			});
-
-			it('navigates programmatically', () => {
-				return nightmare
-					.goto(`${base}/about`)
-					.init()
-					.evaluate(() => window.goto('blog/what-is-sapper'))
-					.title()
-					.then(title => {
-						assert.equal(title, 'What is Sapper?');
-					});
-			});
-
-			it('prefetches programmatically', () => {
-				return capture(() => nightmare.goto(`${base}/about`).init())
-					.then(() => {
-						return capture(() => {
-							return nightmare
-								.click('.prefetch')
-								.wait(200);
-						});
-					})
-					.then(requests => {
-						assert.ok(!!requests.find(r => r.url === `/blog/why-the-name.json`));
-					});
-			});
-
-			it('scrolls to active deeplink', () => {
-				return nightmare
-					.goto(`${base}/blog/a-very-long-post#four`)
-					.init()
-					.evaluate(() => window.scrollY)
-					.then(scrollY => {
-						assert.ok(scrollY > 0, scrollY);
-					});
-			});
-
-			it.skip('reuses prefetch promise', () => {
-				return nightmare
-					.goto(`${base}/blog`)
-					.init()
-					.then(() => {
-						return capture(() => {
-							return nightmare
-								.evaluate(() => {
-									const a = document.querySelector('[href="blog/what-is-sapper"]');
-									a.dispatchEvent(new MouseEvent('mousemove'));
-								})
-								.wait(200);
-						});
-					})
-					.then(mouseover_requests => {
-						assert.ok(mouseover_requests.findIndex(r => r.url === `/blog/what-is-sapper.json`) !== -1);
-
-						return capture(() => {
-							return nightmare
-								.click('[href="blog/what-is-sapper"]')
-								.wait(200);
-						});
-					})
-					.then(click_requests => {
-						assert.ok(click_requests.findIndex(r => r.url === `/blog/what-is-sapper.json`) === -1);
-					});
-			});
-
-			it('cancels navigation if subsequent navigation occurs during preload', () => {
-				return nightmare
-					.goto(base)
-					.init()
-					.click('a[href="slow-preload"]')
-					.wait(100)
-					.click('a[href="about"]')
-					.wait(100)
-					.then(() => nightmare.path())
-					.then(path => {
-						assert.equal(path, `${basepath}/about`);
-						return nightmare.title();
-					})
-					.then(title => {
-						assert.equal(title, 'About');
-						return nightmare.evaluate(() => window.fulfil({})).wait(100);
-					})
-					.then(() => nightmare.path())
-					.then(path => {
-						assert.equal(path, `${basepath}/about`);
-						return nightmare.title();
-					})
-					.then(title => {
-						assert.equal(title, 'About');
-					});
-			});
+			// it('cancels navigation if subsequent navigation occurs during preload', () => {
+			// 	return nightmare
+			// 		.goto(base)
+			// 		.init()
+			// 		.click('a[href="slow-preload"]')
+			// 		.wait(100)
+			// 		.click('a[href="about"]')
+			// 		.wait(100)
+			// 		.then(() => nightmare.path())
+			// 		.then(path => {
+			// 			assert.equal(path, `${basepath}/about`);
+			// 			return nightmare.title();
+			// 		})
+			// 		.then(title => {
+			// 			assert.equal(title, 'About');
+			// 			return nightmare.evaluate(() => window.fulfil({})).wait(100);
+			// 		})
+			// 		.then(() => nightmare.path())
+			// 		.then(path => {
+			// 			assert.equal(path, `${basepath}/about`);
+			// 			return nightmare.title();
+			// 		})
+			// 		.then(title => {
+			// 			assert.equal(title, 'About');
+			// 		});
+			// });
 
 			it('calls a delete handler', () => {
 				return nightmare
@@ -409,114 +315,6 @@ function run({ mode, basepath = '' }) {
 					})
 					.then(matches => {
 						assert.ok(matches);
-					});
-			});
-
-			it('redirects on server', () => {
-				return nightmare.goto(`${base}/redirect-from`)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/redirect-to`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, 'redirected');
-					});
-			});
-
-			it('redirects in client', () => {
-				return nightmare.goto(base)
-					.wait('[href="redirect-from"]')
-					.click('[href="redirect-from"]')
-					.wait(200)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/redirect-to`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, 'redirected');
-					});
-			});
-
-			it('redirects on server (root)', () => {
-				return nightmare.goto(`${base}/redirect-root`)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, 'Great success!');
-					});
-			});
-
-			it('redirects in client (root)', () => {
-				return nightmare.goto(base)
-					.wait('[href="redirect-root"]')
-					.click('[href="redirect-root"]')
-					.wait(200)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, 'Great success!');
-					});
-			});
-
-			it('handles 4xx error on server', () => {
-				return nightmare.goto(`${base}/blog/nope`)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/blog/nope`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, '404')
-					});
-			});
-
-			it('handles 4xx error in client', () => {
-				return nightmare.goto(base)
-					.init()
-					.click('[href="blog/nope"]')
-					.wait(200)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/blog/nope`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, '404');
-					});
-			});
-
-			it('handles non-4xx error on server', () => {
-				return nightmare.goto(`${base}/blog/throw-an-error`)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/blog/throw-an-error`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, '500')
-					});
-			});
-
-			it('handles non-4xx error in client', () => {
-				return nightmare.goto(base)
-					.init()
-					.click('[href="blog/throw-an-error"]')
-					.wait(200)
-					.path()
-					.then(path => {
-						assert.equal(path, `${basepath}/blog/throw-an-error`);
-					})
-					.then(() => nightmare.page.title())
-					.then(title => {
-						assert.equal(title, '500');
 					});
 			});
 
@@ -564,14 +362,6 @@ function run({ mode, basepath = '' }) {
 					.page.text()
 					.then(text => {
 						JSON.parse(text);
-					});
-			});
-
-			it('does not serve error page for non-page errors', () => {
-				return nightmare.goto(`${base}/throw-an-error`)
-					.page.text()
-					.then(text => {
-						assert.equal(text, 'nope');
 					});
 			});
 
@@ -793,30 +583,6 @@ function run({ mode, basepath = '' }) {
 					.page.title()
 					.then(title => {
 						assert.equal(title, 'encöded');
-					});
-			});
-
-			it('resets scroll when a link is clicked', () => {
-				return nightmare.goto(`${base}/blog/a-very-long-post`)
-					.init()
-					.evaluate(() => window.scrollTo(0, 200))
-					.click('[href="blog/another-long-post"]')
-					.wait(100)
-					.evaluate(() => window.scrollY)
-					.then(scrollY => {
-						assert.equal(scrollY, 0);
-					});
-			});
-
-			it('preserves scroll when a link with sapper-noscroll is clicked', () => {
-				return nightmare.goto(`${base}/blog/a-very-long-post`)
-					.init()
-					.evaluate(() => window.scrollTo(0, 200))
-					.click('[href="blog/another-long-post"][sapper-noscroll]')
-					.wait(100)
-					.evaluate(() => window.scrollY)
-					.then(scrollY => {
-						assert.equal(scrollY, 200);
 					});
 			});
 		});

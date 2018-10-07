@@ -1,0 +1,18 @@
+<h1>{post.title}</h1>
+
+<script>
+	export default {
+		async preload({ params }) {
+			const { slug } = params;
+
+			const r = await this.fetch(`blog/${slug}.json`);
+			const data = await r.json();
+
+			if (r.status !== 200) {
+				this.error(r.status, data);
+			}
+
+			return data;
+		}
+	};
+</script>

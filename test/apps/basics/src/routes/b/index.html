@@ -1,1 +1,13 @@
-<h1>b</h1>
+<h1>{letter}</h1>
+
+<script>
+	export default {
+		async preload() {
+			const letter = await this.fetch('b.json').then(r => r.json());
+
+			return {
+				letter
+			};
+		}
+	};
+</script>

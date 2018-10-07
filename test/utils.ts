@@ -31,3 +31,7 @@ export class AppRunner {
 		});
 	}
 }
+
+export function wait(ms: number) {
+	return new Promise(fulfil => setTimeout(fulfil, ms));
+}
