@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 describe('redirects', function() {
 	this.timeout(10000);
@@ -101,6 +102,7 @@ describe('redirects', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="redirect-to-root"]');
+		await wait(50);
 
 		assert.equal(
 			page.url(),
