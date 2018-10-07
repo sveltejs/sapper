@@ -1,0 +1,14 @@
+<h1>blog</h1>
+
+{#each posts as post}
+	<p><a href="blog/{post.slug}">{post.title}</a></p>
+{/each}
+
+<script>
+	export default {
+		async preload() {
+			const posts = await this.fetch('blog.json').then(r => r.json());
+			return { posts };
+		}
+	};
+</script>

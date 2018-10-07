@@ -56,12 +56,22 @@ export function get_page_handler(
 			});
 		}
 
-		const link = preloaded_chunks
-			.filter(file => file && !file.match(/\.map$/))
-			.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
-			.join(', ');
+		if (build_info.bundler === 'rollup') {
+			// TODO add dependencies and CSS
+			const link = preloaded_chunks
+				.filter(file => file && !file.match(/\.map$/))
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="modulepreload"`)
+				.join(', ');
 
-		res.setHeader('Link', link);
+			res.setHeader('Link', link);
+		} else {
+			const link = preloaded_chunks
+				.filter(file => file && !file.match(/\.map$/))
+				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
+				.join(', ');
+
+			res.setHeader('Link', link);
+		}
 
 		const store = store_getter ? store_getter(req, res) : null;
 

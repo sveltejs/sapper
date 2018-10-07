@@ -54,95 +54,7 @@ describe('sapper', function() {
 		mode: 'production',
 		basepath: '/custom-basepath'
 	});
-
-	testExport({});
-
-	testExport({ basepath: '/custom-basepath' });
 });
-
-function testExport({ basepath = '' }) {
-	describe(basepath ? `export --basepath ${basepath}` : 'export', () => {
-		before(() => {
-			if (basepath) {
-				process.env.BASEPATH = basepath;
-			}
-
-			return exec(`node ${cli} export ${basepath ? `--basepath ${basepath}` : ''}`);
-		});
-
-		it('export all pages', () => {
-			const dest = path.resolve(__dirname, '../app/__sapper__/export');
-
-			// Pages that should show up in the extraction directory.
-			const expectedPages = [
-				'index.html',
-				'about/index.html',
-				'slow-preload/index.html',
-
-				'redirect-from/index.html',
-				'redirect-to/index.html',
-				'non-sapper-redirect-from/index.html',
-				'non-sapper-redirect-to/index.html',
-
-				'blog/index.html',
-				'blog/a-very-long-post/index.html',
-				'blog/how-can-i-get-involved/index.html',
-				'blog/how-is-sapper-different-from-next/index.html',
-				'blog/how-to-use-sapper/index.html',
-				'blog/what-is-sapper/index.html',
-				'blog/why-the-name/index.html',
-				'blog/encödïng-test/index.html',
-
-				'blog.json',
-				'blog/a-very-long-post.json',
-				'blog/how-can-i-get-involved.json',
-				'blog/how-is-sapper-different-from-next.json',
-				'blog/how-to-use-sapper.json',
-				'blog/what-is-sapper.json',
-				'blog/why-the-name.json',
-				'blog/encödïng-test.json',
-
-				'favicon.png',
-				'global.css',
-				'great-success.png',
-				'manifest.json',
-				'service-worker.js',
-				'svelte-logo-192.png',
-				'svelte-logo-512.png',
-			].map(file => {
-				return basepath ? `${basepath.replace(/^[\/\\]/, '')}/${file}` : file;
-			});
-
-			// Client scripts that should show up in the extraction directory.
-			const expectedClientRegexes = [
-				/client\/[^/]+\/main(\.\d+)?\.js/,
-				/client\/[^/]+\/index(\.\d+)?\.js/,
-				/client\/[^/]+\/about(\.\d+)?\.js/,
-				/client\/[^/]+\/blog_\$slug(\.\d+)?\.js/,
-				/client\/[^/]+\/blog(\.\d+)?\.js/,
-				/client\/[^/]+\/slow\$45preload(\.\d+)?\.js/,
-			];
-			const allPages = walkSync(dest);
-
-			expectedPages.forEach((expectedPage) => {
-				assert.ok(allPages.includes(expectedPage),`Could not find page matching ${expectedPage}`);
-			});
-
-			expectedClientRegexes.forEach((expectedRegex) => {
-				// Ensure each client page regular expression matches at least one
-				// generated page.
-				let matched = false;
-				for (const page of allPages) {
-					if (expectedRegex.test(page)) {
-						matched = true;
-						break;
-					}
-				}
-				assert.ok(matched, `Could not find client page matching ${expectedRegex}`);
-			});
-		});
-	});
-}
 
 function run({ mode, basepath = '' }) {
 	describe(`mode=${mode}`, function () {
@@ -252,18 +164,6 @@ function run({ mode, basepath = '' }) {
 		});
 
 		describe('basic functionality', () => {
-			// it('scrolls to active deeplink', () => {
-			// 	return nightmare
-			// 		.goto(`${base}/blog/a-very-long-post#four`)
-			// 		.init()
-			// 		.evaluate(() => window.scrollY)
-			// 		.then(scrollY => {
-			// 			assert.ok(scrollY > 0, scrollY);
-			// 		});
-			// });
-
-
-
 			// it('cancels navigation if subsequent navigation occurs during preload', () => {
 			// 	return nightmare
 			// 		.goto(base)

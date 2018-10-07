@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
+import * as http from 'http';
 import { build } from '../../../api';
 import { AppRunner } from '../../utils';
 
@@ -43,18 +44,16 @@ describe('basics', function() {
 					base = `http://localhost:${runner.port}`;
 					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
 
+					page = await browser.newPage();
+					page.on('console', msg => {
+						console.log(msg.text());
+					});
+
 					fulfil();
 				} catch (err) {
 					reject(err);
 				}
 			});
-		});
-	});
-
-	beforeEach(async () => {
-		page = await browser.newPage();
-		page.on('console', msg => {
-			console.log(msg.text());
 		});
 	});
 
@@ -228,4 +227,37 @@ describe('basics', function() {
 	// 			assert.equal(title, 'About');
 	// 		});
 	// });
+
+	// TODO equivalent test for a webpack app
+	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', () => {
+		return new Promise((fulfil, reject) => {
+			const req = http.get(base, res => {
+				try {
+					const { headers } = res;
+
+					assert.equal(
+						headers['content-type'],
+						'text/html'
+					);
+
+					assert.equal(
+						headers['cache-control'],
+						'max-age=600'
+					);
+
+					// TODO preload more than just the entry point
+					const regex = /<\/client\/client\.\w+\.js>;rel="modulepreload"/;
+					const link = <string>headers['link'];
+
+					assert.ok(regex.test(link), link);
+
+					fulfil();
+				} catch (err) {
+					reject(err);
+				}
+			});
+
+			req.on('error', reject);
+		});
+	});
 });

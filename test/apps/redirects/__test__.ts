@@ -41,18 +41,16 @@ describe('redirects', function() {
 					base = `http://localhost:${runner.port}`;
 					browser = await puppeteer.launch({ args: ['--no-sandbox'] });
 
+					page = await browser.newPage();
+					page.on('console', msg => {
+						console.log(msg.text());
+					});
+
 					fulfil();
 				} catch (err) {
 					reject(err);
 				}
 			});
-		});
-	});
-
-	beforeEach(async () => {
-		page = await browser.newPage();
-		page.on('console', msg => {
-			console.log(msg.text());
 		});
 	});
 

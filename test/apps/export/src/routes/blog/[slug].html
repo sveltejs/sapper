@@ -1,0 +1,10 @@
+<h1>{post.title}</h1>
+
+<script>
+	export default {
+		async preload({ params }) {
+			const post = await this.fetch(`blog/${params.slug}.json`).then(r => r.json());
+			return { post };
+		}
+	};
+</script>
