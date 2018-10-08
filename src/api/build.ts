@@ -8,7 +8,7 @@ import { copy_shimport } from './utils/copy_shimport';
 import read_template from '../core/read_template';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
-import validate_bundler from '../cli/utils/validate_bundler';
+import validate_bundler from './utils/validate_bundler';
 
 type Opts = {
 	cwd?: string;

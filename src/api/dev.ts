@@ -11,7 +11,7 @@ import { Compiler, Compilers } from '../core/create_compilers';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
 import * as events from './interfaces';
-import validate_bundler from '../cli/utils/validate_bundler';
+import validate_bundler from './utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData } from '../interfaces';
 import read_template from '../core/read_template';

@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import sade from 'sade';
 import colors from 'kleur';
-import prettyMs from 'pretty-ms';
 import * as pkg from '../package.json';
+import { elapsed, repeat, left_pad } from './utils';
 
 const prog = sade('sapper').version(pkg.version);
 
@@ -13,6 +13,8 @@ if (process.argv[2] === 'start') {
 	console.error(`Use 'node [build_dir]' instead`);
 	process.exit(1);
 }
+
+const start = Date.now();
 
 prog.command('dev')
 	.describe('Start a development server')
@@ -47,13 +49,10 @@ prog.command('build [dest]')
 	}) => {
 		console.log(`> Building...`);
 
-		process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-
-		const start = Date.now();
+		const cwd = path.resolve(process.env.SAPPER_BASE || '');
 
 		try {
-			const { build } = await import('./cli/build');
-			await build(Object.assign({ dest }, opts));
+			await _build(opts.bundler, opts.legacy, cwd, dest);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -89,24 +88,41 @@ prog.command('export [dest]')
 		basepath?: string,
 		timeout: number | false
 	}) => {
-		process.env.NODE_ENV = 'production';
-
-		Object.assign(opts, {
-			build_dir: opts['build-dir']
-		});
-
-		const start = Date.now();
+		const cwd = path.resolve(process.env.SAPPER_BASE || '');
 
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				const { build } = await import('./cli/build');
-				await build(opts);
+				await _build(opts.bundler, opts.legacy, cwd, opts['build-dir']);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
-			const { export: _export } = await import('./cli/export');
-			await _export(dest, opts);
+			const { export: _export } = await import('./api/export');
+			const { default: pb } = await import('pretty-bytes');
+
+			await _export({
+				static: path.resolve(cwd, process.env.SAPPER_STATIC || 'static'),
+				build_dir: opts['build-dir'],
+				export_dir: dest,
+				basepath: opts.basepath,
+				timeout: opts.timeout,
+
+				oninfo: event => {
+					console.log(colors.bold.cyan(`> ${event.message}`));
+				},
+
+				onfile: event => {
+					const size_color = event.size > 150000 ? colors.bold.red : event.size > 50000 ? colors.bold.yellow : colors.bold.gray;
+						const size_label = size_color(left_pad(pb(event.size), 10));
+
+						const file_label = event.status === 200
+							? event.file
+							: colors.bold[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+
+						console.log(`${size_label}   ${file_label}`);
+				}
+			});
+
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(colors.bold.red(`> ${err.message}`));
@@ -116,6 +132,39 @@ prog.command('export [dest]')
 
 prog.parse(process.argv);
 
-function elapsed(start: number) {
-	return prettyMs(Date.now() - start);
+
+async function _build(
+	bundler: 'rollup' | 'webpack',
+	legacy: boolean,
+	cwd: string,
+	dest: string
+) {
+	const { build } = await import('./api/build');
+
+	await build({
+		bundler,
+		legacy,
+		cwd,
+		src:    path.resolve(cwd, process.env.SAPPER_SRC    || 'src'),
+		routes: path.resolve(cwd, process.env.SAPPER_ROUTES || 'src/routes'),
+		dest:   path.resolve(cwd, dest),
+
+		oncompile: event => {
+			let banner = `built ${event.type}`;
+			let c = colors.cyan;
+
+			const { warnings } = event.result;
+			if (warnings.length > 0) {
+				banner += ` with ${warnings.length} ${warnings.length === 1 ? 'warning' : 'warnings'}`;
+				c = colors.yellow;
+			}
+
+			console.log();
+			console.log(c(`┌─${repeat('─', banner.length)}─┐`));
+			console.log(c(`│ ${colors.bold(banner)       } │`));
+			console.log(c(`└─${repeat('─', banner.length)}─┘`));
+
+			console.log(event.result.print());
+		}
+	});
 }
