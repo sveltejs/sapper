@@ -3,7 +3,7 @@ import { build as _build } from '../api/build';
 import colors from 'kleur';
 import { repeat } from '../utils';
 
-export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }) {
+export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean, dest: string }) {
 	const cwd = path.resolve(process.env.SAPPER_BASE || '');
 
 	return _build({
@@ -29,6 +29,6 @@ export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }
 		cwd,
 		src:    path.resolve(cwd, process.env.SAPPER_SRC    || 'src'),
 		routes: path.resolve(cwd, process.env.SAPPER_ROUTES || 'src/routes'),
-		dest:   path.resolve(cwd, process.env.SAPPER_DEST   || '__sapper__/build')
+		dest:   path.resolve(cwd, opts.dest)
 	});
 }
