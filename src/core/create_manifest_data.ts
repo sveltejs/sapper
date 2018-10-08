@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { locations } from '../config';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
-import { posixify, reserved_words } from './utils';
+import { posixify, reserved_words } from '../utils';
 
-export default function create_manifest_data(cwd = locations.routes()): ManifestData {
+export default function create_manifest_data(cwd: string): ManifestData {
 	// TODO remove in a future version
 	if (!fs.existsSync(cwd)) {
 		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);

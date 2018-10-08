@@ -1,15 +1,15 @@
-import { locations, dev } from './config';
+import { dev, src, dest } from './env';
 
 export default {
-	dev: dev(),
+	dev,
 
 	client: {
 		input: () => {
-			return `${locations.src()}/client.js`
+			return `${src}/client.js`
 		},
 
 		output: () => {
-			let dir = `${locations.dest()}/client`;
+			let dir = `${dest}/client`;
 			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
 
 			return {
@@ -17,7 +17,7 @@ export default {
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm',
-				sourcemap: dev()
+				sourcemap: dev
 			};
 		}
 	},
@@ -25,27 +25,27 @@ export default {
 	server: {
 		input: () => {
 			return {
-				server: `${locations.src()}/server.js`
+				server: `${src}/server.js`
 			};
 		},
 
 		output: () => {
 			return {
-				dir: `${locations.dest()}/server`,
+				dir: `${dest}/server`,
 				format: 'cjs',
-				sourcemap: dev()
+				sourcemap: dev
 			};
 		}
 	},
 
 	serviceworker: {
 		input: () => {
-			return `${locations.src()}/service-worker.js`;
+			return `${src}/service-worker.js`;
 		},
 
 		output: () => {
 			return {
-				file: `${locations.dest()}/service-worker.js`,
+				file: `${dest}/service-worker.js`,
 				format: 'iife'
 			}
 		}

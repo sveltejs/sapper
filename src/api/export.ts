@@ -4,36 +4,21 @@ import * as sander from 'sander';
 import * as url from 'url';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
-import { EventEmitter } from 'events';
 import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
-import * as events from './interfaces';
+import { noop } from './utils/noop';
 
 type Opts = {
-	build: string,
-	dest: string,
-	static: string,
+	build_dir?: string,
+	export_dir?: string,
+	cwd?: string,
+	static?: string,
 	basepath?: string,
-	timeout: number | false
+	timeout?: number | false,
+	oninfo?: ({ message }: { message: string }) => void;
+	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 };
-
-export function exporter(opts: Opts) {
-	const emitter = new EventEmitter();
-
-	execute(emitter, opts).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
-
-	return emitter;
-}
 
 function resolve(from: string, to: string) {
 	return url.parse(url.resolve(from, to));
@@ -41,21 +26,30 @@ function resolve(from: string, to: string) {
 
 type URL = url.UrlWithStringQuery;
 
-async function execute(emitter: EventEmitter, opts: Opts) {
-	const export_dir = path.join(opts.dest, opts.basepath);
+export { _export as export };
 
+async function _export({
+	cwd = process.cwd(),
+	static: static_files = path.join(cwd, 'static'),
+	build_dir = path.join(cwd, '__sapper__/build'),
+	basepath = '',
+	export_dir = path.join(cwd, '__sapper__/export', basepath),
+	timeout = 5000,
+	oninfo = noop,
+	onfile = noop
+}: Opts = {}) {
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 
-	sander.copydirSync(opts.static).to(export_dir);
-	sander.copydirSync(opts.build, 'client').to(export_dir, 'client');
+	sander.copydirSync(static_files).to(export_dir);
+	sander.copydirSync(build_dir, 'client').to(export_dir, 'client');
 
-	if (sander.existsSync(opts.build, 'service-worker.js')) {
-		sander.copyFileSync(opts.build, 'service-worker.js').to(export_dir, 'service-worker.js');
+	if (sander.existsSync(build_dir, 'service-worker.js')) {
+		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
-	if (sander.existsSync(opts.build, 'service-worker.js.map')) {
-		sander.copyFileSync(opts.build, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
+	if (sander.existsSync(build_dir, 'service-worker.js.map')) {
+		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
 	}
 
 	const port = await ports.find(3000);
@@ -64,19 +58,18 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 	const host = `localhost:${port}`;
 	const origin = `${protocol}//${host}`;
 
-	const root = resolve(origin, opts.basepath || '');
+	const root = resolve(origin, basepath);
 	if (!root.href.endsWith('/')) root.href += '/';
 
-	emitter.emit('info', {
+	oninfo({
 		message: `Crawling ${root.href}`
 	});
 
-	const proc = child_process.fork(path.resolve(`${opts.build}/server/server.js`), [], {
-		cwd: process.cwd(),
+	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
+		cwd,
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_DEST: opts.build,
 			SAPPER_EXPORT: 'true'
 		}, process.env)
 	});
@@ -98,7 +91,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			body = minify_html(body);
 		}
 
-		emitter.emit('file', <events.FileEvent>{
+		onfile({
 			file,
 			size: body.length,
 			status
@@ -119,9 +112,9 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 		seen.add(pathname);
 
 		const timeout_deferred = new Deferred();
-		const timeout = setTimeout(() => {
+		const the_timeout = setTimeout(() => {
 			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
-		}, opts.timeout);
+		}, timeout);
 
 		const r = await Promise.race([
 			fetch(url.href, {
@@ -130,7 +123,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			timeout_deferred.promise
 		]);
 
-		clearTimeout(timeout); // prevent it hanging at the end
+		clearTimeout(the_timeout); // prevent it hanging at the end
 
 		let type = r.headers.get('Content-Type');
 		let body = await r.text();

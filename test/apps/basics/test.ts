@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as http from 'http';
@@ -23,34 +22,11 @@ describe('basics', function() {
 	let goto: (href: string) => Promise<void>;
 
 	// hooks
-	before(() => {
-		return new Promise((fulfil, reject) => {
-			// TODO this is brittle. Make it unnecessary
-			process.chdir(__dirname);
-			process.env.NODE_ENV = 'production';
+	before(async () => {
+		await build({ cwd: __dirname });
 
-			// TODO this API isn't great. Rethink it
-			const emitter = build({
-				bundler: 'rollup'
-			}, {
-				src: path.join(__dirname, 'src'),
-				routes: path.join(__dirname, 'src/routes'),
-				dest: path.join(__dirname, '__sapper__/build')
-			});
-
-			emitter.on('error', reject);
-
-			emitter.on('done', async () => {
-				try {
-					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					({ base, page, start, prefetchRoutes, prefetch, goto } = await runner.start());
-
-					fulfil();
-				} catch (err) {
-					reject(err);
-				}
-			});
-		});
+		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
+		({ base, page, start, prefetchRoutes, prefetch, goto } = await runner.start());
 	});
 
 	after(() => runner.end());

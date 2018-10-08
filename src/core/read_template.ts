@@ -1,7 +1,6 @@
 import * as fs from 'fs';
-import { locations } from '../config';
 
-export default function read_template(dir = locations.src()) {
+export default function read_template(dir: string) {
 	try {
 		return fs.readFileSync(`${dir}/template.html`, 'utf-8');
 	} catch (err) {

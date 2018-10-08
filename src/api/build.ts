@@ -2,44 +2,51 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
-import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
-import { Dirs } from '../interfaces';
 import read_template from '../core/read_template';
+import { CompileResult } from '../core/create_compilers/interfaces';
+import { noop } from './utils/noop';
+import validate_bundler from './utils/validate_bundler';
 
 type Opts = {
-	legacy: boolean;
-	bundler: 'rollup' | 'webpack';
+	cwd?: string;
+	src?: string;
+	routes?: string;
+	dest?: string;
+	output?: string;
+	static_files?: string;
+	legacy?: boolean;
+	bundler?: 'rollup' | 'webpack';
+	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
 };
 
-export function build(opts: Opts, dirs: Dirs) {
-	const emitter = new EventEmitter();
+export async function build({
+	cwd = process.cwd(),
+	src = path.join(cwd, 'src'),
+	routes = path.join(cwd, 'src/routes'),
+	output = path.join(cwd, '__sapper__'),
+	static_files = path.join(cwd, 'static'),
+	dest = path.join(cwd, '__sapper__/build'),
 
-	execute(emitter, opts, dirs).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
+	bundler,
+	legacy = false,
+	oncompile = noop
+}: Opts = {}) {
+	bundler = validate_bundler(bundler);
 
-	return emitter;
-}
+	if (legacy && bundler === 'webpack') {
+		throw new Error(`Legacy builds are not supported for projects using webpack`);
+	}
 
-async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
-	rimraf.sync(path.join(dirs.dest, '**/*'));
-	mkdirp.sync(`${dirs.dest}/client`);
-	copy_shimport(dirs.dest);
+	rimraf.sync(path.join(dest, '**/*'));
+	mkdirp.sync(`${dest}/client`);
+	copy_shimport(dest);
 
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = read_template();
+	const template = read_template(src);
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -48,47 +55,53 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 		throw error;
 	}
 
-	fs.writeFileSync(`${dirs.dest}/template.html`, minify_html(template));
+	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
-	const manifest_data = create_manifest_data();
+	const manifest_data = create_manifest_data(routes);
 
 	// create src/manifest/client.js and src/manifest/server.js
-	create_main_manifests({ bundler: opts.bundler, manifest_data });
+	create_main_manifests({
+		bundler,
+		manifest_data,
+		cwd,
+		src,
+		dest,
+		routes,
+		output,
+		dev: false
+	});
 
-	const { client, server, serviceworker } = await create_compilers(opts.bundler);
+	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, dest, true);
 
 	const client_result = await client.compile();
-	emitter.emit('build', <events.BuildEvent>{
+	oncompile({
 		type: 'client',
-		// TODO duration/warnings
 		result: client_result
 	});
 
-	const build_info = client_result.to_json(manifest_data, dirs);
+	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
 
-	if (opts.legacy) {
+	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(opts.bundler);
+		const { client } = await create_compilers(bundler, cwd, src, dest, true);
 
 		const client_result = await client.compile();
 
-		emitter.emit('build', <events.BuildEvent>{
+		oncompile({
 			type: 'client (legacy)',
-			// TODO duration/warnings
 			result: client_result
 		});
 
-		client_result.to_json(manifest_data, dirs);
+		client_result.to_json(manifest_data, { src, routes, dest });
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	fs.writeFileSync(path.join(dirs.dest, 'build.json'), JSON.stringify(build_info));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
-	emitter.emit('build', <events.BuildEvent>{
+	oncompile({
 		type: 'server',
-		// TODO duration/warnings
 		result: server_stats
 	});
 
@@ -97,14 +110,15 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			manifest_data,
-			client_files: client_result.chunks.map(chunk => `client/${chunk.file}`)
+			output,
+			client_files: client_result.chunks.map(chunk => `client/${chunk.file}`),
+			static_files
 		});
 
 		serviceworker_stats = await serviceworker.compile();
 
-		emitter.emit('build', <events.BuildEvent>{
+		oncompile({
 			type: 'serviceworker',
-			// TODO duration/warnings
 			result: serviceworker_stats
 		});
 	}

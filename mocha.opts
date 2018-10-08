@@ -2,4 +2,4 @@
 --require ts-node/register
 --recursive
 test/unit/*/*.ts
-test/apps/*/__test__.ts
+test/apps/*/test.ts
