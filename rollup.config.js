@@ -43,8 +43,8 @@ export default [
 			`src/api.ts`,
 			`src/cli.ts`,
 			`src/core.ts`,
-			`src/rollup.ts`,
-			`src/webpack.ts`
+			`src/config/rollup.ts`,
+			`src/config/webpack.ts`
 		],
 		output: {
 			dir: 'dist',

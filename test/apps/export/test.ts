@@ -12,16 +12,7 @@ describe('export', function() {
 		process.env.NODE_ENV = 'production';
 
 		await api.build();
-
-		// TODO it'd be nice if build and export returned promises.
-		// not sure how best to combine promise and event emitter
-		await api.export({
-			build: '__sapper__/build',
-			dest: '__sapper__/export',
-			static: 'static',
-			basepath: '',
-			timeout: 5000
-		});
+		await api.export();
 	});
 
 	it('crawls a site', () => {

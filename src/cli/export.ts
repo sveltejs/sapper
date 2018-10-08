@@ -1,22 +1,26 @@
+import * as path from 'path';
 import { export as _export } from '../api/export';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
-import { locations } from '../config';
 import { left_pad } from '../utils';
 
 export { __export as export };
 
 function __export(export_dir: string, {
+	build_dir,
 	basepath = '',
 	timeout
 }: {
-	basepath: string,
+	build_dir: string,
+	basepath?: string,
 	timeout: number | false
 }) {
+	const cwd = path.resolve(process.env.SAPPER_BASE || '');
+
 	return _export({
-		build: locations.dest(),
-		static: locations.static(),
-		dest: export_dir,
+		static: path.resolve(cwd, process.env.SAPPER_STATIC || 'static'),
+		build_dir,
+		export_dir,
 		basepath,
 		timeout,
 

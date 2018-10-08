@@ -36,18 +36,17 @@ prog.command('build [dest]')
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
 		legacy: boolean,
-		bundler?: string
+		bundler?: 'rollup' | 'webpack'
 	}) => {
 		console.log(`> Building...`);
 
 		process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-		process.env.SAPPER_DEST = dest;
 
 		const start = Date.now();
 
 		try {
 			const { build } = await import('./cli/build');
-			await build(opts);
+			await build(Object.assign({ dest }, opts));
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -88,13 +87,16 @@ prog.command('export [dest]')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
-		bundler?: string,
+		bundler?: 'rollup' | 'webpack',
 		'build-dir': string,
 		basepath?: string,
 		timeout: number | false
 	}) => {
 		process.env.NODE_ENV = 'production';
-		process.env.SAPPER_DEST = opts['build-dir'];
+
+		Object.assign(opts, {
+			build_dir: opts['build-dir']
+		});
 
 		const start = Date.now();
 
@@ -106,8 +108,8 @@ prog.command('export [dest]')
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
-			const { exporter } = await import('./cli/export');
-			await exporter(dest, opts);
+			const { export: _export } = await import('./cli/export');
+			await _export(dest, opts);
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.error(colors.bold.red(`> ${err.message}`));

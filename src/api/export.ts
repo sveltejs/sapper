@@ -10,13 +10,14 @@ import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
 
 type Opts = {
-	build: string,
-	dest: string,
-	static: string,
+	build_dir?: string,
+	export_dir?: string,
+	cwd?: string,
+	static?: string,
 	basepath?: string,
-	timeout: number | false,
-	oninfo: ({ message }: { message: string }) => void;
-	onfile: ({ file, size, status }: { file: string, size: number, status: number }) => void;
+	timeout?: number | false,
+	oninfo?: ({ message }: { message: string }) => void;
+	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 };
 
 function resolve(from: string, to: string) {
@@ -27,23 +28,28 @@ type URL = url.UrlWithStringQuery;
 
 export { _export as export };
 
-async function _export(opts: Opts) {
-	const { oninfo = noop, onfile = noop } = opts;
-
-	const export_dir = path.join(opts.dest, opts.basepath);
-
+async function _export({
+	cwd = process.cwd(),
+	static: static_files = path.join(cwd, 'static'),
+	build_dir = path.join(cwd, '__sapper__/build'),
+	basepath = '',
+	export_dir = path.join(cwd, '__sapper__/export', basepath),
+	timeout = 5000,
+	oninfo = noop,
+	onfile = noop
+}: Opts = {}) {
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 
-	sander.copydirSync(opts.static).to(export_dir);
-	sander.copydirSync(opts.build, 'client').to(export_dir, 'client');
+	sander.copydirSync(static_files).to(export_dir);
+	sander.copydirSync(build_dir, 'client').to(export_dir, 'client');
 
-	if (sander.existsSync(opts.build, 'service-worker.js')) {
-		sander.copyFileSync(opts.build, 'service-worker.js').to(export_dir, 'service-worker.js');
+	if (sander.existsSync(build_dir, 'service-worker.js')) {
+		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
-	if (sander.existsSync(opts.build, 'service-worker.js.map')) {
-		sander.copyFileSync(opts.build, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
+	if (sander.existsSync(build_dir, 'service-worker.js.map')) {
+		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
 	}
 
 	const port = await ports.find(3000);
@@ -52,19 +58,19 @@ async function _export(opts: Opts) {
 	const host = `localhost:${port}`;
 	const origin = `${protocol}//${host}`;
 
-	const root = resolve(origin, opts.basepath || '');
+	const root = resolve(origin, basepath);
 	if (!root.href.endsWith('/')) root.href += '/';
 
 	oninfo({
 		message: `Crawling ${root.href}`
 	});
 
-	const proc = child_process.fork(path.resolve(`${opts.build}/server/server.js`), [], {
+	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd: process.cwd(),
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_DEST: opts.build,
+			SAPPER_DEST: build_dir,
 			SAPPER_EXPORT: 'true'
 		}, process.env)
 	});
@@ -107,9 +113,9 @@ async function _export(opts: Opts) {
 		seen.add(pathname);
 
 		const timeout_deferred = new Deferred();
-		const timeout = setTimeout(() => {
+		const the_timeout = setTimeout(() => {
 			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
-		}, opts.timeout);
+		}, timeout);
 
 		const r = await Promise.race([
 			fetch(url.href, {
@@ -118,7 +124,7 @@ async function _export(opts: Opts) {
 			timeout_deferred.promise
 		]);
 
-		clearTimeout(timeout); // prevent it hanging at the end
+		clearTimeout(the_timeout); // prevent it hanging at the end
 
 		let type = r.headers.get('Content-Type');
 		let body = await r.text();

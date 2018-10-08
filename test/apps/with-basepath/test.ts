@@ -19,14 +19,8 @@ describe('with-basepath', function() {
 
 		await api.build();
 
-		// TODO it'd be nice if build and export returned promises.
-		// not sure how best to combine promise and event emitter
 		await api.export({
-			build: '__sapper__/build',
-			dest: '__sapper__/export',
-			static: 'static',
-			basepath: 'custom-basepath',
-			timeout: 5000
+			basepath: 'custom-basepath'
 		});
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');

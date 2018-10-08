@@ -1,18 +1,18 @@
-import { locations, dev } from './config';
+import { dev, src, dest } from './env';
 
 export default {
-	dev: dev(),
+	dev,
 
 	client: {
 		entry: () => {
 			return {
-				main: `${locations.src()}/client`
+				main: `${src}/client`
 			};
 		},
 
 		output: () => {
 			return {
-				path: `${locations.dest()}/client`,
+				path: `${dest}/client`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				publicPath: `client/`
@@ -23,13 +23,13 @@ export default {
 	server: {
 		entry: () => {
 			return {
-				server: `${locations.src()}/server`
+				server: `${src}/server`
 			};
 		},
 
 		output: () => {
 			return {
-				path: `${locations.dest()}/server`,
+				path: `${dest}/server`,
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
 				libraryTarget: 'commonjs2'
@@ -40,13 +40,13 @@ export default {
 	serviceworker: {
 		entry: () => {
 			return {
-				'service-worker': `${locations.src()}/service-worker`
+				'service-worker': `${src}/service-worker`
 			};
 		},
 
 		output: () => {
 			return {
-				path: locations.dest(),
+				path: dest,
 				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js'
 			}

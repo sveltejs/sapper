@@ -1,9 +1,11 @@
+import * as path from 'path';
 import { build as _build } from '../api/build';
 import colors from 'kleur';
-import { locations } from '../config';
 import { repeat } from '../utils';
 
 export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }) {
+	const cwd = path.resolve(process.env.SAPPER_BASE || '');
+
 	return _build({
 		legacy: opts.legacy,
 		bundler: opts.bundler,
@@ -24,8 +26,9 @@ export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }
 
 			console.log(event.result.print());
 		},
-		dest: locations.dest(),
-		src: locations.src(),
-		routes: locations.routes()
+		cwd,
+		src:    path.resolve(cwd, process.env.SAPPER_SRC    || 'src'),
+		routes: path.resolve(cwd, process.env.SAPPER_ROUTES || 'src/routes'),
+		dest:   path.resolve(cwd, process.env.SAPPER_DEST   || '__sapper__/build')
 	});
 }
