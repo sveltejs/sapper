@@ -2,9 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import sade from 'sade';
 import colors from 'kleur';
-import prettyMs from 'pretty-ms';
 import * as pkg from '../package.json';
-import { elapsed, repeat, left_pad } from './utils';
+import { elapsed, repeat, left_pad, format_milliseconds } from './utils';
 import { InvalidEvent, ErrorEvent, FatalEvent, BuildEvent, ReadyEvent } from './interfaces';
 
 const prog = sade('sapper').version(pkg.version);
@@ -112,7 +111,7 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 					}
 				} else {
-					console.log(`${colors.bold.green(`✔ ${event.type}`)} ${colors.gray(`(${prettyMs(event.duration)})`)}`);
+					console.log(`${colors.bold.green(`✔ ${event.type}`)} ${colors.gray(`(${format_milliseconds(event.duration)})`)}`);
 				}
 			});
 		} catch (err) {

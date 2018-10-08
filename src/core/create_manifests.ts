@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import glob from 'tiny-glob/sync.js';
-import { posixify, stringify, write_if_changed } from './utils';
+import { posixify, stringify, walk, write_if_changed } from '../utils';
 import { Page, PageComponent, ManifestData } from '../interfaces';
 
 export function create_main_manifests({
@@ -46,10 +45,10 @@ export function create_serviceworker_manifest({ manifest_data, output, client_fi
 	client_files: string[];
 	static_files: string;
 }) {
-	let files;
+	let files: string[];
 
 	if (fs.existsSync(static_files)) {
-		files = glob('**', { cwd: static_files, filesOnly: true });
+		files = walk(static_files);
 	} else {
 		// TODO remove in a future version
 		if (fs.existsSync('assets')) {

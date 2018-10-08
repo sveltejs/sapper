@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
-import { posixify, reserved_words } from './utils';
+import { posixify, reserved_words } from '../utils';
 
 export default function create_manifest_data(cwd: string): ManifestData {
 	// TODO remove in a future version

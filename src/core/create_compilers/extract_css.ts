@@ -4,7 +4,7 @@ import hash from 'string-hash';
 import * as codec from 'sourcemap-codec';
 import { PageComponent, Dirs } from '../../interfaces';
 import { CompileResult } from './interfaces';
-import { posixify } from '../utils'
+import { posixify } from '../../utils'
 
 const inline_sourcemap_header = 'data:application/json;charset=utf-8;base64,';
 
