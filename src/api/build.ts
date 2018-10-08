@@ -63,6 +63,7 @@ export async function build({
 	create_main_manifests({
 		bundler,
 		manifest_data,
+		cwd,
 		src,
 		dest,
 		routes,
@@ -70,7 +71,7 @@ export async function build({
 		dev: false
 	});
 
-	const { client, server, serviceworker } = await create_compilers(bundler, src, dest, true);
+	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, dest, true);
 
 	const client_result = await client.compile();
 	oncompile({
@@ -82,7 +83,7 @@ export async function build({
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(bundler, src, dest, true);
+		const { client } = await create_compilers(bundler, cwd, src, dest, true);
 
 		const client_result = await client.compile();
 

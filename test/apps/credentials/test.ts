@@ -17,11 +17,7 @@ describe('credentials', function() {
 
 	// hooks
 	before(async () => {
-		// TODO this is brittle. Make it unnecessary
-		process.chdir(__dirname);
-		process.env.NODE_ENV = 'production';
-
-		await build();
+		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
 		({ base, page, start, prefetchRoutes } = await runner.start());

@@ -66,7 +66,7 @@ async function _export({
 	});
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
-		cwd: process.cwd(),
+		cwd,
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',

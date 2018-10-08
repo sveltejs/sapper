@@ -11,13 +11,19 @@ export type Compilers = {
 	serviceworker?: Compiler;
 }
 
-export default async function create_compilers(bundler: 'rollup' | 'webpack', src: string, dest: string, dev: boolean): Promise<Compilers> {
+export default async function create_compilers(
+	bundler: 'rollup' | 'webpack',
+	cwd: string,
+	src: string,
+	dest: string,
+	dev: boolean
+): Promise<Compilers> {
 	set_dev(dev);
 	set_src(src);
 	set_dest(dest);
 
 	if (bundler === 'rollup') {
-		const config = await RollupCompiler.load_config();
+		const config = await RollupCompiler.load_config(cwd);
 		validate_config(config, 'rollup');
 
 		normalize_rollup_config(config.client);
@@ -35,7 +41,7 @@ export default async function create_compilers(bundler: 'rollup' | 'webpack', sr
 	}
 
 	if (bundler === 'webpack') {
-		const config = require(path.resolve('webpack.config.js'));
+		const config = require(path.resolve(cwd, 'webpack.config.js'));
 		validate_config(config, 'webpack');
 
 		return {

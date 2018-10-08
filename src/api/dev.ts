@@ -39,6 +39,7 @@ export function dev(opts) {
 class Watcher extends EventEmitter {
 	bundler: 'rollup' | 'webpack';
 	dirs: {
+		cwd: string;
 		src: string;
 		dest: string;
 		routes: string;
@@ -85,7 +86,7 @@ class Watcher extends EventEmitter {
 		super();
 
 		this.bundler = validate_bundler(bundler);
-		this.dirs = { src, dest, routes, output, static_files };
+		this.dirs = { cwd, src, dest, routes, output, static_files };
 		this.port = port;
 		this.closed = false;
 
@@ -133,7 +134,7 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { src, dest, routes, output, static_files } = this.dirs;
+		const { cwd, src, dest, routes, output, static_files } = this.dirs;
 		rimraf.sync(dest);
 		mkdirp.sync(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);
@@ -152,7 +153,7 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
-				src, dest, routes, output
+				cwd, src, dest, routes, output
 			});
 		} catch (err) {
 			this.emit('fatal', <events.FatalEvent>{
@@ -180,7 +181,7 @@ class Watcher extends EventEmitter {
 							manifest_data, // TODO is this right? not new_manifest_data?
 							dev: true,
 							dev_port: this.dev_port,
-							src, dest, routes, output
+							cwd, src, dest, routes, output
 						});
 
 						manifest_data = new_manifest_data;
@@ -202,7 +203,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = await create_compilers(this.bundler, src, dest, false);
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, false);
 
 		let log = '';
 

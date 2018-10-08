@@ -7,16 +7,12 @@ describe('export', function() {
 
 	// hooks
 	before(async () => {
-		// TODO this is brittle. Make it unnecessary
-		process.chdir(__dirname);
-		process.env.NODE_ENV = 'production';
-
-		await api.build();
-		await api.export();
+		await api.build({ cwd: __dirname });
+		await api.export({ cwd: __dirname });
 	});
 
 	it('crawls a site', () => {
-		const files = walk('__sapper__/export');
+		const files = walk(`${__dirname}/__sapper__/export`);
 
 		const client_assets = files.filter(file => file.startsWith('client/'));
 		const non_client_assets = files.filter(file => !file.startsWith('client/')).sort();
