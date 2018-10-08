@@ -9,19 +9,37 @@ import { Dirs } from '../interfaces';
 import read_template from '../core/read_template';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
+import validate_bundler from '../cli/utils/validate_bundler';
 
 type Opts = {
-	legacy: boolean;
-	bundler: 'rollup' | 'webpack';
-	oncompile: ({ type, result }: { type: string, result: CompileResult }) => void;
+	cwd?: string;
+	src?: string;
+	routes?: string;
+	dest?: string;
+	legacy?: boolean;
+	bundler?: 'rollup' | 'webpack';
+	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
 };
 
-export async function build(opts: Opts, dirs: Dirs) {
-	const { oncompile = noop } = opts;
+export async function build({
+	cwd = process.cwd(),
+	src = path.join(cwd, 'src'),
+	routes = path.join(cwd, 'src/routes'),
+	dest = path.join(cwd, '__sapper__/build'),
 
-	rimraf.sync(path.join(dirs.dest, '**/*'));
-	mkdirp.sync(`${dirs.dest}/client`);
-	copy_shimport(dirs.dest);
+	bundler,
+	legacy = false,
+	oncompile = noop
+}: Opts = {}) {
+	bundler = validate_bundler(bundler);
+
+	if (legacy && bundler === 'webpack') {
+		throw new Error(`Legacy builds are not supported for projects using webpack`);
+	}
+
+	rimraf.sync(path.join(dest, '**/*'));
+	mkdirp.sync(`${dest}/client`);
+	copy_shimport(dest);
 
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
@@ -34,14 +52,14 @@ export async function build(opts: Opts, dirs: Dirs) {
 		throw error;
 	}
 
-	fs.writeFileSync(`${dirs.dest}/template.html`, minify_html(template));
+	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
 	const manifest_data = create_manifest_data();
 
 	// create src/manifest/client.js and src/manifest/server.js
-	create_main_manifests({ bundler: opts.bundler, manifest_data });
+	create_main_manifests({ bundler, manifest_data });
 
-	const { client, server, serviceworker } = await create_compilers(opts.bundler);
+	const { client, server, serviceworker } = await create_compilers(bundler);
 
 	const client_result = await client.compile();
 	oncompile({
@@ -49,11 +67,11 @@ export async function build(opts: Opts, dirs: Dirs) {
 		result: client_result
 	});
 
-	const build_info = client_result.to_json(manifest_data, dirs);
+	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
 
-	if (opts.legacy) {
+	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(opts.bundler);
+		const { client } = await create_compilers(bundler);
 
 		const client_result = await client.compile();
 
@@ -62,12 +80,12 @@ export async function build(opts: Opts, dirs: Dirs) {
 			result: client_result
 		});
 
-		client_result.to_json(manifest_data, dirs);
+		client_result.to_json(manifest_data, { src, routes, dest });
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	fs.writeFileSync(path.join(dirs.dest, 'build.json'), JSON.stringify(build_info));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
 	oncompile({

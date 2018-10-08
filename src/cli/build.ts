@@ -1,19 +1,12 @@
 import { build as _build } from '../api/build';
 import colors from 'kleur';
 import { locations } from '../config';
-import validate_bundler from './utils/validate_bundler';
 import { repeat } from '../utils';
 
 export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }) {
-	const bundler = validate_bundler(opts.bundler);
-
-	if (opts.legacy && bundler === 'webpack') {
-		throw new Error(`Legacy builds are not supported for projects using webpack`);
-	}
-
 	return _build({
 		legacy: opts.legacy,
-		bundler,
+		bundler: opts.bundler,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = colors.cyan;
@@ -30,8 +23,7 @@ export function build(opts: { bundler?: 'rollup' | 'webpack', legacy?: boolean }
 			console.log(c(`└─${repeat('─', banner.length)}─┘`));
 
 			console.log(event.result.print());
-		}
-	}, {
+		},
 		dest: locations.dest(),
 		src: locations.src(),
 		routes: locations.routes()

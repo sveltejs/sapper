@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
@@ -21,14 +20,7 @@ describe('layout', function() {
 		process.chdir(__dirname);
 		process.env.NODE_ENV = 'production';
 
-		// TODO this API isn't great. Rethink it
-		await build({
-			bundler: 'rollup'
-		}, {
-			src: path.join(__dirname, 'src'),
-			routes: path.join(__dirname, 'src/routes'),
-			dest: path.join(__dirname, '__sapper__/build')
-		});
+		await build();
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
 		({ base, page, start } = await runner.start());

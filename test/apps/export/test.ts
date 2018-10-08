@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
@@ -12,14 +11,7 @@ describe('export', function() {
 		process.chdir(__dirname);
 		process.env.NODE_ENV = 'production';
 
-		// TODO this API isn't great. Rethink it
-		await api.build({
-			bundler: 'rollup'
-		}, {
-			src: path.join(__dirname, 'src'),
-			routes: path.join(__dirname, 'src/routes'),
-			dest: path.join(__dirname, '__sapper__/build')
-		});
+		await api.build();
 
 		// TODO it'd be nice if build and export returned promises.
 		// not sure how best to combine promise and event emitter

@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import * as http from 'http';
@@ -28,13 +27,7 @@ describe('basics', function() {
 		process.chdir(__dirname);
 		process.env.NODE_ENV = 'production';
 
-		await build({
-			bundler: 'rollup'
-		}, {
-			src: path.join(__dirname, 'src'),
-			routes: path.join(__dirname, 'src/routes'),
-			dest: path.join(__dirname, '__sapper__/build')
-		});
+		await build();
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
 		({ base, page, start, prefetchRoutes, prefetch, goto } = await runner.start());
