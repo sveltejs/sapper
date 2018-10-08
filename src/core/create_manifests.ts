@@ -40,8 +40,9 @@ export function create_main_manifests({
 	write_if_changed(`${output}/server.js`, server_manifest);
 }
 
-export function create_serviceworker_manifest({ manifest_data, client_files, static_files }: {
+export function create_serviceworker_manifest({ manifest_data, output, client_files, static_files }: {
 	manifest_data: ManifestData;
+	output: string;
 	client_files: string[];
 	static_files: string;
 }) {
@@ -70,7 +71,7 @@ export function create_serviceworker_manifest({ manifest_data, client_files, sta
 		export const routes = [\n\t${manifest_data.pages.map((r: Page) => `{ pattern: ${r.pattern} }`).join(',\n\t')}\n];
 	`.replace(/^\t\t/gm, '').trim();
 
-	write_if_changed(`__sapper__/service-worker.js`, code);
+	write_if_changed(`${output}/service-worker.js`, code);
 }
 
 function generate_client(

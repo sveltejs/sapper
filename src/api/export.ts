@@ -70,7 +70,6 @@ async function _export({
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_DEST: build_dir,
 			SAPPER_EXPORT: 'true'
 		}, process.env)
 	});

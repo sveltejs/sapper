@@ -329,6 +329,7 @@ class Watcher extends EventEmitter {
 
 				create_serviceworker_manifest({
 					manifest_data,
+					output,
 					client_files,
 					static_files
 				});

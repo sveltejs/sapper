@@ -110,6 +110,7 @@ export async function build({
 	if (serviceworker) {
 		create_serviceworker_manifest({
 			manifest_data,
+			output,
 			client_files: client_result.chunks.map(chunk => `client/${chunk.file}`),
 			static_files
 		});
