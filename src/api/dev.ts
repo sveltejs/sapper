@@ -10,29 +10,28 @@ import { create_manifest_data, create_main_manifests, create_compilers, create_s
 import { Compiler, Compilers } from '../core/create_compilers';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
-import * as events from './interfaces';
 import validate_bundler from './utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
-import { ManifestData } from '../interfaces';
+import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
 import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 
 type Opts = {
-	cwd: string,
-	src: string,
-	dest: string,
-	routes: string,
-	output: string,
-	static_files: string,
-	'dev-port': number,
-	live: boolean,
-	hot: boolean,
-	'devtools-port': number,
+	cwd?: string,
+	src?: string,
+	dest?: string,
+	routes?: string,
+	output?: string,
+	static_files?: string,
+	'dev-port'?: number,
+	live?: boolean,
+	hot?: boolean,
+	'devtools-port'?: number,
 	bundler?: 'rollup' | 'webpack',
-	port: number
+	port?: number
 };
 
-export function dev(opts) {
+export function dev(opts: Opts) {
 	return new Watcher(opts);
 }
 
@@ -125,7 +124,7 @@ class Watcher extends EventEmitter {
 	async init() {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
-				this.emit('fatal', <events.FatalEvent>{
+				this.emit('fatal', <FatalEvent>{
 					message: `Port ${this.port} is unavailable`
 				});
 				return;
@@ -156,7 +155,7 @@ class Watcher extends EventEmitter {
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
-			this.emit('fatal', <events.FatalEvent>{
+			this.emit('fatal', <FatalEvent>{
 				message: err.message
 			});
 			return;
@@ -186,7 +185,7 @@ class Watcher extends EventEmitter {
 
 						manifest_data = new_manifest_data;
 					} catch (err) {
-						this.emit('error', <events.ErrorEvent>{
+						this.emit('error', <ErrorEvent>{
 							message: err.message
 						});
 					}
@@ -208,7 +207,7 @@ class Watcher extends EventEmitter {
 		let log = '';
 
 		const emitFatal = () => {
-			this.emit('fatal', <events.FatalEvent>{
+			this.emit('fatal', <FatalEvent>{
 				message: `Server crashed`,
 				log
 			});
@@ -232,7 +231,7 @@ class Watcher extends EventEmitter {
 
 						ports.wait(this.port)
 							.then((() => {
-								this.emit('ready', <events.ReadyEvent>{
+								this.emit('ready', <ReadyEvent>{
 									port: this.port,
 									process: this.proc
 								});
@@ -250,7 +249,7 @@ class Watcher extends EventEmitter {
 							.catch(err => {
 								if (this.crashed) return;
 
-								this.emit('fatal', <events.FatalEvent>{
+								this.emit('fatal', <FatalEvent>{
 									message: `Server is not listening on port ${this.port}`,
 									log
 								});
@@ -380,7 +379,7 @@ class Watcher extends EventEmitter {
 			};
 
 			process.nextTick(() => {
-				this.emit('invalid', <events.InvalidEvent>{
+				this.emit('invalid', <InvalidEvent>{
 					changed: Array.from(this.current_build.changed),
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
@@ -403,7 +402,7 @@ class Watcher extends EventEmitter {
 
 		compiler.watch((err?: Error, result?: CompileResult) => {
 			if (err) {
-				this.emit('error', <events.ErrorEvent>{
+				this.emit('error', <ErrorEvent>{
 					type: name,
 					message: err.message
 				});

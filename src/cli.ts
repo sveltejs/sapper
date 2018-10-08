@@ -2,8 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import sade from 'sade';
 import colors from 'kleur';
+import prettyMs from 'pretty-ms';
 import * as pkg from '../package.json';
 import { elapsed, repeat, left_pad } from './utils';
+import { InvalidEvent, ErrorEvent, FatalEvent, BuildEvent, ReadyEvent } from './interfaces';
 
 const prog = sade('sapper').version(pkg.version);
 
@@ -30,10 +32,93 @@ prog.command('dev')
 		'dev-port': number,
 		live: boolean,
 		hot: boolean,
-		bundler?: string
+		bundler?: 'rollup' | 'webpack'
 	}) => {
-		const { dev } = await import('./cli/dev');
-		dev(opts);
+		const cwd = path.resolve(process.env.SAPPER_BASE || '');
+
+		const { dev } = await import('./api/dev');
+
+		try {
+			const watcher = dev({
+				cwd,
+				port: opts.port,
+				'dev-port': opts['dev-port'],
+				live: opts.live,
+				hot: opts.hot,
+				bundler: opts.bundler
+			});
+
+			let first = true;
+
+			watcher.on('ready', async (event: ReadyEvent) => {
+				if (first) {
+					console.log(colors.bold.cyan(`> Listening on http://localhost:${event.port}`));
+					if (opts.open) {
+						const { exec } = await import('child_process');
+						exec(`open http://localhost:${event.port}`);
+					}
+					first = false;
+				}
+
+				// TODO clear screen?
+
+				event.process.stdout.on('data', data => {
+					process.stdout.write(data);
+				});
+
+				event.process.stderr.on('data', data => {
+					process.stderr.write(data);
+				});
+			});
+
+			watcher.on('invalid', (event: InvalidEvent) => {
+				const changed = event.changed.map(filename => path.relative(process.cwd(), filename)).join(', ');
+				console.log(`\n${colors.bold.cyan(changed)} changed. rebuilding...`);
+			});
+
+			watcher.on('error', (event: ErrorEvent) => {
+				console.log(colors.red(`✗ ${event.type}`));
+				console.log(colors.red(event.message));
+			});
+
+			watcher.on('fatal', (event: FatalEvent) => {
+				console.log(colors.bold.red(`> ${event.message}`));
+				if (event.log) console.log(event.log);
+			});
+
+			watcher.on('build', (event: BuildEvent) => {
+				if (event.errors.length) {
+					console.log(colors.bold.red(`✗ ${event.type}`));
+
+					event.errors.filter(e => !e.duplicate).forEach(error => {
+						if (error.file) console.log(colors.bold(error.file));
+						console.log(error.message);
+					});
+
+					const hidden = event.errors.filter(e => e.duplicate).length;
+					if (hidden > 0) {
+						console.log(`${hidden} duplicate ${hidden === 1 ? 'error' : 'errors'} hidden\n`);
+					}
+				} else if (event.warnings.length) {
+					console.log(colors.bold.yellow(`• ${event.type}`));
+
+					event.warnings.filter(e => !e.duplicate).forEach(warning => {
+						if (warning.file) console.log(colors.bold(warning.file));
+						console.log(warning.message);
+					});
+
+					const hidden = event.warnings.filter(e => e.duplicate).length;
+					if (hidden > 0) {
+						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
+					}
+				} else {
+					console.log(`${colors.bold.green(`✔ ${event.type}`)} ${colors.gray(`(${prettyMs(event.duration)})`)}`);
+				}
+			});
+		} catch (err) {
+			console.log(colors.bold.red(`> ${err.message}`));
+			process.exit(1);
+		}
 	});
 
 prog.command('build [dest]')
