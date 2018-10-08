@@ -2,37 +2,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
-import * as events from './interfaces';
 import { copy_shimport } from './utils/copy_shimport';
 import { Dirs } from '../interfaces';
 import read_template from '../core/read_template';
+import { CompileResult } from '../core/create_compilers/interfaces';
+import { noop } from './utils/noop';
 
 type Opts = {
 	legacy: boolean;
 	bundler: 'rollup' | 'webpack';
+	oncompile: ({ type, result }: { type: string, result: CompileResult }) => void;
 };
 
-export function build(opts: Opts, dirs: Dirs) {
-	const emitter = new EventEmitter();
+export async function build(opts: Opts, dirs: Dirs) {
+	const { oncompile = noop } = opts;
 
-	execute(emitter, opts, dirs).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
-
-	return emitter;
-}
-
-async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	rimraf.sync(path.join(dirs.dest, '**/*'));
 	mkdirp.sync(`${dirs.dest}/client`);
 	copy_shimport(dirs.dest);
@@ -58,9 +44,8 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	const { client, server, serviceworker } = await create_compilers(opts.bundler);
 
 	const client_result = await client.compile();
-	emitter.emit('build', <events.BuildEvent>{
+	oncompile({
 		type: 'client',
-		// TODO duration/warnings
 		result: client_result
 	});
 
@@ -72,9 +57,8 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 		const client_result = await client.compile();
 
-		emitter.emit('build', <events.BuildEvent>{
+		oncompile({
 			type: 'client (legacy)',
-			// TODO duration/warnings
 			result: client_result
 		});
 
@@ -86,9 +70,8 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 	fs.writeFileSync(path.join(dirs.dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
-	emitter.emit('build', <events.BuildEvent>{
+	oncompile({
 		type: 'server',
-		// TODO duration/warnings
 		result: server_stats
 	});
 
@@ -102,9 +85,8 @@ async function execute(emitter: EventEmitter, opts: Opts, dirs: Dirs) {
 
 		serviceworker_stats = await serviceworker.compile();
 
-		emitter.emit('build', <events.BuildEvent>{
+		oncompile({
 			type: 'serviceworker',
-			// TODO duration/warnings
 			result: serviceworker_stats
 		});
 	}

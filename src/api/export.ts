@@ -4,36 +4,20 @@ import * as sander from 'sander';
 import * as url from 'url';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
-import { EventEmitter } from 'events';
 import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
-import * as events from './interfaces';
+import { noop } from './utils/noop';
 
 type Opts = {
 	build: string,
 	dest: string,
 	static: string,
 	basepath?: string,
-	timeout: number | false
+	timeout: number | false,
+	oninfo: ({ message }: { message: string }) => void;
+	onfile: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 };
-
-export function exporter(opts: Opts) {
-	const emitter = new EventEmitter();
-
-	execute(emitter, opts).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
-
-	return emitter;
-}
 
 function resolve(from: string, to: string) {
 	return url.parse(url.resolve(from, to));
@@ -41,7 +25,11 @@ function resolve(from: string, to: string) {
 
 type URL = url.UrlWithStringQuery;
 
-async function execute(emitter: EventEmitter, opts: Opts) {
+export { _export as export };
+
+async function _export(opts: Opts) {
+	const { oninfo = noop, onfile = noop } = opts;
+
 	const export_dir = path.join(opts.dest, opts.basepath);
 
 	// Prep output directory
@@ -67,7 +55,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 	const root = resolve(origin, opts.basepath || '');
 	if (!root.href.endsWith('/')) root.href += '/';
 
-	emitter.emit('info', {
+	oninfo({
 		message: `Crawling ${root.href}`
 	});
 
@@ -98,7 +86,7 @@ async function execute(emitter: EventEmitter, opts: Opts) {
 			body = minify_html(body);
 		}
 
-		emitter.emit('file', <events.FileEvent>{
+		onfile({
 			file,
 			size: body.length,
 			status

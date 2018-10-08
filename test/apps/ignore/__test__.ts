@@ -12,34 +12,22 @@ describe('ignore', function() {
 	let base: string;
 
 	// hooks
-	before(() => {
-		return new Promise((fulfil, reject) => {
-			// TODO this is brittle. Make it unnecessary
-			process.chdir(__dirname);
-			process.env.NODE_ENV = 'production';
+	before(async () => {
+		// TODO this is brittle. Make it unnecessary
+		process.chdir(__dirname);
+		process.env.NODE_ENV = 'production';
 
-			// TODO this API isn't great. Rethink it
-			const emitter = build({
-				bundler: 'rollup'
-			}, {
-				src: path.join(__dirname, 'src'),
-				routes: path.join(__dirname, 'src/routes'),
-				dest: path.join(__dirname, '__sapper__/build')
-			});
-
-			emitter.on('error', reject);
-
-			emitter.on('done', async () => {
-				try {
-					runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-					({ base, page } = await runner.start());
-
-					fulfil();
-				} catch (err) {
-					reject(err);
-				}
-			});
+		// TODO this API isn't great. Rethink it
+		await build({
+			bundler: 'rollup'
+		}, {
+			src: path.join(__dirname, 'src'),
+			routes: path.join(__dirname, 'src/routes'),
+			dest: path.join(__dirname, '__sapper__/build')
 		});
+
+		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
+		({ base, page } = await runner.start());
 	});
 
 	after(() => runner.end());

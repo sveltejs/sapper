@@ -16,6 +16,7 @@ import validate_bundler from '../cli/utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData } from '../interfaces';
 import read_template from '../core/read_template';
+import { noop } from './utils/noop';
 
 export function dev(opts) {
 	return new Watcher(opts);
@@ -454,8 +455,6 @@ class DevServer {
 		});
 	}
 }
-
-function noop() {}
 
 function watch_dir(
 	dir: string,
