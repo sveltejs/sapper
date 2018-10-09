@@ -25,21 +25,36 @@ prog.command('dev')
 	.option('--hot', 'Use hot module replacement (requires webpack)', true)
 	.option('--live', 'Reload on changes if not using --hot', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
+	.option('--cwd', 'Current working directory', '.')
+	.option('--src', 'Source directory', 'src')
+	.option('--routes', 'Routes directory', 'src/routes')
+	.option('--static', 'Static files directory', 'static')
+	.option('--output', 'Sapper output directory', '__sapper__')
+	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.action(async (opts: {
 		port: number,
 		open: boolean,
 		'dev-port': number,
 		live: boolean,
 		hot: boolean,
-		bundler?: 'rollup' | 'webpack'
+		bundler?: 'rollup' | 'webpack',
+		cwd: string,
+		src: string,
+		routes: string,
+		static: string,
+		output: string,
+		'build-dir': string
 	}) => {
-		const cwd = path.resolve(process.env.SAPPER_BASE || '');
-
 		const { dev } = await import('./api/dev');
 
 		try {
 			const watcher = dev({
-				cwd,
+				cwd: opts.cwd,
+				src: opts.src,
+				routes: opts.routes,
+				static: opts.static,
+				output: opts.output,
+				dest: opts['build-dir'],
 				port: opts.port,
 				'dev-port': opts['dev-port'],
 				live: opts.live,
@@ -125,18 +140,24 @@ prog.command('build [dest]')
 	.option('-p, --port', 'Default of process.env.PORT', '3000')
 	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
 	.option('--legacy', 'Create separate legacy build')
+	.option('--cwd', 'Current working directory', '.')
+	.option('--src', 'Source directory', 'src')
+	.option('--routes', 'Routes directory', 'src/routes')
+	.option('--output', 'Sapper output directory', '__sapper__')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
 		legacy: boolean,
-		bundler?: 'rollup' | 'webpack'
+		bundler?: 'rollup' | 'webpack',
+		cwd: string,
+		src: string,
+		routes: string,
+		output: string
 	}) => {
 		console.log(`> Building...`);
 
-		const cwd = path.resolve(process.env.SAPPER_BASE || '');
-
 		try {
-			await _build(opts.bundler, opts.legacy, cwd, dest);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -159,25 +180,33 @@ prog.command('build [dest]')
 prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
 	.option('--build', '(Re)build app before exporting', true)
-	.option('--build-dir', 'Specify a custom temporary build directory', '__sapper__/build')
 	.option('--basepath', 'Specify a base path')
 	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
 	.option('--legacy', 'Create separate legacy build')
 	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
+	.option('--cwd', 'Current working directory', '.')
+	.option('--src', 'Source directory', 'src')
+	.option('--routes', 'Routes directory', 'src/routes')
+	.option('--static', 'Static files directory', 'static')
+	.option('--output', 'Sapper output directory', '__sapper__')
+	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
 		bundler?: 'rollup' | 'webpack',
-		'build-dir': string,
 		basepath?: string,
-		timeout: number | false
+		timeout: number | false,
+		cwd: string,
+		src: string,
+		routes: string,
+		static: string,
+		output: string,
+		'build-dir': string,
 	}) => {
-		const cwd = path.resolve(process.env.SAPPER_BASE || '');
-
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, cwd, opts['build-dir']);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir']);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -185,7 +214,8 @@ prog.command('export [dest]')
 			const { default: pb } = await import('pretty-bytes');
 
 			await _export({
-				static: path.resolve(cwd, process.env.SAPPER_STATIC || 'static'),
+				cwd: opts.cwd,
+				static: opts.static,
 				build_dir: opts['build-dir'],
 				export_dir: dest,
 				basepath: opts.basepath,
@@ -221,6 +251,9 @@ async function _build(
 	bundler: 'rollup' | 'webpack',
 	legacy: boolean,
 	cwd: string,
+	src: string,
+	routes: string,
+	output: string,
 	dest: string
 ) {
 	const { build } = await import('./api/build');
@@ -229,9 +262,9 @@ async function _build(
 		bundler,
 		legacy,
 		cwd,
-		src:    path.resolve(cwd, process.env.SAPPER_SRC    || 'src'),
-		routes: path.resolve(cwd, process.env.SAPPER_ROUTES || 'src/routes'),
-		dest:   path.resolve(cwd, dest),
+		src,
+		routes,
+		dest,
 
 		oncompile: event => {
 			let banner = `built ${event.type}`;

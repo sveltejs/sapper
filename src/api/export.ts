@@ -29,15 +29,20 @@ type URL = url.UrlWithStringQuery;
 export { _export as export };
 
 async function _export({
-	cwd = process.cwd(),
-	static: static_files = path.join(cwd, 'static'),
-	build_dir = path.join(cwd, '__sapper__/build'),
+	cwd,
+	static: static_files = 'static',
+	build_dir = '__sapper__/build',
+	export_dir = '__sapper__/export',
 	basepath = '',
-	export_dir = path.join(cwd, '__sapper__/export', basepath),
 	timeout = 5000,
 	oninfo = noop,
 	onfile = noop
 }: Opts = {}) {
+	cwd = path.resolve(cwd);
+	static_files = path.resolve(cwd, static_files);
+	build_dir = path.resolve(cwd, build_dir);
+	export_dir = path.resolve(cwd, export_dir, basepath);
+
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 

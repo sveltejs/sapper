@@ -22,7 +22,7 @@ type Opts = {
 	dest?: string,
 	routes?: string,
 	output?: string,
-	static_files?: string,
+	static?: string,
 	'dev-port'?: number,
 	live?: boolean,
 	hot?: boolean,
@@ -43,7 +43,7 @@ class Watcher extends EventEmitter {
 		dest: string;
 		routes: string;
 		output: string;
-		static_files: string;
+		static: string;
 	}
 	port: number;
 	closed: boolean;
@@ -69,12 +69,12 @@ class Watcher extends EventEmitter {
 	}
 
 	constructor({
-		cwd = process.cwd(),
-		src = path.join(cwd, 'src'),
-		routes = path.join(cwd, 'src/routes'),
-		output = path.join(cwd, '__sapper__'),
-		static_files = path.join(cwd, 'static'),
-		dest = path.join(cwd, '__sapper__/dev'),
+		cwd = '.',
+		src = 'src',
+		routes = 'src/routes',
+		output = '__sapper__',
+		static: static_files = 'static',
+		dest = '__sapper__/dev',
 		'dev-port': dev_port,
 		live,
 		hot,
@@ -84,8 +84,18 @@ class Watcher extends EventEmitter {
 	}: Opts) {
 		super();
 
+		cwd = path.resolve(cwd);
+
 		this.bundler = validate_bundler(bundler);
-		this.dirs = { cwd, src, dest, routes, output, static_files };
+		this.dirs = {
+			cwd,
+			src: path.resolve(cwd, src),
+			dest: path.resolve(cwd, dest),
+			routes: path.resolve(cwd, routes),
+			output: path.resolve(cwd, output),
+			static: path.resolve(cwd, static_files)
+		};
+
 		this.port = port;
 		this.closed = false;
 
@@ -133,7 +143,7 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { cwd, src, dest, routes, output, static_files } = this.dirs;
+		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
 		rimraf.sync(dest);
 		mkdirp.sync(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);
