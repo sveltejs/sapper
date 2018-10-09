@@ -7,6 +7,7 @@ export default function minify_html(html: string) {
 		conservativeCollapse: true,
 		decodeEntities: true,
 		html5: true,
+		ignoreCustomComments: [/^#/],
 		minifyCSS: true,
 		minifyJS: false,
 		removeAttributeQuotes: true,
