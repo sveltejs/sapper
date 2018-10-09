@@ -1,5 +1,12 @@
 # sapper changelog
 
+## 0.23.0
+
+* Overhaul internal APIs ([#468](https://github.com/sveltejs/sapper/pull/468))
+* Remove unused `sapper start` and `sapper upgrade` ([#468](https://github.com/sveltejs/sapper/pull/468))
+* Remove magic environment variables ([#469](https://github.com/sveltejs/sapper/pull/469))
+* Preserve SSI comments ([#470](https://github.com/sveltejs/sapper/pull/470))
+
 ## 0.22.10
 
 * Handle `sapper-noscroll` attribute on `<a>` elements ([#376](https://github.com/sveltejs/sapper/issues/376))
