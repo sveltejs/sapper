@@ -16,25 +16,33 @@ type Opts = {
 	routes?: string;
 	dest?: string;
 	output?: string;
-	static_files?: string;
+	static?: string;
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
 };
 
 export async function build({
-	cwd = process.cwd(),
-	src = path.join(cwd, 'src'),
-	routes = path.join(cwd, 'src/routes'),
-	output = path.join(cwd, '__sapper__'),
-	static_files = path.join(cwd, 'static'),
-	dest = path.join(cwd, '__sapper__/build'),
+	cwd,
+	src = 'src',
+	routes = 'src/routes',
+	output = '__sapper__',
+	static: static_files = 'static',
+	dest = '__sapper__/build',
 
 	bundler,
 	legacy = false,
 	oncompile = noop
 }: Opts = {}) {
 	bundler = validate_bundler(bundler);
+
+	cwd = path.resolve(cwd);
+	src = path.resolve(cwd, src);
+	dest = path.resolve(cwd, dest);
+	routes = path.resolve(cwd, routes);
+	output = path.resolve(cwd, output);
+	static_files = path.resolve(cwd, static_files);
+	dest = path.resolve(cwd, dest);
 
 	if (legacy && bundler === 'webpack') {
 		throw new Error(`Legacy builds are not supported for projects using webpack`);
