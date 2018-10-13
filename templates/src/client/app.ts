@@ -106,18 +106,17 @@ export function scroll_state() {
 	};
 }
 
-export function navigate(target: Target, id: number, noscroll = false): Promise<any> {
+export function navigate(target: Target, id: number, scroll_to?: ScrollPosition | string): Promise<any> {
+	let scroll: ScrollPosition | string;
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
+		scroll = scroll_to ? scroll_to : scroll_history[id];
 	} else {
-		const current_scroll = scroll_state();
-
 		// clicked on a link. preserve scroll state
-		scroll_history[cid] = current_scroll;
-
+		scroll_history[cid] = scroll_state();
 		id = cid = ++uid;
-		scroll_history[cid] = noscroll ? current_scroll : { x: 0, y: 0 };
+		scroll = scroll_to ? scroll_to : { x: 0, y: 0 };
 	}
 
 	cid = id;
@@ -137,13 +136,12 @@ export function navigate(target: Target, id: number, noscroll = false): Promise<
 		if (redirect) {
 			return goto(redirect.location, { replaceState: true });
 		}
-
-		render(data, nullable_depth, scroll_history[id], token);
+		render(data, nullable_depth, scroll, token);
 		if (document.activeElement) document.activeElement.blur();
 	});
 }
 
-function render(data: any, nullable_depth: number, scroll: ScrollPosition, token: {}) {
+function render(data: any, nullable_depth: number, scroll: ScrollPosition | string, token: {}) {
 	if (current_token !== token) return;
 
 	if (root_component) {
@@ -183,7 +181,18 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, token
 	}
 
 	if (scroll) {
-		scrollTo(scroll.x, scroll.y);
+		let scrollPos: ScrollPosition;
+		if (typeof scroll === 'string') {
+			// scroll is an element id (from a hash), we need to compute y.
+			const deep_linked = document.getElementById(scroll);
+			scrollPos = deep_linked ?
+				{ x: 0, y: deep_linked.getBoundingClientRect().top } :
+				scroll_state();
+		} else {
+			scrollPos = scroll;
+		}
+		scroll_history[cid] = scrollPos;
+		scrollTo(scrollPos.x, scrollPos.y);
 	}
 
 	Object.assign(root_props, data);
