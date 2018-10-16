@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.23.1
+
+* Scroll to deeplink that matches current URL ([#472](https://github.com/sveltejs/sapper/pull/472))
+* Scroll to deeplink on another page ([#341](https://github.com/sveltejs/sapper/issues/341))
+
 ## 0.23.0
 
 * Overhaul internal APIs ([#468](https://github.com/sveltejs/sapper/pull/468))
