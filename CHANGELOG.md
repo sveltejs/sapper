@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.23.3
+
+* Clear `error` and `status` on successful render ([#477](https://github.com/sveltejs/sapper/pull/477))
+
 ## 0.23.2
 
 * Fix entry point CSS ([#471](https://github.com/sveltejs/sapper/pull/471))
