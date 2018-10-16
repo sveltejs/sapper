@@ -35,13 +35,12 @@ export default function start(opts: {
 
 	return Promise.resolve().then(() => {
 		const { hash, href } = location;
-		const scroll_to = hash ? hash.slice(1) : scroll_state();
 
 		history.replaceState({ id: uid }, '', href);
 
 		if (!initial_data.error) {
 			const target = select_route(new URL(location.href));
-			if (target) return navigate(target, uid, scroll_to);
+			if (target) return navigate(target, uid, false, hash);
 		}
 	});
 }
@@ -100,16 +99,7 @@ function handle_click(event: MouseEvent) {
 	const target = select_route(url);
 	if (target) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
-		let scroll_to: ScrollPosition | string;
-		if (noscroll) {
-			scroll_to = scroll_state();
-		} else if (url.hash) {
-			scroll_to = url.hash.slice(1);
-		} else {
-			scroll_to = { x: 0, y: 0 };
-		}
-
-		navigate(target, null, scroll_to);
+		navigate(target, null, noscroll, url.hash);
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
 	}

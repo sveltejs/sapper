@@ -106,17 +106,19 @@ export function scroll_state() {
 	};
 }
 
-export function navigate(target: Target, id: number, scroll_to?: ScrollPosition | string): Promise<any> {
-	let scroll: ScrollPosition | string;
+export function navigate(target: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
+	let scroll: ScrollPosition;
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
-		scroll = scroll_to ? scroll_to : scroll_history[id];
 	} else {
+		const current_scroll = scroll_state();
+
 		// clicked on a link. preserve scroll state
-		scroll_history[cid] = scroll_state();
+		scroll_history[cid] = current_scroll;
+
 		id = cid = ++uid;
-		scroll = scroll_to ? scroll_to : { x: 0, y: 0 };
+		scroll_history[cid] = noscroll ? current_scroll : { x: 0, y: 0 };
 	}
 
 	cid = id;
@@ -136,12 +138,12 @@ export function navigate(target: Target, id: number, scroll_to?: ScrollPosition 
 		if (redirect) {
 			return goto(redirect.location, { replaceState: true });
 		}
-		render(data, nullable_depth, scroll, token);
+		render(data, nullable_depth, scroll_history[id], noscroll, hash, token);
 		if (document.activeElement) document.activeElement.blur();
 	});
 }
 
-function render(data: any, nullable_depth: number, scroll: ScrollPosition | string, token: {}) {
+function render(data: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
 	if (root_component) {
@@ -180,19 +182,20 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition | stri
 		});
 	}
 
-	if (scroll) {
-		let scrollPos: ScrollPosition;
-		if (typeof scroll === 'string') {
+	if (!noscroll) {
+		if (hash) {
 			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.getElementById(scroll);
-			scrollPos = deep_linked ?
-				{ x: 0, y: deep_linked.getBoundingClientRect().top } :
-				scroll_state();
-		} else {
-			scrollPos = scroll;
+			const deep_linked = document.querySelector(hash);
+			if (deep_linked) {
+				scroll = {
+					x: 0,
+					y: deep_linked.getBoundingClientRect().top
+				};
+			}
 		}
-		scroll_history[cid] = scrollPos;
-		scrollTo(scrollPos.x, scrollPos.y);
+
+		scroll_history[cid] = scroll;
+		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
 
 	Object.assign(root_props, data);
