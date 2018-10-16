@@ -14,13 +14,14 @@ describe('errors', function() {
 	// helpers
 	let start: () => Promise<void>;
 	let prefetchRoutes: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+		({ base, page, start, prefetchRoutes, title } = await runner.start());
 	});
 
 	after(() => runner.end());
@@ -109,5 +110,17 @@ describe('errors', function() {
 			await page.evaluate(() => document.body.textContent),
 			'oops'
 		);
+	});
+
+	it('clears props.error on successful render', async () => {
+		await page.goto(`${base}/no-error`);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('[href="enhance-your-calm"]');
+		assert.equal(await title(), '420');
+
+		await page.goBack();
+		assert.equal(await title(), 'No error here');
 	});
 });

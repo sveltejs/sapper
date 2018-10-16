@@ -58,7 +58,8 @@ export class AppRunner {
 			start: () => this.page.evaluate(() => start()),
 			prefetchRoutes: () => this.page.evaluate(() => prefetchRoutes()),
 			prefetch: (href: string) => this.page.evaluate((href: string) => prefetch(href), href),
-			goto: (href: string) => this.page.evaluate((href: string) => goto(href), href)
+			goto: (href: string) => this.page.evaluate((href: string) => goto(href), href),
+			title: () => this.page.$eval('h1', node => node.textContent)
 		};
 	}
 

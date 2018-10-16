@@ -310,7 +310,7 @@ export function prepare_page(target: Target): Promise<{
 			};
 		}
 
-		const props = { path, query };
+		const props = { path, query, error: null, status: null };
 		const data = {
 			path,
 			preloading: false,
