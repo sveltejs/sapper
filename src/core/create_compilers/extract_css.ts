@@ -195,7 +195,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 			});
 
 			if (chunks_with_css.has(chunk)) {
-				css_dependencies.push(chunk.file);
+				css_dependencies.push(chunk.file.replace(/\.js$/, '.css'));
 
 				chunk.modules.forEach(file => {
 					unclaimed.delete(file);
