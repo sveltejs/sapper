@@ -83,12 +83,8 @@ function handle_click(event: MouseEvent) {
 	const svg = typeof a.href === 'object' && a.href.constructor.name === 'SVGAnimatedString';
 	const href = String(svg ? (<SVGAElement>a).href.baseVal : a.href);
 
-	if (location.hash && href === location.href) {
-		return;
-	}
-
 	if (href === location.href) {
-		event.preventDefault();
+		if (!location.hash) event.preventDefault();
 		return;
 	}
 
