@@ -13,7 +13,7 @@ import {
 	set_cid
 } from '../app';
 import prefetch from '../prefetch/index';
-import { Store } from '../types';
+import { Store, ScrollPosition } from '../types';
 
 export default function start(opts: {
 	target: Node,
@@ -35,17 +35,13 @@ export default function start(opts: {
 
 	return Promise.resolve().then(() => {
 		const { hash, href } = location;
-
-		const deep_linked = hash && document.getElementById(hash.slice(1));
-		scroll_history[uid] = deep_linked ?
-			{ x: 0, y: deep_linked.getBoundingClientRect().top } :
-			scroll_state();
+		const scroll_to = hash ? hash.slice(1) : scroll_state();
 
 		history.replaceState({ id: uid }, '', href);
 
 		if (!initial_data.error) {
 			const target = select_route(new URL(location.href));
-			if (target) return navigate(target, uid);
+			if (target) return navigate(target, uid, scroll_to);
 		}
 	});
 }
@@ -104,7 +100,16 @@ function handle_click(event: MouseEvent) {
 	const target = select_route(url);
 	if (target) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
-		navigate(target, null, noscroll);
+		let scroll_to: ScrollPosition | string;
+		if (noscroll) {
+			scroll_to = scroll_state();
+		} else if (url.hash) {
+			scroll_to = url.hash.slice(1);
+		} else {
+			scroll_to = { x: 0, y: 0 };
+		}
+
+		navigate(target, null, scroll_to);
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
 	}

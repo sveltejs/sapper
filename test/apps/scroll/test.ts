@@ -77,4 +77,15 @@ describe('scroll', function() {
 
 		assert.ok(scrollY > 0);
 	});
+
+	it('scrolls into a deeplink on a new page', async () => {
+		await page.goto(`${base}/tall-page#foo`);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('[href="another-tall-page#bar"]');
+		await wait(50);
+		const scrollY = await page.evaluate(() => window.scrollY);
+		assert.ok(scrollY > 0);
+	});
 });
