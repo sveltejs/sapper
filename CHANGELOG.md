@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.23.2
+
+* Fix entry point CSS ([#471](https://github.com/sveltejs/sapper/pull/471))
+
 ## 0.23.1
 
 * Scroll to deeplink that matches current URL ([#472](https://github.com/sveltejs/sapper/pull/472))
