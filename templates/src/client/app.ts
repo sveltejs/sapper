@@ -217,6 +217,10 @@ export function prepare_page(target: Target): Promise<{
 		segments[changed_from] === new_segments[changed_from]
 	) changed_from += 1;
 
+	if (changed_from === new_segments.length) {
+		changed_from -= 1;
+	}
+
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
 
