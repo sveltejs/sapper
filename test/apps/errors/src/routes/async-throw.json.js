@@ -1,3 +1,3 @@
-export async function get(req, res) {
-  throw new Error('oops');
+export function get(req, res) {
+  return Promise.reject(new Error('oops'));
 }
