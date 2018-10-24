@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.23.4
+
+* Ignore empty anchors when exporting ([#491](https://github.com/sveltejs/sapper/pull/491))
+
 ## 0.23.3
 
 * Clear `error` and `status` on successful render ([#477](https://github.com/sveltejs/sapper/pull/477))
