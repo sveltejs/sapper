@@ -2,7 +2,7 @@ import { IGNORE } from '../placeholders';
 import { Req, Res, ServerRoute } from './types';
 
 export function get_server_route_handler(routes: ServerRoute[]) {
-	function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
+	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
 		const method = req.method.toLowerCase();
@@ -53,12 +53,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 			};
 
 			try {
-				const result = handle_method(req, res, handle_next);
-
-				// catch failures in async functions
-				if (Promise.resolve(result) === result) {
-					result.catch(handle_next);
-				}
+				await handle_method(req, res, handle_next);
 			} catch (err) {
 				handle_next(err);
 			}
