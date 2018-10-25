@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.23.5
+
+* Include lazily-imported CSS in main CSS chunk ([#492](https://github.com/sveltejs/sapper/pull/492))
+* Make search param decoding spec-compliant ([#493](https://github.com/sveltejs/sapper/pull/493))
+* Handle async route errors ([#488](https://github.com/sveltejs/sapper/pull/488))
+
 ## 0.23.4
 
 * Ignore empty anchors when exporting ([#491](https://github.com/sveltejs/sapper/pull/491))
