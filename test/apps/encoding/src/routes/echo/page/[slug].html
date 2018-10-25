@@ -1,11 +1,10 @@
-<h1>{slug} ({message})</h1>
+<h1>{slug} {JSON.stringify(query)}</h1>
 
 <script>
 	export default {
-		preload({ params, query }) {
+		preload({ params }) {
 			return {
-				slug: params.slug,
-				message: query.message
+				slug: params.slug
 			};
 		}
 	};

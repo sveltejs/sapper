@@ -35,11 +35,11 @@ describe('encoding', function() {
 	});
 
 	it('encodes req.params and req.query for server-rendered pages', async () => {
-		await page.goto(`${base}/echo/page/encöded?message=hëllö+wörld`);
+		await page.goto(`${base}/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz`);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),
-			'encöded (hëllö wörld)'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz"}'
 		);
 	});
 
@@ -48,12 +48,12 @@ describe('encoding', function() {
 		await start();
 		await prefetchRoutes();
 
-		await page.click('a[href="echo/page/encöded?message=hëllö+wörld"]');
+		await page.click('a[href="echo/page/encöded?message=hëllö+wörld&föo=bar&=baz"]');
 		await wait(50);
 
 		assert.equal(
 			await page.$eval('h1', node => node.textContent),
-			'encöded (hëllö wörld)'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz"}'
 		);
 	});
 
