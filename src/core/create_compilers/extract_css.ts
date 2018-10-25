@@ -219,7 +219,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 	});
 
 	unclaimed.forEach(file => {
-		entry_css_modules.push(css_map.get(file));
+		entry_css_modules.push(file);
 	});
 
 	const leftover = get_css_from_modules(entry_css_modules, css_map, dirs);

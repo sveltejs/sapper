@@ -1,0 +1,11 @@
+<svelte:component this={Title}/>
+
+<script>
+	export default {
+		oncreate() {
+			import('./_components/Title.html').then(({ default: Title }) => {
+				this.set({ Title });
+			});
+		}
+	};
+</script>
