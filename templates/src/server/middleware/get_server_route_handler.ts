@@ -53,7 +53,12 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 			};
 
 			try {
-				handle_method(req, res, handle_next);
+				const result = handle_method(req, res, handle_next);
+
+				// catch failures in async functions
+				if (Promise.resolve(result) === result) {
+					result.catch(handle_next);
+				}
 			} catch (err) {
 				handle_next(err);
 			}

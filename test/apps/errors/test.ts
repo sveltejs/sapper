@@ -112,6 +112,15 @@ describe('errors', function() {
 		);
 	});
 
+	it('does not serve error page for async non-page error', async () => {
+		await page.goto(`${base}/async-throw.json`);
+
+		assert.equal(
+			await page.evaluate(() => document.body.textContent),
+			'oops'
+		);
+	});
+
 	it('clears props.error on successful render', async () => {
 		await page.goto(`${base}/no-error`);
 		await start();
