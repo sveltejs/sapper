@@ -64,6 +64,14 @@ prog.command('dev')
 
 			let first = true;
 
+			watcher.on('stdout', data => {
+				process.stdout.write(data);
+			});
+
+			watcher.on('stderr', data => {
+				process.stderr.write(data);
+			});
+
 			watcher.on('ready', async (event: ReadyEvent) => {
 				if (first) {
 					console.log(colors.bold.cyan(`> Listening on http://localhost:${event.port}`));
@@ -73,16 +81,6 @@ prog.command('dev')
 					}
 					first = false;
 				}
-
-				// TODO clear screen?
-
-				event.process.stdout.on('data', data => {
-					process.stdout.write(data);
-				});
-
-				event.process.stderr.on('data', data => {
-					process.stderr.write(data);
-				});
 			});
 
 			watcher.on('invalid', (event: InvalidEvent) => {

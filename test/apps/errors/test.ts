@@ -127,9 +127,11 @@ describe('errors', function() {
 		await prefetchRoutes();
 
 		await page.click('[href="enhance-your-calm"]');
+		await wait(50);
 		assert.equal(await title(), '420');
 
 		await page.goBack();
+		await wait(50);
 		assert.equal(await title(), 'No error here');
 	});
 });

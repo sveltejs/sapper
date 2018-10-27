@@ -69,7 +69,6 @@ export type ErrorEvent = {
 
 export type FatalEvent = {
 	message: string;
-	log?: string;
 };
 
 export type InvalidEvent = {
