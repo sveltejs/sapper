@@ -14,13 +14,14 @@ describe('redirects', function() {
 	// helpers
 	let start: () => Promise<void>;
 	let prefetchRoutes: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+		({ base, page, start, prefetchRoutes, title } = await runner.start());
 	});
 
 	after(() => runner.end());
@@ -34,7 +35,7 @@ describe('redirects', function() {
 		);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'redirected'
 		);
 	});
@@ -53,7 +54,7 @@ describe('redirects', function() {
 		);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'redirected'
 		);
 	});
@@ -67,7 +68,7 @@ describe('redirects', function() {
 		);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'root'
 		);
 	});
@@ -86,8 +87,41 @@ describe('redirects', function() {
 		);
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await title(),
 			'root'
+		);
+	});
+
+	it('redirects to external URL on server', async () => {
+		await page.goto(`${base}/redirect-to-external`);
+
+		assert.equal(
+			page.url(),
+			`https://example.com/`
+		);
+
+		assert.equal(
+			await title(),
+			'external'
+		);
+	});
+
+	it('redirects to external URL in client', async () => {
+		await page.goto(base);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('[href="redirect-to-external"]');
+		await wait(50);
+
+		assert.equal(
+			page.url(),
+			`https://example.com/`
+		);
+
+		assert.equal(
+			await title(),
+			'external'
 		);
 	});
 });

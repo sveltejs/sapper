@@ -3,7 +3,7 @@ import * as path from 'path';
 import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
-import { URL } from 'url';
+import { URL, resolve } from 'url';
 import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
 import { Manifest, Page, Props, Req, Res, Store } from './types';
 
@@ -160,7 +160,7 @@ export function get_page_handler(
 
 		try {
 			if (redirect) {
-				const location = `${req.baseUrl}/${redirect.location}`;
+				const location = resolve(req.baseUrl || '/', redirect.location);
 
 				res.statusCode = redirect.statusCode;
 				res.setHeader('Location', location);
