@@ -1,5 +1,14 @@
 # sapper changelog
 
+## 0.24.0
+
+* Handle external URLs in `this.redirect` ([#490](https://github.com/sveltejs/sapper/issues/490))
+* Strip leading `/` from basepath ([#495](https://github.com/sveltejs/sapper/issues/495))
+* Treat duplicate query string parameters as arrays ([#497](https://github.com/sveltejs/sapper/issues/497))
+* Don't buffer `stdout` and `stderr` ([#305](https://github.com/sveltejs/sapper/issues/305))
+* Posixify `build_dir` ([#498](https://github.com/sveltejs/sapper/pull/498))
+* Use `page[XY]Offset` instead of `scroll[XY]` ([#480](https://github.com/sveltejs/sapper/issues/480))
+
 ## 0.23.5
 
 * Include lazily-imported CSS in main CSS chunk ([#492](https://github.com/sveltejs/sapper/pull/492))
