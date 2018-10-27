@@ -17,7 +17,7 @@ describe('with-basepath', function() {
 
 		await api.export({
 			cwd: __dirname,
-			basepath: 'custom-basepath'
+			basepath: '/custom-basepath'
 		});
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
