@@ -214,12 +214,9 @@ class Watcher extends EventEmitter {
 		// TODO watch the configs themselves?
 		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, false);
 
-		let log = '';
-
 		const emitFatal = () => {
 			this.emit('fatal', <FatalEvent>{
-				message: `Server crashed`,
-				log
+				message: `Server crashed`
 			});
 
 			this.crashed = true;
@@ -236,7 +233,6 @@ class Watcher extends EventEmitter {
 			handle_result: (result: CompileResult) => {
 				deferred.promise.then(() => {
 					const restart = () => {
-						log = '';
 						this.crashed = false;
 
 						ports.wait(this.port)
@@ -260,8 +256,7 @@ class Watcher extends EventEmitter {
 								if (this.crashed) return;
 
 								this.emit('fatal', <FatalEvent>{
-									message: `Server is not listening on port ${this.port}`,
-									log
+									message: `Server is not listening on port ${this.port}`
 								});
 							});
 					};
@@ -292,12 +287,10 @@ class Watcher extends EventEmitter {
 					});
 
 					this.proc.stdout.on('data', chunk => {
-						log += chunk;
 						this.emit('stdout', chunk);
 					});
 
 					this.proc.stderr.on('data', chunk => {
-						log += chunk;
 						this.emit('stderr', chunk);
 					});
 
