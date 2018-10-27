@@ -55,7 +55,7 @@ export type Target = {
 	path: string;
 	page: Page;
 	match: RegExpExecArray;
-	query: Record<string, string | true>;
+	query: Record<string, string | string[]>;
 };
 
 export type Redirect = {
