@@ -204,7 +204,7 @@ describe('basics', function() {
 
 		assert.equal(
 			await title(),
-			'message: ""'
+			'{"message":""}'
 		);
 	});
 
@@ -217,7 +217,29 @@ describe('basics', function() {
 
 		assert.equal(
 			await title(),
-			'message: ""'
+			'{"message":""}'
+		);
+	});
+
+	it('accepts duplicated query string parameter on server', async () => {
+		await page.goto(`${base}/echo-query?p=one&p=two`);
+
+		assert.equal(
+			await title(),
+			'{"p":["one","two"]}'
+		);
+	});
+
+	it('accepts duplicated query string parameter on client', async () => {
+		await page.goto(base);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('a[href="echo-query?p=one&p=two"]')
+
+		assert.equal(
+			await title(),
+			'{"p":["one","two"]}'
 		);
 	});
 

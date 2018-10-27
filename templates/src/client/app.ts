@@ -87,11 +87,14 @@ export function select_route(url: URL): Target {
 
 		const match = page.pattern.exec(path);
 		if (match) {
-			const query: Record<string, string | true> = {};
+			const query: Record<string, string | string[]> = Object.create(null);
 			if (url.search.length > 0) {
 				url.search.slice(1).split('&').forEach(searchParam => {
-					const [, key, value] = /([^=]*)(?:=(.*))?/.exec(searchParam);
-					query[decodeURIComponent(key)] = decodeURIComponent((value || '').replace(/\+/g, ' '));
+					let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
+					value = (value || '').replace(/\+/g, ' ');
+					if (typeof query[key] === 'string') query[key] = [<string>query[key]];
+					if (typeof query[key] === 'object') query[key].push(value);
+					else query[key] = value;
 				});
 			}
 			return { url, path, page, match, query };
