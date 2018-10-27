@@ -38,6 +38,8 @@ async function _export({
 	oninfo = noop,
 	onfile = noop
 }: Opts = {}) {
+	basepath = basepath.replace(/^\//, '')
+
 	cwd = path.resolve(cwd);
 	static_files = path.resolve(cwd, static_files);
 	build_dir = path.resolve(cwd, build_dir);
