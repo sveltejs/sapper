@@ -101,8 +101,8 @@ export function select_route(url: URL): Target {
 
 export function scroll_state() {
 	return {
-		x: scrollX,
-		y: scrollY
+		x: pageXOffset,
+		y: pageYOffset
 	};
 }
 
