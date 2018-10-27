@@ -50,6 +50,20 @@ export class AppRunner {
 			}
 		});
 
+		await this.page.setRequestInterception(true);
+
+		this.page.on('request', interceptedRequest => {
+			if (/example\.com/.test(interceptedRequest.url())) {
+				interceptedRequest.respond({
+					status: 200,
+					contentType: 'text/html',
+					body: `<h1>external</h1>`
+				});
+			} else {
+				interceptedRequest.continue();
+			}
+		});
+
 		return {
 			page: this.page,
 			base: `http://localhost:${this.port}`,
