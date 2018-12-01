@@ -45,17 +45,15 @@ export function create_serviceworker_manifest({ manifest_data, output, client_fi
 	client_files: string[];
 	static_files: string;
 }) {
-	let files: string[];
+	let files: string[] = ['/service-worker-index.html'];
 
 	if (fs.existsSync(static_files)) {
-		files = walk(static_files);
+		files = files.concat(walk(static_files));
 	} else {
 		// TODO remove in a future version
 		if (fs.existsSync('assets')) {
 			throw new Error(`As of Sapper 0.21, the assets/ directory should become static/`);
 		}
-
-		files = [];
 	}
 
 	let code = `
