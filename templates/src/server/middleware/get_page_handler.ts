@@ -67,7 +67,10 @@ export function get_page_handler(
 		} else {
 			const link = preloaded_chunks
 				.filter(file => file && !file.match(/\.map$/))
-				.map(file => `<${req.baseUrl}/client/${file}>;rel="preload";as="script"`)
+				.map((file) => {
+					const as = /\.css$/.test(file) ? 'style' : 'script';
+					return `<${req.baseUrl}/client/${file}>;rel="preload";as="${as}"`;
+				})
 				.join(', ');
 
 			res.setHeader('Link', link);
