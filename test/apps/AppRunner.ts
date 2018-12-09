@@ -8,6 +8,10 @@ declare const prefetchRoutes: () => Promise<void>;
 declare const prefetch: (href: string) => Promise<void>;
 declare const goto: (href: string) => Promise<void>;
 
+type StartOpts = {
+	requestInterceptor?: (interceptedRequst: puppeteer.Request) => any
+};
+
 export class AppRunner {
 	cwd: string;
 	entry: string;
@@ -24,7 +28,7 @@ export class AppRunner {
 		this.messages = [];
 	}
 
-	async start() {
+	async start({ requestInterceptor }: StartOpts = {}) {
 		this.port = await ports.find(3000);
 
 		this.proc = fork(this.entry, [], {
@@ -50,19 +54,10 @@ export class AppRunner {
 			}
 		});
 
-		await this.page.setRequestInterception(true);
-
-		this.page.on('request', interceptedRequest => {
-			if (/example\.com/.test(interceptedRequest.url())) {
-				interceptedRequest.respond({
-					status: 200,
-					contentType: 'text/html',
-					body: `<h1>external</h1>`
-				});
-			} else {
-				interceptedRequest.continue();
-			}
-		});
+		if (requestInterceptor) {
+			await this.page.setRequestInterception(true);
+			this.page.on('request', requestInterceptor);
+		}
 
 		return {
 			page: this.page,
