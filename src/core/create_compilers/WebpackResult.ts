@@ -55,14 +55,25 @@ export default class WebpackResult implements CompileResult {
 	}
 
 	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
+		const extract_css = (assets: string[] | string) => {
+			assets = Array.isArray(assets) ? assets : [assets];
+			return assets.find(asset => /\.css$/.test(asset));
+		};
+
 		return {
 			bundler: 'webpack',
 			shimport: null, // webpack has its own loader
 			assets: this.assets,
 			css: {
-				// TODO
-				main: null,
-				chunks: {}
+				main: extract_css(this.assets.main),
+				chunks: Object
+					.keys(this.assets)
+					.filter(chunkName => chunkName !== 'main')
+					.reduce((chunks: { [key: string]: string }, chukName) => {
+						const assets = this.assets[chukName];
+						chunks[chukName] = extract_css(assets);
+						return chunks;
+					}, {})
 			}
 		};
 	}
