@@ -21,7 +21,19 @@ describe('redirects', function() {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, title } = await runner.start());
+		({ base, page, start, prefetchRoutes, title } = await runner.start({
+			requestInterceptor: (interceptedRequest) => {
+				if (/example\.com/.test(interceptedRequest.url())) {
+					interceptedRequest.respond({
+						status: 200,
+						contentType: 'text/html',
+						body: `<h1>external</h1>`
+					});
+				} else {
+					interceptedRequest.continue();
+				}
+			}
+		}));
 	});
 
 	after(() => runner.end());
