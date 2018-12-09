@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.24.1
+
+* Include CSS chunks in webpack build info to avoid duplication ([#529](https://github.com/sveltejs/sapper/pull/529))
+* Fix preload `as` for styles ([#530](https://github.com/sveltejs/sapper/pull/530))
+
 ## 0.24.0
 
 * Handle external URLs in `this.redirect` ([#490](https://github.com/sveltejs/sapper/issues/490))
