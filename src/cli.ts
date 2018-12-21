@@ -129,6 +129,7 @@ prog.command('dev')
 			});
 		} catch (err) {
 			console.log(colors.bold.red(`> ${err.message}`));
+			console.log(colors.gray(err.stack));
 			process.exit(1);
 		}
 	});
@@ -171,6 +172,7 @@ prog.command('build [dest]')
 			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
 			console.log(`${colors.bold.red(`> ${err.message}`)}`);
+			console.log(colors.gray(err.stack));
 			process.exit(1);
 		}
 	});

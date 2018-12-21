@@ -16,13 +16,13 @@ export type RootProps = {
 };
 
 export interface ComponentConstructor {
-	new (options: { target: Node, data: any, store: Store, hydrate: boolean }): Component;
+	new (options: { target: Node, props: any, store: Store, hydrate: boolean }): Component;
 	preload: (props: { params: Params, query: Query }) => Promise<any>;
 };
 
 export interface Component {
-	set: (data: any) => void;
-	destroy: () => void;
+	$set: (data: any) => void;
+	$destroy: () => void;
 }
 
 export type ComponentLoader = {

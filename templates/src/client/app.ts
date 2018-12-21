@@ -1,4 +1,4 @@
-import RootComponent from '__ROOT__';
+import RootComponent, * as RootComponentStatic from '__ROOT__';
 import ErrorComponent from '__ERROR__';
 import {
 	Target,
@@ -127,7 +127,7 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 	cid = id;
 
 	if (root_component) {
-		root_component.set({ preloading: true });
+		root_component.$set({ preloading: true });
 	}
 	const loaded = prefetching && prefetching.href === target.url.href ?
 		prefetching.promise :
@@ -146,12 +146,12 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 	});
 }
 
-function render(data: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
+function render(props: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
 	if (root_component) {
 		// first, clear out highest-level root component
-		let level = data.child;
+		let level = props.child;
 		for (let i = 0; i < nullable_depth; i += 1) {
 			if (i === nullable_depth) break;
 			level = level.props.child;
@@ -159,11 +159,12 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, noscr
 
 		const { component } = level;
 		level.component = null;
-		root_component.set({ child: data.child });
+		root_component.$set({ child: props.child });
 
 		// then render new stuff
+		// TODO do we need to call `flush` before doing this?
 		level.component = component;
-		root_component.set(data);
+		root_component.$set(props);
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -175,11 +176,11 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, noscr
 			detach(end);
 		}
 
-		Object.assign(data, root_data);
+		Object.assign(props, root_data);
 
 		root_component = new RootComponent({
 			target,
-			data,
+			props,
 			store,
 			hydrate: true
 		});
@@ -201,7 +202,7 @@ function render(data: any, nullable_depth: number, scroll: ScrollPosition, noscr
 		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
 
-	Object.assign(root_props, data);
+	Object.assign(root_props, props);
 	ready = true;
 }
 
@@ -238,8 +239,9 @@ export function prepare_page(target: Target): Promise<{
 	};
 
 	if (!root_preload) {
-		root_preload = RootComponent.preload
-			? initial_data.preloaded[0] || RootComponent.preload.call(preload_context, {
+		const preload_fn = RootComponentStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
+		root_preload = preload_fn
+			? initial_data.preloaded[0] || preload_fn.call(preload_context, {
 				path,
 				query,
 				params: {}
@@ -251,7 +253,7 @@ export function prepare_page(target: Target): Promise<{
 		if (i < changed_from) return null;
 		if (!part) return null;
 
-		return load_component(components[part.i]).then(Component => {
+		return load_component(components[part.i]).then(({ default: Component, preload }) => {
 			const req = {
 				path,
 				query,
@@ -260,8 +262,8 @@ export function prepare_page(target: Target): Promise<{
 
 			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
-				preloaded = Component.preload
-					? Component.preload.call(preload_context, req)
+				preloaded = preload
+					? preload.call(preload_context, req)
 					: {};
 			} else {
 				preloaded = initial_data.preloaded[i + 1];
@@ -303,7 +305,7 @@ export function prepare_page(target: Target): Promise<{
 			};
 
 			return {
-				data: Object.assign({}, props, {
+				props: Object.assign({}, props, {
 					preloading: false,
 					child: {
 						component: ErrorComponent,
@@ -372,12 +374,15 @@ function load_css(chunk: string) {
 	});
 }
 
-export function load_component(component: ComponentLoader): Promise<ComponentConstructor> {
+export function load_component(component: ComponentLoader): Promise<{
+	default: ComponentConstructor,
+	preload?: (input: any) => any
+}> {
 	// TODO this is temporary — once placeholders are
 	// always rewritten, scratch the ternary
 	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
 	promises.unshift(component.js());
-	return Promise.all(promises).then(values => values[0].default);
+	return Promise.all(promises).then(values => values[0]);
 }
 
 function detach(node: Node) {

@@ -161,6 +161,8 @@ export default function extract_css(client_result: CompileResult, components: Pa
 
 	// recursively find the chunks this component depends on
 	entry_chunk_dependencies.forEach(chunk => {
+		if (!chunk) return; // TODO why does this happen?
+
 		chunk.imports.forEach(file => {
 			entry_chunk_dependencies.add(lookup.get(file));
 		});
@@ -182,7 +184,8 @@ export default function extract_css(client_result: CompileResult, components: Pa
 
 		if (!chunk) {
 			// this should never happen!
-			throw new Error(`Could not find chunk that owns ${component.file}`);
+			return;
+			// throw new Error(`Could not find chunk that owns ${component.file}`);
 		}
 
 		const chunk_dependencies: Set<Chunk> = new Set([chunk]);
@@ -190,6 +193,8 @@ export default function extract_css(client_result: CompileResult, components: Pa
 
 		// recursively find the chunks this component depends on
 		chunk_dependencies.forEach(chunk => {
+			if (!chunk) return; // TODO why does this happen?
+
 			chunk.imports.forEach(file => {
 				chunk_dependencies.add(lookup.get(file));
 			});

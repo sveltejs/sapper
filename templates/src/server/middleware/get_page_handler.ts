@@ -135,8 +135,8 @@ export function get_page_handler(
 		let match;
 
 		try {
-			const root_preloaded = manifest.root.preload
-				? manifest.root.preload.call(preload_context, {
+			const root_preloaded = manifest.root_preload
+				? manifest.root_preload.call(preload_context, {
 					path: req.path,
 					query: req.query,
 					params: {}
@@ -148,8 +148,8 @@ export function get_page_handler(
 			preloaded = await Promise.all([root_preloaded].concat(page.parts.map(part => {
 				if (!part) return null;
 
-				return part.component.preload
-					? part.component.preload.call(preload_context, {
+				return part.preload
+					? part.preload.call(preload_context, {
 						path: req.path,
 						query: req.query,
 						params: part.params ? part.params(match) : {}
