@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.24.1",
+  "version": "0.25.0-alpha2",
   "description": "Military-grade apps, engineered by Svelte",
   "bin": {
     "sapper": "./sapper"
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "html-minifier": "^3.5.20",
-    "shimport": "0.0.11",
+    "shimport": "0.0.14",
     "source-map-support": "^0.5.9",
     "sourcemap-codec": "^1.4.3",
     "string-hash": "^1.1.3",
