@@ -36,7 +36,7 @@ const root_props: RootProps = {
 
 export let prefetching: {
 	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any, nullable_depth?: number }>;
+	promise: Promise<{ redirect?: Redirect, data?: any, nullable_depth?: number, new_segments?: any }>;
 } = null;
 export function set_prefetching(href, promise) {
 	prefetching = { href, promise };
@@ -137,9 +137,12 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 
 	const token = current_token = {};
 
-	return loaded.then(({ redirect, data, nullable_depth }) => {
+	return loaded.then(({ redirect, data, nullable_depth, new_segments }) => {
 		if (redirect) {
 			return goto(redirect.location, { replaceState: true });
+		}
+		if (new_segments) {
+			segments = new_segments;
 		}
 		render(data, nullable_depth, scroll_history[id], noscroll, hash, token);
 		if (document.activeElement) document.activeElement.blur();
@@ -285,10 +288,8 @@ export function prepare_page(target: Target): Promise<{
 		}
 	}).then(results => {
 		if (redirect) {
-			return { redirect };
+			return { redirect, new_segments };
 		}
-
-		segments = new_segments;
 
 		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
 		const params = get_params(target.match);
@@ -303,6 +304,7 @@ export function prepare_page(target: Target): Promise<{
 			};
 
 			return {
+				new_segments,
 				data: Object.assign({}, props, {
 					preloading: false,
 					child: {
@@ -318,7 +320,7 @@ export function prepare_page(target: Target): Promise<{
 			path,
 			preloading: false,
 			child: Object.assign({}, root_props.child, {
-				segment: segments[0]
+				segment: new_segments[0]
 			})
 		};
 		if (changed(query, root_props.query)) data.query = query;
@@ -349,10 +351,10 @@ export function prepare_page(target: Target): Promise<{
 			}
 
 			level = level.props.child;
-			level.segment = segments[i + 1];
+			level.segment = new_segments[i + 1];
 		}
 
-		return { data, nullable_depth };
+		return { data, nullable_depth, new_segments };
 	});
 }
 
