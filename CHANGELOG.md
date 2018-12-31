@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.24.2
+
+* Support Rollup 1.0 ([#541](https://github.com/sveltejs/sapper/pull/541))
+
 ## 0.24.1
 
 * Include CSS chunks in webpack build info to avoid duplication ([#529](https://github.com/sveltejs/sapper/pull/529))
