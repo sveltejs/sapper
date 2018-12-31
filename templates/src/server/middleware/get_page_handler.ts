@@ -104,7 +104,7 @@ export function get_page_handler(
 					);
 
 					if (include_cookies) {
-						if (!opts.headers) opts.headers = {};
+						opts.headers = Object.assign({}, opts.headers);
 
 						const cookies = Object.assign(
 							{},
