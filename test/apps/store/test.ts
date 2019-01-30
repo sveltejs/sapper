@@ -12,18 +12,17 @@ describe('store', function() {
 
 	// helpers
 	let start: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start } = await runner.start());
+		({ base, page, start, title } = await runner.start());
 	});
 
 	after(() => runner.end());
-
-	const title = () => page.$eval('h1', node => node.textContent);
 
 	it('renders store props', async () => {
 		await page.goto(`${base}/store`);

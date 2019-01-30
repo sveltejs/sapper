@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
@@ -17,18 +16,17 @@ describe('preloading', function() {
 	// helpers
 	let start: () => Promise<void>;
 	let prefetchRoutes: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+		({ base, page, start, prefetchRoutes, title } = await runner.start());
 	});
 
 	after(() => runner.end());
-
-	const title = () => page.$eval('h1', node => node.textContent);
 
 	it('serializes Set objects returned from preload', async () => {
 		await page.goto(`${base}/preload-values/set`);

@@ -1,4 +1,4 @@
-import { nextTick } from 'svelte';
+import { tick } from 'svelte';
 import RootComponent, * as RootComponentStatic from '__ROOT__';
 import ErrorComponent from '__ERROR__';
 import {
@@ -147,7 +147,7 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 	});
 }
 
-function render(props: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
+async function render(props: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
 	if (root_component) {
@@ -162,12 +162,16 @@ function render(props: any, nullable_depth: number, scroll: ScrollPosition, nosc
 		level.component = null;
 		root_component.$set({ child: props.child });
 
-		nextTick(() => {
-			// then render new stuff
-			// TODO do we need to call `flush` before doing this?
-			level.component = component;
-			root_component.$set(props);
-		});
+		await tick();
+
+		// then render new stuff
+		// TODO do we need to call `flush` before doing this?
+		level.component = component;
+		root_component.$set(props);
+
+		// if we need to scroll to a deep link, we need to
+		// wait for the current update to happen first
+		if (!noscroll && hash) await tick();
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -193,6 +197,7 @@ function render(props: any, nullable_depth: number, scroll: ScrollPosition, nosc
 		if (hash) {
 			// scroll is an element id (from a hash), we need to compute y.
 			const deep_linked = document.querySelector(hash);
+
 			if (deep_linked) {
 				scroll = {
 					x: 0,

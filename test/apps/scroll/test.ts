@@ -14,13 +14,14 @@ describe('scroll', function() {
 	// helpers
 	let start: () => Promise<void>;
 	let prefetchRoutes: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+		({ base, page, start, prefetchRoutes, title } = await runner.start());
 	});
 
 	after(() => runner.end());
@@ -85,6 +86,7 @@ describe('scroll', function() {
 
 		await page.click('[href="another-tall-page#bar"]');
 		await wait(50);
+		assert.equal(await title(), 'Another tall page');
 		const scrollY = await page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0);
 	});
