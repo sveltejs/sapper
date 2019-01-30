@@ -1,22 +1,21 @@
+<script context="module">
+	import counts from '../_counts.js';
+
+	export function preload() {
+		return {
+			count: counts.y += 1
+		};
+	}
+</script>
+
+<script>
+	export let params;
+	export let count;
+	export let child;
+	export let segment = params.y;
+</script>
+
 <span>y: {segment} {count}</span>
 <svelte:component this={child.component} {...child.props}/>
 
 <span>child segment: {child.segment}</span>
-
-<script>
-	import counts from '../_counts.js';
-
-	export default {
-		preload() {
-			return {
-				count: counts.y += 1
-			};
-		},
-
-		oncreate() {
-			this.set({
-				segment: this.get().params.y
-			});
-		}
-	};
-</script>

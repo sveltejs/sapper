@@ -1,11 +1,13 @@
-<h1>{set.has('x')}</h1>
+<script context="module">
+	export function preload() {
+		return {
+			set: new Set(['x'])
+		};
+	}
+</script>
 
 <script>
-	export default {
-		preload() {
-			return {
-				set: new Set(['x'])
-			};
-		}
-	};
+	export let set;
 </script>
+
+<h1>{set.has('x')}</h1>

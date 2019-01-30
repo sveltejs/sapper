@@ -1,20 +1,18 @@
-<span>z: {segment} {count}</span>
-<a href="foo/bar/qux">click me</a>
-
-<script>
+<script context="module">
 	import counts from '../_counts.js';
 
-	export default {
-		preload() {
-			return {
-				count: counts.z += 1
-			};
-		},
-
-		oncreate() {
-			this.set({
-				segment: this.get().params.z
-			});
-		}
-	};
+	export function preload() {
+		return {
+			count: counts.z += 1
+		};
+	}
 </script>
+
+<script>
+	export let params;
+	export let count;
+	export let segment = params.z;
+</script>
+
+<span>z: {segment} {count}</span>
+<a href="foo/bar/qux">click me</a>

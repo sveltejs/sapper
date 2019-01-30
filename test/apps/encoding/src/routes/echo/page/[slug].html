@@ -1,11 +1,14 @@
-<h1>{slug} {JSON.stringify(query)}</h1>
+<script context="module">
+	export function preload({ params }) {
+		return {
+			slug: params.slug
+		};
+	}
+</script>
 
 <script>
-	export default {
-		preload({ params }) {
-			return {
-				slug: params.slug
-			};
-		}
-	};
+	export let slug;
+	export let query;
 </script>
+
+<h1>{slug} {JSON.stringify(query)}</h1>

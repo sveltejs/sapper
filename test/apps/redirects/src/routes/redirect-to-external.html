@@ -1,9 +1,7 @@
-<h1>unredirected</h1>
-
-<script>
-	export default {
-		preload() {
-			this.redirect(301, 'https://example.com');
-		}
-	};
+<script context="module">
+	export function preload() {
+		this.redirect(301, 'https://example.com');
+	}
 </script>
+
+<h1>unredirected</h1>
