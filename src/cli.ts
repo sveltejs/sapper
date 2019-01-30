@@ -226,7 +226,7 @@ prog.command('export [dest]')
 				},
 
 				onfile: event => {
-					const size_color = event.size > 150000 ? colors.bold.red : event.size > 50000 ? colors.bold.yellow : colors.bold.gray;
+					const size_color = event.size > 150000 ? colors.bold().red : event.size > 50000 ? colors.bold().yellow : colors.bold().gray;
 						const size_label = size_color(left_pad(pb(event.size), 10));
 
 						const file_label = event.status === 200
