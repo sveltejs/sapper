@@ -59,7 +59,6 @@ export default [
 			typescript({
 				typescript: require('typescript')
 			})
-		],
-		experimentalCodeSplitting: true
+		]
 	}
 ];
