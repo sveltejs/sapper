@@ -1,3 +1,4 @@
+import { nextTick } from 'svelte';
 import RootComponent, * as RootComponentStatic from '__ROOT__';
 import ErrorComponent from '__ERROR__';
 import {
@@ -161,10 +162,12 @@ function render(props: any, nullable_depth: number, scroll: ScrollPosition, nosc
 		level.component = null;
 		root_component.$set({ child: props.child });
 
-		// then render new stuff
-		// TODO do we need to call `flush` before doing this?
-		level.component = component;
-		root_component.$set(props);
+		nextTick(() => {
+			// then render new stuff
+			// TODO do we need to call `flush` before doing this?
+			level.component = component;
+			root_component.$set(props);
+		});
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
