@@ -305,7 +305,8 @@ export function prepare_page(target: Target): Promise<{
 			};
 
 			return {
-				props: Object.assign({}, props, {
+				nullable_depth: 0,
+				data: Object.assign({}, props, {
 					preloading: false,
 					child: {
 						component: ErrorComponent,
