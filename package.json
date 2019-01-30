@@ -58,7 +58,7 @@
     "sade": "^1.4.1",
     "sander": "^0.6.0",
     "sirv": "^0.2.2",
-    "svelte": "^3.0.0-alpha23",
+    "svelte": "^3.0.0-alpha25",
     "svelte-loader": "^2.11.0",
     "ts-node": "^8.0.2",
     "typescript": "^3.1.3",
