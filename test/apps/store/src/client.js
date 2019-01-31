@@ -1,9 +1,7 @@
-import { Store } from 'svelte/store.js';
 import * as sapper from '@sapper/client';
 
 window.start = () => sapper.start({
-	target: document.querySelector('#sapper'),
-	store: data => new Store(data)
+	target: document.querySelector('#sapper')
 });
 
 window.prefetchRoutes = () => sapper.prefetchRoutes();

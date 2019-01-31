@@ -1,5 +1,4 @@
 import polka from 'polka';
-import { Store } from 'svelte/store.js';
 import * as sapper from '@sapper/server';
 
 const { PORT } = process.env;
@@ -12,11 +11,9 @@ polka()
 	})
 	.use(
 		sapper.middleware({
-			store: (req, res) => {
-				return new Store({
-					title: `${req.hello} ${res.locals.name}`
-				});
-			}
+			session: (req, res) => ({
+				title: `${req.hello} ${res.locals.name}`
+			})
 		})
 	)
 	.listen(PORT);
