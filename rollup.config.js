@@ -16,7 +16,7 @@ function template(kind, external, target) {
 	return {
 		input: `templates/src/${kind}/index.ts`,
 		output: {
-			file: `templates/${kind}.js`,
+			file: `templates/${kind}.mjs`,
 			format: 'es'
 		},
 		external,
