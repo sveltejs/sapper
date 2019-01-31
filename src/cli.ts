@@ -29,7 +29,7 @@ prog.command('dev')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--static', 'Static files directory', 'static')
-	.option('--output', 'Sapper output directory', '__sapper__')
+	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.action(async (opts: {
 		port: number,
@@ -142,7 +142,7 @@ prog.command('build [dest]')
 	.option('--cwd', 'Current working directory', '.')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
-	.option('--output', 'Sapper output directory', '__sapper__')
+	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -188,7 +188,7 @@ prog.command('export [dest]')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--static', 'Static files directory', 'static')
-	.option('--output', 'Sapper output directory', '__sapper__')
+	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,

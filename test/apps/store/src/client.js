@@ -1,5 +1,5 @@
 import { Store } from 'svelte/store.js';
-import * as sapper from '../__sapper__/client.js';
+import * as sapper from '@sapper/client';
 
 window.start = () => sapper.start({
 	target: document.querySelector('#sapper'),

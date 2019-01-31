@@ -26,7 +26,7 @@ export async function build({
 	cwd,
 	src = 'src',
 	routes = 'src/routes',
-	output = '__sapper__',
+	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
 
@@ -47,6 +47,9 @@ export async function build({
 	if (legacy && bundler === 'webpack') {
 		throw new Error(`Legacy builds are not supported for projects using webpack`);
 	}
+
+	rimraf.sync(path.join(output, '**/*'));
+	mkdirp.sync(output);
 
 	rimraf.sync(path.join(dest, '**/*'));
 	mkdirp.sync(`${dest}/client`);
