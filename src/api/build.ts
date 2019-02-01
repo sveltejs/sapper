@@ -116,10 +116,15 @@ export async function build({
 	let serviceworker_stats;
 
 	if (serviceworker) {
+
+		const client_files = client_result.chunks
+			.filter(chunk => !chunk.file.endsWith('.map')) // SW does not need to cache sourcemap files
+			.map(chunk => `client/${chunk.file}`);
+
 		create_serviceworker_manifest({
 			manifest_data,
 			output,
-			client_files: client_result.chunks.map(chunk => `client/${chunk.file}`),
+			client_files,
 			static_files
 		});
 
