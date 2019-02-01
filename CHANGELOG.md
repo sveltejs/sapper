@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.24.3
+
+* Add service-worker-index.html shell file for offline support ([#422](https://github.com/sveltejs/sapper/issues/422))
+* Don't cache .map files ([#534](https://github.com/sveltejs/sapper/issues/534))
+
 ## 0.24.2
 
 * Support Rollup 1.0 ([#541](https://github.com/sveltejs/sapper/pull/541))
