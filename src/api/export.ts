@@ -145,8 +145,6 @@ async function _export({
 
 		if (range === 2) {
 			if (type === 'text/html' && pathname !== '/service-worker-index.html') {
-				const urls: URL[] = [];
-
 				const cleaned = clean_html(body);
 
 				const q = yootils.queue(8);
