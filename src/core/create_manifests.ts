@@ -175,13 +175,13 @@ function generate_server(
 		manifest_data.server_routes.map(route =>
 			`import * as __${route.name} from ${stringify(posixify(`${path_to_routes}/${route.file}`))};`),
 		manifest_data.components.map(component =>
-			`import __${component.name}, * as __${component.name}_static from ${stringify(get_file(path_to_routes, component))};`),
-		`import root, * as root_static from ${stringify(get_file(path_to_routes, manifest_data.root))};`,
+			`import __${component.name}${component.has_preload ? `, { preload as __${component.name}_preload }` : ''} from ${stringify(get_file(path_to_routes, component))};`),
+		`import root${manifest_data.root.has_preload ? `, { preload as root_preload }` : ''} from ${stringify(get_file(path_to_routes, manifest_data.root))};`,
 		`import error from ${stringify(posixify(`${path_to_routes}/_error.html`))};`
 	);
 
 	let code = `
-		${imports.join('\n')}
+		${imports.join('\n')}${manifest_data.root.has_preload ? '' : `\n\nconst root_preload = () => {};`}
 
 		const d = decodeURIComponent;
 
@@ -209,8 +209,8 @@ function generate_server(
 								`name: "${part.component.name}"`,
 								`file: ${stringify(part.component.file)}`,
 								`component: __${part.component.name}`,
-								`preload: __${part.component.name}_static.preload`
-							];
+								part.component.has_preload && `preload: __${part.component.name}_preload`
+							].filter(Boolean);
 
 							if (part.params.length > 0) {
 								const params = part.params.map((param, i) => `${param}: d(match[${i + 1}])`);
@@ -224,8 +224,7 @@ function generate_server(
 			],
 
 			root,
-			root_preload: root_static['pre' + 'load'],
-
+			root_preload,
 			error
 		};`.replace(/^\t\t/gm, '').trim();
 
