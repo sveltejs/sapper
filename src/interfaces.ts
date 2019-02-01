@@ -29,6 +29,7 @@ export type PageComponent = {
 	default?: boolean;
 	name: string;
 	file: string;
+	has_preload: boolean;
 };
 
 export type Page = {
