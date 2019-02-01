@@ -64,11 +64,11 @@ export class AppRunner {
 			base: `http://localhost:${this.port}`,
 
 			// helpers
-			start: () => this.page.evaluate(() => start()),
-			prefetchRoutes: () => this.page.evaluate(() => prefetchRoutes()),
-			prefetch: (href: string) => this.page.evaluate((href: string) => prefetch(href), href),
-			goto: (href: string) => this.page.evaluate((href: string) => goto(href), href),
-			title: () => this.page.$eval('h1', node => node.textContent)
+			start: () => this.page.evaluate(() => start()).then(() => void 0),
+			prefetchRoutes: () => this.page.evaluate(() => prefetchRoutes()).then(() => void 0),
+			prefetch: (href: string) => this.page.evaluate((href: string) => prefetch(href), href).then(() => void 0),
+			goto: (href: string) => this.page.evaluate((href: string) => goto(href), href).then(() => void 0),
+			title: () => this.page.$eval('h1', node => node.textContent).then(serializable => String(serializable))
 		};
 	}
 

@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { build_dir, dev, manifest, IGNORE } from '../placeholders';
 import { Handler, Req, Res, Store } from './types';
 import { get_server_route_handler } from './get_server_route_handler';

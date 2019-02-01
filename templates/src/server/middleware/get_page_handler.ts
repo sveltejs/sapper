@@ -1,9 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
-import { URL, resolve } from 'url';
+import URL from 'url';
 import * as stores from '../../shared/stores';
 import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
 import { Manifest, Page, Props, Req, Res } from './types';
@@ -36,6 +36,7 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
+		const isSWIndexHtml = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
@@ -49,7 +50,7 @@ export function get_page_handler(
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
 		let preloaded_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
-		if (!error) {
+		if (!error && !isSWIndexHtml) {
 			page.parts.forEach(part => {
 				if (!part) return;
 
@@ -95,7 +96,7 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const parsed = new URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
 				if (opts) {
 					opts = Object.assign({}, opts);
@@ -106,7 +107,7 @@ export function get_page_handler(
 					);
 
 					if (include_cookies) {
-						if (!opts.headers) opts.headers = {};
+						opts.headers = Object.assign({}, opts.headers);
 
 						const cookies = Object.assign(
 							{},
@@ -146,17 +147,22 @@ export function get_page_handler(
 
 			match = error ? null : page.pattern.exec(req.path);
 
-			preloaded = await Promise.all([root_preloaded].concat(page.parts.map(part => {
-				if (!part) return null;
+			let toPreload = [root_preloaded];
+			if (!isSWIndexHtml) {
+				toPreload = toPreload.concat(page.parts.map(part => {
+					if (!part) return null;
 
-				return part.preload
-					? part.preload.call(preload_context, {
-						path: req.path,
-						query: req.query,
-						params: part.params ? part.params(match) : {}
-					})
-					: {};
-			})));
+					return part.preload
+						? part.preload.call(preload_context, {
+							path: req.path,
+							query: req.query,
+							params: part.params ? part.params(match) : {}
+						})
+						: {};
+				}))
+			}
+
+			preloaded = await Promise.all(toPreload);
 		} catch (err) {
 			preload_error = { statusCode: 500, message: err };
 			preloaded = []; // appease TypeScript
@@ -164,7 +170,7 @@ export function get_page_handler(
 
 		try {
 			if (redirect) {
-				const location = resolve(req.baseUrl || '/', redirect.location);
+				const location = URL.resolve(req.baseUrl || '/', redirect.location);
 
 				res.statusCode = redirect.statusCode;
 				res.setHeader('Location', location);
@@ -200,23 +206,29 @@ export function get_page_handler(
 			});
 
 			let level = data.child;
-			for (let i = 0; i < page.parts.length; i += 1) {
-				const part = page.parts[i];
-				if (!part) continue;
+			if (isSWIndexHtml) {
+				level.props = Object.assign({}, props, {
+					params: {}
+				})
+			} else {
+				for (let i = 0; i < page.parts.length; i += 1) {
+					const part = page.parts[i];
+					if (!part) continue;
 
-				const get_params = part.params || (() => ({}));
+					const get_params = part.params || (() => ({}));
 
-				Object.assign(level, {
-					component: part.component,
-					props: Object.assign({}, props, {
-						params: get_params(match)
-					}, preloaded[i + 1])
-				});
+					Object.assign(level, {
+						component: part.component,
+						props: Object.assign({}, props, {
+							params: get_params(match)
+						}, preloaded[i + 1])
+					});
 
-				level.props.child = <Props["child"]>{
-					segment: segments[i + 1]
-				};
-				level = level.props.child;
+					level.props.child = <Props["child"]>{
+						segment: segments[i + 1]
+					};
+					level = level.props.child;
+				}
 			}
 
 			stores.page.set({
@@ -313,6 +325,12 @@ export function get_page_handler(
 
 	return function find_route(req: Req, res: Res, next: () => void) {
 		if (req[IGNORE]) return next();
+
+		if (req.path === '/service-worker-index.html') {
+			const homePage = pages.find(page => page.pattern.test('/'));
+			handle_page(homePage, req, res);
+			return;
+		}
 
 		if (!server_routes.some(route => route.pattern.test(req.path))) {
 			for (const page of pages) {

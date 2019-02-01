@@ -28,7 +28,7 @@ describe('layout', function() {
 		await page.goto(`${base}/foo/bar/baz`);
 		await start();
 
-		const text1 = await page.evaluate(() => document.querySelector('#sapper').textContent);
+		const text1 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
 		assert.deepEqual(text1.split('\n').filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
@@ -39,7 +39,7 @@ describe('layout', function() {
 		await page.click('[href="foo/bar/qux"]');
 		await wait(50);
 
-		const text2 = await page.evaluate(() => document.querySelector('#sapper').textContent);
+		const text2 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
 		assert.deepEqual(text2.split('\n').filter(Boolean), [
 			'y: bar 1',
 			'z: qux 2',

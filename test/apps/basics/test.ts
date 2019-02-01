@@ -261,7 +261,7 @@ describe('basics', function() {
 		await page.goto(`${base}/unsafe-replacement`);
 		await start();
 
-		const html = await page.evaluate(() => document.body.innerHTML);
+		const html = String(await page.evaluate(() => document.body.innerHTML));
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
 });

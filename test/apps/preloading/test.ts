@@ -81,4 +81,31 @@ describe('preloading', function() {
 		assert.equal(page.url(), `${base}/foo`);
 		assert.equal(await title(), 'foo');
 	});
+
+	it('navigates to prefetched urls', async () => {
+		await page.goto(base);
+		await start();
+		await prefetchRoutes();
+
+		await page.hover('a[href="prefetch/qwe"]');
+		await wait(100);
+		await page.hover('a[href="prefetch/xyz"]');
+		await wait(100);
+
+		await page.click('a[href="prefetch/qwe"]');
+		await wait(50);
+
+		assert.equal(
+			await title(),
+			'qwe'
+		);
+
+		await page.goto(`${base}/prefetch`);
+		await wait(50);
+
+		assert.equal(
+			await title(),
+			'prefetch'
+		);
+	});
 });

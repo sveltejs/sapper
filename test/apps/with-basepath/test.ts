@@ -56,6 +56,7 @@ describe('with-basepath', function() {
 		assert.deepEqual(non_client_assets, [
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
+			'custom-basepath/service-worker-index.html',
 			'custom-basepath/service-worker.js'
 		]);
 	});

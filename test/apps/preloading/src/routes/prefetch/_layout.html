@@ -1,0 +1,1 @@
+<svelte:component this={child.component} {...child.props}/>

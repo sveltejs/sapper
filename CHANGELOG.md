@@ -1,5 +1,21 @@
 # sapper changelog
 
+## 0.25.0
+
+* Force refresh on `goto(current_url)` ([#484](https://github.com/sveltejs/sapper/pull/484))
+* Fix preloading navigation bug ([#532](https://github.com/sveltejs/sapper/issues/532))
+* Don't mutate opts.headers ([#528](https://github.com/sveltejs/sapper/issues/528))
+* Don't crawl hundreds of pages simultaneously ([#369](https://github.com/sveltejs/sapper/pull/369))
+
+## 0.24.3
+
+* Add service-worker-index.html shell file for offline support ([#422](https://github.com/sveltejs/sapper/issues/422))
+* Don't cache .map files ([#534](https://github.com/sveltejs/sapper/issues/534))
+
+## 0.24.2
+
+* Support Rollup 1.0 ([#541](https://github.com/sveltejs/sapper/pull/541))
+
 ## 0.24.1
 
 * Include CSS chunks in webpack build info to avoid duplication ([#529](https://github.com/sveltejs/sapper/pull/529))
