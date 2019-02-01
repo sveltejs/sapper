@@ -10,7 +10,7 @@ const prog = sade('sapper').version(pkg.version);
 
 if (process.argv[2] === 'start') {
 	// remove this in a future version
-	console.error(colors.bold.red(`'sapper start' has been removed`));
+	console.error(colors.bold().red(`'sapper start' has been removed`));
 	console.error(`Use 'node [build_dir]' instead`);
 	process.exit(1);
 }
@@ -74,7 +74,7 @@ prog.command('dev')
 
 			watcher.on('ready', async (event: ReadyEvent) => {
 				if (first) {
-					console.log(colors.bold.cyan(`> Listening on http://localhost:${event.port}`));
+					console.log(colors.bold().cyan(`> Listening on http://localhost:${event.port}`));
 					if (opts.open) {
 						const { exec } = await import('child_process');
 						exec(`open http://localhost:${event.port}`);
@@ -85,7 +85,7 @@ prog.command('dev')
 
 			watcher.on('invalid', (event: InvalidEvent) => {
 				const changed = event.changed.map(filename => path.relative(process.cwd(), filename)).join(', ');
-				console.log(`\n${colors.bold.cyan(changed)} changed. rebuilding...`);
+				console.log(`\n${colors.bold().cyan(changed)} changed. rebuilding...`);
 			});
 
 			watcher.on('error', (event: ErrorEvent) => {
@@ -94,16 +94,16 @@ prog.command('dev')
 			});
 
 			watcher.on('fatal', (event: FatalEvent) => {
-				console.log(colors.bold.red(`> ${event.message}`));
+				console.log(colors.bold().red(`> ${event.message}`));
 				if (event.log) console.log(event.log);
 			});
 
 			watcher.on('build', (event: BuildEvent) => {
 				if (event.errors.length) {
-					console.log(colors.bold.red(`✗ ${event.type}`));
+					console.log(colors.bold().red(`✗ ${event.type}`));
 
 					event.errors.filter(e => !e.duplicate).forEach(error => {
-						if (error.file) console.log(colors.bold(error.file));
+						if (error.file) console.log(colors.bold()(error.file));
 						console.log(error.message);
 					});
 
@@ -112,10 +112,10 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'error' : 'errors'} hidden\n`);
 					}
 				} else if (event.warnings.length) {
-					console.log(colors.bold.yellow(`• ${event.type}`));
+					console.log(colors.bold().yellow(`• ${event.type}`));
 
 					event.warnings.filter(e => !e.duplicate).forEach(warning => {
-						if (warning.file) console.log(colors.bold(warning.file));
+						if (warning.file) console.log(colors.bold()(warning.file));
 						console.log(warning.message);
 					});
 
@@ -124,11 +124,11 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 					}
 				} else {
-					console.log(`${colors.bold.green(`✔ ${event.type}`)} ${colors.gray(`(${format_milliseconds(event.duration)})`)}`);
+					console.log(`${colors.bold().green(`✔ ${event.type}`)} ${colors.gray(`(${format_milliseconds(event.duration)})`)}`);
 				}
 			});
 		} catch (err) {
-			console.log(colors.bold.red(`> ${err.message}`));
+			console.log(colors.bold().red(`> ${err.message}`));
 			console.log(colors.gray(err.stack));
 			process.exit(1);
 		}
@@ -169,9 +169,9 @@ prog.command('build [dest]')
 				require('./server/server.js');
 			`.replace(/^\t+/gm, '').trim());
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`node ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`node ${dest}`)} to run the app.`);
 		} catch (err) {
-			console.log(`${colors.bold.red(`> ${err.message}`)}`);
+			console.log(`${colors.bold().red(`> ${err.message}`)}`);
 			console.log(colors.gray(err.stack));
 			process.exit(1);
 		}
@@ -222,24 +222,24 @@ prog.command('export [dest]')
 				timeout: opts.timeout,
 
 				oninfo: event => {
-					console.log(colors.bold.cyan(`> ${event.message}`));
+					console.log(colors.bold().cyan(`> ${event.message}`));
 				},
 
 				onfile: event => {
-					const size_color = event.size > 150000 ? colors.bold().red : event.size > 50000 ? colors.bold().yellow : colors.bold().gray;
+					const size_color = event.size > 150000 ? colors.bold()().red : event.size > 50000 ? colors.bold()().yellow : colors.bold()().gray;
 						const size_label = size_color(left_pad(pb(event.size), 10));
 
 						const file_label = event.status === 200
 							? event.file
-							: colors.bold[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+							: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
 
 						console.log(`${size_label}   ${file_label}`);
 				}
 			});
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold.cyan(`npx serve ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`npx serve ${dest}`)} to run the app.`);
 		} catch (err) {
-			console.error(colors.bold.red(`> ${err.message}`));
+			console.error(colors.bold().red(`> ${err.message}`));
 			process.exit(1);
 		}
 	});
@@ -278,7 +278,7 @@ async function _build(
 
 			console.log();
 			console.log(c(`┌─${repeat('─', banner.length)}─┐`));
-			console.log(c(`│ ${colors.bold(banner)       } │`));
+			console.log(c(`│ ${colors.bold()(banner)       } │`));
 			console.log(c(`└─${repeat('─', banner.length)}─┘`));
 
 			console.log(event.result.print());

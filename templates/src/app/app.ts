@@ -1,5 +1,6 @@
-import { tick } from 'svelte';
-import RootComponent, * as RootComponentStatic from '__ROOT__';
+import App from '@sapper/App.html';
+import { preloading, page } from '../shared/stores';
+import Root, * as RootStatic from '__ROOT__';
 import ErrorComponent from '__ERROR__';
 import {
 	Target,
@@ -128,7 +129,9 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 	cid = id;
 
 	if (root_component) {
-		root_component.$set({ preloading: true });
+		preloading.set({
+			// TODO path, params, query
+		});
 	}
 	const loaded = prefetching && prefetching.href === target.url.href ?
 		prefetching.promise :
@@ -150,6 +153,8 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 async function render(props: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
+	preloading.set(null);
+
 	if (root_component) {
 		// first, clear out highest-level root component
 		let level = props.child;
@@ -160,18 +165,12 @@ async function render(props: any, nullable_depth: number, scroll: ScrollPosition
 
 		const { component } = level;
 		level.component = null;
-		root_component.$set({ child: props.child });
-
-		await tick();
+		root_component.props = props;
 
 		// then render new stuff
 		// TODO do we need to call `flush` before doing this?
 		level.component = component;
-		root_component.$set(props);
-
-		// if we need to scroll to a deep link, we need to
-		// wait for the current update to happen first
-		if (!noscroll && hash) await tick();
+		root_component.props = props;
 	} else {
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -185,10 +184,13 @@ async function render(props: any, nullable_depth: number, scroll: ScrollPosition
 
 		Object.assign(props, root_data);
 
-		root_component = new RootComponent({
+		root_component = new App({
 			target,
-			props,
-			store,
+			props: {
+				Root,
+				props,
+				session: __SAPPER__.session
+			},
 			hydrate: true
 		});
 	}
@@ -247,7 +249,7 @@ export function prepare_page(target: Target): Promise<{
 	};
 
 	if (!root_preload) {
-		const preload_fn = RootComponentStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
+		const preload_fn = RootStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
 		root_preload = preload_fn
 			? initial_data.preloaded[0] || preload_fn.call(preload_context, {
 				path,
@@ -315,7 +317,6 @@ export function prepare_page(target: Target): Promise<{
 			return {
 				nullable_depth: 0,
 				data: Object.assign({}, props, {
-					preloading: false,
 					child: {
 						component: ErrorComponent,
 						props
@@ -327,7 +328,6 @@ export function prepare_page(target: Target): Promise<{
 		const props = { path, query, error: null, status: null };
 		const data = {
 			path,
-			preloading: false,
 			child: Object.assign({}, root_props.child, {
 				segment: segments[0]
 			})

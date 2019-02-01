@@ -7,10 +7,10 @@ import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
 
 export default function middleware(opts: {
-	store?: (req: Req, res: Res) => Store,
+	session?: (req: Req, res: Res) => any,
 	ignore?: any
 } = {}) {
-	const { store, ignore } = opts;
+	const { session, ignore } = opts;
 
 	let emitted_basepath = false;
 
@@ -73,7 +73,7 @@ export default function middleware(opts: {
 
 		get_server_route_handler(manifest.server_routes),
 
-		get_page_handler(manifest, store)
+		get_page_handler(manifest, session || noop)
 	].filter(Boolean));
 }
 
@@ -141,3 +141,5 @@ export function serve({ prefix, pathname, cache_control }: {
 		}
 	};
 }
+
+function noop(){}

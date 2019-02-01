@@ -17,7 +17,8 @@ function template(kind, external, target) {
 		input: `templates/src/${kind}/index.ts`,
 		output: {
 			file: `templates/${kind}.mjs`,
-			format: 'es'
+			format: 'es',
+			paths: id => id.replace('@sapper', '.')
 		},
 		external,
 		plugins: [
@@ -35,7 +36,7 @@ function template(kind, external, target) {
 }
 
 export default [
-	template('client', ['__ROOT__', '__ERROR__'], 'ES2017'),
+	template('app', ['__ROOT__', '__ERROR__', 'svelte', '@sapper/App.html'], 'ES2017'),
 	template('server', builtinModules, 'ES2015'),
 
 	{

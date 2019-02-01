@@ -6,25 +6,21 @@ import {
 	scroll_history,
 	scroll_state,
 	select_route,
-	set_store,
 	set_target,
 	uid,
 	set_uid,
 	set_cid
 } from '../app';
 import prefetch from '../prefetch/index';
-import { Store, ScrollPosition } from '../types';
 
 export default function start(opts: {
-	target: Node,
-	store?: (data: any) => Store
+	target: Node
 }) {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
 
 	set_target(opts.target);
-	if (opts.store) set_store(opts.store);
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);

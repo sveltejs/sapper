@@ -3,6 +3,10 @@ import * as path from 'path';
 import { posixify, stringify, walk, write_if_changed } from '../utils';
 import { Page, PageComponent, ManifestData } from '../interfaces';
 
+const app = fs.readFileSync(path.resolve(__dirname, '../templates/App.html'), 'utf-8');
+const internal = fs.readFileSync(path.resolve(__dirname, '../templates/internal.mjs'), 'utf-8');
+const layout = `<svelte:component this={child.component} {...child.props}/>`;
+
 export function create_main_manifests({
 	bundler,
 	manifest_data,
@@ -31,12 +35,11 @@ export function create_main_manifests({
 	const client_manifest = generate_client(manifest_data, path_to_routes, bundler, dev, dev_port);
 	const server_manifest = generate_server(manifest_data, path_to_routes, cwd, src, dest, dev);
 
-	write_if_changed(
-		`${output}/_layout.html`,
-		`<svelte:component this={child.component} {...child.props}/>`
-	);
-	write_if_changed(`${output}/client.js`, client_manifest);
-	write_if_changed(`${output}/server.js`, server_manifest);
+	write_if_changed(`${output}/_layout.html`, layout);
+	write_if_changed(`${output}/internal.mjs`, internal);
+	write_if_changed(`${output}/App.html`, app);
+	write_if_changed(`${output}/app.mjs`, client_manifest);
+	write_if_changed(`${output}/server.mjs`, server_manifest);
 }
 
 export function create_serviceworker_manifest({ manifest_data, output, client_files, static_files }: {
@@ -80,7 +83,7 @@ function generate_client(
 	dev: boolean,
 	dev_port?: number
 ) {
-	const template_file = path.resolve(__dirname, '../templates/client.js');
+	const template_file = path.resolve(__dirname, '../templates/app.mjs');
 	const template = fs.readFileSync(template_file, 'utf-8');
 
 	const page_ids = new Set(manifest_data.pages.map(page =>
@@ -167,7 +170,7 @@ function generate_server(
 	dest: string,
 	dev: boolean
 ) {
-	const template_file = path.resolve(__dirname, '../templates/server.js');
+	const template_file = path.resolve(__dirname, '../templates/server.mjs');
 	const template = fs.readFileSync(template_file, 'utf-8');
 
 	const imports = [].concat(

@@ -72,7 +72,7 @@ class Watcher extends EventEmitter {
 		cwd = '.',
 		src = 'src',
 		routes = 'src/routes',
-		output = '__sapper__',
+		output = 'src/node_modules/@sapper',
 		static: static_files = 'static',
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
@@ -144,6 +144,10 @@ class Watcher extends EventEmitter {
 		}
 
 		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
+
+		rimraf.sync(path.join(output, '**/*'));
+		mkdirp.sync(output);
+
 		rimraf.sync(dest);
 		mkdirp.sync(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);

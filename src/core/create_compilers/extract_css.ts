@@ -153,7 +153,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		chunks_with_css.add(chunk);
 	});
 
-	const entry = path.resolve(dirs.src, 'client.js');
+	const entry = path.resolve(dirs.src, 'app.mjs');
 	const entry_chunk = client_result.chunks.find(chunk => chunk.modules.indexOf(entry) !== -1);
 
 	const entry_chunk_dependencies: Set<Chunk> = new Set([entry_chunk]);

@@ -1,0 +1,13 @@
+<script>
+	import { setContext } from 'svelte';
+	import { writable } from 'svelte/store';
+	import { CONTEXT_KEY } from './internal';
+
+	export let Root;
+	export let props;
+	export let session;
+
+	setContext(CONTEXT_KEY, writable(session));
+</script>
+
+<Root {...props}/>

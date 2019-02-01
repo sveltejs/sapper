@@ -4,12 +4,14 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import { URL, resolve } from 'url';
+import * as stores from '../../shared/stores';
 import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
-import { Manifest, Page, Props, Req, Res, Store } from './types';
+import { Manifest, Page, Props, Req, Res } from './types';
+import App from '@sapper/App.html';
 
 export function get_page_handler(
 	manifest: Manifest,
-	store_getter: (req: Req, res: Res) => Store
+	session_getter: (req: Req, res: Res) => any
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -76,7 +78,7 @@ export function get_page_handler(
 			res.setHeader('Link', link);
 		}
 
-		const store = store_getter ? store_getter(req, res) : null;
+		const session = session_getter(req, res);
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
@@ -127,8 +129,7 @@ export function get_page_handler(
 				}
 
 				return fetch(parsed.href, opts);
-			},
-			store
+			}
 		};
 
 		let preloaded;
@@ -177,11 +178,6 @@ export function get_page_handler(
 				return;
 			}
 
-			const serialized = {
-				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
-				store: store && try_serialize(store.get())
-			};
-
 			const segments = req.path.split('/').filter(Boolean);
 
 			const props: Props = {
@@ -223,15 +219,30 @@ export function get_page_handler(
 				level = level.props.child;
 			}
 
-			const { html, head, css } = manifest.root.render(data, {
-				store
+			stores.page.set({
+				path: req.path,
+				query: req.query,
+				params: req.params
 			});
+
+			const { html, head, css } = App.render({
+				Root: manifest.root,
+				props: data,
+				session
+			});
+
+			const serialized = {
+				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
+				session: session && try_serialize(session, err => {
+					throw new Error(`Failed to serialize session data: ${err.message}`);
+				})
+			};
 
 			let script = `__SAPPER__={${[
 				error && `error:1`,
 				`baseUrl:"${req.baseUrl}"`,
 				serialized.preloaded && `preloaded:${serialized.preloaded}`,
-				serialized.store && `store:${serialized.store}`
+				serialized.session && `session:${serialized.session}`
 			].filter(Boolean).join(',')}};`;
 
 			if (has_service_worker) {
@@ -320,10 +331,11 @@ function read_template(dir = build_dir) {
 	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
 }
 
-function try_serialize(data: any) {
+function try_serialize(data: any, fail?: (err) => void) {
 	try {
 		return devalue(data);
 	} catch (err) {
+		if (fail) fail(err);
 		return null;
 	}
 }
