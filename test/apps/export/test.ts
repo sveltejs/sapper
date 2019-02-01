@@ -30,6 +30,7 @@ describe('export', function() {
 			'blog/index.html',
 			'global.css',
 			'index.html',
+			'service-worker-index.html',
 			'service-worker.js'
 		]);
 	});

@@ -94,7 +94,9 @@ async function _export({
 		const is_html = type === 'text/html';
 
 		if (is_html) {
-			file = file === '' ? 'index.html' : `${file}/index.html`;
+			if (pathname !== '/service-worker-index.html') {
+				file = file === '' ? 'index.html' : `${file}/index.html`;
+			}
 			body = minify_html(body);
 		}
 
@@ -113,7 +115,10 @@ async function _export({
 	});
 
 	async function handle(url: URL) {
-		const pathname = (url.pathname.replace(root.pathname, '') || '/');
+		let pathname = url.pathname;
+		if (pathname !== '/service-worker-index.html') {
+		  pathname = pathname.replace(root.pathname, '') || '/'
+		}
 
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
@@ -138,7 +143,7 @@ async function _export({
 		const range = ~~(r.status / 100);
 
 		if (range === 2) {
-			if (type === 'text/html') {
+			if (type === 'text/html' && pathname !== '/service-worker-index.html') {
 				const urls: URL[] = [];
 
 				const cleaned = clean_html(body);
@@ -181,6 +186,7 @@ async function _export({
 
 	return ports.wait(port)
 		.then(() => handle(root))
+		.then(() => handle(resolve(root.href, 'service-worker-index.html')))
 		.then(() => proc.kill())
 		.catch(err => {
 			proc.kill();
