@@ -1,4 +1,4 @@
-import typescript from 'rollup-plugin-typescript';
+import sucrase from 'rollup-plugin-sucrase';
 import string from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
@@ -12,7 +12,7 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-function template(kind, external, target) {
+function template(kind, external) {
 	return {
 		input: `templates/src/${kind}/index.ts`,
 		output: {
@@ -22,22 +22,23 @@ function template(kind, external, target) {
 		},
 		external,
 		plugins: [
-			resolve(),
+			resolve({
+				extensions: ['.js', '.ts']
+			}),
 			commonjs(),
 			string({
 				include: '**/*.md'
 			}),
-			typescript({
-				typescript: require('typescript'),
-				target
+			sucrase({
+				transforms: ['typescript']
 			})
 		]
 	};
 }
 
 export default [
-	template('app', ['__ROOT__', '__ERROR__', 'svelte', '@sapper/App.html'], 'ES2017'),
-	template('server', builtinModules, 'ES2015'),
+	template('app', ['__ROOT__', '__ERROR__', 'svelte', '@sapper/App.html']),
+	template('server', builtinModules),
 
 	{
 		input: [
@@ -55,10 +56,12 @@ export default [
 		external,
 		plugins: [
 			json(),
-			resolve(),
+			resolve({
+				extensions: ['.js', '.ts']
+			}),
 			commonjs(),
-			typescript({
-				typescript: require('typescript')
+			sucrase({
+				transforms: ['typescript']
 			})
 		]
 	}

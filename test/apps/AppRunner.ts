@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer';
 import * as ports from 'port-authority';
 import { fork, ChildProcess } from 'child_process';
 

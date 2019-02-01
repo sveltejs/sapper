@@ -15,7 +15,10 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 		if (/preload/.test(source)) {
 			try {
-				const { stats } = svelte.compile(source, { generate: false });
+				const { stats } = svelte.compile(source, {
+					generate: false,
+					onwarn: () => {}
+				});
 				return !!stats.vars.find((variable: any) => variable.module && variable.export_name === 'preload');
 			} catch (err) {}
 		}
@@ -180,7 +183,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		? {
 			name: 'main',
 			file: '_layout.html',
-			has_preload: has_preload(root_file)
+			has_preload: has_preload('_layout.html')
 		}
 		: default_layout;
 
