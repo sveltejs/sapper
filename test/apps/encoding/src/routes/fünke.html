@@ -1,0 +1,11 @@
+<h1>{phrase}</h1>
+
+<script>
+	export default {
+		preload() {
+			return this.fetch('fünke.json').then(r => r.json()).then(phrase => {
+				return { phrase };
+			});
+		}
+	};
+</script>

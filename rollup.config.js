@@ -4,6 +4,7 @@ import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
+import { builtinModules } from 'module';
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
@@ -11,28 +12,39 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-export default [
-	{
-		input: `src/runtime/index.ts`,
+function template(kind, external, target) {
+	return {
+		input: `templates/src/${kind}/index.ts`,
 		output: {
-			file: `runtime.js`,
+			file: `templates/${kind}.js`,
 			format: 'es'
 		},
+		external,
 		plugins: [
+			resolve(),
+			commonjs(),
+			string({
+				include: '**/*.md'
+			}),
 			typescript({
 				typescript: require('typescript'),
-				target: "ES2017"
+				target
 			})
 		]
-	},
+	};
+}
+
+export default [
+	template('client', ['__ROOT__', '__ERROR__'], 'ES2017'),
+	template('server', builtinModules, 'ES2015'),
 
 	{
 		input: [
 			`src/api.ts`,
 			`src/cli.ts`,
 			`src/core.ts`,
-			`src/middleware.ts`,
-			`src/webpack.ts`
+			`src/config/rollup.ts`,
+			`src/config/webpack.ts`
 		],
 		output: {
 			dir: 'dist',
@@ -41,9 +53,6 @@ export default [
 		},
 		external,
 		plugins: [
-			string({
-				include: '**/*.md'
-			}),
 			json(),
 			resolve(),
 			commonjs(),
@@ -51,7 +60,6 @@ export default [
 				typescript: require('typescript')
 			})
 		],
-		experimentalCodeSplitting: true,
-		experimentalDynamicImport: true
+		experimentalCodeSplitting: true
 	}
 ];

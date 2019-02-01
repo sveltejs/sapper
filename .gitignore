@@ -4,10 +4,12 @@ yarn-error.log
 node_modules
 cypress/screenshots
 test/app/.sapper
-test/app/app/manifest
+test/app/src/manifest
+__sapper__
 test/app/export
 test/app/build
 sapper
 runtime.js
 dist
 !rollup.config.js
+templates/*.js

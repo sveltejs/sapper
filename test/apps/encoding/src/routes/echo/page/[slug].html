@@ -1,0 +1,11 @@
+<h1>{slug} {JSON.stringify(query)}</h1>
+
+<script>
+	export default {
+		preload({ params }) {
+			return {
+				slug: params.slug
+			};
+		}
+	};
+</script>

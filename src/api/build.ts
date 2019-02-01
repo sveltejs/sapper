@@ -2,40 +2,58 @@ import * as fs from 'fs';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import { EventEmitter } from 'events';
 import minify_html from './utils/minify_html';
-import { create_compilers, create_main_manifests, create_routes, create_serviceworker_manifest } from '../core';
-import * as events from './interfaces';
+import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
+import { copy_shimport } from './utils/copy_shimport';
+import read_template from '../core/read_template';
+import { CompileResult } from '../core/create_compilers/interfaces';
+import { noop } from './utils/noop';
+import validate_bundler from './utils/validate_bundler';
 
-export function build(opts: {}) {
-	const emitter = new EventEmitter();
+type Opts = {
+	cwd?: string;
+	src?: string;
+	routes?: string;
+	dest?: string;
+	output?: string;
+	static?: string;
+	legacy?: boolean;
+	bundler?: 'rollup' | 'webpack';
+	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
+};
 
-	execute(emitter, opts).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
+export async function build({
+	cwd,
+	src = 'src',
+	routes = 'src/routes',
+	output = '__sapper__',
+	static: static_files = 'static',
+	dest = '__sapper__/build',
 
-	return emitter;
-}
+	bundler,
+	legacy = false,
+	oncompile = noop
+}: Opts = {}) {
+	bundler = validate_bundler(bundler);
 
-async function execute(emitter: EventEmitter, {
-	dest = 'build',
-	app = 'app',
-	webpack = 'webpack',
-	routes = 'routes'
-} = {}) {
-	mkdirp.sync(dest);
+	cwd = path.resolve(cwd);
+	src = path.resolve(cwd, src);
+	dest = path.resolve(cwd, dest);
+	routes = path.resolve(cwd, routes);
+	output = path.resolve(cwd, output);
+	static_files = path.resolve(cwd, static_files);
+
+	if (legacy && bundler === 'webpack') {
+		throw new Error(`Legacy builds are not supported for projects using webpack`);
+	}
+
 	rimraf.sync(path.join(dest, '**/*'));
+	mkdirp.sync(`${dest}/client`);
+	copy_shimport(dest);
 
-	// minify app/template.html
+	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = fs.readFileSync(`${app}/template.html`, 'utf-8');
+	const template = read_template(src);
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -46,64 +64,74 @@ async function execute(emitter: EventEmitter, {
 
 	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
-	const route_objects = create_routes();
+	const manifest_data = create_manifest_data(routes);
 
-	// create app/manifest/client.js and app/manifest/server.js
-	create_main_manifests({ routes: route_objects });
-
-	const { client, server, serviceworker } = create_compilers({ webpack });
-
-	const client_stats = await compile(client);
-	emitter.emit('build', <events.BuildEvent>{
-		type: 'client',
-		// TODO duration/warnings
-		webpack_stats: client_stats
+	// create src/manifest/client.js and src/manifest/server.js
+	create_main_manifests({
+		bundler,
+		manifest_data,
+		cwd,
+		src,
+		dest,
+		routes,
+		output,
+		dev: false
 	});
 
-	const client_info = client_stats.toJson();
-	fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(client_info.assetsByChunkName));
+	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, dest, true);
 
-	const server_stats = await compile(server);
-	emitter.emit('build', <events.BuildEvent>{
+	const client_result = await client.compile();
+	oncompile({
+		type: 'client',
+		result: client_result
+	});
+
+	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
+
+	if (legacy) {
+		process.env.SAPPER_LEGACY_BUILD = 'true';
+		const { client } = await create_compilers(bundler, cwd, src, dest, true);
+
+		const client_result = await client.compile();
+
+		oncompile({
+			type: 'client (legacy)',
+			result: client_result
+		});
+
+		client_result.to_json(manifest_data, { src, routes, dest });
+		build_info.legacy_assets = client_result.assets;
+		delete process.env.SAPPER_LEGACY_BUILD;
+	}
+
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+
+	const server_stats = await server.compile();
+	oncompile({
 		type: 'server',
-		// TODO duration/warnings
-		webpack_stats: server_stats
+		result: server_stats
 	});
 
 	let serviceworker_stats;
 
 	if (serviceworker) {
+
+		const client_files = client_result.chunks
+			.filter(chunk => !chunk.file.endsWith('.map')) // SW does not need to cache sourcemap files
+			.map(chunk => `client/${chunk.file}`);
+
 		create_serviceworker_manifest({
-			routes: route_objects,
-			client_files: client_stats.toJson().assets.map((chunk: { name: string }) => `client/${chunk.name}`)
+			manifest_data,
+			output,
+			client_files,
+			static_files
 		});
 
-		serviceworker_stats = await compile(serviceworker);
+		serviceworker_stats = await serviceworker.compile();
 
-		emitter.emit('build', <events.BuildEvent>{
+		oncompile({
 			type: 'serviceworker',
-			// TODO duration/warnings
-			webpack_stats: serviceworker_stats
+			result: serviceworker_stats
 		});
 	}
-}
-
-function compile(compiler: any) {
-	return new Promise((fulfil, reject) => {
-		compiler.run((err: Error, stats: any) => {
-			if (err) {
-				reject(err);
-				process.exit(1);
-			}
-
-			if (stats.hasErrors()) {
-				console.error(stats.toString({ colors: true }));
-				reject(new Error(`Encountered errors while building app`));
-			}
-
-			else {
-				fulfil(stats);
-			}
-		});
-	});
 }

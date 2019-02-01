@@ -5,34 +5,59 @@ import * as child_process from 'child_process';
 import * as ports from 'port-authority';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
-import format_messages from 'webpack-format-messages';
-import { locations } from '../config';
 import { EventEmitter } from 'events';
-import { create_routes, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { create_manifest_data, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { Compiler, Compilers } from '../core/create_compilers';
+import { CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
-import * as events from './interfaces';
+import validate_bundler from './utils/validate_bundler';
+import { copy_shimport } from './utils/copy_shimport';
+import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
+import read_template from '../core/read_template';
+import { noop } from './utils/noop';
 
-export function dev(opts) {
+type Opts = {
+	cwd?: string,
+	src?: string,
+	dest?: string,
+	routes?: string,
+	output?: string,
+	static?: string,
+	'dev-port'?: number,
+	live?: boolean,
+	hot?: boolean,
+	'devtools-port'?: number,
+	bundler?: 'rollup' | 'webpack',
+	port?: number
+};
+
+export function dev(opts: Opts) {
 	return new Watcher(opts);
 }
 
 class Watcher extends EventEmitter {
+	bundler: 'rollup' | 'webpack';
 	dirs: {
-		app: string;
+		cwd: string;
+		src: string;
 		dest: string;
 		routes: string;
-		webpack: string;
+		output: string;
+		static: string;
 	}
 	port: number;
 	closed: boolean;
 
+	dev_port: number;
+	live: boolean;
+	hot: boolean;
+
+	devtools_port: number;
+
 	dev_server: DevServer;
 	proc: child_process.ChildProcess;
 	filewatchers: Array<{ close: () => void }>;
-	deferreds: {
-		client: Deferred;
-		server: Deferred;
-	};
+	deferred: Deferred;
 
 	crashed: boolean;
 	restarting: boolean;
@@ -44,23 +69,41 @@ class Watcher extends EventEmitter {
 	}
 
 	constructor({
-		app = locations.app(),
-		dest = locations.dest(),
-		routes = locations.routes(),
-		webpack = 'webpack',
+		cwd = '.',
+		src = 'src',
+		routes = 'src/routes',
+		output = '__sapper__',
+		static: static_files = 'static',
+		dest = '__sapper__/dev',
+		'dev-port': dev_port,
+		live,
+		hot,
+		'devtools-port': devtools_port,
+		bundler,
 		port = +process.env.PORT
-	}: {
-		app: string,
-		dest: string,
-		routes: string,
-		webpack: string,
-		port: number
-	}) {
+	}: Opts) {
 		super();
 
-		this.dirs = { app, dest, routes, webpack };
+		cwd = path.resolve(cwd);
+
+		this.bundler = validate_bundler(bundler);
+		this.dirs = {
+			cwd,
+			src: path.resolve(cwd, src),
+			dest: path.resolve(cwd, dest),
+			routes: path.resolve(cwd, routes),
+			output: path.resolve(cwd, output),
+			static: path.resolve(cwd, static_files)
+		};
+
 		this.port = port;
 		this.closed = false;
+
+		this.dev_port = dev_port;
+		this.live = live;
+		this.hot = hot;
+
+		this.devtools_port = devtools_port;
 
 		this.filewatchers = [];
 
@@ -72,7 +115,7 @@ class Watcher extends EventEmitter {
 		};
 
 		// remove this in a future version
-		const template = fs.readFileSync(path.join(app, 'template.html'), 'utf-8');
+		const template = read_template(src);
 		if (template.indexOf('%sapper.base%') === -1) {
 			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
 			error.code = `missing-sapper-base`;
@@ -91,7 +134,7 @@ class Watcher extends EventEmitter {
 	async init() {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
-				this.emit('fatal', <events.FatalEvent>{
+				this.emit('fatal', <FatalEvent>{
 					message: `Port ${this.port} is unavailable`
 				});
 				return;
@@ -100,27 +143,39 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { dest } = this.dirs;
+		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
 		rimraf.sync(dest);
-		mkdirp.sync(dest);
+		mkdirp.sync(`${dest}/client`);
+		if (this.bundler === 'rollup') copy_shimport(dest);
 
-		const dev_port = await ports.find(10000);
+		if (!this.dev_port) this.dev_port = await ports.find(10000);
+
+		// Chrome looks for debugging targets on ports 9222 and 9229 by default
+		if (!this.devtools_port) this.devtools_port = await ports.find(9222);
+
+		let manifest_data: ManifestData;
 
 		try {
-			const routes = create_routes();
-			create_main_manifests({ routes, dev_port });
+			manifest_data = create_manifest_data(routes);
+			create_main_manifests({
+				bundler: this.bundler,
+				manifest_data,
+				dev: true,
+				dev_port: this.dev_port,
+				cwd, src, dest, routes, output
+			});
 		} catch (err) {
-			this.emit('fatal', <events.FatalEvent>{
+			this.emit('fatal', <FatalEvent>{
 				message: err.message
 			});
 			return;
 		}
 
-		this.dev_server = new DevServer(dev_port);
+		this.dev_server = new DevServer(this.dev_port);
 
 		this.filewatchers.push(
 			watch_dir(
-				locations.routes(),
+				routes,
 				({ path: file, stats }) => {
 					if (stats.isDirectory()) {
 						return path.basename(file)[0] !== '_';
@@ -128,41 +183,40 @@ class Watcher extends EventEmitter {
 					return true;
 				},
 				() => {
-					const routes = create_routes();
-					create_main_manifests({ routes, dev_port });
-
 					try {
-						const routes = create_routes();
-						create_main_manifests({ routes, dev_port });
+						const new_manifest_data = create_manifest_data(routes);
+						create_main_manifests({
+							bundler: this.bundler,
+							manifest_data, // TODO is this right? not new_manifest_data?
+							dev: true,
+							dev_port: this.dev_port,
+							cwd, src, dest, routes, output
+						});
+
+						manifest_data = new_manifest_data;
 					} catch (err) {
-						this.emit('error', <events.ErrorEvent>{
+						this.emit('error', <ErrorEvent>{
 							message: err.message
 						});
 					}
 				}
 			),
 
-			fs.watch(`${locations.app()}/template.html`, () => {
+			fs.watch(`${src}/template.html`, () => {
 				this.dev_server.send({
 					action: 'reload'
 				});
 			})
 		);
 
-		this.deferreds = {
-			server: new Deferred(),
-			client: new Deferred()
-		};
+		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers = create_compilers({ webpack: this.dirs.webpack });
-
-		let log = '';
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, false);
 
 		const emitFatal = () => {
-			this.emit('fatal', <events.FatalEvent>{
-				message: `Server crashed`,
-				log
+			this.emit('fatal', <FatalEvent>{
+				message: `Server crashed`
 			});
 
 			this.crashed = true;
@@ -174,34 +228,35 @@ class Watcher extends EventEmitter {
 
 			invalid: filename => {
 				this.restart(filename, 'server');
-				this.deferreds.server = new Deferred();
 			},
 
-			result: info => {
-				this.deferreds.client.promise.then(() => {
+			handle_result: (result: CompileResult) => {
+				deferred.promise.then(() => {
 					const restart = () => {
-						log = '';
 						this.crashed = false;
 
 						ports.wait(this.port)
 							.then((() => {
-								this.emit('ready', <events.ReadyEvent>{
+								this.emit('ready', <ReadyEvent>{
 									port: this.port,
 									process: this.proc
 								});
 
-								this.deferreds.server.fulfil();
-
-								this.dev_server.send({
-									status: 'completed'
-								});
+								if (this.hot && this.bundler === 'webpack') {
+									this.dev_server.send({
+										status: 'completed'
+									});
+								} else {
+									this.dev_server.send({
+										action: 'reload'
+									});
+								}
 							}))
 							.catch(err => {
 								if (this.crashed) return;
 
-								this.emit('fatal', <events.FatalEvent>{
-									message: `Server is not listening on port ${this.port}`,
-									log
+								this.emit('fatal', <FatalEvent>{
+									message: `Server is not listening on port ${this.port}`
 								});
 							});
 					};
@@ -214,21 +269,28 @@ class Watcher extends EventEmitter {
 						restart();
 					}
 
-					this.proc = child_process.fork(`${dest}/server.js`, [], {
+					// we need to give the child process its own DevTools port,
+					// otherwise Node will try to use the parent's (and fail)
+					const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
+					const execArgv = process.execArgv.slice();
+					if (execArgv.some((arg: string) => !!arg.match(debugArgRegex))) {
+						execArgv.push(`--inspect-port=${this.devtools_port}`);
+					}
+
+					this.proc = child_process.fork(`${dest}/server/server.js`, [], {
 						cwd: process.cwd(),
 						env: Object.assign({
 							PORT: this.port
 						}, process.env),
-						stdio: ['ipc']
+						stdio: ['ipc'],
+						execArgv
 					});
 
 					this.proc.stdout.on('data', chunk => {
-						log += chunk;
 						this.emit('stdout', chunk);
 					});
 
 					this.proc.stderr.on('data', chunk => {
-						log += chunk;
 						this.emit('stderr', chunk);
 					});
 
@@ -245,30 +307,36 @@ class Watcher extends EventEmitter {
 			}
 		});
 
-		let first = true;
-
 		this.watch(compilers.client, {
 			name: 'client',
 
 			invalid: filename => {
 				this.restart(filename, 'client');
-				this.deferreds.client = new Deferred();
+				deferred = new Deferred();
 
 				// TODO we should delete old assets. due to a webpack bug
 				// i don't even begin to comprehend, this is apparently
 				// quite difficult
 			},
 
-			result: info => {
-				fs.writeFileSync(path.join(dest, 'client_assets.json'), JSON.stringify(info.assetsByChunkName, null, '  '));
-				this.deferreds.client.fulfil();
+			handle_result: (result: CompileResult) => {
+				fs.writeFileSync(
+					path.join(dest, 'build.json'),
 
-				const client_files = info.assets.map((chunk: { name: string }) => `client/${chunk.name}`);
+					// TODO should be more explicit that to_json has effects
+					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+				);
+
+				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 
 				create_serviceworker_manifest({
-					routes: create_routes(),
-					client_files
+					manifest_data,
+					output,
+					client_files,
+					static_files
 				});
+
+				deferred.fulfil();
 
 				// we need to wait a beat before watching the service
 				// worker, because of some webpack nonsense
@@ -281,11 +349,7 @@ class Watcher extends EventEmitter {
 				watch_serviceworker = noop;
 
 				this.watch(compilers.serviceworker, {
-					name: 'service worker',
-
-					result: info => {
-						fs.writeFileSync(path.join(dest, 'serviceworker_info.json'), JSON.stringify(info, null, '  '));
-					}
+					name: 'service worker'
 				});
 			}
 			: noop;
@@ -318,7 +382,7 @@ class Watcher extends EventEmitter {
 			};
 
 			process.nextTick(() => {
-				this.emit('invalid', <events.InvalidEvent>{
+				this.emit('invalid', <InvalidEvent>{
 					changed: Array.from(this.current_build.changed),
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
@@ -332,80 +396,32 @@ class Watcher extends EventEmitter {
 		}
 	}
 
-	watch(compiler: any, { name, invalid = noop, result }: {
+	watch(compiler: Compiler, { name, invalid = noop, handle_result = noop }: {
 		name: string,
 		invalid?: (filename: string) => void;
-		result: (stats: any) => void;
+		handle_result?: (result: CompileResult) => void;
 	}) {
-		compiler.hooks.invalid.tap('sapper', (filename: string) => {
-			invalid(filename);
-		});
+		compiler.oninvalid(invalid);
 
-		compiler.watch({}, (err: Error, stats: any) => {
+		compiler.watch((err?: Error, result?: CompileResult) => {
 			if (err) {
-				this.emit('error', <events.ErrorEvent>{
+				this.emit('error', <ErrorEvent>{
 					type: name,
 					message: err.message
 				});
 			} else {
-				const messages = format_messages(stats);
-				const info = stats.toJson();
-
 				this.emit('build', {
 					type: name,
 
-					duration: info.time,
-
-					errors: messages.errors.map((message: string) => {
-						const duplicate = this.current_build.unique_errors.has(message);
-						this.current_build.unique_errors.add(message);
-
-						return mungeWebpackError(message, duplicate);
-					}),
-
-					warnings: messages.warnings.map((message: string) => {
-						const duplicate = this.current_build.unique_warnings.has(message);
-						this.current_build.unique_warnings.add(message);
-
-						return mungeWebpackError(message, duplicate);
-					}),
+					duration: result.duration,
+					errors: result.errors,
+					warnings: result.warnings
 				});
 
-				result(info);
+				handle_result(result);
 			}
 		});
 	}
-}
-
-const locPattern = /\((\d+):(\d+)\)$/;
-
-function mungeWebpackError(message: string, duplicate: boolean) {
-	// TODO this is all a bit rube goldberg...
-	const lines = message.split('\n');
-
-	const file = lines.shift()
-		.replace('[7m', '') // careful — there is a special character at the beginning of this string
-		.replace('[27m', '')
-		.replace('./', '');
-
-	let line = null;
-	let column = null;
-
-	const match = locPattern.exec(lines[0]);
-	if (match) {
-		lines[0] = lines[0].replace(locPattern, '');
-		line = +match[1];
-		column = +match[2];
-	}
-
-	return {
-		file,
-		line,
-		column,
-		message: lines.join('\n'),
-		originalMessage: message,
-		duplicate
-	};
 }
 
 const INTERVAL = 10000;
@@ -460,14 +476,12 @@ class DevServer {
 	}
 }
 
-function noop() {}
-
 function watch_dir(
 	dir: string,
 	filter: ({ path, stats }: { path: string, stats: fs.Stats }) => boolean,
 	callback: () => void
 ) {
-	let watch;
+	let watch: any;
 	let closed = false;
 
 	import('cheap-watch').then(CheapWatch => {
@@ -475,7 +489,7 @@ function watch_dir(
 
 		watch = new CheapWatch({ dir, filter, debounce: 50 });
 
-		watch.on('+', ({ isNew }) => {
+		watch.on('+', ({ isNew }: { isNew: boolean }) => {
 			if (isNew) callback();
 		});
 

@@ -1,129 +1,150 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as sander from 'sander';
-import URL from 'url-parse';
+import * as url from 'url';
 import fetch from 'node-fetch';
 import * as yootils from 'yootils';
 import * as ports from 'port-authority';
-import { EventEmitter } from 'events';
 import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
-import * as events from './interfaces';
+import { noop } from './utils/noop';
 
-export function exporter(opts: {}) {
-	const emitter = new EventEmitter();
+type Opts = {
+	build_dir?: string,
+	export_dir?: string,
+	cwd?: string,
+	static?: string,
+	basepath?: string,
+	timeout?: number | false,
+	oninfo?: ({ message }: { message: string }) => void;
+	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
+};
 
-	execute(emitter, opts).then(
-		() => {
-			emitter.emit('done', <events.DoneEvent>{}); // TODO do we need to pass back any info?
-		},
-		error => {
-			emitter.emit('error', <events.ErrorEvent>{
-				error
-			});
-		}
-	);
-
-	return emitter;
+function resolve(from: string, to: string) {
+	return url.parse(url.resolve(from, to));
 }
 
-async function execute(emitter: EventEmitter, {
-	build = 'build',
-	dest = 'export',
-	basepath = ''
-} = {}) {
-	const export_dir = path.join(dest, basepath);
+type URL = url.UrlWithStringQuery;
+
+export { _export as export };
+
+async function _export({
+	cwd,
+	static: static_files = 'static',
+	build_dir = '__sapper__/build',
+	export_dir = '__sapper__/export',
+	basepath = '',
+	timeout = 5000,
+	oninfo = noop,
+	onfile = noop
+}: Opts = {}) {
+	basepath = basepath.replace(/^\//, '')
+
+	cwd = path.resolve(cwd);
+	static_files = path.resolve(cwd, static_files);
+	build_dir = path.resolve(cwd, build_dir);
+	export_dir = path.resolve(cwd, export_dir, basepath);
 
 	// Prep output directory
 	sander.rimrafSync(export_dir);
 
-	sander.copydirSync('assets').to(export_dir);
-	sander.copydirSync(build, 'client').to(export_dir, 'client');
+	sander.copydirSync(static_files).to(export_dir);
+	sander.copydirSync(build_dir, 'client').to(export_dir, 'client');
 
-	if (sander.existsSync(build, 'service-worker.js')) {
-		sander.copyFileSync(build, 'service-worker.js').to(export_dir, 'service-worker.js');
+	if (sander.existsSync(build_dir, 'service-worker.js')) {
+		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
 	}
 
-	if (sander.existsSync(build, 'service-worker.js.map')) {
-		sander.copyFileSync(build, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
+	if (sander.existsSync(build_dir, 'service-worker.js.map')) {
+		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
 	}
 
 	const port = await ports.find(3000);
 
-	const origin = `http://localhost:${port}`;
-	const root = new URL(basepath || '', origin);
+	const protocol = 'http:';
+	const host = `localhost:${port}`;
+	const origin = `${protocol}//${host}`;
 
-	emitter.emit('info', {
+	const root = resolve(origin, basepath);
+	if (!root.href.endsWith('/')) root.href += '/';
+
+	oninfo({
 		message: `Crawling ${root.href}`
 	});
 
-	const proc = child_process.fork(path.resolve(`${build}/server.js`), [], {
-		cwd: process.cwd(),
+	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
+		cwd,
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_DEST: build,
 			SAPPER_EXPORT: 'true'
 		}, process.env)
 	});
 
 	const seen = new Set();
 	const saved = new Set();
-	const deferreds = new Map();
 
-	function get_deferred(pathname: string) {
-		pathname = pathname.replace(root.pathname, '');
-
-		if (!deferreds.has(pathname)) {
-			deferreds.set(pathname, new Deferred());
-		}
-
-		return deferreds.get(pathname);
-	}
-
-	proc.on('message', message => {
-		if (!message.__sapper__ || message.event !== 'file') return;
-
-		const pathname = new URL(message.url, origin).pathname;
-		let file = pathname.slice(1);
-		let { body } = message;
+	function save(path: string, status: number, type: string, body: string) {
+		const { pathname } = resolve(origin, path);
+		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
 		saved.add(file);
 
-		const is_html = message.type === 'text/html';
+		const is_html = type === 'text/html';
 
 		if (is_html) {
-			file = file === '' ? 'index.html' : `${file}/index.html`;
+			if (pathname !== '/service-worker-index.html') {
+				file = file === '' ? 'index.html' : `${file}/index.html`;
+			}
 			body = minify_html(body);
 		}
 
-		emitter.emit('file', <events.FileEvent>{
+		onfile({
 			file,
 			size: body.length,
-			status: message.status
+			status
 		});
 
 		sander.writeFileSync(export_dir, file, body);
+	}
 
-		get_deferred(pathname).fulfil();
+	proc.on('message', message => {
+		if (!message.__sapper__ || message.event !== 'file') return;
+		save(message.url, message.status, message.type, message.body);
 	});
 
 	async function handle(url: URL) {
-		const pathname = (url.pathname.replace(root.pathname, '') || '/');
+		let pathname = url.pathname;
+		if (pathname !== '/service-worker-index.html') {
+		  pathname = pathname.replace(root.pathname, '') || '/'
+		}
 
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
 
-		const deferred = get_deferred(pathname);
+		const timeout_deferred = new Deferred();
+		const the_timeout = setTimeout(() => {
+			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
+		}, timeout);
 
-		const r = await fetch(url.href);
+		const r = await Promise.race([
+			fetch(url.href, {
+				redirect: 'manual'
+			}),
+			timeout_deferred.promise
+		]);
+
+		clearTimeout(the_timeout); // prevent it hanging at the end
+
+		let type = r.headers.get('Content-Type');
+		let body = await r.text();
+
 		const range = ~~(r.status / 100);
 
 		if (range === 2) {
-			if (r.headers.get('Content-Type') === 'text/html') {
-				const body = await r.text();
+			if (type === 'text/html' && pathname !== '/service-worker-index.html') {
 				const urls: URL[] = [];
 
 				const cleaned = clean_html(body);
@@ -133,7 +154,7 @@ async function execute(emitter: EventEmitter, {
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 				const base_href = base_match && get_href(base_match[1]);
-				const base = new URL(base_href || '/', url.href);
+				const base = resolve(url.href, base_href);
 
 				let match;
 				let pattern = /<a ([\s\S]+?)>/gm;
@@ -143,8 +164,9 @@ async function execute(emitter: EventEmitter, {
 					const href = get_href(attrs);
 
 					if (href) {
-						const url = new URL(href, base.href);
-						if (url.origin === origin) {
+						const url = resolve(base.href, href);
+
+						if (url.protocol === protocol && url.host === host) {
 							promise = q.add(() => handle(url));
 						}
 					}
@@ -154,18 +176,29 @@ async function execute(emitter: EventEmitter, {
 			}
 		}
 
-		await deferred.promise;
+		if (range === 3) {
+			const location = r.headers.get('Location');
+
+			type = 'text/html';
+			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
+
+			await handle(resolve(root.href, location));
+		}
+
+		save(pathname, r.status, type, body);
 	}
 
 	return ports.wait(port)
-		.then(() => {
-			// TODO all static routes
-			return handle(root);
-		})
-		.then(() => proc.kill());
+		.then(() => handle(root))
+		.then(() => handle(resolve(root.href, 'service-worker-index.html')))
+		.then(() => proc.kill())
+		.catch(err => {
+			proc.kill();
+			throw err;
+		});
 }
 
 function get_href(attrs: string) {
-	const match = /href\s*=\s*(?:"(.+?)"|'(.+?)'|([^\s>]+))/.exec(attrs);
+	const match = /href\s*=\s*(?:"(.*?)"|'(.+?)'|([^\s>]+))/.exec(attrs);
 	return match[1] || match[2] || match[3];
 }

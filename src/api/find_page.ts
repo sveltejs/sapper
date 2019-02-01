@@ -1,8 +1,7 @@
-import { locations } from '../config';
-import { create_routes } from '../core';
+import { create_manifest_data } from '../core';
 
-export function find_page(pathname: string, cwd = locations.routes()) {
-	const { pages } = create_routes(cwd);
+export function find_page(pathname: string, cwd = 'src/routes') {
+	const { pages } = create_manifest_data(cwd);
 
 	for (let i = 0; i < pages.length; i += 1) {
 		const page = pages[i];
