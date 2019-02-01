@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.24.3",
+  "version": "0.25.0",
   "description": "Military-grade apps, engineered by Svelte",
   "bin": {
     "sapper": "./sapper"
