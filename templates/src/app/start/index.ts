@@ -5,7 +5,7 @@ import {
 	navigate,
 	scroll_history,
 	scroll_state,
-	select_route,
+	select_target,
 	set_target,
 	uid,
 	set_uid,
@@ -35,7 +35,7 @@ export default function start(opts: {
 		history.replaceState({ id: uid }, '', href);
 
 		if (!initial_data.error) {
-			const target = select_route(new URL(location.href));
+			const target = select_target(new URL(location.href));
 			if (target) return navigate(target, uid, false, hash);
 		}
 	});
@@ -92,7 +92,7 @@ function handle_click(event: MouseEvent) {
 	// Don't handle hash changes
 	if (url.pathname === location.pathname && url.search === location.search) return;
 
-	const target = select_route(url);
+	const target = select_target(url);
 	if (target) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
 		navigate(target, null, noscroll, url.hash);
@@ -115,7 +115,7 @@ function handle_popstate(event: PopStateEvent) {
 
 	if (event.state) {
 		const url = new URL(location.href);
-		const target = select_route(url);
+		const target = select_target(url);
 		if (target) {
 			navigate(target, event.state.id);
 		} else {

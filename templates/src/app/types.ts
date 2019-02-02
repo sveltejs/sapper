@@ -23,7 +23,7 @@ export type ComponentLoader = {
 	css: string[]
 };
 
-export type Page = {
+export type Route = {
 	pattern: RegExp;
 	parts: Array<{
 		i: number;
@@ -35,7 +35,7 @@ export type Manifest = {
 	ignore: RegExp[];
 	root: ComponentConstructor;
 	error: () => Promise<{ default: ComponentConstructor }>;
-	pages: Page[]
+	pages: Route[]
 };
 
 export type ScrollPosition = {
@@ -44,11 +44,12 @@ export type ScrollPosition = {
 };
 
 export type Target = {
-	url: URL;
+	href: string;
 	path: string;
-	page: Page;
+	route: Route;
 	match: RegExpExecArray;
 	query: Record<string, string | string[]>;
+	params: Record<string, string>;
 };
 
 export type Redirect = {
@@ -60,7 +61,7 @@ export type Store = {
 	get: () => any;
 }
 
-export type PageData = {
+export type Page = {
 	path: string;
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;

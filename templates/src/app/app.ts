@@ -9,14 +9,17 @@ import {
 	Redirect,
 	ComponentLoader,
 	ComponentConstructor,
-	Page,
-	PageData
+	Route,
+	Page
 } from './types';
 import goto from './goto';
 
+// injected at build time
+declare const __IGNORE__, __COMPONENTS__, __PAGES__, __SAPPER__;
+
 const ignore = __IGNORE__;
 export const components: ComponentLoader[] = __COMPONENTS__;
-export const pages: Page[] = __PAGES__;
+export const routes: Route[] = __PAGES__;
 
 let ready = false;
 let root_component: Component;
@@ -64,19 +67,19 @@ export { _history as history };
 
 export const scroll_history: Record<string, ScrollPosition> = {};
 
-export function select_route(url: URL): Target {
+export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
 	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 
 	const path = url.pathname.slice(initial_data.baseUrl.length);
 
-	// avoid accidental clashes between server routes and pages
+	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
 
-	for (let i = 0; i < pages.length; i += 1) {
-		const page = pages[i];
+	for (let i = 0; i < routes.length; i += 1) {
+		const route = routes[i];
 
-		const match = page.pattern.exec(path);
+		const match = route.pattern.exec(path);
 		if (match) {
 			const query: Record<string, string | string[]> = Object.create(null);
 			if (url.search.length > 0) {
@@ -84,11 +87,22 @@ export function select_route(url: URL): Target {
 					let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
 					value = (value || '').replace(/\+/g, ' ');
 					if (typeof query[key] === 'string') query[key] = [<string>query[key]];
-					if (typeof query[key] === 'object') query[key].push(value);
+					if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 					else query[key] = value;
 				});
 			}
-			return { url, path, page, match, query };
+
+			const part = route.parts[route.parts.length - 1];
+			const params = part.params ? part.params(match) : {};
+
+			return {
+				href: url.href,
+				path,
+				route,
+				match,
+				query,
+				params
+			};
 		}
 	}
 }
@@ -122,23 +136,23 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 			// TODO path, params, query
 		});
 	}
-	const loaded = prefetching && prefetching.href === target.url.href ?
+	const loaded = prefetching && prefetching.href === target.href ?
 		prefetching.promise :
-		prepare_page(target);
+		hydrate_target(target);
 
 	prefetching = null;
 
 	const token = current_token = {};
 
-	const { redirect, page, data, branch } = await loaded;
+	const { redirect, page, props, branch } = await loaded;
 
 	if (redirect) return goto(redirect.location, { replaceState: true });
 
-	await render(branch, data, page, scroll_history[id], noscroll, hash, token);
+	await render(branch, props, page, scroll_history[id], noscroll, hash, token);
 	if (document.activeElement) document.activeElement.blur();
 }
 
-async function render(branch: any[], props: any, page: PageData, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
+async function render(branch: any[], props: any, page: Page, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
 	stores.page.set(page);
@@ -191,16 +205,30 @@ async function render(branch: any[], props: any, page: PageData, scroll: ScrollP
 	ready = true;
 }
 
-export async function prepare_page(target: Target): Promise<{
+export async function hydrate_target(target: Target): Promise<{
 	redirect?: Redirect;
-	data?: any;
-	page: PageData
+	props?: any;
+	page?: Page;
+	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>
 }> {
-	const { page, path, query } = target;
+	const { route, path, query, params } = target;
 	const segments = path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
+
+	const preload_context = {
+		fetch: (url: string, opts?: any) => fetch(url, opts),
+		redirect: (statusCode: number, location: string) => {
+			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
+				throw new Error(`Conflicting redirects`);
+			}
+			redirect = { statusCode, location };
+		},
+		error: (statusCode: number, message: Error | string) => {
+			error = { statusCode, message };
+		}
+	};
 
 	if (!root_preload) {
 		const preload_fn = RootStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
@@ -216,20 +244,7 @@ export async function prepare_page(target: Target): Promise<{
 	let branch;
 
 	try {
-		const preload_context = {
-			fetch: (url: string, opts?: any) => fetch(url, opts),
-			redirect: (statusCode: number, location: string) => {
-				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-					throw new Error(`Conflicting redirects`);
-				}
-				redirect = { statusCode, location };
-			},
-			error: (statusCode: number, message: Error | string) => {
-				error = { statusCode, message };
-			}
-		};
-
-		branch = await Promise.all(page.parts.map(async (part, i) => {
+		branch = await Promise.all(route.parts.map(async (part, i) => {
 			if (!part) return null;
 
 			const segment = segments[i];
@@ -259,22 +274,18 @@ export async function prepare_page(target: Target): Promise<{
 
 	if (!root_data) root_data = await root_preload;
 
-	if (redirect) {
-		return { redirect, page: null };
-	}
-
-	const deepest = page.parts[page.parts.length - 1];
+	if (redirect) return { redirect };
 
 	const page_data = {
 		path,
 		query,
-		params: deepest.params ? deepest.params(target.match) : {}
+		params
 	};
 
 	if (error) {
 		return {
 			page: page_data,
-			data: {
+			props: {
 				child: {
 					component: ErrorComponent,
 					props: {
@@ -287,28 +298,20 @@ export async function prepare_page(target: Target): Promise<{
 		};
 	}
 
-	const props = {
-		child: {
-			segment: segments[0]
-		}
-	};
-
+	const props = { child: {} };
 	let level = props.child;
 
-	for (let i = 0; i < page.parts.length; i += 1) {
-		const part = page.parts[i];
-		if (!part) continue;
+	branch.forEach(node => {
+		if (!node) return;
 
-		level.component = branch[i].Component;
-		level.props = Object.assign({}, branch[i].preloaded, {
-			child: {}
-		});
+		level.segment = node.segment;
+		level.component = node.Component;
+		level.props = Object.assign({}, node.preloaded, { child: {} });
 
 		level = level.props.child;
-		level.segment = segments[i + 1];
-	}
+	});
 
-	return { data: props, page: page_data, branch };
+	return { props, page: page_data, branch };
 }
 
 function load_css(chunk: string) {

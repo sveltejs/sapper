@@ -1,7 +1,7 @@
-import { history, select_route, navigate, cid } from '../app';
+import { history, select_target, navigate, cid } from '../app';
 
 export default function goto(href: string, opts = { replaceState: false }) {
-	const target = select_route(new URL(href, document.baseURI));
+	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {
 		history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
