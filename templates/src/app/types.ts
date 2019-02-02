@@ -45,11 +45,9 @@ export type ScrollPosition = {
 
 export type Target = {
 	href: string;
-	path: string;
 	route: Route;
 	match: RegExpExecArray;
-	query: Record<string, string | string[]>;
-	params: Record<string, string>;
+	page: Page;
 };
 
 export type Redirect = {

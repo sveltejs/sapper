@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 export const stores = {
-	preloading: writable(null),
+	preloading: writable(false),
 	page: writable(null)
 };
 

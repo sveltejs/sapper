@@ -95,14 +95,9 @@ export function select_target(url: URL): Target {
 			const part = route.parts[route.parts.length - 1];
 			const params = part.params ? part.params(match) : {};
 
-			return {
-				href: url.href,
-				path,
-				route,
-				match,
-				query,
-				params
-			};
+			const page = { path, query, params };
+
+			return { href: url.href, route, match, page };
 		}
 	}
 }
@@ -130,11 +125,8 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 	cid = id;
 
-	if (root_component) {
-		stores.preloading.set({
-			// TODO path, params, query
-		});
-	}
+	if (root_component) stores.preloading.set(true);
+
 	const loaded = prefetching && prefetching.href === target.href ?
 		prefetching.promise :
 		hydrate_target(target);
@@ -142,18 +134,18 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 	prefetching = null;
 
 	const token = current_token = {};
-	const { redirect, page, props, branch } = await loaded;
+	const { redirect, props, branch } = await loaded;
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
 	if (redirect) return goto(redirect.location, { replaceState: true });
 
-	await render(branch, props, page, scroll_history[id], noscroll, hash);
+	await render(branch, props, target.page, scroll_history[id], noscroll, hash);
 	if (document.activeElement) document.activeElement.blur();
 }
 
 async function render(branch: any[], props: any, page: Page, scroll: ScrollPosition, noscroll: boolean, hash: string) {
 	stores.page.set(page);
-	stores.preloading.set(null);
+	stores.preloading.set(false);
 
 	if (root_component) {
 		root_component.props = props;
@@ -203,11 +195,10 @@ async function render(branch: any[], props: any, page: Page, scroll: ScrollPosit
 export async function hydrate_target(target: Target): Promise<{
 	redirect?: Redirect;
 	props?: any;
-	page?: Page;
 	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>
 }> {
-	const { route, path, query, params } = target;
-	const segments = path.split('/').filter(Boolean);
+	const { route, page } = target;
+	const segments = page.path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
@@ -227,8 +218,8 @@ export async function hydrate_target(target: Target): Promise<{
 
 	if (!root_preloaded) {
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
-			path,
-			query,
+			path: page.path,
+			query: page.query,
 			params: {}
 		});
 	}
@@ -248,8 +239,8 @@ export async function hydrate_target(target: Target): Promise<{
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
 					? await preload.call(preload_context, {
-						path,
-						query,
+						path: page.path,
+						query: page.query,
 						params: part.params ? part.params(target.match) : {}
 					})
 					: {};
@@ -266,12 +257,9 @@ export async function hydrate_target(target: Target): Promise<{
 
 	if (redirect) return { redirect };
 
-	const page = { path, query, params };
-
 	if (error) {
 		// TODO be nice if this was less of a special case
 		return {
-			page,
 			props: {
 				child: {
 					component: ErrorComponent,
@@ -298,7 +286,7 @@ export async function hydrate_target(target: Target): Promise<{
 		level = level.props.child;
 	});
 
-	return { props, page, branch };
+	return { props, branch };
 }
 
 function load_css(chunk: string) {
