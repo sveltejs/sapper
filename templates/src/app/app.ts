@@ -3,6 +3,7 @@ import { stores } from '@sapper/internal';
 import Root from '__ROOT__';
 import { preload as root_preload } from '__ROOT_PRELOAD__';
 import ErrorComponent from '__ERROR__';
+import { writable } from 'svelte/store.mjs';
 import {
 	Target,
 	ScrollPosition,
@@ -18,6 +19,8 @@ import goto from './goto';
 // injected at build time
 declare const __IGNORE__, __COMPONENTS__, __PAGES__, __SAPPER__;
 
+export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
+
 const ignore = __IGNORE__;
 export const components: ComponentLoader[] = __COMPONENTS__;
 export const routes: Route[] = __PAGES__;
@@ -27,6 +30,26 @@ let root_component: Component;
 let current_token: {};
 let root_preloaded: Promise<any>;
 let current_branch = [];
+
+const session = writable(initial_data && initial_data.session);
+
+let $session;
+let session_dirty: boolean;
+
+session.subscribe(async value => {
+	$session = value;
+
+	if (!ready) return;
+	session_dirty = true;
+
+	const target = select_target(new URL(location.href));
+
+	const token = current_token = {};
+	const { redirect, props, branch } = await hydrate_target(target);
+	if (token !== current_token) return; // a secondary navigation happened while we were loading
+
+	await render(redirect, branch, props, target.page);
+});
 
 export let prefetching: {
 	href: string;
@@ -55,8 +78,6 @@ export let cid: number;
 export function set_cid(n) {
 	cid = n;
 }
-
-export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
 const _history = typeof history !== 'undefined' ? history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -137,13 +158,32 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 	const { redirect, props, branch } = await loaded;
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
-	if (redirect) return goto(redirect.location, { replaceState: true });
-
-	await render(branch, props, target.page, scroll_history[id], noscroll, hash);
+	await render(redirect, branch, props, target.page);
 	if (document.activeElement) document.activeElement.blur();
+
+	if (!noscroll) {
+		let scroll = scroll_history[id];
+
+		if (hash) {
+			// scroll is an element id (from a hash), we need to compute y.
+			const deep_linked = document.querySelector(hash);
+
+			if (deep_linked) {
+				scroll = {
+					x: 0,
+					y: deep_linked.getBoundingClientRect().top
+				};
+			}
+		}
+
+		scroll_history[cid] = scroll;
+		if (scroll) scrollTo(scroll.x, scroll.y);
+	}
 }
 
-async function render(branch: any[], props: any, page: Page, scroll: ScrollPosition, noscroll: boolean, hash: string) {
+async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
+	if (redirect) return goto(redirect.location, { replaceState: true });
+
 	stores.page.set(page);
 	stores.preloading.set(false);
 
@@ -165,31 +205,15 @@ async function render(branch: any[], props: any, page: Page, scroll: ScrollPosit
 			props: {
 				Root,
 				props,
-				session: __SAPPER__.session
+				session
 			},
 			hydrate: true
 		});
 	}
 
-	if (!noscroll) {
-		if (hash) {
-			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.querySelector(hash);
-
-			if (deep_linked) {
-				scroll = {
-					x: 0,
-					y: deep_linked.getBoundingClientRect().top
-				};
-			}
-		}
-
-		scroll_history[cid] = scroll;
-		if (scroll) scrollTo(scroll.x, scroll.y);
-	}
-
 	current_branch = branch;
 	ready = true;
+	session_dirty = false;
 }
 
 export async function hydrate_target(target: Target): Promise<{
@@ -221,7 +245,7 @@ export async function hydrate_target(target: Target): Promise<{
 			path: page.path,
 			query: page.query,
 			params: {}
-		});
+		}, $session);
 	}
 
 	let branch;
@@ -231,7 +255,7 @@ export async function hydrate_target(target: Target): Promise<{
 			if (!part) return null;
 
 			const segment = segments[i];
-			if (current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
+			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
 
 			const { default: Component, preload } = await load_component(components[part.i]);
 
@@ -242,7 +266,7 @@ export async function hydrate_target(target: Target): Promise<{
 						path: page.path,
 						query: page.query,
 						params: part.params ? part.params(target.match) : {}
-					})
+					}, $session)
 					: {};
 			} else {
 				preloaded = initial_data.preloaded[i + 1];
