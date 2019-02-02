@@ -9,7 +9,6 @@ import {
 	Redirect,
 	ComponentLoader,
 	ComponentConstructor,
-	RootProps,
 	Page,
 	PageData
 } from './types';
@@ -25,6 +24,7 @@ let segments: string[] = [];
 let current_token: {};
 let root_preload: Promise<any>;
 let root_data: any;
+let current_branch = [];
 
 export let prefetching: {
 	href: string;
@@ -189,11 +189,9 @@ async function render(results: any[], props: any, page: PageData, scroll: Scroll
 		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
 
-	previous_thingummy = results;
+	current_branch = results;
 	ready = true;
 }
-
-let previous_thingummy = [];
 
 export function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
@@ -245,7 +243,7 @@ export function prepare_page(target: Target): Promise<{
 	return Promise.all(page.parts.map((part, i) => {
 		const segment = new_segments[i];
 
-		if (i < changed_from || !part) return previous_thingummy[i];
+		if (i < changed_from || !part) return current_branch[i];
 		if (!part) return null;
 
 		return load_component(components[part.i]).then(({ default: Component, preload }) => {

@@ -8,13 +8,6 @@ type Child = {
 	component?: Component;
 };
 
-export type RootProps = {
-	path: string;
-	params: Record<string, string>;
-	query: Record<string, string>;
-	child: Child;
-};
-
 export interface ComponentConstructor {
 	new (options: { target: Node, props: any, store: Store, hydrate: boolean }): Component;
 	preload: (props: { params: Params, query: Query }) => Promise<any>;
