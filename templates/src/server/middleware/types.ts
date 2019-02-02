@@ -12,6 +12,7 @@ export type Page = {
 		name: string;
 		component: Component;
 		params?: (match: RegExpMatchArray) => Record<string, string>;
+		preload?: (data: any) => any | Promise<any>;
 	}>
 };
 
@@ -19,6 +20,7 @@ export type Manifest = {
 	server_routes: ServerRoute[];
 	pages: Page[];
 	root: Component;
+	root_preload?: (data: any) => any | Promise<any>;
 	error: Component;
 }
 
@@ -29,9 +31,6 @@ export type Store = {
 };
 
 export type Props = {
-	path: string;
-	query: Record<string, string>;
-	params: Record<string, string>;
 	error?: { message: string };
 	status?: number;
 	child: {
@@ -64,6 +63,5 @@ interface Component {
 		head: string;
 		css: { code: string, map: any };
 		html: string
-	},
-	preload: (data: any) => any | Promise<any>
+	}
 }

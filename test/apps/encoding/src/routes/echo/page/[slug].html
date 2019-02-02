@@ -7,8 +7,8 @@
 </script>
 
 <script>
+	import { page } from '@sapper/app';
 	export let slug;
-	export let query;
 </script>
 
-<h1>{slug} {JSON.stringify(query)}</h1>
+<h1>{slug} {JSON.stringify($page.query)}</h1>

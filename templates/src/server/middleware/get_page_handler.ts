@@ -4,9 +4,9 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import * as stores from '../../shared/stores';
 import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
 import { Manifest, Page, Props, Req, Res } from './types';
+import { stores } from '@sapper/internal';
 import App from '@sapper/App.html';
 
 export function get_page_handler(
@@ -135,6 +135,7 @@ export function get_page_handler(
 
 		let preloaded;
 		let match;
+		let params;
 
 		try {
 			const root_preloaded = manifest.root_preload
@@ -147,16 +148,20 @@ export function get_page_handler(
 
 			match = error ? null : page.pattern.exec(req.path);
 
+
 			let toPreload = [root_preloaded];
 			if (!isSWIndexHtml) {
 				toPreload = toPreload.concat(page.parts.map(part => {
 					if (!part) return null;
 
+					// the deepest level is used below, to initialise the store
+					params = part.params ? part.params(match) : {};
+
 					return part.preload
 						? part.preload.call(preload_context, {
 							path: req.path,
 							query: req.query,
-							params: part.params ? part.params(match) : {}
+							params
 						})
 						: {};
 				}))
@@ -186,60 +191,46 @@ export function get_page_handler(
 
 			const segments = req.path.split('/').filter(Boolean);
 
-			const props: Props = {
-				path: req.path,
-				query: req.query,
-				params: {},
-				child: null
-			};
-
-			if (error) {
-				props.error = error instanceof Error ? error : { message: error };
-				props.status = status;
-			}
-
-			const data = Object.assign({}, props, preloaded[0], {
-				params: {},
+			const props = Object.assign({}, preloaded[0], {
 				child: {
-					segment: segments[0]
+					segment: segments[0],
+					props: {}
 				}
 			});
 
-			let level = data.child;
-			if (isSWIndexHtml) {
-				level.props = Object.assign({}, props, {
-					params: {}
-				})
-			} else {
+			let level = props.child;
+			if (!isSWIndexHtml) {
 				for (let i = 0; i < page.parts.length; i += 1) {
 					const part = page.parts[i];
 					if (!part) continue;
 
-					const get_params = part.params || (() => ({}));
-
 					Object.assign(level, {
 						component: part.component,
-						props: Object.assign({}, props, {
-							params: get_params(match)
-						}, preloaded[i + 1])
+						props: Object.assign({}, preloaded[i + 1])
 					});
 
 					level.props.child = <Props["child"]>{
-						segment: segments[i + 1]
+						segment: segments[i + 1],
+						props: {}
 					};
 					level = level.props.child;
 				}
 			}
 
+			if (error) {
+				props.child.props.error = error instanceof Error ? error : { message: error };
+				props.child.props.status = status;
+			}
+
 			stores.page.set({
 				path: req.path,
 				query: req.query,
-				params: req.params
+				params: params
 			});
 
 			const { html, head, css } = App.render({
 				Root: manifest.root,
-				props: data,
+				props: props,
 				session
 			});
 
@@ -313,6 +304,7 @@ export function get_page_handler(
 			res.statusCode = status;
 			res.end(body);
 		} catch(err) {
+			console.log(err);
 			if (error) {
 				// we encountered an error while rendering the error page — oops
 				res.statusCode = 500;

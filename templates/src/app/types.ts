@@ -66,3 +66,9 @@ export type Redirect = {
 export type Store = {
 	get: () => any;
 }
+
+export type PageData = {
+	path: string;
+	params: Record<string, string>;
+	query: Record<string, string | string[]>;
+};

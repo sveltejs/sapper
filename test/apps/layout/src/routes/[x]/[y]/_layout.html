@@ -9,13 +9,13 @@
 </script>
 
 <script>
-	export let params;
+	import { page } from '@sapper/app';
+
 	export let count;
 	export let child;
-	export let segment = params.y;
 </script>
 
-<span>y: {segment} {count}</span>
+<span>y: {$page.params.y} {count}</span>
 <svelte:component this={child.component} {...child.props}/>
 
 <span>child segment: {child.segment}</span>

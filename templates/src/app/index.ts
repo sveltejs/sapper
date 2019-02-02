@@ -1,6 +1,5 @@
 import { getContext } from 'svelte';
-import { CONTEXT_KEY } from '@sapper/internal';
-import * as stores from '../shared/stores';
+import { CONTEXT_KEY, stores } from '@sapper/internal';
 
 export const preloading = { subscribe: stores.preloading.subscribe };
 export const page = { subscribe: stores.page.subscribe };

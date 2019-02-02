@@ -1,5 +1,5 @@
 import App from '@sapper/App.html';
-import { preloading, page } from '../shared/stores';
+import { stores } from '@sapper/internal';
 import Root, * as RootStatic from '__ROOT__';
 import ErrorComponent from '__ERROR__';
 import {
@@ -10,7 +10,8 @@ import {
 	ComponentLoader,
 	ComponentConstructor,
 	RootProps,
-	Page
+	Page,
+	PageData
 } from './types';
 import goto from './goto';
 
@@ -25,20 +26,9 @@ let current_token: {};
 let root_preload: Promise<any>;
 let root_data: any;
 
-const root_props: RootProps = {
-	path: null,
-	params: null,
-	query: null,
-	child: {
-		segment: null,
-		component: null,
-		props: {}
-	}
-};
-
 export let prefetching: {
 	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any, nullable_depth?: number, new_segments?: any }>;
+	promise: Promise<{ redirect?: Redirect, data?: any, new_segments?: any }>;
 } = null;
 export function set_prefetching(href, promise) {
 	prefetching = { href, promise };
@@ -111,7 +101,7 @@ export function scroll_state() {
 	};
 }
 
-export function navigate(target: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
+export async function navigate(target: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
 	let scroll: ScrollPosition;
 	if (id) {
 		// popstate or initial navigation
@@ -129,7 +119,7 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 	cid = id;
 
 	if (root_component) {
-		preloading.set({
+		stores.preloading.set({
 			// TODO path, params, query
 		});
 	}
@@ -141,38 +131,22 @@ export function navigate(target: Target, id: number, noscroll?: boolean, hash?: 
 
 	const token = current_token = {};
 
-	return loaded.then(({ redirect, data, nullable_depth, new_segments }) => {
-		if (redirect) {
-			return goto(redirect.location, { replaceState: true });
-		}
-		if (new_segments) {
-			segments = new_segments;
-		}
-		render(data, nullable_depth, scroll_history[id], noscroll, hash, token);
-		if (document.activeElement) document.activeElement.blur();
-	});
+	const { redirect, page, data, new_segments, results } = await loaded;
+
+	if (redirect) return goto(redirect.location, { replaceState: true });
+	if (new_segments) segments = new_segments;
+
+	await render(results, data, page, scroll_history[id], noscroll, hash, token);
+	if (document.activeElement) document.activeElement.blur();
 }
 
-async function render(props: any, nullable_depth: number, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
+async function render(results: any[], props: any, page: PageData, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
-	preloading.set(null);
+	stores.page.set(page);
+	stores.preloading.set(null);
 
 	if (root_component) {
-		// first, clear out highest-level root component
-		let level = props.child;
-		for (let i = 0; i < nullable_depth; i += 1) {
-			if (i === nullable_depth) break;
-			level = level.props.child;
-		}
-
-		const { component } = level;
-		level.component = null;
-		root_component.props = props;
-
-		// then render new stuff
-		// TODO do we need to call `flush` before doing this?
-		level.component = component;
 		root_component.props = props;
 	} else {
 		// first load — remove SSR'd <head> contents
@@ -185,7 +159,7 @@ async function render(props: any, nullable_depth: number, scroll: ScrollPosition
 			detach(end);
 		}
 
-		Object.assign(props, root_data);
+		Object.assign(props, root_data); // TODO what is root_data, do we still need it?
 
 		root_component = new App({
 			target,
@@ -215,14 +189,16 @@ async function render(props: any, nullable_depth: number, scroll: ScrollPosition
 		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
 
-	Object.assign(root_props, props);
+	previous_thingummy = results;
 	ready = true;
 }
+
+let previous_thingummy = [];
 
 export function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
 	data?: any;
-	nullable_depth?: number;
+	page: PageData
 }> {
 	const { page, path, query } = target;
 	const new_segments = path.split('/').filter(Boolean);
@@ -240,9 +216,9 @@ export function prepare_page(target: Target): Promise<{
 
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
+	let page_data: PageData;
 
 	const preload_context = {
-		store,
 		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
 			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
@@ -267,11 +243,13 @@ export function prepare_page(target: Target): Promise<{
 	}
 
 	return Promise.all(page.parts.map((part, i) => {
-		if (i < changed_from) return null;
+		const segment = new_segments[i];
+
+		if (i < changed_from || !part) return previous_thingummy[i];
 		if (!part) return null;
 
 		return load_component(components[part.i]).then(({ default: Component, preload }) => {
-			const req = {
+			page_data = {
 				path,
 				query,
 				params: part.params ? part.params(target.match) : {}
@@ -280,7 +258,7 @@ export function prepare_page(target: Target): Promise<{
 			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
-					? preload.call(preload_context, req)
+					? preload.call(preload_context, page_data)
 					: {};
 			} else {
 				preloaded = initial_data.preloaded[i + 1];
@@ -304,72 +282,55 @@ export function prepare_page(target: Target): Promise<{
 		}
 	}).then(results => {
 		if (redirect) {
-			return { redirect, new_segments };
+			return { redirect, new_segments, page: null };
 		}
 
-		const get_params = page.parts[page.parts.length - 1].params || (() => ({}));
-		const params = get_params(target.match);
+		const deepest = page.parts[page.parts.length - 1];
+
+		const page_data = {
+			path,
+			query,
+			params: deepest.params ? deepest.params(target.match) : {}
+		};
 
 		if (error) {
-			const props = {
-				path,
-				query,
-				params,
-				error: typeof error.message === 'string' ? new Error(error.message) : error.message,
-				status: error.statusCode
-			};
-
 			return {
-				nullable_depth: 0,
 				new_segments,
-				data: Object.assign({}, props, {
+				page: page_data,
+				data: {
 					child: {
 						component: ErrorComponent,
-						props
+						props: {
+							error: typeof error.message === 'string' ? new Error(error.message) : error.message,
+							status: error.statusCode
+						}
 					}
-				})
+				}
 			};
 		}
 
-		const props = { path, query, error: null, status: null };
-		const data = {
-			path,
-			child: Object.assign({}, root_props.child, {
+		const props = {
+			child: {
 				segment: new_segments[0]
-			})
+			}
 		};
-		if (changed(query, root_props.query)) data.query = query;
-		if (changed(params, root_props.params)) data.params = params;
 
-		let level = data.child;
-		let nullable_depth = 0;
+		let level = props.child;
 
 		for (let i = 0; i < page.parts.length; i += 1) {
 			const part = page.parts[i];
 			if (!part) continue;
 
-			const get_params = part.params || (() => ({}));
-
-			if (i < changed_from) {
-				level.props.path = path;
-				level.props.query = query;
-				level.props.child = Object.assign({}, level.props.child);
-
-				nullable_depth += 1;
-			} else {
-				level.component = results[i].Component;
-				level.props = Object.assign({}, level.props, props, {
-					params: get_params(target.match),
-				}, results[i].preloaded);
-
-				level.props.child = {};
-			}
+			level.component = results[i].Component;
+			level.props = Object.assign({}, results[i].preloaded, {
+				child: {}
+			});
 
 			level = level.props.child;
 			level.segment = new_segments[i + 1];
 		}
 
-		return { data, nullable_depth, new_segments };
+		return { data: props, new_segments, page: page_data, results };
 	});
 }
 
@@ -402,8 +363,4 @@ export function load_component(component: ComponentLoader): Promise<{
 
 function detach(node: Node) {
 	node.parentNode.removeChild(node);
-}
-
-function changed(a: Record<string, string | true>, b: Record<string, string | true>) {
-	return JSON.stringify(a) !== JSON.stringify(b);
 }

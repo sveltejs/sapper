@@ -5,7 +5,7 @@ import { Page, PageComponent, ManifestData } from '../interfaces';
 
 const app = fs.readFileSync(path.resolve(__dirname, '../templates/App.html'), 'utf-8');
 const internal = fs.readFileSync(path.resolve(__dirname, '../templates/internal.mjs'), 'utf-8');
-const layout = `<svelte:component this={child.component} {...child.props}/>`;
+const layout = fs.readFileSync(path.resolve(__dirname, '../templates/layout.html'), 'utf-8');
 
 export function create_main_manifests({
 	bundler,
