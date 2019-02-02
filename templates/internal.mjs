@@ -6,3 +6,5 @@ export const stores = {
 };
 
 export const CONTEXT_KEY = {};
+
+export const preload = () => ({});

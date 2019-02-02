@@ -1,6 +1,7 @@
 import App from '@sapper/App.html';
 import { stores } from '@sapper/internal';
-import Root, * as RootStatic from '__ROOT__';
+import Root from '__ROOT__';
+import { preload as root_preload } from '__ROOT_PRELOAD__';
 import ErrorComponent from '__ERROR__';
 import {
 	Target,
@@ -24,8 +25,7 @@ export const routes: Route[] = __PAGES__;
 let ready = false;
 let root_component: Component;
 let current_token: {};
-let root_preload: Promise<any>;
-let root_data: any;
+let root_preloaded: Promise<any>;
 let current_branch = [];
 
 export let prefetching: {
@@ -171,8 +171,6 @@ async function render(branch: any[], props: any, page: Page, scroll: ScrollPosit
 			detach(end);
 		}
 
-		Object.assign(props, root_data); // TODO what is root_data, do we still need it?
-
 		root_component = new App({
 			target,
 			props: {
@@ -230,15 +228,12 @@ export async function hydrate_target(target: Target): Promise<{
 		}
 	};
 
-	if (!root_preload) {
-		const preload_fn = RootStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
-		root_preload = preload_fn
-			? initial_data.preloaded[0] || preload_fn.call(preload_context, {
-				path,
-				query,
-				params: {}
-			})
-			: {};
+	if (!root_preloaded) {
+		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
+			path,
+			query,
+			params: {}
+		});
 	}
 
 	let branch;
@@ -272,8 +267,6 @@ export async function hydrate_target(target: Target): Promise<{
 		branch = [];
 	}
 
-	if (!root_data) root_data = await root_preload;
-
 	if (redirect) return { redirect };
 
 	const page_data = {
@@ -298,7 +291,7 @@ export async function hydrate_target(target: Target): Promise<{
 		};
 	}
 
-	const props = { child: {} };
+	const props = Object.assign({}, await root_preloaded, { child: {} });
 	let level = props.child;
 
 	branch.forEach(node => {
