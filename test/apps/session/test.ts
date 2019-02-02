@@ -3,7 +3,7 @@ import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
 
-describe('store', function() {
+describe('session', function() {
 	this.timeout(10000);
 
 	let runner: AppRunner;
@@ -24,12 +24,27 @@ describe('store', function() {
 
 	after(() => runner.end());
 
-	it('renders store props', async () => {
-		await page.goto(`${base}/store`);
+	it('renders session props', async () => {
+		await page.goto(`${base}/session`);
 
 		assert.equal(await title(), 'hello world');
 
 		await start();
 		assert.equal(await title(), 'hello world');
+
+		await page.click('button');
+		assert.equal(await title(), 'changed');
+	});
+
+	it('preloads session props', async () => {
+		await page.goto(`${base}/preloaded`);
+
+		assert.equal(await title(), 'hello world');
+
+		await start();
+		assert.equal(await title(), 'hello world');
+
+		await page.click('button');
+		assert.equal(await title(), 'changed');
 	});
 });
