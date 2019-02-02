@@ -20,7 +20,6 @@ export const pages: Page[] = __PAGES__;
 
 let ready = false;
 let root_component: Component;
-let segments: string[] = [];
 let current_token: {};
 let root_preload: Promise<any>;
 let root_data: any;
@@ -28,7 +27,7 @@ let current_branch = [];
 
 export let prefetching: {
 	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any, new_segments?: any }>;
+	promise: Promise<{ redirect?: Redirect, data?: any }>;
 } = null;
 export function set_prefetching(href, promise) {
 	prefetching = { href, promise };
@@ -131,16 +130,15 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 	const token = current_token = {};
 
-	const { redirect, page, data, new_segments, results } = await loaded;
+	const { redirect, page, data, branch } = await loaded;
 
 	if (redirect) return goto(redirect.location, { replaceState: true });
-	if (new_segments) segments = new_segments;
 
-	await render(results, data, page, scroll_history[id], noscroll, hash, token);
+	await render(branch, data, page, scroll_history[id], noscroll, hash, token);
 	if (document.activeElement) document.activeElement.blur();
 }
 
-async function render(results: any[], props: any, page: PageData, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
+async function render(branch: any[], props: any, page: PageData, scroll: ScrollPosition, noscroll: boolean, hash: string, token: {}) {
 	if (current_token !== token) return;
 
 	stores.page.set(page);
@@ -189,45 +187,20 @@ async function render(results: any[], props: any, page: PageData, scroll: Scroll
 		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
 
-	current_branch = results;
+	current_branch = branch;
 	ready = true;
 }
 
-export function prepare_page(target: Target): Promise<{
+export async function prepare_page(target: Target): Promise<{
 	redirect?: Redirect;
 	data?: any;
 	page: PageData
 }> {
 	const { page, path, query } = target;
-	const new_segments = path.split('/').filter(Boolean);
-	let changed_from = 0;
-
-	while (
-		segments[changed_from] &&
-		new_segments[changed_from] &&
-		segments[changed_from] === new_segments[changed_from]
-	) changed_from += 1;
-
-	if (changed_from === new_segments.length) {
-		changed_from -= 1;
-	}
+	const segments = path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
-	let page_data: PageData;
-
-	const preload_context = {
-		fetch: (url: string, opts?: any) => fetch(url, opts),
-		redirect: (statusCode: number, location: string) => {
-			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-				throw new Error(`Conflicting redirects`);
-			}
-			redirect = { statusCode, location };
-		},
-		error: (statusCode: number, message: Error | string) => {
-			error = { statusCode, message };
-		}
-	};
 
 	if (!root_preload) {
 		const preload_fn = RootStatic['pre' + 'load']; // Rollup makes us jump through these hoops :(
@@ -240,96 +213,102 @@ export function prepare_page(target: Target): Promise<{
 			: {};
 	}
 
-	return Promise.all(page.parts.map((part, i) => {
-		const segment = new_segments[i];
+	let branch;
 
-		if (i < changed_from || !part) return current_branch[i];
-		if (!part) return null;
+	try {
+		const preload_context = {
+			fetch: (url: string, opts?: any) => fetch(url, opts),
+			redirect: (statusCode: number, location: string) => {
+				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
+					throw new Error(`Conflicting redirects`);
+				}
+				redirect = { statusCode, location };
+			},
+			error: (statusCode: number, message: Error | string) => {
+				error = { statusCode, message };
+			}
+		};
 
-		return load_component(components[part.i]).then(({ default: Component, preload }) => {
-			page_data = {
-				path,
-				query,
-				params: part.params ? part.params(target.match) : {}
-			};
+		branch = await Promise.all(page.parts.map(async (part, i) => {
+			if (!part) return null;
+
+			const segment = segments[i];
+			if (current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
+
+			const { default: Component, preload } = await load_component(components[part.i]);
 
 			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
-					? preload.call(preload_context, page_data)
+					? await preload.call(preload_context, {
+						path,
+						query,
+						params: part.params ? part.params(target.match) : {}
+					})
 					: {};
 			} else {
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return Promise.resolve(preloaded).then(preloaded => {
-				return { Component, preloaded };
-			});
-		});
-	})).catch(err => {
-		error = { statusCode: 500, message: err };
-		return [];
-	}).then(results => {
-		if (root_data) {
-			return results;
-		} else {
-			return Promise.resolve(root_preload).then(value => {
-				root_data = value;
-				return results;
-			});
-		}
-	}).then(results => {
-		if (redirect) {
-			return { redirect, new_segments, page: null };
-		}
+			return { Component, preloaded, segment };
+		}));
+	} catch (e) {
+		error = { statusCode: 500, message: e };
+		branch = [];
+	}
 
-		const deepest = page.parts[page.parts.length - 1];
+	if (!root_data) root_data = await root_preload;
 
-		const page_data = {
-			path,
-			query,
-			params: deepest.params ? deepest.params(target.match) : {}
-		};
+	if (redirect) {
+		return { redirect, page: null };
+	}
 
-		if (error) {
-			return {
-				new_segments,
-				page: page_data,
-				data: {
-					child: {
-						component: ErrorComponent,
-						props: {
-							error: typeof error.message === 'string' ? new Error(error.message) : error.message,
-							status: error.statusCode
-						}
+	const deepest = page.parts[page.parts.length - 1];
+
+	const page_data = {
+		path,
+		query,
+		params: deepest.params ? deepest.params(target.match) : {}
+	};
+
+	if (error) {
+		return {
+			page: page_data,
+			data: {
+				child: {
+					component: ErrorComponent,
+					props: {
+						error: typeof error.message === 'string' ? new Error(error.message) : error.message,
+						status: error.statusCode
 					}
 				}
-			};
-		}
-
-		const props = {
-			child: {
-				segment: new_segments[0]
-			}
+			},
+			branch
 		};
+	}
 
-		let level = props.child;
-
-		for (let i = 0; i < page.parts.length; i += 1) {
-			const part = page.parts[i];
-			if (!part) continue;
-
-			level.component = results[i].Component;
-			level.props = Object.assign({}, results[i].preloaded, {
-				child: {}
-			});
-
-			level = level.props.child;
-			level.segment = new_segments[i + 1];
+	const props = {
+		child: {
+			segment: segments[0]
 		}
+	};
 
-		return { data: props, new_segments, page: page_data, results };
-	});
+	let level = props.child;
+
+	for (let i = 0; i < page.parts.length; i += 1) {
+		const part = page.parts[i];
+		if (!part) continue;
+
+		level.component = branch[i].Component;
+		level.props = Object.assign({}, branch[i].preloaded, {
+			child: {}
+		});
+
+		level = level.props.child;
+		level.segment = segments[i + 1];
+	}
+
+	return { data: props, page: page_data, branch };
 }
 
 function load_css(chunk: string) {
