@@ -1,3 +1,4 @@
+import { writable } from 'svelte/store.mjs';
 import fs from 'fs';
 import path from 'path';
 import cookie from 'cookie';
@@ -162,7 +163,7 @@ export function get_page_handler(
 							path: req.path,
 							query: req.query,
 							params
-						})
+						}, session)
 						: {};
 				}))
 			}
@@ -231,7 +232,7 @@ export function get_page_handler(
 			const { html, head, css } = App.render({
 				Root: manifest.root,
 				props: props,
-				session
+				session: writable(session)
 			});
 
 			const serialized = {
