@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.26.0-alpha.1",
+  "version": "0.26.0-alpha.3",
   "description": "Military-grade apps, engineered by Svelte",
   "bin": {
     "sapper": "./sapper"
@@ -11,8 +11,8 @@
     "config",
     "sapper",
     "dist/*.js",
-    "runtime/*.js",
-    "runtime/*.html"
+    "runtime/*.mjs",
+    "runtime/internal"
   ],
   "directories": {
     "test": "test"
