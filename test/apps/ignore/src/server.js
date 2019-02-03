@@ -1,5 +1,5 @@
 import polka from 'polka';
-import * as sapper from '../__sapper__/server.js';
+import * as sapper from '@sapper/server';
 
 const { PORT } = process.env;
 

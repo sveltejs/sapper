@@ -9,6 +9,7 @@ import read_template from '../core/read_template';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
+import { copy_runtime } from './utils/copy_runtime';
 
 type Opts = {
 	cwd?: string;
@@ -26,7 +27,7 @@ export async function build({
 	cwd,
 	src = 'src',
 	routes = 'src/routes',
-	output = '__sapper__',
+	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
 
@@ -47,6 +48,10 @@ export async function build({
 		throw new Error(`Legacy builds are not supported for projects using webpack`);
 	}
 
+	rimraf.sync(path.join(output, '**/*'));
+	mkdirp.sync(output);
+	copy_runtime(output);
+
 	rimraf.sync(path.join(dest, '**/*'));
 	mkdirp.sync(`${dest}/client`);
 	copy_shimport(dest);
@@ -66,7 +71,7 @@ export async function build({
 
 	const manifest_data = create_manifest_data(routes);
 
-	// create src/manifest/client.js and src/manifest/server.js
+	// create src/node_modules/@sapper/app.mjs and server.mjs
 	create_main_manifests({
 		bundler,
 		manifest_data,

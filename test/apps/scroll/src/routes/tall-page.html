@@ -1,3 +1,15 @@
+<script>
+	import { onMount } from 'svelte';
+
+	export let barLink = false;
+
+	onMount(() => {
+		barLink = true
+	});
+</script>
+
+<h1>A tall page</h1>
+
 <a href="tall-page#foo">scroll to foo</a>
 <div style="height: 9999px"></div>
 
@@ -8,17 +20,3 @@
 		<a href="another-tall-page#bar">link</a>
 	{/if}
 </div>
-
-<script>
-	export default {
-		data() {
-			return {
-				barLink: false
-			};
-		},
-
-		oncreate() {
-			this.set({ barLink: true })
-		}
-	}
-</script>

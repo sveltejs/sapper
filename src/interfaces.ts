@@ -19,14 +19,17 @@ export type Template = {
 	stream: (req, res, data: Record<string, string | Promise<string>>) => void;
 };
 
-export type Store = {
-	get: () => any;
+export type WritableStore<T> = {
+	set: (value: T) => void;
+	update: (fn: (value: T) => T) => void;
+	subscribe: (fn: (T: any) => void) => () => void;
 };
 
 export type PageComponent = {
 	default?: boolean;
 	name: string;
 	file: string;
+	has_preload: boolean;
 };
 
 export type Page = {

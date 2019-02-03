@@ -1,4 +1,4 @@
-import typescript from 'rollup-plugin-typescript';
+import sucrase from 'rollup-plugin-sucrase';
 import string from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
@@ -12,31 +12,33 @@ const external = [].concat(
 	'sapper/core.js'
 );
 
-function template(kind, external, target) {
+function template(kind, external) {
 	return {
-		input: `templates/src/${kind}/index.ts`,
+		input: `runtime/src/${kind}/index.ts`,
 		output: {
-			file: `templates/${kind}.js`,
-			format: 'es'
+			file: `runtime/${kind}.mjs`,
+			format: 'es',
+			paths: id => id.replace('@sapper', '.')
 		},
 		external,
 		plugins: [
-			resolve(),
+			resolve({
+				extensions: ['.mjs', '.js', '.ts']
+			}),
 			commonjs(),
 			string({
 				include: '**/*.md'
 			}),
-			typescript({
-				typescript: require('typescript'),
-				target
+			sucrase({
+				transforms: ['typescript']
 			})
 		]
 	};
 }
 
 export default [
-	template('client', ['__ROOT__', '__ERROR__'], 'ES2017'),
-	template('server', builtinModules, 'ES2015'),
+	template('app', id => /^(svelte\/?|@sapper\/)/.test(id)),
+	template('server', id => builtinModules.includes(id)),
 
 	{
 		input: [
@@ -54,12 +56,13 @@ export default [
 		external,
 		plugins: [
 			json(),
-			resolve(),
+			resolve({
+				extensions: ['.mjs', '.js', '.ts']
+			}),
 			commonjs(),
-			typescript({
-				typescript: require('typescript')
+			sucrase({
+				transforms: ['typescript']
 			})
-		],
-		experimentalCodeSplitting: true
+		]
 	}
 ];

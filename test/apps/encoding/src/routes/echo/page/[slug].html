@@ -1,11 +1,14 @@
-<h1>{slug} {JSON.stringify(query)}</h1>
+<script context="module">
+	export function preload({ params }) {
+		return {
+			slug: params.slug
+		};
+	}
+</script>
 
 <script>
-	export default {
-		preload({ params }) {
-			return {
-				slug: params.slug
-			};
-		}
-	};
+	import { page } from '@sapper/app';
+	export let slug;
 </script>
+
+<h1>{slug} {JSON.stringify($page.query)}</h1>

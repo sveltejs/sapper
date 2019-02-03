@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import svelte from 'svelte/compiler';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
@@ -9,6 +10,22 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);
 	}
 
+	function has_preload(file: string) {
+		const source = fs.readFileSync(path.join(cwd, file), 'utf-8');
+
+		if (/preload/.test(source)) {
+			try {
+				const { stats } = svelte.compile(source, {
+					generate: false,
+					onwarn: () => {}
+				});
+				return !!stats.vars.find((variable: any) => variable.module && variable.export_name === 'preload');
+			} catch (err) {}
+		}
+
+		return false;
+	}
+
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
@@ -16,7 +33,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 	const default_layout: PageComponent = {
 		default: true,
 		name: '_default_layout',
-		file: null
+		file: null,
+		has_preload: false
 	};
 
 	function walk(
@@ -107,7 +125,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 				const component = fs.existsSync(index) && {
 					name: `${get_slug(item.file)}__layout`,
-					file: `${item.file}/_layout.html`
+					file: `${item.file}/_layout.html`,
+					has_preload: has_preload(`${item.file}/_layout.html`)
 				};
 
 				if (component) components.push(component);
@@ -125,7 +144,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			else if (item.is_page) {
 				const component = {
 					name: get_slug(item.file),
-					file: item.file
+					file: item.file,
+					has_preload: has_preload(item.file)
 				};
 
 				const parts = stack.concat({
@@ -162,7 +182,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 	const root = fs.existsSync(root_file)
 		? {
 			name: 'main',
-			file: '_layout.html'
+			file: '_layout.html',
+			has_preload: has_preload('_layout.html')
 		}
 		: default_layout;
 

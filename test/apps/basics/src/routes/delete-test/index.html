@@ -1,19 +1,17 @@
-<button class='del' on:click='del()'>delete</button>
-
 <script>
-	export default {
-		oncreate() {
-			window.deleted = null;
-		},
+	import { onMount } from 'svelte';
 
-		methods: {
-			del() {
-				fetch(`delete-test/42.json`, { method: 'DELETE' })
-					.then(r => r.json())
-					.then(data => {
-						window.deleted = data;
-					});
-			}
-		}
-	};
+	onMount(() => {
+		window.deleted = null;
+	});
+
+	function del() {
+		fetch(`delete-test/42.json`, { method: 'DELETE' })
+			.then(r => r.json())
+			.then(data => {
+				window.deleted = data;
+			});
+	}
 </script>
+
+<button class="del" on:click={del}>delete</button>

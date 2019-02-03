@@ -15,6 +15,7 @@ import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
 import read_template from '../core/read_template';
 import { noop } from './utils/noop';
+import { copy_runtime } from './utils/copy_runtime';
 
 type Opts = {
 	cwd?: string,
@@ -72,7 +73,7 @@ class Watcher extends EventEmitter {
 		cwd = '.',
 		src = 'src',
 		routes = 'src/routes',
-		output = '__sapper__',
+		output = 'src/node_modules/@sapper',
 		static: static_files = 'static',
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
@@ -144,6 +145,11 @@ class Watcher extends EventEmitter {
 		}
 
 		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
+
+		rimraf.sync(path.join(output, '**/*'));
+		mkdirp.sync(output);
+		copy_runtime(output);
+
 		rimraf.sync(dest);
 		mkdirp.sync(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);
@@ -484,7 +490,7 @@ function watch_dir(
 	let watch: any;
 	let closed = false;
 
-	import('cheap-watch').then(CheapWatch => {
+	import('cheap-watch').then(({ default: CheapWatch }) => {
 		if (closed) return;
 
 		watch = new CheapWatch({ dir, filter, debounce: 50 });

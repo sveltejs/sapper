@@ -26,10 +26,18 @@ describe('layout', function() {
 
 	it('only recreates components when necessary', async () => {
 		await page.goto(`${base}/foo/bar/baz`);
-		await start();
 
-		const text1 = await page.evaluate(() => document.querySelector('#sapper').textContent);
-		assert.deepEqual(text1.split('\n').filter(Boolean), [
+		const text1 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		assert.deepEqual(text1.split('\n').filter(Boolean).map(str => str.trim()), [
+			'y: bar 1',
+			'z: baz 1',
+			'click me',
+			'child segment: baz'
+		]);
+
+		await start();
+		const text2 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		assert.deepEqual(text2.split('\n').filter(Boolean).map(str => str.trim()), [
 			'y: bar 1',
 			'z: baz 1',
 			'click me',
@@ -39,8 +47,8 @@ describe('layout', function() {
 		await page.click('[href="foo/bar/qux"]');
 		await wait(50);
 
-		const text2 = await page.evaluate(() => document.querySelector('#sapper').textContent);
-		assert.deepEqual(text2.split('\n').filter(Boolean), [
+		const text3 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		assert.deepEqual(text3.split('\n').filter(Boolean).map(str => str.trim()), [
 			'y: bar 1',
 			'z: qux 2',
 			'click me',

@@ -47,12 +47,13 @@ export default class RollupResult implements CompileResult {
 		} else {
 			for (const name in compiler.input) {
 				const file = compiler.input[name];
-				this.assets[name] = compiler.chunks.find(chunk => file in chunk.modules).fileName;
+				const chunk = compiler.chunks.find(chunk => file in chunk.modules);
+				if (chunk) this.assets[name] = chunk.fileName;
 			}
 		}
 
 		this.summary = compiler.chunks.map(chunk => {
-			const size_color = chunk.code.length > 150000 ? colors.bold.red : chunk.code.length > 50000 ? colors.bold.yellow : colors.bold.white;
+			const size_color = chunk.code.length > 150000 ? colors.bold().red : chunk.code.length > 50000 ? colors.bold().yellow : colors.bold().white;
 			const size_label = left_pad(pb(chunk.code.length), 10);
 
 			const lines = [size_color(`${size_label} ${chunk.fileName}`)];

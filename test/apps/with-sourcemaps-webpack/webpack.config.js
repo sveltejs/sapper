@@ -9,7 +9,7 @@ module.exports = {
 		entry: config.client.entry(),
 		output: config.client.output(),
 		resolve: {
-			extensions: ['.js', '.json', '.html'],
+			extensions: ['.mjs', '.js', '.json', '.html'],
 			mainFields: ['svelte', 'module', 'browser', 'main']
 		},
 		module: {
@@ -43,7 +43,7 @@ module.exports = {
 		output: config.server.output(),
 		target: 'node',
 		resolve: {
-			extensions: ['.js', '.json', '.html'],
+			extensions: ['.mjs', '.js', '.json', '.html'],
 			mainFields: ['svelte', 'module', 'browser', 'main']
 		},
 		module: {

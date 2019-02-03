@@ -1,11 +1,13 @@
-<h1>{phrase}</h1>
+<script context="module">
+	export function preload() {
+		return this.fetch('fünke.json').then(r => r.json()).then(phrase => {
+			return { phrase };
+		});
+	}
+</script>
 
 <script>
-	export default {
-		preload() {
-			return this.fetch('fünke.json').then(r => r.json()).then(phrase => {
-				return { phrase };
-			});
-		}
-	};
+	export let phrase;
 </script>
+
+<h1>{phrase}</h1>

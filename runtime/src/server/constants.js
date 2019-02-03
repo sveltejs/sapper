@@ -1,0 +1,1 @@
+export const IGNORE = '__SAPPER__IGNORE__';

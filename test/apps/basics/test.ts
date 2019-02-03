@@ -20,18 +20,17 @@ describe('basics', function() {
 	let prefetchRoutes: () => Promise<void>;
 	let prefetch: (href: string) => Promise<void>;
 	let goto: (href: string) => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
 		await build({ cwd: __dirname });
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, prefetch, goto } = await runner.start());
+		({ base, page, start, prefetchRoutes, prefetch, goto, title } = await runner.start());
 	});
 
 	after(() => runner.end());
-
-	const title = () => page.$eval('h1', node => node.textContent);
 
 	it('serves /', async () => {
 		await page.goto(base);
@@ -262,7 +261,7 @@ describe('basics', function() {
 		await page.goto(`${base}/unsafe-replacement`);
 		await start();
 
-		const html = await page.evaluate(() => document.body.innerHTML);
+		const html = String(await page.evaluate(() => document.body.innerHTML));
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
 });
