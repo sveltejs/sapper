@@ -103,7 +103,7 @@ prog.command('dev')
 					console.log(colors.bold().red(`✗ ${event.type}`));
 
 					event.errors.filter(e => !e.duplicate).forEach(error => {
-						if (error.file) console.log(colors.bold()(error.file));
+						if (error.file) console.log(colors.bold(error.file));
 						console.log(error.message);
 					});
 
@@ -115,7 +115,7 @@ prog.command('dev')
 					console.log(colors.bold().yellow(`• ${event.type}`));
 
 					event.warnings.filter(e => !e.duplicate).forEach(warning => {
-						if (warning.file) console.log(colors.bold()(warning.file));
+						if (warning.file) console.log(colors.bold(warning.file));
 						console.log(warning.message);
 					});
 
