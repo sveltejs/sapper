@@ -1,9 +1,7 @@
-import App from '@sapper/App.html';
-import { stores } from '@sapper/internal';
-import Root from '__ROOT__';
-import { preload as root_preload } from '__ROOT_PRELOAD__';
-import ErrorComponent from '__ERROR__';
 import { writable } from 'svelte/store.mjs';
+import Sapper from '@sapper/internal/Sapper.html';
+import { stores } from '@sapper/internal/shared';
+import { Root, root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
 	Target,
 	ScrollPosition,
@@ -16,14 +14,8 @@ import {
 } from './types';
 import goto from './goto';
 
-// injected at build time
-declare const __IGNORE__, __COMPONENTS__, __PAGES__, __SAPPER__;
-
+declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
-
-const ignore = __IGNORE__;
-export const components: ComponentLoader[] = __COMPONENTS__;
-export const routes: Route[] = __PAGES__;
 
 let ready = false;
 let root_component: Component;
@@ -200,7 +192,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			detach(end);
 		}
 
-		root_component = new App({
+		root_component = new Sapper({
 			target,
 			props: {
 				Root,

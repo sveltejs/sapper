@@ -1,4 +1,4 @@
-import { IGNORE } from '../placeholders';
+import { IGNORE } from '../constants';
 import { Req, Res, ServerRoute } from './types';
 
 export function get_server_route_handler(routes: ServerRoute[]) {

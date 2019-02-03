@@ -9,7 +9,7 @@ type Child = {
 };
 
 export interface ComponentConstructor {
-	new (options: { target: Node, props: any, store: Store, hydrate: boolean }): Component;
+	new (options: { target: Node, props: any, hydrate: boolean }): Component;
 	preload: (props: { params: Params, query: Query }) => Promise<any>;
 };
 
@@ -54,10 +54,6 @@ export type Redirect = {
 	statusCode: number;
 	location: string;
 };
-
-export type Store = {
-	get: () => any;
-}
 
 export type Page = {
 	path: string;

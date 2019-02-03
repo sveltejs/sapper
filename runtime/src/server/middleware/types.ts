@@ -26,10 +26,6 @@ export type Manifest = {
 
 export type Handler = (req: Req, res: Res, next: () => void) => void;
 
-export type Store = {
-	get: () => any
-};
-
 export type Props = {
 	error?: { message: string };
 	status?: number;
@@ -59,7 +55,7 @@ export interface Res extends ServerResponse {
 export { ServerResponse };
 
 interface Component {
-	render: (data: any, opts: { store: Store }) => {
+	render: (data: any) => {
 		head: string;
 		css: { code: string, map: any };
 		html: string

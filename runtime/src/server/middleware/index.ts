@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { build_dir, dev, manifest, IGNORE } from '../placeholders';
-import { Handler, Req, Res, Store } from './types';
+import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
+import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
+import { IGNORE } from '../constants';
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,

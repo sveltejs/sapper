@@ -15,6 +15,7 @@ import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
 import read_template from '../core/read_template';
 import { noop } from './utils/noop';
+import { copy_runtime } from './utils/copy_runtime';
 
 type Opts = {
 	cwd?: string,
@@ -147,6 +148,7 @@ class Watcher extends EventEmitter {
 
 		rimraf.sync(path.join(output, '**/*'));
 		mkdirp.sync(output);
+		copy_runtime(output);
 
 		rimraf.sync(dest);
 		mkdirp.sync(`${dest}/client`);

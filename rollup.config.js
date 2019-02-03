@@ -14,16 +14,16 @@ const external = [].concat(
 
 function template(kind, external) {
 	return {
-		input: `templates/src/${kind}/index.ts`,
+		input: `runtime/src/${kind}/index.ts`,
 		output: {
-			file: `templates/${kind}.mjs`,
+			file: `runtime/${kind}.mjs`,
 			format: 'es',
 			paths: id => id.replace('@sapper', '.')
 		},
 		external,
 		plugins: [
 			resolve({
-				extensions: ['.js', '.ts']
+				extensions: ['.mjs', '.js', '.ts']
 			}),
 			commonjs(),
 			string({
@@ -37,8 +37,8 @@ function template(kind, external) {
 }
 
 export default [
-	template('app', ['__ROOT__', '__ERROR__', 'svelte', '@sapper/App.html']),
-	template('server', builtinModules),
+	template('app', id => /^(svelte\/?|@sapper\/)/.test(id)),
+	template('server', id => builtinModules.includes(id)),
 
 	{
 		input: [
@@ -57,7 +57,7 @@ export default [
 		plugins: [
 			json(),
 			resolve({
-				extensions: ['.js', '.ts']
+				extensions: ['.mjs', '.js', '.ts']
 			}),
 			commonjs(),
 			sucrase({

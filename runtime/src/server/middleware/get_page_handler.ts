@@ -5,10 +5,11 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { build_dir, dev, src_dir, IGNORE } from '../placeholders';
+import { IGNORE } from '../constants';
 import { Manifest, Page, Props, Req, Res } from './types';
-import { stores } from '@sapper/internal';
-import App from '@sapper/App.html';
+import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
+import { stores } from '@sapper/internal/shared';
+import Sapper from '@sapper/internal/Sapper.html';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -229,7 +230,7 @@ export function get_page_handler(
 				params: params
 			});
 
-			const { html, head, css } = App.render({
+			const { html, head, css } = Sapper.render({
 				Root: manifest.root,
 				props: props,
 				session: writable(session)

@@ -9,6 +9,7 @@ import read_template from '../core/read_template';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
+import { copy_runtime } from './utils/copy_runtime';
 
 type Opts = {
 	cwd?: string;
@@ -49,6 +50,7 @@ export async function build({
 
 	rimraf.sync(path.join(output, '**/*'));
 	mkdirp.sync(output);
+	copy_runtime(output);
 
 	rimraf.sync(path.join(dest, '**/*'));
 	mkdirp.sync(`${dest}/client`);

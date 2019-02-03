@@ -12,5 +12,5 @@ sapper
 runtime.js
 dist
 !rollup.config.js
-templates/app.mjs
-templates/server.mjs
+/runtime/app.mjs
+/runtime/server.mjs
