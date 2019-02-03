@@ -22,10 +22,7 @@ export default {
 				emitCss: true
 			}),
 			resolve()
-		],
-
-		// temporary, pending Rollup 1.0
-		experimentalCodeSplitting: true
+		]
 	},
 
 	server: {
@@ -44,10 +41,7 @@ export default {
 				preferBuiltins: true
 			})
 		],
-		external: ['sirv', 'polka', 'cookie'],
-
-		// temporary, pending Rollup 1.0
-		experimentalCodeSplitting: true
+		external: ['sirv', 'polka', 'cookie']
 	},
 
 	serviceworker: {
