@@ -490,7 +490,7 @@ function watch_dir(
 	let watch: any;
 	let closed = false;
 
-	import('cheap-watch').then(CheapWatch => {
+	import('cheap-watch').then(({ default: CheapWatch }) => {
 		if (closed) return;
 
 		watch = new CheapWatch({ dir, filter, debounce: 50 });
