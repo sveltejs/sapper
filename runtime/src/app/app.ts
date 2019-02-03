@@ -289,15 +289,19 @@ export async function hydrate_target(target: Target): Promise<{
 		};
 	}
 
-	const props = Object.assign({}, await root_preloaded, { child: {} });
+	const props = Object.assign({}, await root_preloaded, {
+		child: { segment: segments[0] }
+	});
+
 	let level = props.child;
 
-	branch.forEach(node => {
+	branch.forEach((node, i) => {
 		if (!node) return;
 
-		level.segment = node.segment;
 		level.component = node.Component;
-		level.props = Object.assign({}, node.preloaded, { child: {} });
+		level.props = Object.assign({}, node.preloaded, {
+			child: { segment: segments[i + 1] }
+		});
 
 		level = level.props.child;
 	});
