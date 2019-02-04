@@ -264,4 +264,15 @@ describe('basics', function() {
 		const html = String(await page.evaluate(() => document.body.innerHTML));
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
+
+	it('navigates between routes with empty parts', async () => {
+		await page.goto(`${base}/dirs/foo`);
+		await start();
+
+		assert.equal(await title(), 'foo');
+
+		await page.click('[href="dirs/bar"]');
+		await wait(50);
+		assert.equal(await title(), 'bar');
+	});
 });

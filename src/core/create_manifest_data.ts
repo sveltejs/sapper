@@ -142,29 +142,26 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			}
 
 			else if (item.is_page) {
+				const is_index = item.basename === 'index.html';
+
 				const component = {
 					name: get_slug(item.file),
 					file: item.file,
 					has_preload: has_preload(item.file)
 				};
 
-				const parts = stack.concat({
-					component,
-					params
-				});
-
 				components.push(component);
-				if (item.basename === 'index.html') {
-					pages.push({
-						pattern: get_pattern(parent_segments, true),
-						parts
-					});
-				} else {
-					pages.push({
-						pattern: get_pattern(segments, true),
-						parts
-					});
-				}
+
+				const parts = (is_index && stack[stack.length - 1] === null)
+					? stack.slice(0, -1).concat({ component, params })
+					: stack.concat({ component, params })
+
+				const page = {
+					pattern: get_pattern(is_index ? parent_segments : segments, true),
+					parts
+				};
+
+				pages.push(page);
 			}
 
 			else {
