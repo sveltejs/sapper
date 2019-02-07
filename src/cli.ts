@@ -268,12 +268,12 @@ async function _build(
 
 		oncompile: event => {
 			let banner = `built ${event.type}`;
-			let c = colors.cyan;
+			let c = (txt: string) => colors.cyan(txt);
 
 			const { warnings } = event.result;
 			if (warnings.length > 0) {
 				banner += ` with ${warnings.length} ${warnings.length === 1 ? 'warning' : 'warnings'}`;
-				c = colors.yellow;
+				c = (txt: string) => colors.cyan(txt);
 			}
 
 			console.log();
