@@ -9,7 +9,7 @@ import { IGNORE } from '../constants';
 import { Manifest, Page, Props, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import { stores } from '@sapper/internal/shared';
-import Sapper from '@sapper/internal/Sapper.html';
+import Sapper from '@sapper/internal/Sapper.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,

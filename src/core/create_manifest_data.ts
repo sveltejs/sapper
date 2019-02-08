@@ -4,6 +4,8 @@ import svelte from 'svelte/compiler';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
+const component_extensions = ['.svelte', '.html']; // TODO make this configurable (to include e.g. .svelte.md?)
+
 export default function create_manifest_data(cwd: string): ManifestData {
 	// TODO remove in a future version
 	if (!fs.existsSync(cwd)) {
@@ -32,7 +34,16 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 	const default_layout: PageComponent = {
 		default: true,
+		type: 'layout',
 		name: '_default_layout',
+		file: null,
+		has_preload: false
+	};
+
+	const default_error: PageComponent = {
+		default: true,
+		type: 'error',
+		name: '_default_error',
 		file: null,
 		has_preload: false
 	};
@@ -61,7 +72,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
-				const is_page = ext === '.html';
+				const is_page = component_extensions.indexOf(ext) !== -1;
 
 				parts.forEach(part => {
 					if (/\]\[/.test(part.content)) {
@@ -75,6 +86,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 				return {
 					basename,
+					ext,
 					parts,
 					file: posixify(file),
 					is_dir,
@@ -121,12 +133,15 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			params.push(...item.parts.filter(p => p.dynamic).map(p => p.content));
 
 			if (item.is_dir) {
-				const index = path.join(dir, item.basename, '_layout.html');
+				const ext = component_extensions.find((ext: string) => {
+					const index = path.join(dir, item.basename, `_layout${ext}`);
+					return fs.existsSync(index);
+				});
 
-				const component = fs.existsSync(index) && {
+				const component = ext && {
 					name: `${get_slug(item.file)}__layout`,
-					file: `${item.file}/_layout.html`,
-					has_preload: has_preload(`${item.file}/_layout.html`)
+					file: `${item.file}/_layout${ext}`,
+					has_preload: has_preload(`${item.file}/_layout${ext}`)
 				};
 
 				if (component) components.push(component);
@@ -142,7 +157,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			}
 
 			else if (item.is_page) {
-				const is_index = item.basename === 'index.html';
+				const is_index = item.basename === `index${item.ext}`;
 
 				const component = {
 					name: get_slug(item.file),
@@ -175,14 +190,23 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		});
 	}
 
-	const root_file = path.join(cwd, '_layout.html');
-	const root = fs.existsSync(root_file)
+	const root_ext = component_extensions.find(ext => fs.existsSync(path.join(cwd, `_layout${ext}`)));
+	const root = root_ext
 		? {
 			name: 'main',
-			file: '_layout.html',
-			has_preload: has_preload('_layout.html')
+			file: `_layout${root_ext}`,
+			has_preload: has_preload(`_layout${root_ext}`)
 		}
 		: default_layout;
+
+	const error_ext = component_extensions.find(ext => fs.existsSync(path.join(cwd, `_error${ext}`)));
+	const error = error_ext
+		? {
+			name: 'error',
+			file: `_error${error_ext}`,
+			has_preload: has_preload(`_error${error_ext}`)
+		}
+		: default_error;
 
 	walk(cwd, [], [], []);
 
@@ -214,6 +238,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 	return {
 		root,
+		error,
 		components,
 		pages,
 		server_routes

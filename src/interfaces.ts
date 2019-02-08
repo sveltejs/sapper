@@ -27,6 +27,7 @@ export type WritableStore<T> = {
 
 export type PageComponent = {
 	default?: boolean;
+	type?: string;
 	name: string;
 	file: string;
 	has_preload: boolean;
@@ -55,6 +56,7 @@ export type Dirs = {
 
 export type ManifestData = {
 	root: PageComponent;
+	error: PageComponent;
 	components: PageComponent[];
 	pages: Page[];
 	server_routes: ServerRoute[];
