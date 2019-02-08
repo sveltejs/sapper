@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store.mjs';
-import Sapper from '@sapper/internal/Sapper.html';
+import Sapper from '@sapper/internal/Sapper.svelte';
 import { stores } from '@sapper/internal/shared';
 import { Root, root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {

@@ -4,7 +4,7 @@
 	export let Title;
 
 	onMount(() => {
-		import('./_components/Title.html').then(mod => {
+		import('./_components/Title.svelte').then(mod => {
 			Title = mod.default;
 		});
 	});

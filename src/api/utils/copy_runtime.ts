@@ -6,8 +6,9 @@ const runtime = [
 	'app.mjs',
 	'server.mjs',
 	'internal/shared.mjs',
-	'internal/Sapper.html',
-	'internal/layout.html'
+	'internal/Sapper.svelte',
+	'internal/layout.svelte',
+	'internal/error.svelte'
 ].map(file => ({
 	file,
 	source: fs.readFileSync(path.join(__dirname, `../runtime/${file}`), 'utf-8')

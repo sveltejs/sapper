@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from "path";
 
-describe('with-sourcemaps', function() {
+describe('with-sourcemaps-webpack', function() {
 	this.timeout(10000);
 
 	// hooks
