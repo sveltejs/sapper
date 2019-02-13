@@ -158,7 +158,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 		if (hash) {
 			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.querySelector(hash);
+			const deep_linked = document.getElementById(hash.slice(1));
 
 			if (deep_linked) {
 				scroll = {
