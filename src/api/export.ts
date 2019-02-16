@@ -60,7 +60,8 @@ async function _export({
 		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
 	}
 
-	const port = await ports.find(3000);
+	const defaultPort = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+	const port = await ports.find(defaultPort);
 
 	const protocol = 'http:';
 	const host = `localhost:${port}`;
