@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "html-minifier": "^3.5.21",
+    "http-link-header": "^1.0.2",
     "shimport": "0.0.14",
     "source-map-support": "^0.5.10",
     "sourcemap-codec": "^1.4.4",
