@@ -13,7 +13,7 @@ describe('export-webpack', function() {
 
 	it('injects <link rel=preload> tags', () => {
 		const index = fs.readFileSync(`${__dirname}/__sapper__/export/index.html`, 'utf8');
-		assert.ok(/rel=preload/, index);
+		assert.ok(/rel=preload/.test(index));
 	});
 
 });
