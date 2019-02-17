@@ -55,7 +55,8 @@ async function _export({
 	copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
 	copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
 
-	const port = await ports.find(3000);
+	const defaultPort = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+	const port = await ports.find(defaultPort);
 
 	const protocol = 'http:';
 	const host = `localhost:${port}`;
