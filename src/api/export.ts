@@ -9,6 +9,7 @@ import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
+import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
 
 type Opts = {
@@ -20,6 +21,12 @@ type Opts = {
 	timeout?: number | false,
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
+};
+
+type Ref = {
+	uri: string,
+	rel: string,
+	as: string
 };
 
 function resolve(from: string, to: string) {
@@ -137,38 +144,49 @@ async function _export({
 		clearTimeout(the_timeout); // prevent it hanging at the end
 
 		let type = r.headers.get('Content-Type');
+
 		let body = await r.text();
 
 		const range = ~~(r.status / 100);
 
 		if (range === 2) {
-			if (type === 'text/html' && pathname !== '/service-worker-index.html') {
-				const cleaned = clean_html(body);
+			if (type === 'text/html') {
+				// parse link rel=preload headers and embed them in the HTML
+				let link = parseLinkHeader(r.headers.get('Link') || '');
+				link.refs.forEach((ref: Ref) => {
+					if (ref.rel === 'preload') {
+						body = body.replace('</head>',
+							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+					}
+				});
+				if (pathname !== '/service-worker-index.html') {
+					const cleaned = clean_html(body);
 
-				const q = yootils.queue(8);
-				let promise;
+					const q = yootils.queue(8);
+					let promise;
 
-				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-				const base_href = base_match && get_href(base_match[1]);
-				const base = resolve(url.href, base_href);
+					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
+					const base_href = base_match && get_href(base_match[1]);
+					const base = resolve(url.href, base_href);
 
-				let match;
-				let pattern = /<a ([\s\S]+?)>/gm;
+					let match;
+					let pattern = /<a ([\s\S]+?)>/gm;
 
-				while (match = pattern.exec(cleaned)) {
-					const attrs = match[1];
-					const href = get_href(attrs);
+					while (match = pattern.exec(cleaned)) {
+						const attrs = match[1];
+						const href = get_href(attrs);
 
-					if (href) {
-						const url = resolve(base.href, href);
+						if (href) {
+							const url = resolve(base.href, href);
 
-						if (url.protocol === protocol && url.host === host) {
-							promise = q.add(() => handle(url));
+							if (url.protocol === protocol && url.host === host) {
+								promise = q.add(() => handle(url));
+							}
 						}
 					}
-				}
 
-				await promise;
+					await promise;
+				}
 			}
 		}
 
