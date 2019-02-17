@@ -1,6 +1,6 @@
 import * as child_process from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
-import * as sander from 'sander';
 import * as url from 'url';
 import fetch from 'node-fetch';
 import * as yootils from 'yootils';
@@ -9,6 +9,7 @@ import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
+import { rimraf, copy, mkdirp } from './utils/fs_utils';
 
 type Opts = {
 	build_dir?: string,
@@ -47,18 +48,12 @@ async function _export({
 	export_dir = path.resolve(cwd, export_dir, basepath);
 
 	// Prep output directory
-	sander.rimrafSync(export_dir);
+	rimraf(export_dir);
 
-	sander.copydirSync(static_files).to(export_dir);
-	sander.copydirSync(build_dir, 'client').to(export_dir, 'client');
-
-	if (sander.existsSync(build_dir, 'service-worker.js')) {
-		sander.copyFileSync(build_dir, 'service-worker.js').to(export_dir, 'service-worker.js');
-	}
-
-	if (sander.existsSync(build_dir, 'service-worker.js.map')) {
-		sander.copyFileSync(build_dir, 'service-worker.js.map').to(export_dir, 'service-worker.js.map');
-	}
+	copy(static_files, export_dir);
+	copy(path.join(build_dir, 'client'), path.join(export_dir, 'client'));
+	copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
+	copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
 
 	const port = await ports.find(3000);
 
@@ -85,8 +80,8 @@ async function _export({
 	const seen = new Set();
 	const saved = new Set();
 
-	function save(path: string, status: number, type: string, body: string) {
-		const { pathname } = resolve(origin, path);
+	function save(url: string, status: number, type: string, body: string) {
+		const { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
@@ -107,7 +102,9 @@ async function _export({
 			status
 		});
 
-		sander.writeFileSync(export_dir, file, body);
+		const export_file = path.join(export_dir, file);
+		mkdirp(path.dirname(export_file));
+		fs.writeFileSync(export_file, body);
 	}
 
 	proc.on('message', message => {

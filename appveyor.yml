@@ -10,7 +10,7 @@ build: off
 environment:
   matrix:
     # node.js
-    - nodejs_version: 10.5
+    - nodejs_version: 11
 
 install:
   - ps: Install-Product node $env:nodejs_version

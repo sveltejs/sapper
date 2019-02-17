@@ -38,7 +38,7 @@ function template(kind, external) {
 
 export default [
 	template('app', id => /^(svelte\/?|@sapper\/)/.test(id)),
-	template('server', id => builtinModules.includes(id)),
+	template('server', id => /^(svelte\/?|@sapper\/)/.test(id) || builtinModules.includes(id)),
 
 	{
 		input: [
