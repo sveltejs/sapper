@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import mkdirp from 'mkdirp';
+import { mkdirp } from './fs_utils';
 
 const runtime = [
 	'app.mjs',
@@ -16,7 +16,7 @@ const runtime = [
 
 export function copy_runtime(output: string) {
 	runtime.forEach(({ file, source }) => {
-		mkdirp.sync(path.dirname(`${output}/${file}`));
+		mkdirp(path.dirname(`${output}/${file}`));
 		fs.writeFileSync(`${output}/${file}`, source);
 	});
 }

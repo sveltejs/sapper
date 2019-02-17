@@ -1,7 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import mkdirp from 'mkdirp';
-import rimraf from 'rimraf';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
 import { copy_shimport } from './utils/copy_shimport';
@@ -10,6 +8,7 @@ import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
 import { copy_runtime } from './utils/copy_runtime';
+import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
 	cwd?: string;
@@ -48,12 +47,12 @@ export async function build({
 		throw new Error(`Legacy builds are not supported for projects using webpack`);
 	}
 
-	rimraf.sync(path.join(output, '**/*'));
-	mkdirp.sync(output);
+	rimraf(output);
+	mkdirp(output);
 	copy_runtime(output);
 
-	rimraf.sync(path.join(dest, '**/*'));
-	mkdirp.sync(`${dest}/client`);
+	rimraf(dest);
+	mkdirp(`${dest}/client`);
 	copy_shimport(dest);
 
 	// minify src/template.html
