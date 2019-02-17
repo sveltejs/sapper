@@ -3,8 +3,6 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
-import mkdirp from 'mkdirp';
-import rimraf from 'rimraf';
 import { EventEmitter } from 'events';
 import { create_manifest_data, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
 import { Compiler, Compilers } from '../core/create_compilers';
@@ -16,6 +14,7 @@ import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '
 import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
+import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
 	cwd?: string,
@@ -146,12 +145,12 @@ class Watcher extends EventEmitter {
 
 		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
 
-		rimraf.sync(path.join(output, '**/*'));
-		mkdirp.sync(output);
+		rimraf(output);
+		mkdirp(output);
 		copy_runtime(output);
 
-		rimraf.sync(dest);
-		mkdirp.sync(`${dest}/client`);
+		rimraf(dest);
+		mkdirp(`${dest}/client`);
 		if (this.bundler === 'rollup') copy_shimport(dest);
 
 		if (!this.dev_port) this.dev_port = await ports.find(10000);
