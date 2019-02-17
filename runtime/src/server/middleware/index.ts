@@ -52,11 +52,6 @@ export default function middleware(opts: {
 			next();
 		},
 
-		fs.existsSync(path.join(build_dir, 'index.html')) && serve({
-			pathname: '/index.html',
-			cache_control: dev ? 'no-cache' : 'max-age=600'
-		}),
-
 		fs.existsSync(path.join(build_dir, 'service-worker.js')) && serve({
 			pathname: '/service-worker.js',
 			cache_control: 'no-cache, no-store, must-revalidate'
