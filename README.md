@@ -11,9 +11,11 @@ Sapper is a framework for building high-performance universal web apps. [Read th
 ## Get started
 
 Clone the [starter project template](https://github.com/sveltejs/sapper-template) with [degit](https://github.com/rich-harris/degit)...
+When cloning you have to choose between rollup or webpack:
 
 ```bash
-npx degit sveltejs/sapper-template my-app
+npx degit "sveltejs/sapper-template#rollup" my-app
+# or: npx degit "sveltejs/sapper-template#webpack" my-app
 ```
 
 ...then install dependencies and start the dev server...
