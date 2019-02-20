@@ -8,9 +8,12 @@
 
 <script>
 	import { preloading } from '@sapper/app';
+	import { setContext } from 'svelte';
 
 	export let child;
 	export let rootPreloadFunctionRan;
+
+	setContext('x', { rootPreloadFunctionRan });
 </script>
 
 {#if $preloading}

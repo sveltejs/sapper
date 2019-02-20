@@ -6,7 +6,6 @@ const runtime = [
 	'app.mjs',
 	'server.mjs',
 	'internal/shared.mjs',
-	'internal/Sapper.svelte',
 	'internal/layout.svelte',
 	'internal/error.svelte'
 ].map(file => ({

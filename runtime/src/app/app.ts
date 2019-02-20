@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store.mjs';
-import Sapper from '@sapper/internal/Sapper.svelte';
+import App from '@sapper/internal/App.svelte';
 import { stores } from '@sapper/internal/shared';
 import { Root, root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
@@ -180,8 +180,12 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	stores.preloading.set(false);
 
 	if (root_component) {
-		root_component.props = props;
+		root_component.$set(props);
 	} else {
+		props.level0 = {
+			props: await root_preloaded
+		};
+
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
 		const end = document.querySelector('#sapper-head-end');
@@ -192,13 +196,9 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			detach(end);
 		}
 
-		root_component = new Sapper({
+		root_component = new App({
 			target,
-			props: {
-				Root,
-				props,
-				session
-			},
+			props,
 			hydrate: true
 		});
 	}
@@ -249,11 +249,11 @@ export async function hydrate_target(target: Target): Promise<{
 			const segment = segments[i];
 			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
 
-			const { default: Component, preload } = await load_component(components[part.i]);
+			const { default: component, preload } = await load_component(components[part.i]);
 
-			let preloaded;
+			let props;
 			if (ready || !initial_data.preloaded[i + 1]) {
-				preloaded = preload
+				props = preload
 					? await preload.call(preload_context, {
 						path: page.path,
 						query: page.query,
@@ -261,10 +261,10 @@ export async function hydrate_target(target: Target): Promise<{
 					}, $session)
 					: {};
 			} else {
-				preloaded = initial_data.preloaded[i + 1];
+				props = initial_data.preloaded[i + 1];
 			}
 
-			return { Component, preloaded, segment };
+			return { component, props, segment };
 		}));
 	} catch (e) {
 		error = { statusCode: 500, message: e };
@@ -274,36 +274,33 @@ export async function hydrate_target(target: Target): Promise<{
 	if (redirect) return { redirect };
 
 	if (error) {
-		// TODO be nice if this was less of a special case
 		return {
 			props: {
-				child: {
-					component: ErrorComponent,
-					props: {
-						error: typeof error.message === 'string' ? new Error(error.message) : error.message,
-						status: error.statusCode
-					}
-				}
+				error: typeof error.message === 'string' ? new Error(error.message) : error.message,
+				status: error.statusCode
 			},
 			branch
 		};
 	}
 
-	const props = Object.assign({}, await root_preloaded, {
-		child: { segment: segments[0] }
-	});
+	const props = {};
 
-	let level = props.child;
+	// const props = Object.assign({}, await root_preloaded, {
+	// 	child: { segment: segments[0] }
+	// });
+
+	// let level = props.child;
+
+	let l = 1;
 
 	branch.forEach((node, i) => {
 		if (!node) return;
 
-		level.component = node.Component;
-		level.props = Object.assign({}, node.preloaded, {
-			child: { segment: segments[i + 1] }
-		});
-
-		level = level.props.child;
+		props[`level${l++}`] = {
+			segment: segments[i],
+			component: node.component,
+			props: node.props
+		};
 	});
 
 	return { props, branch };

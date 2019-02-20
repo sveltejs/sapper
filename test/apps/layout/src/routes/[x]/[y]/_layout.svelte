@@ -16,6 +16,6 @@
 </script>
 
 <span>y: {$page.params.y} {count}</span>
-<svelte:component this={child.component} {...child.props}/>
+<slot></slot>
 
 <span>child segment: {child.segment}</span>
