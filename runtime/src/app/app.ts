@@ -182,6 +182,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	if (root_component) {
 		root_component.$set(props);
 	} else {
+		props.session = session;
 		props.level0 = {
 			props: await root_preloaded
 		};
@@ -283,7 +284,10 @@ export async function hydrate_target(target: Target): Promise<{
 		};
 	}
 
-	const props = {};
+	const props = {
+		error: null,
+		status: 200
+	};
 
 	// const props = Object.assign({}, await root_preloaded, {
 	// 	child: { segment: segments[0] }
