@@ -201,7 +201,8 @@ export function get_page_handler(
 					props: preloaded[0]
 				},
 				level1: {
-					segment: segments[0]
+					segment: segments[0],
+					props: {}
 				}
 			};
 

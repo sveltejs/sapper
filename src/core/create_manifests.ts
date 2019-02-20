@@ -249,7 +249,7 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 
 	while (l-- > 1) {
 		pyramid = `
-			<svelte:component this={level${l}.component} segment={level${l + 1}.segment} {...level${l}.props}>
+			<svelte:component this={level${l}.component} segment={level${l + 1} && level${l + 1}.segment} {...level${l}.props}>
 				{#if level${l + 1}}
 					${pyramid.replace(/\n/g, '\n\t\t\t\t\t')}
 				{/if}

@@ -20,4 +20,4 @@
 	<progress class='preloading-progress' value=0.5/>
 {/if}
 
-<svelte:component this={child.component} {rootPreloadFunctionRan} {...child.props}/>
+<slot></slot>
