@@ -218,7 +218,6 @@ export async function hydrate_target(target: Target): Promise<{
 	const segments = page.path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
-	let error: { statusCode: number, message: Error | string } = null;
 
 	const props = { error: null, status: 200 };
 
@@ -245,10 +244,13 @@ export async function hydrate_target(target: Target): Promise<{
 	}
 
 	let branch;
+	let l = 1;
 
 	try {
 		branch = await Promise.all(route.parts.map(async (part, i) => {
 			if (!part) return null;
+
+			const j = l++;
 
 			const segment = segments[i];
 			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
@@ -268,17 +270,13 @@ export async function hydrate_target(target: Target): Promise<{
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return { component, props: preloaded, segment };
+			return (props[`level${j}`] = { component, props: preloaded, segment });
 		}));
 	} catch (error) {
 		props.error = error;
 		props.status = 500;
 		branch = [];
 	}
-
-	branch.filter(Boolean).forEach((node, i) => {
-		props[`level${i + 1}`] = node;
-	});
 
 	return { redirect, props, branch };
 }
