@@ -28,7 +28,7 @@ describe('layout', function() {
 		await page.goto(`${base}/foo/bar/baz`);
 
 		const text1 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
-		assert.deepEqual(text1.split('\n').filter(Boolean).map(str => str.trim()), [
+		assert.deepEqual(text1.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
 			'click me',
@@ -37,7 +37,7 @@ describe('layout', function() {
 
 		await start();
 		const text2 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
-		assert.deepEqual(text2.split('\n').filter(Boolean).map(str => str.trim()), [
+		assert.deepEqual(text2.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
 			'click me',
@@ -48,7 +48,7 @@ describe('layout', function() {
 		await wait(50);
 
 		const text3 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
-		assert.deepEqual(text3.split('\n').filter(Boolean).map(str => str.trim()), [
+		assert.deepEqual(text3.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: qux 2',
 			'click me',

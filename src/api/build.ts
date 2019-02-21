@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import minify_html from './utils/minify_html';
-import { create_compilers, create_main_manifests, create_manifest_data, create_serviceworker_manifest } from '../core';
+import { create_compilers, create_app, create_manifest_data, create_serviceworker_manifest } from '../core';
 import { copy_shimport } from './utils/copy_shimport';
 import read_template from '../core/read_template';
 import { CompileResult } from '../core/create_compilers/interfaces';
@@ -71,7 +71,7 @@ export async function build({
 	const manifest_data = create_manifest_data(routes);
 
 	// create src/node_modules/@sapper/app.mjs and server.mjs
-	create_main_manifests({
+	create_app({
 		bundler,
 		manifest_data,
 		cwd,

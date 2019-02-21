@@ -9,7 +9,7 @@ import { IGNORE } from '../constants';
 import { Manifest, Page, Props, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import { stores } from '@sapper/internal/shared';
-import Sapper from '@sapper/internal/Sapper.svelte';
+import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -38,7 +38,7 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
-		const isSWIndexHtml = req.path === '/service-worker-index.html';
+		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
@@ -52,7 +52,7 @@ export function get_page_handler(
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
 		let preloaded_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
-		if (!error && !isSWIndexHtml) {
+		if (!error && !is_service_worker_index) {
 			page.parts.forEach(part => {
 				if (!part) return;
 
@@ -152,7 +152,7 @@ export function get_page_handler(
 
 
 			let toPreload = [root_preloaded];
-			if (!isSWIndexHtml) {
+			if (!is_service_worker_index) {
 				toPreload = toPreload.concat(page.parts.map(part => {
 					if (!part) return null;
 
@@ -193,35 +193,42 @@ export function get_page_handler(
 
 			const segments = req.path.split('/').filter(Boolean);
 
-			const props = Object.assign({}, preloaded[0], {
-				child: {
+			// TODO make this less confusing
+			const layout_segments = [segments[0]];
+			let l = 1;
+
+			page.parts.forEach((part, i) => {
+				layout_segments[l] = segments[i + 1];
+				if (!part) return null;
+				l++;
+			});
+
+			const props = {
+				segments: layout_segments,
+				status: error ? status : 200,
+				error: error ? error instanceof Error ? error : { message: error } : null,
+				session: writable(session),
+				level0: {
+					props: preloaded[0]
+				},
+				level1: {
 					segment: segments[0],
 					props: {}
 				}
-			});
+			};
 
-			let level = props.child;
-			if (!isSWIndexHtml) {
+			if (!is_service_worker_index) {
+				let l = 1;
 				for (let i = 0; i < page.parts.length; i += 1) {
 					const part = page.parts[i];
 					if (!part) continue;
 
-					Object.assign(level, {
+					props[`level${l++}`] = {
 						component: part.component,
-						props: Object.assign({}, preloaded[i + 1])
-					});
-
-					level.props.child = <Props["child"]>{
-						segment: segments[i + 1],
-						props: {}
+						props: preloaded[i + 1],
+						segment: segments[i]
 					};
-					level = level.props.child;
 				}
-			}
-
-			if (error) {
-				props.child.props.error = error instanceof Error ? error : { message: error };
-				props.child.props.status = status;
 			}
 
 			stores.page.set({
@@ -230,11 +237,7 @@ export function get_page_handler(
 				params: params
 			});
 
-			const { html, head, css } = Sapper.render({
-				Root: manifest.root,
-				props: props,
-				session: writable(session)
-			});
+			const { html, head, css } = App.render(props);
 
 			const serialized = {
 				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,

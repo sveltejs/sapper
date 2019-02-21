@@ -4,7 +4,7 @@ import * as http from 'http';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
-import { create_manifest_data, create_main_manifests, create_compilers, create_serviceworker_manifest } from '../core';
+import { create_manifest_data, create_app, create_compilers, create_serviceworker_manifest } from '../core';
 import { Compiler, Compilers } from '../core/create_compilers';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
@@ -162,7 +162,7 @@ class Watcher extends EventEmitter {
 
 		try {
 			manifest_data = create_manifest_data(routes);
-			create_main_manifests({
+			create_app({
 				bundler: this.bundler,
 				manifest_data,
 				dev: true,
@@ -190,7 +190,7 @@ class Watcher extends EventEmitter {
 				() => {
 					try {
 						const new_manifest_data = create_manifest_data(routes);
-						create_main_manifests({
+						create_app({
 							bundler: this.bundler,
 							manifest_data, // TODO is this right? not new_manifest_data?
 							dev: true,

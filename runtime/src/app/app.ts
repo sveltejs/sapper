@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store.mjs';
-import Sapper from '@sapper/internal/Sapper.svelte';
+import App from '@sapper/internal/App.svelte';
 import { stores } from '@sapper/internal/shared';
 import { Root, root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
@@ -180,8 +180,13 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	stores.preloading.set(false);
 
 	if (root_component) {
-		root_component.props = props;
+		root_component.$set(props);
 	} else {
+		props.session = session;
+		props.level0 = {
+			props: await root_preloaded
+		};
+
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
 		const end = document.querySelector('#sapper-head-end');
@@ -192,13 +197,9 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			detach(end);
 		}
 
-		root_component = new Sapper({
+		root_component = new App({
 			target,
-			props: {
-				Root,
-				props,
-				session
-			},
+			props,
 			hydrate: true
 		});
 	}
@@ -211,13 +212,14 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 export async function hydrate_target(target: Target): Promise<{
 	redirect?: Redirect;
 	props?: any;
-	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>
+	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
 }> {
 	const { route, page } = target;
 	const segments = page.path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
-	let error: { statusCode: number, message: Error | string } = null;
+
+	const props = { error: null, status: 200, segments: [segments[0]] };
 
 	const preload_context = {
 		fetch: (url: string, opts?: any) => fetch(url, opts),
@@ -227,8 +229,9 @@ export async function hydrate_target(target: Target): Promise<{
 			}
 			redirect = { statusCode, location };
 		},
-		error: (statusCode: number, message: Error | string) => {
-			error = { statusCode, message };
+		error: (status: number, error: Error | string) => {
+			props.error = typeof error === 'string' ? new Error(error) : error;
+			props.status = status;
 		}
 	};
 
@@ -241,15 +244,19 @@ export async function hydrate_target(target: Target): Promise<{
 	}
 
 	let branch;
+	let l = 1;
 
 	try {
 		branch = await Promise.all(route.parts.map(async (part, i) => {
+			props.segments[l] = segments[i + 1]; // TODO make this less confusing
 			if (!part) return null;
+
+			const j = l++;
 
 			const segment = segments[i];
 			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
 
-			const { default: Component, preload } = await load_component(components[part.i]);
+			const { default: component, preload } = await load_component(components[part.i]);
 
 			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
@@ -264,49 +271,15 @@ export async function hydrate_target(target: Target): Promise<{
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return { Component, preloaded, segment };
+			return (props[`level${j}`] = { component, props: preloaded, segment });
 		}));
-	} catch (e) {
-		error = { statusCode: 500, message: e };
+	} catch (error) {
+		props.error = error;
+		props.status = 500;
 		branch = [];
 	}
 
-	if (redirect) return { redirect };
-
-	if (error) {
-		// TODO be nice if this was less of a special case
-		return {
-			props: {
-				child: {
-					component: ErrorComponent,
-					props: {
-						error: typeof error.message === 'string' ? new Error(error.message) : error.message,
-						status: error.statusCode
-					}
-				}
-			},
-			branch
-		};
-	}
-
-	const props = Object.assign({}, await root_preloaded, {
-		child: { segment: segments[0] }
-	});
-
-	let level = props.child;
-
-	branch.forEach((node, i) => {
-		if (!node) return;
-
-		level.component = node.Component;
-		level.props = Object.assign({}, node.preloaded, {
-			child: { segment: segments[i + 1] }
-		});
-
-		level = level.props.child;
-	});
-
-	return { props, branch };
+	return { redirect, props, branch };
 }
 
 function load_css(chunk: string) {
