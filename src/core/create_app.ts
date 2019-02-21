@@ -249,7 +249,7 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 
 	while (l-- > 1) {
 		pyramid = `
-			<svelte:component this={level${l}.component} segment={level${l + 1} && level${l + 1}.segment} {...level${l}.props}>
+			<svelte:component this={level${l}.component} segment={segments[${l}]} {...level${l}.props}>
 				{#if level${l + 1}}
 					${pyramid.replace(/\n/g, '\n\t\t\t\t\t')}
 				{/if}
@@ -268,13 +268,14 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 			export let session;
 			export let error;
 			export let status;
+			export let segments;
 			export let level0;
-			${levels.map(l => `export let level${l};`).join('\n\t\t\t')}
+			${levels.map(l => `export let level${l} = null;`).join('\n\t\t\t')}
 
 			setContext(CONTEXT_KEY, session);
 		</script>
 
-		<Layout segment={level1.segment} {...level0.props}>
+		<Layout segment={segments[0]} {...level0.props}>
 			{#if error}
 				<Error {error} {status}/>
 			{:else}

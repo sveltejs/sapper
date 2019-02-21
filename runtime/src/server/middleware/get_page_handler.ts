@@ -193,7 +193,17 @@ export function get_page_handler(
 
 			const segments = req.path.split('/').filter(Boolean);
 
+			const layout_segments = [segments[0]];
+			let l = 1;
+
+			page.parts.forEach((part, i) => {
+				layout_segments[l] = segments[i + 1];
+				if (!part) return null;
+				l++;
+			});
+
 			const props = {
+				segments: layout_segments,
 				status: error ? status : 200,
 				error: error ? error instanceof Error ? error : { message: error } : null,
 				session: writable(session),
