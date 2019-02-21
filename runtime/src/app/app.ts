@@ -220,6 +220,8 @@ export async function hydrate_target(target: Target): Promise<{
 	let redirect: Redirect = null;
 	let error: { statusCode: number, message: Error | string } = null;
 
+	const props = { error: null, status: 200 };
+
 	const preload_context = {
 		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
@@ -228,8 +230,9 @@ export async function hydrate_target(target: Target): Promise<{
 			}
 			redirect = { statusCode, location };
 		},
-		error: (statusCode: number, message: Error | string) => {
-			error = { statusCode, message };
+		error: (status: number, error: Error | string) => {
+			props.error = typeof error === 'string' ? new Error(error) : error;
+			props.status = status;
 		}
 	};
 
@@ -252,9 +255,9 @@ export async function hydrate_target(target: Target): Promise<{
 
 			const { default: component, preload } = await load_component(components[part.i]);
 
-			let props;
+			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
-				props = preload
+				preloaded = preload
 					? await preload.call(preload_context, {
 						path: page.path,
 						query: page.query,
@@ -262,52 +265,22 @@ export async function hydrate_target(target: Target): Promise<{
 					}, $session)
 					: {};
 			} else {
-				props = initial_data.preloaded[i + 1];
+				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return { component, props, segment };
+			return { component, props: preloaded, segment };
 		}));
-	} catch (e) {
-		error = { statusCode: 500, message: e };
+	} catch (error) {
+		props.error = error;
+		props.status = 500;
 		branch = [];
 	}
 
-	if (redirect) return { redirect };
-
-	if (error) {
-		return {
-			props: {
-				error: typeof error.message === 'string' ? new Error(error.message) : error.message,
-				status: error.statusCode
-			},
-			branch
-		};
-	}
-
-	const props = {
-		error: null,
-		status: 200
-	};
-
-	// const props = Object.assign({}, await root_preloaded, {
-	// 	child: { segment: segments[0] }
-	// });
-
-	// let level = props.child;
-
-	let l = 1;
-
-	branch.forEach((node, i) => {
-		if (!node) return;
-
-		props[`level${l++}`] = {
-			segment: segments[i],
-			component: node.component,
-			props: node.props
-		};
+	branch.filter(Boolean).forEach((node, i) => {
+		props[`level${i + 1}`] = node;
 	});
 
-	return { props, branch };
+	return { redirect, props, branch };
 }
 
 function load_css(chunk: string) {
