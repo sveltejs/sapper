@@ -193,6 +193,7 @@ export function get_page_handler(
 
 			const segments = req.path.split('/').filter(Boolean);
 
+			// TODO make this less confusing
 			const layout_segments = [segments[0]];
 			let l = 1;
 
