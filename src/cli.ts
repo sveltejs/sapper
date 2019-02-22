@@ -89,8 +89,17 @@ prog.command('dev')
 			});
 
 			watcher.on('error', (event: ErrorEvent) => {
-				console.log(colors.red(`✗ ${event.type}`));
-				console.log(colors.red(event.message));
+				const { type, error } = event;
+
+				console.log(colors.bold().red(`✗ ${type}`));
+
+				if (error.loc) {
+					let file = error.loc.file && `${path.relative(process.cwd(), error.loc.file)} (${error.loc.line}:${error.loc.column})`;
+					if (file) console.log(colors.bold(file));
+				}
+
+				console.log(colors.red(event.error.message));
+				if (error.frame) console.log(error.frame);
 			});
 
 			watcher.on('fatal', (event: FatalEvent) => {
