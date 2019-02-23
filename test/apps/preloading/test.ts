@@ -108,4 +108,16 @@ describe('preloading', function() {
 			'prefetch'
 		);
 	});
+
+	it('runs preload on query parameter change', async () => {
+		await page.goto(`${base}/query?text=First`);
+		assert.equal(await title(), 'First');
+
+		await start();
+
+		await page.click('a[href="query?text=Second"]');
+		await wait(50);
+
+		assert.equal(await title(),	'Second');
+	});
 });
