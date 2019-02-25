@@ -93,9 +93,8 @@ prog.command('dev')
 
 				console.log(colors.bold().red(`✗ ${type}`));
 
-				if (error.loc) {
-					let file = error.loc.file && `${path.relative(process.cwd(), error.loc.file)} (${error.loc.line}:${error.loc.column})`;
-					if (file) console.log(colors.bold(file));
+				if (error.loc && error.loc.file) {
+					console.log(colors.bold(`${path.relative(process.cwd(), error.loc.file)} (${error.loc.line}:${error.loc.column})`));
 				}
 
 				console.log(colors.red(event.error.message));
