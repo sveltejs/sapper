@@ -152,7 +152,7 @@ export function get_page_handler(
 
 
 			let toPreload = [root_preloaded];
-			if (!is_service_worker_index) {
+			if (!is_service_worker_index && !error) {
 				toPreload = toPreload.concat(page.parts.map(part => {
 					if (!part) return null;
 

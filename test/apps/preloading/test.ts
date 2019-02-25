@@ -108,4 +108,13 @@ describe('preloading', function() {
 			'prefetch'
 		);
 	});
+
+	it('calls preload after navigating from error page', async () => {
+		await page.goto(`${base}/404`);
+		await start();
+		assert.equal(await title(), '404');
+
+		await page.click('a[href="/bar"]');
+		assert.equal(await title(), 'bar');
+	});
 });
