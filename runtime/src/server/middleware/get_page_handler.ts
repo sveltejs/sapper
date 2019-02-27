@@ -231,13 +231,17 @@ export function get_page_handler(
 				}
 			}
 
-			stores.page.set({
+			stores.page.reset({
 				path: req.path,
 				query: req.query,
 				params: params
 			});
+			stores.session.reset(session);
 
 			const { html, head, css } = App.render(props);
+
+			stores.session.reset(false);
+			stores.page.reset(false);
 
 			const serialized = {
 				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,

@@ -36,6 +36,24 @@ describe('session', function() {
 		assert.equal(await title(), 'changed');
 	});
 
+	it('works in module context', async () => {
+		await page.goto(`${base}/module`);
+
+		assert.equal(await title(), 'hello world');
+
+		await start();
+		assert.equal(await title(), 'hello world');
+
+		await page.click('button');
+		assert.equal(await title(), 'clicked');
+
+		await page.click('a');
+		assert.equal(await title(), 'clicked');
+
+		await page.click('button');
+		assert.equal(await title(), 'changed');
+	});
+
 	it('preloads session props', async () => {
 		await page.goto(`${base}/preloaded`);
 

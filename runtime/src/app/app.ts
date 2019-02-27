@@ -23,7 +23,8 @@ let current_token: {};
 let root_preloaded: Promise<any>;
 let current_branch = [];
 
-const session = writable(initial_data && initial_data.session);
+const { session } = stores
+initial_data && session.set(initial_data.session);
 
 let $session;
 let session_dirty: boolean;
