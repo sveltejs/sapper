@@ -43,6 +43,7 @@
     "pretty-bytes": "^5.1.0",
     "puppeteer": "^1.12.0",
     "require-relative": "^0.8.7",
+    "rimraf": "^2.6.3",
     "rollup": "^1.1.2",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-json": "^3.1.0",
@@ -66,7 +67,7 @@
   "scripts": {
     "test": "mocha --opts mocha.opts",
     "pretest": "npm run build",
-    "build": "rm -rf dist && rollup -c",
+    "build": "rimraf dist && rollup -c",
     "prepare": "npm run build",
     "dev": "rollup -cw",
     "prepublishOnly": "npm test",
