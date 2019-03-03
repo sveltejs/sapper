@@ -13,6 +13,7 @@ describe('with-basepath', function() {
 	let page: puppeteer.Page;
 	let base: string;
 
+	// helpers
 	let start: () => Promise<void>;
 	let prefetchRoutes: () => Promise<void>;
 	let title: () => Promise<string>;
@@ -63,14 +64,13 @@ describe('with-basepath', function() {
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
 			'custom-basepath/redirect-from/index.html',
-			'custom-basepath/redirect-to',
+			'custom-basepath/redirect-to/index.html',
 			'custom-basepath/service-worker-index.html',
 			'custom-basepath/service-worker.js'
 		]);
 	});
 
 	it('redirects on server', async () => {
-		console.log('base', base)
 		await page.goto(`${base}/custom-basepath/redirect-from`);
 
 		assert.equal(
