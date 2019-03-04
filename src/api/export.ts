@@ -163,7 +163,6 @@ async function _export({
 					const cleaned = clean_html(body);
 
 					const q = yootils.queue(8);
-					let promise;
 
 					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 					const base_href = base_match && get_href(base_match[1]);
@@ -180,12 +179,12 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								promise = q.add(() => handle(url));
+								q.add(() => handle(url));
 							}
 						}
 					}
 
-					await promise;
+					await q.close();
 				}
 			}
 		}
