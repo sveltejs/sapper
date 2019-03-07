@@ -199,9 +199,10 @@ class Watcher extends EventEmitter {
 						});
 
 						manifest_data = new_manifest_data;
-					} catch (err) {
+					} catch (error) {
 						this.emit('error', <ErrorEvent>{
-							message: err.message
+							type: 'manifest',
+							error
 						});
 					}
 				}
@@ -408,11 +409,11 @@ class Watcher extends EventEmitter {
 	}) {
 		compiler.oninvalid(invalid);
 
-		compiler.watch((err?: Error, result?: CompileResult) => {
-			if (err) {
+		compiler.watch((error?: Error, result?: CompileResult) => {
+			if (error) {
 				this.emit('error', <ErrorEvent>{
 					type: name,
-					message: err.message
+					error
 				});
 			} else {
 				this.emit('build', {
