@@ -54,7 +54,7 @@
     "sade": "^1.4.2",
     "sirv": "^0.2.2",
     "sucrase": "^3.9.5",
-    "svelte": "^3.0.0-alpha27",
+    "svelte": "^3.0.0-beta.11",
     "svelte-loader": "^2.12.0",
     "webpack": "^4.29.0",
     "webpack-format-messages": "^2.0.5",
