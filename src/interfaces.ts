@@ -69,7 +69,7 @@ export type ReadyEvent = {
 
 export type ErrorEvent = {
 	type: string;
-	message: string;
+	error: Error;
 };
 
 export type FatalEvent = {
