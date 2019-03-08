@@ -17,11 +17,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 		if (/preload/.test(source)) {
 			try {
-				const { stats } = svelte.compile(source, {
-					generate: false,
-					onwarn: () => {}
-				});
-				return !!stats.vars.find((variable: any) => variable.module && variable.export_name === 'preload');
+				const { vars } = svelte.compile(source.replace(/<style\b[^>]*>[^]*?<\/style>/g, ''), { generate: false });
+				return vars.some((variable: any) => variable.module && variable.export_name === 'preload');
 			} catch (err) {}
 		}
 
