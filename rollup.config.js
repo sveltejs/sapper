@@ -9,7 +9,8 @@ import { builtinModules } from 'module';
 const external = [].concat(
 	Object.keys(pkg.dependencies),
 	Object.keys(process.binding('natives')),
-	'sapper/core.js'
+	'sapper/core.js',
+	'svelte/compiler'
 );
 
 function template(kind, external) {
