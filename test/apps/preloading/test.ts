@@ -37,6 +37,15 @@ describe('preloading', function() {
 		assert.equal(await title(), 'true');
 	});
 
+	it('prevent crash if preload return nothing', async () => {
+		await page.goto(`${base}/preload-nothing`);
+
+		await start();
+		await wait(50);
+
+		assert.equal(await title(), 'Page loaded');
+	});
+
 	it('bails on custom classes returned from preload', async () => {
 		await page.goto(`${base}/preload-values/custom-class`);
 
