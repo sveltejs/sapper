@@ -44,7 +44,7 @@ export function create_serviceworker_manifest({ manifest_data, output, client_fi
 	client_files: string[];
 	static_files: string;
 }) {
-	let files: string[] = ['/service-worker-index.html'];
+	let files: string[] = ['service-worker-index.html'];
 
 	if (fs.existsSync(static_files)) {
 		files = files.concat(walk(static_files));
