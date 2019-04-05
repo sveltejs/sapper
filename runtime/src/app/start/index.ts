@@ -35,7 +35,7 @@ export default function start(opts: {
 
 		history.replaceState({ id: uid }, '', href);
 
-		const url = new URL(location.href)
+		const url = new URL(location.href);
 
 		if (initial_data.error) return handle_error(url);
 

@@ -104,14 +104,13 @@ export function select_target(url: URL): Target {
 	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
 
-	const query: Query = extract_query(url.search)
-
 	for (let i = 0; i < routes.length; i += 1) {
 		const route = routes[i];
 
 		const match = route.pattern.exec(path);
 
 		if (match) {
+			const query: Query = extract_query(url.search);
 			const part = route.parts[route.parts.length - 1];
 			const params = part.params ? part.params(match) : {};
 
@@ -141,7 +140,7 @@ export function handle_error(url: URL) {
 		segments: preloaded
 
 	}
-	const query = extract_query(search)
+	const query = extract_query(search);
 	render(null, [], props, { path: pathname, query, params: {} });
 }
 
