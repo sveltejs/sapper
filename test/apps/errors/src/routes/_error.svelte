@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte'
+	import { onMount, onDestroy } from 'svelte';
 
 	export let status, error = {};
 
