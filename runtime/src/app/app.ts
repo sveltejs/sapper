@@ -10,6 +10,7 @@ import {
 	ComponentLoader,
 	ComponentConstructor,
 	Route,
+	Query,
 	Page
 } from './types';
 import goto from './goto';
@@ -80,6 +81,20 @@ export { _history as history };
 
 export const scroll_history: Record<string, ScrollPosition> = {};
 
+export function extract_query(search: string) {
+	const query = Object.create(null);
+	if (search.length > 0) {
+		search.slice(1).split('&').forEach(searchParam => {
+			let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
+			value = (value || '').replace(/\+/g, ' ');
+			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
+			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
+			else query[key] = value;
+		});
+	}
+	return query;
+}
+
 export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
 	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
@@ -89,22 +104,14 @@ export function select_target(url: URL): Target {
 	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
 
+	const query: Query = extract_query(url.search)
+
 	for (let i = 0; i < routes.length; i += 1) {
 		const route = routes[i];
 
 		const match = route.pattern.exec(path);
-		if (match) {
-			const query: Record<string, string | string[]> = Object.create(null);
-			if (url.search.length > 0) {
-				url.search.slice(1).split('&').forEach(searchParam => {
-					let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
-					value = (value || '').replace(/\+/g, ' ');
-					if (typeof query[key] === 'string') query[key] = [<string>query[key]];
-					if (typeof query[key] === 'object') (query[key] as string[]).push(value);
-					else query[key] = value;
-				});
-			}
 
+		if (match) {
 			const part = route.parts[route.parts.length - 1];
 			const params = part.params ? part.params(match) : {};
 
@@ -113,6 +120,29 @@ export function select_target(url: URL): Target {
 			return { href: url.href, route, match, page };
 		}
 	}
+}
+
+export function handle_error(url: URL) {
+	const { pathname, search } = location;
+	const { session, preloaded, status, error } = initial_data;
+
+	const props = {
+		error,
+		status,
+		session,
+		level0: {},
+		level1: {
+			props: {
+				status,
+				error
+			},
+			component: ErrorComponent
+		},
+		segments: preloaded
+
+	}
+	const query = extract_query(search)
+	render(null, [], props, { path: pathname, query, params: {} });
 }
 
 export function scroll_state() {

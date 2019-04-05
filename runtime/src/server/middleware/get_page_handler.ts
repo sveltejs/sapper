@@ -243,11 +243,12 @@ export function get_page_handler(
 				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
 				session: session && try_serialize(session, err => {
 					throw new Error(`Failed to serialize session data: ${err.message}`);
-				})
+				}),
+				error: error && try_serialize(props.error)
 			};
 
 			let script = `__SAPPER__={${[
-				error && `error:1`,
+				error && `error:${serialized.error},status:${status}`,
 				`baseUrl:"${req.baseUrl}"`,
 				serialized.preloaded && `preloaded:${serialized.preloaded}`,
 				serialized.session && `session:${serialized.session}`
