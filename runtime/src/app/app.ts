@@ -97,8 +97,7 @@ export function select_target(url: URL): Target {
 			const query: Record<string, string | string[]> = Object.create(null);
 			if (url.search.length > 0) {
 				url.search.slice(1).split('&').forEach(searchParam => {
-					let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
-					value = (value || '').replace(/\+/g, ' ');
+					let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
 					if (typeof query[key] === 'string') query[key] = [<string>query[key]];
 					if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 					else query[key] = value;
