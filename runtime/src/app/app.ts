@@ -125,11 +125,17 @@ export function handle_error(url: URL) {
 	const { pathname, search } = location;
 	const { session, preloaded, status, error } = initial_data;
 
+	if (!root_preloaded) {
+		root_preloaded = preloaded && preloaded[0]
+	}
+
 	const props = {
 		error,
 		status,
 		session,
-		level0: {},
+		level0: {
+			props: root_preloaded
+		},
 		level1: {
 			props: {
 				status,
