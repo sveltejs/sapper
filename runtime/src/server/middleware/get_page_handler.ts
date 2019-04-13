@@ -329,12 +329,10 @@ export function get_page_handler(
 			return;
 		}
 
-		if (!server_routes.some(route => route.pattern.test(req.path))) {
-			for (const page of pages) {
-				if (page.pattern.test(req.path)) {
-					handle_page(page, req, res);
-					return;
-				}
+		for (const page of pages) {
+			if (page.pattern.test(req.path)) {
+				handle_page(page, req, res);
+				return;
 			}
 		}
 
