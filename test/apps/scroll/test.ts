@@ -90,4 +90,17 @@ describe('scroll', function() {
 		const scrollY = await page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0);
 	});
+
+	it('preserves scroll when noscroll is passed to goto', async () => {
+		await page.goto(`${base}/search-form#search`);
+		await start();
+
+		let scrollY = await page.evaluate(() => window.scrollY);
+		assert.ok(scrollY > 0, String(scrollY));
+
+		await page.click("button");
+
+		scrollY = await page.evaluate(() => window.scrollY);
+		assert.ok(scrollY > 0, String(scrollY));
+	});
 });
