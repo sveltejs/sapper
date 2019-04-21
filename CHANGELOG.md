@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.25.1
+
+* Fix style injection for webpack apps ([#622](https://github.com/sveltejs/sapper/pull/622))
+
 ## 0.25.0
 
 * Force refresh on `goto(current_url)` ([#484](https://github.com/sveltejs/sapper/pull/484))
