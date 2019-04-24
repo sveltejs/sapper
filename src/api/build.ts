@@ -19,6 +19,7 @@ type Opts = {
 	static?: string;
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
+	ext?: string;
 	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
 };
 
@@ -32,6 +33,7 @@ export async function build({
 
 	bundler,
 	legacy = false,
+	ext,
 	oncompile = noop
 }: Opts = {}) {
 	bundler = validate_bundler(bundler);
@@ -68,7 +70,7 @@ export async function build({
 
 	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
-	const manifest_data = create_manifest_data(routes);
+	const manifest_data = create_manifest_data(routes, ext);
 
 	// create src/node_modules/@sapper/app.mjs and server.mjs
 	create_app({

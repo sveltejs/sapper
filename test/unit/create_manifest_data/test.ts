@@ -177,4 +177,66 @@ describe('manifest_data', () => {
 			pattern: /^\/foo\/?$/
 		}]);
 	});
+
+	it('works with custom extensions' , () => {
+		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/custom-extension'), '.jazz .beebop .funk .html');
+
+		const index = { name: 'index', file: 'index.funk', has_preload: false };
+		const about = { name: 'about', file: 'about.jazz', has_preload: false };
+		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop', has_preload: false };
+
+		assert.deepEqual(components, [
+			index,
+			about,
+			blog,
+			blog_$slug
+		]);
+
+		assert.deepEqual(pages, [
+			{
+				pattern: /^\/$/,
+				parts: [
+					{ component: index, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/about\/?$/,
+				parts: [
+					{ component: about, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/blog\/?$/,
+				parts: [
+					{ component: blog, params: [] }
+				]
+			},
+
+			{
+				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				parts: [
+					null,
+					{ component: blog_$slug, params: ['slug'] }
+				]
+			}
+		]);
+
+		assert.deepEqual(server_routes, [
+			{
+				name: 'route_blog_json',
+				pattern: /^\/blog.json$/,
+				file: 'blog/index.json.js',
+				params: []
+			},
+			{
+				name: 'route_blog_$slug_json',
+				pattern: /^\/blog\/([^\/]+?).json$/,
+				file: 'blog/[slug].json.js',
+				params: ['slug']
+			}
+		]);
+	});
 });
