@@ -145,7 +145,7 @@ export function get_page_handler(
 					path: req.path,
 					query: req.query,
 					params: {}
-				})
+				}, session)
 				: {};
 
 			match = error ? null : page.pattern.exec(req.path);

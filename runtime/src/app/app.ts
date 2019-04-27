@@ -289,7 +289,7 @@ export async function hydrate_target(target: Target): Promise<{
 			const j = l++;
 
 			const segment = segments[i];
-			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment) return current_branch[i];
+			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment && current_branch[i].part === part.i) return current_branch[i];
 
 			const { default: component, preload } = await load_component(components[part.i]);
 
@@ -306,7 +306,7 @@ export async function hydrate_target(target: Target): Promise<{
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return (props[`level${j}`] = { component, props: preloaded, segment });
+			return (props[`level${j}`] = { component, props: preloaded, segment, part: part.i });
 		}));
 	} catch (error) {
 		props.error = error;
