@@ -225,7 +225,7 @@ export function get_page_handler(
 
 					props[`level${l++}`] = {
 						component: part.component,
-						props: preloaded[i + 1],
+						props: preloaded[i + 1] || {},
 						segment: segments[i]
 					};
 				}
