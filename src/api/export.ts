@@ -212,6 +212,6 @@ async function _export({
 }
 
 function get_href(attrs: string) {
-	const match = /href\s*=\s*(?:"(.*?)"|'(.+?)'|([^\s>]+))/.exec(attrs);
-	return match[1] || match[2] || match[3];
+	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
+	return match && (match[1] || match[2] || match[3]);
 }
