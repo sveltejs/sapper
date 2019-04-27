@@ -8,6 +8,25 @@ import { wait } from '../../utils';
 declare let deleted: { id: number };
 declare let el: any;
 
+function get(url: string, opts?: any): Promise<{ headers: Record<string, string>, body: string }> {
+	return new Promise((fulfil, reject) => {
+		const req = http.get(url, opts || {}, res => {
+			res.on('error', reject);
+
+			let body = '';
+			res.on('data', chunk => body += chunk);
+			res.on('end', () => {
+				fulfil({
+					headers: res.headers as Record<string, string>,
+					body
+				});
+			});
+		});
+
+		req.on('error', reject);
+	});
+}
+
 describe('basics', function() {
 	this.timeout(10000);
 
@@ -116,38 +135,25 @@ describe('basics', function() {
 		assert.equal(requests[1], `${base}/b.json`);
 	});
 
-
 	// TODO equivalent test for a webpack app
-	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', () => {
-		return new Promise((fulfil, reject) => {
-			const req = http.get(base, res => {
-				try {
-					const { headers } = res;
+	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', async () => {
+		const { headers } = await get(base);
 
-					assert.equal(
-						headers['content-type'],
-						'text/html'
-					);
+		assert.equal(
+			headers['content-type'],
+			'text/html'
+		);
 
-					assert.equal(
-						headers['cache-control'],
-						'max-age=600'
-					);
+		assert.equal(
+			headers['cache-control'],
+			'max-age=600'
+		);
 
-					// TODO preload more than just the entry point
-					const regex = /<\/client\/client\.\w+\.js>;rel="modulepreload"/;
-					const link = <string>headers['link'];
+		// TODO preload more than just the entry point
+		const regex = /<\/client\/client\.\w+\.js>;rel="modulepreload"/;
+		const link = <string>headers['link'];
 
-					assert.ok(regex.test(link), link);
-
-					fulfil();
-				} catch (err) {
-					reject(err);
-				}
-			});
-
-			req.on('error', reject);
-		});
+		assert.ok(regex.test(link), link);
 	});
 
 	it('calls a delete handler', async () => {
@@ -292,5 +298,19 @@ describe('basics', function() {
 			await page.evaluate(() => document.body.textContent),
 			'xyz,abc,qwe'
 		);
+	});
+  
+	it('runs server route handlers before page handlers, if they match', async () => {
+		const json = await get(`${base}/middleware`, {
+			headers: {
+				'Accept': 'application/json'
+			}
+		});
+
+		assert.equal(json.body, '{"json":true}');
+
+		const html = await get(`${base}/middleware`);
+
+		assert.ok(html.body.indexOf('<h1>HTML</h1>') !== -1);
 	});
 });
