@@ -112,6 +112,17 @@ describe('errors', function() {
 		);
 	});
 
+	it('execute error page hooks', async () => {
+		await page.goto(`${base}/some-throw-page`);
+		await start();
+		await wait(50);
+
+		assert.equal(
+			await page.$eval('h2', node => node.textContent),
+			'success'
+		);
+	})
+
 	it('does not serve error page for async non-page error', async () => {
 		await page.goto(`${base}/async-throw.json`);
 
