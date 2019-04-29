@@ -4,6 +4,198 @@ title: Migrating
 
 Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects. If you upgrade and Sapper sends you here, it's because it was unable to fix your project automatically.
 
+### 0.21 to 0.22
+
+Instead of importing middleware from the `sapper` package, or importing the client runtime from `sapper/runtime.js`, the app is *compiled into* the generated files:
+
+```diff
+// src/client.js
+-import { init } from 'sapper/runtime.js';
+-import { manifest } from './manifest/client.js';
++import * as sapper from '../__sapper__/client.js';
+
+-init({
++sapper.start({
+	target: document.querySelector('#sapper'),
+-	manifest
+});
+```
+
+```diff
+// src/server.js
+import sirv from 'sirv';
+import polka from 'polka';
+import compression from 'compression';
+-import sapper from 'sapper';
+-import { manifest } from './manifest/server.js';
++import * as sapper from '../__sapper__/server.js';
+
+const { PORT, NODE_ENV } = process.env;
+const dev = NODE_ENV === 'development';
+
+polka() // You can also use Express
+	.use(
+		compression({ threshold: 0 }),
+-		sirv('assets', { dev }),
++		sirv('static', { dev }),
+-		sapper({ manifest })
++		sapper.middleware()
+	)
+	.listen(PORT, err => {
+		if (err) console.log('error', err);
+	});
+```
+
+```diff
+// src/service-worker.js
+-import { assets, shell, routes, timestamp } from './manifest/service-worker.js';
++import { files, shell, routes, timestamp } from '../__sapper__/service-worker.js';
+```
+
+In addition, the default build and export directories are now `__sapper__/build` and `__sapper__/export` respectively.
+
+
+### 0.20 to 0.21
+
+* The `app` directory is now `src`
+* The `routes` directory is now `src/routes`
+* The `assets` directory is now `static` (remember to update your `src/server.js` file to reflect this change as well)
+* Instead of having three separate config files (`webpack/client.config.js`, `webpack/server.config.js` and `webpack/service-worker.config.js`), there is a single `webpack.config.js` file that exports `client`, `server` and `serviceworker` configs.
+
+
+### 0.17 to 0.18
+
+The `sapper/webpack/config.js` file (required in the `webpack/*.config.js` files) is now `sapper/config/webpack.js`.
+
+
+### 0.14 to 0.15
+
+This release changed how routing is handled, resulting in a number of changes.
+
+Instead of a single `App.html` component, you can place `_layout.html` components in any directory under `routes`. You should move `app/App.html` to `routes/_layout.html` and modify it like so:
+
+```diff
+-<!-- app/App.html -->
++<!-- routes/_layout.html -->
+
+-<Nav path={props.path}/>
++<Nav segment={child.segment}/>
+
+-<svelte:component this={Page} {...props}/>
++<svelte:component this={child.component} {...child.props}/>
+```
+
+You will then need to remove `App` from your client and server entry points, and replace `routes` with `manifest`:
+
+```diff
+// app/client.js
+import { init } from 'sapper/runtime.js';
+-import { routes } from './manifest/client.js';
+-import App from './App.html';
++import { manifest } from './manifest/client.js';
+
+init({
+	target: document.querySelector('#sapper'),
+-	routes,
+-	App
++	manifest
+});
+```
+
+```diff
+// app/server.js
+import sirv from 'sirv';
+import polka from 'polka';
+import sapper from 'sapper';
+import compression from 'compression';
+-import { routes } from './manifest/server.js';
+-import App from './App.html';
++import { manifest } from './manifest/server.js';
+
+polka()
+	.use(
+		compression({ threshold: 0 }),
+		sirv('assets'),
+-		sapper({ routes, App })
++		sapper({ manifest })
+	)
+	.listen(process.env.PORT)
+	.catch(err => {
+		console.log('error', err);
+	});
+```
+
+`preload` functions no longer take the entire request object on the server; instead, they receive the same argument as on the client.
+
+
+
+### 0.13 to 0.14
+
+The `4xx.html` and `5xx.html` error pages have been replaced with a single page, `_error.html`. In addition to the regular `params`, `query` and `path` props, it receives `status` and `error`.
+
+
+
+
+### 0.11 to 0.12
+
+In earlier versions, each page was a completely standalone component. Upon navigation, the entire page would be torn down and a new one created. Typically, each page would import a shared `<Layout>` component to achieve visual consistency.
+
+As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/master/app/App.html) for an example.
+
+This component is rendered with the following values:
+
+* `Page` — a component constructor for the current page
+* `props` — an object with `params`, `query`, and any data returned from the page's `preload` function
+* `preloading` — `true` during preload, `false` otherwise. Useful for showing progress indicators
+
+Sapper needs to know about your app component. To that end, you will need to modify your `app/server.js` and `app/client.js`:
+
+```diff
+// app/server.js
+import polka from 'polka';
+import sapper from 'sapper';
+import serve from 'serve-static';
+import { routes } from './manifest/server.js';
++import App from './App.html';
+
+polka()
+	.use(
+		serve('assets'),
+-		sapper({ routes })
++		sapper({ App, routes })
+	)
+	.listen(process.env.PORT);
+```
+
+```diff
+// app/client.js
+import { init } from 'sapper/runtime.js';
+import { routes } from './manifest/client.js';
++import App from './App.html';
+
+-init(target: document.querySelector('#sapper'), routes);
++init({
++	target: document.querySelector('#sapper'),
++	routes,
++	App
++});
+```
+
+Once your `App.html` has been created and your server and client apps updated, you can remove any `<Layout>` components from your individual pages.
+
+
+### <0.9 to 0.10
+
+##### app/template.html
+
+* Your `<head>` element must contain `%sapper.base%` (see ([base URLs](guide#base-urls))
+* Remove references to your service worker; this is now handled by `%sapper.scripts%`
+
+##### Pages
+
+* Your `preload` functions should now use `this.fetch` instead of `fetch`. `this.fetch` allows you to make credentialled requests on the server, and means that you no longer need to create a `global.fetch` object in `app/server.js`.
+
+
 
 ### 0.6 to 0.7
 
@@ -69,192 +261,3 @@ Your webpack configs now live in a `webpack` directory:
 * `webpack.server.config.js` is now `webpack/server.config.js`
 
 If you have a service worker, you should also have a `webpack/service-worker.config.js` file. See [sapper-template](https://github.com/sveltejs/sapper-template) for an example.
-
-
-### <0.9 to 0.10
-
-##### app/template.html
-
-* Your `<head>` element must contain `%sapper.base%` (see ([base URLs](guide#base-urls))
-* Remove references to your service worker; this is now handled by `%sapper.scripts%`
-
-##### Pages
-
-* Your `preload` functions should now use `this.fetch` instead of `fetch`. `this.fetch` allows you to make credentialled requests on the server, and means that you no longer need to create a `global.fetch` object in `app/server.js`.
-
-
-### 0.11 to 0.12
-
-In earlier versions, each page was a completely standalone component. Upon navigation, the entire page would be torn down and a new one created. Typically, each page would import a shared `<Layout>` component to achieve visual consistency.
-
-As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/master/app/App.html) for an example.
-
-This component is rendered with the following values:
-
-* `Page` — a component constructor for the current page
-* `props` — an object with `params`, `query`, and any data returned from the page's `preload` function
-* `preloading` — `true` during preload, `false` otherwise. Useful for showing progress indicators
-
-Sapper needs to know about your app component. To that end, you will need to modify your `app/server.js` and `app/client.js`:
-
-```diff
-// app/server.js
-import polka from 'polka';
-import sapper from 'sapper';
-import serve from 'serve-static';
-import { routes } from './manifest/server.js';
-+import App from './App.html';
-
-polka()
-	.use(
-		serve('assets'),
--		sapper({ routes })
-+		sapper({ App, routes })
-	)
-	.listen(process.env.PORT);
-```
-
-```diff
-// app/client.js
-import { init } from 'sapper/runtime.js';
-import { routes } from './manifest/client.js';
-+import App from './App.html';
-
--init(target: document.querySelector('#sapper'), routes);
-+init({
-+	target: document.querySelector('#sapper'),
-+	routes,
-+	App
-+});
-```
-
-Once your `App.html` has been created and your server and client apps updated, you can remove any `<Layout>` components from your individual pages.
-
-
-### 0.13 to 0.14
-
-The `4xx.html` and `5xx.html` error pages have been replaced with a single page, `_error.html`. In addition to the regular `params`, `query` and `path` props, it receives `status` and `error`.
-
-
-### 0.14 to 0.15
-
-This release changed how routing is handled, resulting in a number of changes.
-
-Instead of a single `App.html` component, you can place `_layout.html` components in any directory under `routes`. You should move `app/App.html` to `routes/_layout.html` and modify it like so:
-
-```diff
--<!-- app/App.html -->
-+<!-- routes/_layout.html -->
-
--<Nav path={props.path}/>
-+<Nav segment={child.segment}/>
-
--<svelte:component this={Page} {...props}/>
-+<svelte:component this={child.component} {...child.props}/>
-```
-
-You will then need to remove `App` from your client and server entry points, and replace `routes` with `manifest`:
-
-```diff
-// app/client.js
-import { init } from 'sapper/runtime.js';
--import { routes } from './manifest/client.js';
--import App from './App.html';
-+import { manifest } from './manifest/client.js';
-
-init({
-	target: document.querySelector('#sapper'),
--	routes,
--	App
-+	manifest
-});
-```
-
-```diff
-// app/server.js
-import sirv from 'sirv';
-import polka from 'polka';
-import sapper from 'sapper';
-import compression from 'compression';
--import { routes } from './manifest/server.js';
--import App from './App.html';
-+import { manifest } from './manifest/server.js';
-
-polka()
-	.use(
-		compression({ threshold: 0 }),
-		sirv('assets'),
--		sapper({ routes, App })
-+		sapper({ manifest })
-	)
-	.listen(process.env.PORT)
-	.catch(err => {
-		console.log('error', err);
-	});
-```
-
-`preload` functions no longer take the entire request object on the server; instead, they receive the same argument as on the client.
-
-
-### 0.17 to 0.18
-
-The `sapper/webpack/config.js` file (required in the `webpack/*.config.js` files) is now `sapper/config/webpack.js`.
-
-
-### 0.20 to 0.21
-
-* The `app` directory is now `src`
-* The `routes` directory is now `src/routes`
-* The `assets` directory is now `static` (remember to update your `src/server.js` file to reflect this change as well)
-* Instead of having three separate config files (`webpack/client.config.js`, `webpack/server.config.js` and `webpack/service-worker.config.js`), there is a single `webpack.config.js` file that exports `client`, `server` and `serviceworker` configs.
-
-
-### 0.21 to 0.22
-
-Instead of importing middleware from the `sapper` package, or importing the client runtime from `sapper/runtime.js`, the app is *compiled into* the generated files:
-
-```diff
-// src/client.js
--import { init } from 'sapper/runtime.js';
--import { manifest } from './manifest/client.js';
-+import * as sapper from '../__sapper__/client.js';
-
--init({
-+sapper.start({
-	target: document.querySelector('#sapper'),
--	manifest
-});
-```
-
-```diff
-// src/server.js
-import sirv from 'sirv';
-import polka from 'polka';
-import compression from 'compression';
--import sapper from 'sapper';
--import { manifest } from './manifest/server.js';
-+import * as sapper from '../__sapper__/server.js';
-
-const { PORT, NODE_ENV } = process.env;
-const dev = NODE_ENV === 'development';
-
-polka() // You can also use Express
-	.use(
-		compression({ threshold: 0 }),
--		sirv('assets', { dev }),
-+		sirv('static', { dev }),
--		sapper({ manifest })
-+		sapper.middleware()
-	)
-	.listen(PORT, err => {
-		if (err) console.log('error', err);
-	});
-```
-
-```diff
-// src/service-worker.js
--import { assets, shell, routes, timestamp } from './manifest/service-worker.js';
-+import { files, shell, routes, timestamp } from '../__sapper__/service-worker.js';
-```
-
-In addition, the default build and export directories are now `__sapper__/build` and `__sapper__/export` respectively.
