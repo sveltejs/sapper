@@ -5,6 +5,8 @@ title: Introduction
 ### Before we begin
 
 > Sapper is in early development, and some things may change before we hit version 1.0. This document is a work-in-progress. If you get stuck, reach out for help in the [Discord chatroom](https://discord.gg/yy75DKs).
+>
+> See the [migration guides](migrating) for help upgrading from older versions.
 
 ### What is Sapper?
 
