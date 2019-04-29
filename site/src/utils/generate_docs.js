@@ -1,11 +1,10 @@
+// TODO put this in site-kit? svelte.dev uses Prism instead of hljs
 import fs from 'fs';
 import path from 'path';
-import { SLUG_SEPARATOR, SLUG_PRESERVE_UNICODE } from '../../../config';
+import { SLUG_SEPARATOR, SLUG_PRESERVE_UNICODE } from '../../config';
 import { extract_frontmatter, extract_metadata, langs, link_renderer } from '@sveltejs/site-kit/utils/markdown.js';
 import { make_session_slug_processor } from '@sveltejs/site-kit/utils/slug';
 import marked from 'marked';
-// import PrismJS from 'prismjs';
-// import 'prismjs/components/prism-bash';
 import hljs from 'highlight.js';
 
 const escaped = {
@@ -25,7 +24,7 @@ function unescape(str) {
 	return String(str).replace(/&.+?;/g, match => unescaped[match] || match);
 }
 
-const blockTypes = [
+const block_types = [
 	'blockquote',
 	'html',
 	'heading',
@@ -38,17 +37,17 @@ const blockTypes = [
 	'tablecell'
 ];
 
-export default function() {
+export default function generate_docs(dir) {
 	const make_slug = make_session_slug_processor({
 		separator: SLUG_SEPARATOR,
 		preserve_unicode: SLUG_PRESERVE_UNICODE
 	});
 
 	return fs
-		.readdirSync(`content/docs`)
+		.readdirSync(`content/${dir}`)
 		.filter(file => file[0] !== '.' && path.extname(file) === '.md')
 		.map(file => {
-			const markdown = fs.readFileSync(`content/docs/${file}`, 'utf-8');
+			const markdown = fs.readFileSync(`content/${dir}/${file}`, 'utf-8');
 
 			const { content, metadata } = extract_frontmatter(markdown);
 
@@ -131,12 +130,12 @@ export default function() {
 				return `
 					<h${level}>
 						<span id="${slug}" class="offset-anchor" ${level > 4 ? 'data-scrollignore' : ''}></span>
-						<a href="docs#${slug}" class="anchor" aria-hidden="true"></a>
+						<a href="${dir}#${slug}" class="anchor" aria-hidden="true"></a>
 						${text}
 					</h${level}>`;
 			};
 
-			blockTypes.forEach(type => {
+			block_types.forEach(type => {
 				const fn = renderer[type];
 				renderer[type] = function() {
 					return fn.apply(this, arguments);

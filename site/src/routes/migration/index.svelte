@@ -1,6 +1,6 @@
 <script context="module">
 	export async function preload() {
-		const sections = await this.fetch(`docs.json`).then(r => r.json());
+		const sections = await this.fetch(`migration.json`).then(r => r.json());
 		return { sections };
 	}
 </script>
@@ -12,9 +12,9 @@
 </script>
 
 <svelte:head>
-	<title>Docs • Sapper</title>
+	<title>Migration • Sapper</title>
 
-	<meta name="twitter:title" content="Sapper docs">
+	<meta name="twitter:title" content="Sapper migration guides">
 	<meta name="twitter:description" content="The next small thing in web development">
 	<meta name="Description" content="The next small thing in web development">
 </svelte:head>
