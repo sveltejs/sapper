@@ -70,6 +70,12 @@ export function create_serviceworker_manifest({ manifest_data, output, client_fi
 	write_if_changed(`${output}/service-worker.js`, code);
 }
 
+function create_param_match(param: string, i: number) {
+	return /^\.{3}.+$/.test(param)
+		? `${param.replace(/.{3}/, '')}: d(match[${i + 1}]).split('/')`
+		: `${param}: d(match[${i + 1}])`
+}
+
 function generate_client_manifest(
 	manifest_data: ManifestData,
 	path_to_routes: string,
@@ -114,7 +120,7 @@ function generate_client_manifest(
 
 							if (part.params.length > 0) {
 								needs_decode = true;
-								const props = part.params.map((param, i) => `${param}: d(match[${i + 1}])`);
+								const props = part.params.map(create_param_match);
 								return `{ i: ${component_indexes[part.component.name]}, params: match => ({ ${props.join(', ')} }) }`;
 							}
 
@@ -189,7 +195,7 @@ function generate_server_manifest(
 					pattern: ${route.pattern},
 					handlers: route_${i},
 					params: ${route.params.length > 0
-						? `match => ({ ${route.params.map((param, i) => `${param}: d(match[${i + 1}])`).join(', ')} })`
+						? `match => ({ ${route.params.map(create_param_match).join(', ')} })`
 						: `() => ({})`}
 				}`).join(',\n\n\t\t\t\t')}
 			],
@@ -210,7 +216,7 @@ function generate_server_manifest(
 							].filter(Boolean);
 
 							if (part.params.length > 0) {
-								const params = part.params.map((param, i) => `${param}: d(match[${i + 1}])`);
+								const params = part.params.map(create_param_match);
 								props.push(`params: match => ({ ${params.join(', ')} })`);
 							}
 
