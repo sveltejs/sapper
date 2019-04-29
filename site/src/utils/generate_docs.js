@@ -77,7 +77,8 @@ export default function generate_docs(dir) {
 				const meta = extract_metadata(lines[0], lang);
 
 				let prefix = '';
-				let class_name = 'code-block';
+				// let class_name = 'code-block';
+				let class_name = '';
 
 				if (meta) {
 					source = lines.slice(1).join('\n');
