@@ -319,18 +319,19 @@
 	}
 
 	section > :global(.code-block) > :global(pre) {
-		display: inline-block;
-		background: var(--back-api);
+		/* display: inline-block; */
+		/* background: var(--back-api);
 		color: white;
 		padding: .3rem .8rem;
-		margin: 0;
+		margin: 0; */
 		max-width: 100%;
+		width: var(--linemax);
 	}
 
-	section > :global(.code-block)> :global(pre.language-markup) {
+	/* section > :global(.code-block)> :global(pre.language-markup) {
 		padding: .3rem .8rem .2rem;
 		background: var(--back-api);
-	}
+	} */
 
 	section > :global(p) {
 		max-width: var(--linemax)
