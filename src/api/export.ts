@@ -138,9 +138,9 @@ async function _export({
 		}, timeout);
 
 		const r = await Promise.race([
-			fetch(url.href, {
+			q.add(() => fetch(url.href, {
 				redirect: 'manual'
-			}),
+			})),
 			timeout_deferred.promise
 		]);
 
@@ -183,7 +183,7 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								promise = q.add(() => handle(url));
+								promise = handle(url);
 							}
 						}
 					}
@@ -205,15 +205,17 @@ async function _export({
 		save(pathname, r.status, type, body);
 	}
 
-	return ports.wait(port)
-		.then(() => handle(root))
-		.then(() => handle(resolve(root.href, 'service-worker-index.html')))
-		.then(() => q.close())
-		.then(() => proc.kill())
-		.catch(err => {
-			proc.kill();
-			throw err;
-		});
+	try {
+		await ports.wait(port);
+		await handle(root);
+		await handle(resolve(root.href, 'service-worker-index.html'));
+		await q.close();
+
+		proc.kill()
+	} catch (err) {
+		proc.kill();
+		throw err;
+	}
 }
 
 function get_href(attrs: string) {
