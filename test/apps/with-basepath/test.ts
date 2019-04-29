@@ -3,6 +3,8 @@ import * as puppeteer from 'puppeteer';
 import * as api from '../../../api';
 import { walk } from '../../utils';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
+
 
 describe('with-basepath', function() {
 	this.timeout(10000);
@@ -10,6 +12,11 @@ describe('with-basepath', function() {
 	let runner: AppRunner;
 	let page: puppeteer.Page;
 	let base: string;
+
+	// helpers
+	let start: () => Promise<void>;
+	let prefetchRoutes: () => Promise<void>;
+	let title: () => Promise<string>;
 
 	// hooks
 	before(async () => {
@@ -21,7 +28,7 @@ describe('with-basepath', function() {
 		});
 
 		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page } = await runner.start());
+		({ base, start, page, prefetchRoutes, title } = await runner.start());
 	});
 
 	after(() => runner.end());
@@ -56,8 +63,43 @@ describe('with-basepath', function() {
 		assert.deepEqual(non_client_assets, [
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
+			'custom-basepath/redirect-from/index.html',
+			'custom-basepath/redirect-to/index.html',
 			'custom-basepath/service-worker-index.html',
 			'custom-basepath/service-worker.js'
 		]);
+	});
+
+	it('redirects on server', async () => {
+		await page.goto(`${base}/custom-basepath/redirect-from`);
+
+		assert.equal(
+			page.url(),
+			`${base}/custom-basepath/redirect-to`
+		);
+
+		assert.equal(
+			await title(),
+			'redirected'
+		);
+	});
+
+	it('redirects in client', async () => {
+		await page.goto(`${base}/custom-basepath`);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('[href="redirect-from"]');
+		await wait(50);
+
+		assert.equal(
+			page.url(),
+			`${base}/custom-basepath/redirect-to`
+		);
+
+		assert.equal(
+			await title(),
+			'redirected'
+		);
 	});
 });

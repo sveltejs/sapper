@@ -177,7 +177,7 @@ export function get_page_handler(
 
 		try {
 			if (redirect) {
-				const location = URL.resolve(req.baseUrl || '/', redirect.location);
+				const location = URL.resolve((req.baseUrl || '') + '/', redirect.location);
 
 				res.statusCode = redirect.statusCode;
 				res.setHeader('Location', location);
