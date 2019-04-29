@@ -85,8 +85,7 @@ export function extract_query(search: string) {
 	const query = Object.create(null);
 	if (search.length > 0) {
 		search.slice(1).split('&').forEach(searchParam => {
-			let [, key, value] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam));
-			value = (value || '').replace(/\+/g, ' ');
+			let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
 			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
 			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 			else query[key] = value;
