@@ -271,14 +271,14 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 			import Layout from '${get_file(path_to_routes, manifest_data.root)}';
 			import Error from '${get_file(path_to_routes, manifest_data.error)}';
 
-			export let session;
+			export let stores;
 			export let error;
 			export let status;
 			export let segments;
 			export let level0;
 			${levels.map(l => `export let level${l} = null;`).join('\n\t\t\t')}
 
-			setContext(CONTEXT_KEY, session);
+			setContext(CONTEXT_KEY, stores);
 		</script>
 
 		<Layout segment={segments[0]} {...level0.props}>

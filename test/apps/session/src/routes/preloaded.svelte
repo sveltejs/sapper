@@ -5,8 +5,8 @@
 </script>
 
 <script>
-	import { getSession } from '@sapper/app';
-	const session = getSession();
+	import { stores } from '@sapper/app';
+	const { session } = stores();
 
 	export let title;
 </script>

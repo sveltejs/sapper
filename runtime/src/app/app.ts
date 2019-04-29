@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store.mjs';
 import App from '@sapper/internal/App.svelte';
-import { stores } from '@sapper/internal/shared';
-import { Root, root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
+import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
 	Target,
 	ScrollPosition,
@@ -24,12 +23,16 @@ let current_token: {};
 let root_preloaded: Promise<any>;
 let current_branch = [];
 
-const session = writable(initial_data && initial_data.session);
+const stores = {
+	page: writable({}),
+	preloading: writable(null),
+	session: writable(initial_data && initial_data.session)
+};
 
 let $session;
 let session_dirty: boolean;
 
-session.subscribe(async value => {
+stores.session.subscribe(async value => {
 	$session = value;
 
 	if (!ready) return;
@@ -216,7 +219,11 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	if (root_component) {
 		root_component.$set(props);
 	} else {
-		props.session = session;
+		props.stores = {
+			page: { subscribe: stores.page.subscribe },
+			preloading: { subscribe: stores.preloading.subscribe },
+			session: stores.session
+		};
 		props.level0 = {
 			props: await root_preloaded
 		};
