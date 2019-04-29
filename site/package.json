@@ -12,10 +12,12 @@
     "test": "run-p --race dev cy:run"
   },
   "dependencies": {
+    "@polka/send": "^0.4.0",
     "compression": "^1.7.1",
     "highlight.js": "^9.15.6",
     "marked": "^0.6.2",
-    "polka": "^0.5.0",
+    "polka": "^0.5.2",
+    "prismjs": "^1.16.0",
     "sirv": "^0.2.0"
   },
   "devDependencies": {

@@ -82,7 +82,7 @@ In addition to `child.component` and `child.props`, there is a `child.segment` p
 ```
 
 
-### Preloading
+### Preloading in layouts
 
 Like page components, layout components can use `preload`:
 
