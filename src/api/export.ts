@@ -126,7 +126,7 @@ async function _export({
 	async function handle(url: URL) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
-		  pathname = pathname.replace(root.pathname, '') || '/'
+			pathname = pathname.replace(root.pathname, '') || '/'
 		}
 
 		if (seen.has(pathname)) return;
@@ -162,6 +162,7 @@ async function _export({
 							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
 					}
 				});
+
 				if (pathname !== '/service-worker-index.html') {
 					const cleaned = clean_html(body);
 
@@ -172,6 +173,8 @@ async function _export({
 					let match;
 					let pattern = /<a ([\s\S]+?)>/gm;
 
+					let promise;
+
 					while (match = pattern.exec(cleaned)) {
 						const attrs = match[1];
 						const href = get_href(attrs);
@@ -180,10 +183,12 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								q.add(() => handle(url));
+								promise = q.add(() => handle(url));
 							}
 						}
 					}
+
+					await promise;
 				}
 			}
 		}
@@ -202,8 +207,8 @@ async function _export({
 
 	return ports.wait(port)
 		.then(() => handle(root))
-		.then(() => q.close())
 		.then(() => handle(resolve(root.href, 'service-worker-index.html')))
+		.then(() => q.close())
 		.then(() => proc.kill())
 		.catch(err => {
 			proc.kill();

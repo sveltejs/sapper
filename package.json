@@ -58,7 +58,7 @@
     "svelte-loader": "^2.13.3",
     "webpack": "^4.29.0",
     "webpack-format-messages": "^2.0.5",
-    "yootils": "bwbroersma/yootils#gh-3"
+    "yootils": "0.0.15"
   },
   "peerDependencies": {
     "svelte": "^3.0.0"
