@@ -66,7 +66,7 @@ Dynamic parameters are encoded using `[brackets]`. For example, here's how you c
 <h1>{article.title}</h1>
 
 <div class='content'>
-	{@html article.svelte}
+	{@html article.html}
 </div>
 ```
 
