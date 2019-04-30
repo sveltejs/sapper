@@ -10,18 +10,18 @@ This can be done like so:
 // app/server.js
 
 express() // or Polka, or a similar framework
-  .use(
-    '/my-base-path', // <!-- add this line
-    compression({ threshold: 0 }),
-    serve('assets'),
-    sapper.middleware()
-  )
-  .listen(process.env.PORT);
+	.use(
+		'/my-base-path', // <!-- add this line
+		compression({ threshold: 0 }),
+		serve('assets'),
+		sapper.middleware()
+	)
+	.listen(process.env.PORT);
 ```
 
 Sapper will detect the base path and configure both the server-side and client-side routers accordingly.
 
-If you're [exporting](guide#exporting) your app, you will need to tell the exporter where to begin crawling:
+If you're [exporting](docs#exporting) your app, you will need to tell the exporter where to begin crawling:
 
 ```bash
 sapper export --basepath my-base-path

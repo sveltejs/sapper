@@ -2,7 +2,7 @@
 title: Server-side rendering
 ---
 
-Sapper, by default, renders server-side first (SSR), and then re-mounts any dynamic elements on the client. Svelte provides [excellent support for this](https://svelte.technology/guide#server-side-rendering). This has benefits in performance and search engine indexing, among others, but comes with its own set of complexities.
+Sapper, by default, renders server-side first (SSR), and then re-mounts any dynamic elements on the client. Svelte provides [excellent support for this](https://svelte.dev/docs#server-side-rendering). This has benefits in performance and search engine indexing, among others, but comes with its own set of complexities.
 
 ### Making a component SSR compatible
 
@@ -14,24 +14,19 @@ Since there is no `window` in a server-side environment like Sapper's, the actio
 ReferenceError: window is not defined
 ```
 
-The way to get around this is to use a dynamic import for your component, from within the `oncreate` hook (which is only called on the client), so that your import code is never called on the server.
-
-```js
-export default {
-  async oncreate () {
-    const MyComponent = await import('my-non-ssr-component')
-    this.set({ MyComponent })
-  }
-}
-```
-
-You can then use your component within your app:
+The way to get around this is to use a dynamic import for your component, from within the `onMount` function (which is only called on the client), so that your import code is never called on the server.
 
 ```html
-<svelte:component this={MyComponent}
-  {prop1}
-  prop2="foo"
-/>
-```
+<script>
+	import { onMount } from 'svelte';
 
-> It might be the case that your component uses a default export, which actually ends up being an object with a property called `default`, in which case you would import it as `{ default: MyComponent }` rather than just `MyComponent`
+	let MyComponent;
+
+	onMount(async () => {
+		const module = await import('my-non-ssr-component');
+		MyComponent = module.default;
+	});
+</script>
+
+<svelte:component this={MyComponent} foo="bar"/>
+```

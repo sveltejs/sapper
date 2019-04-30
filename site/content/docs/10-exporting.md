@@ -51,7 +51,7 @@ Because of this, any pages you want to be included in the exported site must be 
 
 The basic rule is this: for an app to be exportable, any two users hitting the same page of your app must get the same content from the server. In other words, any app that involves user sessions or authentication is *not* a candidate for `sapper export`.
 
-Note that you can still export apps with dynamic routes, like our `src/routes/blog/[slug].html` example from earlier. `sapper export` will intercept `fetch` requests made inside `preload`, so the data served from `src/routes/blog/[slug].json.js` will also be captured.
+Note that you can still export apps with dynamic routes, like our `src/routes/blog/[slug].svelte` example from earlier. `sapper export` will intercept `fetch` requests made inside `preload`, so the data served from `src/routes/blog/[slug].json.js` will also be captured.
 
 
 ### Route conflicts

@@ -1,55 +1,40 @@
 ---
-title: State management
+title: Stores
 ---
 
-Sapper integrates with the built-in Svelte store. If you're not familiar with Store, read the [Svelte state management](https://svelte.technology/guide#state-management) guide before continuing with this section.
+The `page` and `session` values passed to `preload` functions are available to components as [stores](https://svelte.dev/tutorial/writable-stores), along with `preloading`.
 
-To use Store, you must integrate it with your server and client apps separately.
+Inside a component, get references to the stores like so:
 
-### On the server
+```html
+<script>
+	import { stores } from '@sapper/app';
+	const { preloading, page, session } = stores();
+</script>
+```
 
-Whereas the client-side app has a single Store instance that lasts as long as the page is open, the server-side app must create a new store for each request:
+* `preloading` contains a readonly boolean value, indicating whether or not a navigation is pending
+* `page` contains a readonly `{ path, params, query }` object, identical to that passed to `preload` functions
+* `session` contains whatever data was seeded on the server. It is a [writable store](https://svelte.dev/tutorial/writable-stores), meaning you can update it with new data (for example, after the user logs in) and your app will be refreshed
+
+
+### Seeding session data
+
+On the server, you can populate `session` by passing an option to `sapper.middleware`:
 
 ```js
-// app/server.js
-import { Store } from 'svelte/store.js';
-
+// src/server.js
 express() // or Polka, or a similar framework
 	.use(
-		compression({ threshold: 0 }),
 		serve('assets'),
 		authenticationMiddleware(),
 		sapper.middleware({
-			store: request => {
-				return new Store({
-					user: request.user
-				});
-			}
+			session: (req, res) => ({
+				user: req.user
+			})
 		})
 	)
 	.listen(process.env.PORT);
 ```
 
-In this example, we're using some imaginary `authenticationMiddleware` that creates a `request.user` object based on the user's cookies. (In real life it tends to be a bit more involved — see [express-session](https://github.com/expressjs/session) and [Passport](http://www.passportjs.org/) if you're ready to learn more about sessions and authentication.)
-
-Because we've supplied a `store` option, Sapper creates a new `Store` instance for each new `request`. The data in our store will be used to render the HTML that Sapper responds with.
-
-
-### On the client
-
-This time around, we're creating a single store that is attached to each page as the user navigates around the app.
-
-```js
-import * as sapper from '../__sapper__/client.js';
-import { Store } from 'svelte/store.js';
-
-sapper.start({
-	target: document.querySelector('#sapper'),
-	store: data => {
-		// `data` is whatever was in the server-side store
-		return new Store(data);
-	}
-});
-```
-
-> In order to re-use the server-side store data, it must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)) — no functions or custom classes, just built-in JavaScript data types
+> Session data must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)) — no functions or custom classes, just built-in JavaScript data types

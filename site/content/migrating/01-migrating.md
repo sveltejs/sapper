@@ -292,7 +292,7 @@ Once your `App.html` has been created and your server and client apps updated, y
 
 ##### app/template.html
 
-* Your `<head>` element must contain `%sapper.base%` (see ([base URLs](guide#base-urls))
+* Your `<head>` element must contain `%sapper.base%` (see ([base URLs](docs#base-urls))
 * Remove references to your service worker; this is now handled by `%sapper.scripts%`
 
 ##### Pages

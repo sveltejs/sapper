@@ -4,7 +4,7 @@ title: Prefetching
 
 Sapper uses code splitting to break your app into small chunks (one per route), ensuring fast startup times.
 
-For *dynamic* routes, such as our `src/routes/blog/[slug].html` example, that's not enough. In order to render the blog post, we need to fetch the data for it, and we can't do that until we know what `slug` is. In the worst case, that could cause lag as the browser waits for the data to come back from the server.
+For *dynamic* routes, such as our `src/routes/blog/[slug].svelte` example, that's not enough. In order to render the blog post, we need to fetch the data for it, and we can't do that until we know what `slug` is. In the worst case, that could cause lag as the browser waits for the data to come back from the server.
 
 
 ### rel=prefetch
