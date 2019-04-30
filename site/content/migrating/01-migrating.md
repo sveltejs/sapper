@@ -2,7 +2,111 @@
 title: Migrating
 ---
 
-Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects. If you upgrade and Sapper sends you here, it's because it was unable to fix your project automatically.
+
+Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects.
+
+
+### 0.25 to 0.26
+
+The most significant change yet: Sapper is now built on Svelte 3.
+
+#### Importing Sapper
+
+Your app is now built to `src/node_modules/@sapper` — this allows you to easily import it from anywhere in your source code. Update your `server.js`...
+
+```diff
+// src/server.js
+-import * as sapper from '../__sapper__/server.js';
++import * as sapper from '@sapper/server';
+```
+
+...and client.js:
+
+```diff
+-import * as sapper from '../__sapper__/client.js';
++import * as sapper from '@sapper/app';
+
+sapper.start({
+	target: document.querySelector('#sapper')
+});
+```
+
+The same applies to imports like `goto` and `prefetchRoutes`.
+
+
+#### Webpack config
+
+If you're using webpack, you must update your configuration to recognise `.mjs` and `.svelte` files:
+
+```js
+resolve: {
+	extensions: ['.mjs', '.js', '.json', '.svelte', '.html']
+}
+```
+
+If you're using .svelte files (recommended), you'll also need to tell `svelte-loader` to expect them:
+
+```diff
+-test: /\.html$/
++test: /\.(svelte|html)$/
+```
+
+
+#### Session data
+
+Passing data from server to client is now accomplished with a `session` function passed to the middleware:
+
+```js
+// src/server.js
+sapper.middleware({
+	session: (req, res) => ({
+		// session data goes here
+	})
+})
+```
+
+This data is available in `preload` functions as the second argument:
+
+```html
+<!-- SomeComponent.svelte -->
+<script context="module">
+	export function preload(page, session) {
+		const { path, params, query } = page; // as before
+
+		if (!session.user) return this.redirect(302, 'login');
+		// ...
+	}
+</script>
+```
+
+
+#### Stores
+
+It is also available, along with `page` and `preloading`, as a store inside components:
+
+```html
+<script>
+	import * as sapper from '@sapper/app';
+	const { page, preloading, session } = sapper.stores();
+</script>
+```
+
+`page` and `preloading` are [readable stores](https://svelte.dev/tutorial/readable-stores), while `session` is [writable](https://svelte.dev/tutorial/writable-stores).
+
+
+#### Layouts
+
+Your layout components should now use a `<slot>` element to render nested routes, instead of `<svelte:component>`:
+
+```diff
+<main>
+-	<svelte:component this={child.component} {...child.props}/>
++	<slot></slot>
+</main>
+```
+
+The layout component itself receives a `segment` prop, which is equivalent to `child.segment` in earlier versions.
+
 
 ### 0.21 to 0.22
 
