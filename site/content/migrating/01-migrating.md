@@ -12,7 +12,7 @@ The most significant change yet: Sapper is now built on Svelte 3.
 
 #### Importing Sapper
 
-Your app is now built to `src/node_modules/@sapper` — this allows you to easily import it from anywhere in your source code. Update your `server.js`...
+Your app's runtime is now built to `src/node_modules/@sapper` — this allows you to easily import it from anywhere in your source code. Update your `server.js`...
 
 ```diff
 // src/server.js
@@ -91,7 +91,7 @@ It is also available, along with `page` and `preloading`, as a store inside comp
 </script>
 ```
 
-`page` and `preloading` are [readable stores](https://svelte.dev/tutorial/readable-stores), while `session` is [writable](https://svelte.dev/tutorial/writable-stores).
+`page` and `preloading` are [readable stores](https://svelte.dev/tutorial/readable-stores), while `session` is [writable](https://svelte.dev/tutorial/writable-stores). Writing to the session store (for example, after the user logs in) will cause any `preload` functions that rely on session data to re-run; it will not persist anything to the server.
 
 
 #### Layouts
