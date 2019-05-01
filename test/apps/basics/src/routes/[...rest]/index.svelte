@@ -1,5 +1,6 @@
 <script>
-	import { page } from '@sapper/app';
+	import { stores } from '@sapper/app';
+	const { page } = stores();
 </script>
 
 <h1>{$page.params.rest.join(',')}</h1>

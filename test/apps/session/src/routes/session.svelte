@@ -1,6 +1,6 @@
 <script>
-	import { getSession } from '@sapper/app';
-	const session = getSession();
+	import { stores } from '@sapper/app';
+	const { session } = stores();
 </script>
 
 <h1>{$session.title}</h1>
