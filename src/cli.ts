@@ -189,6 +189,7 @@ prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
 	.option('--build', '(Re)build app before exporting', true)
 	.option('--basepath', 'Specify a base path')
+	.option('--concurrent', 'Concurrent requests', 8)
 	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
 	.option('--legacy', 'Create separate legacy build')
 	.option('--bundler', 'Specify a bundler (rollup or webpack, blank for auto)')
@@ -203,6 +204,7 @@ prog.command('export [dest]')
 		legacy: boolean,
 		bundler?: 'rollup' | 'webpack',
 		basepath?: string,
+		concurrent: number,
 		timeout: number | false,
 		cwd: string,
 		src: string,
@@ -228,6 +230,7 @@ prog.command('export [dest]')
 				export_dir: dest,
 				basepath: opts.basepath,
 				timeout: opts.timeout,
+				concurrent: opts.concurrent,
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));

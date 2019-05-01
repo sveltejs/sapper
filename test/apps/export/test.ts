@@ -19,7 +19,15 @@ describe('export', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets, [
+		const boom = ['boom/index.html'];
+		for (let a = 1; a <= 20; a += 1) {
+			boom.push(`boom/${a}/index.html`);
+			for (let b = 1; b <= 20; b += 1) {
+				boom.push(`boom/${a}/${b}/index.html`);
+			}
+		}
+
+		assert.deepEqual(non_client_assets.sort(), [
 			'blog.json',
 			'blog/bar.json',
 			'blog/bar/index.html',
@@ -31,8 +39,9 @@ describe('export', function() {
 			'global.css',
 			'index.html',
 			'service-worker-index.html',
-			'service-worker.js'
-		]);
+			'service-worker.js',
+			...boom
+		].sort());
 	});
 
 	// TODO test timeout, basepath

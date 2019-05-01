@@ -9,7 +9,8 @@
 </script>
 
 <script>
-	import { page } from '@sapper/app';
+	import { stores } from '@sapper/app';
+	const { page } = stores();
 
 	export let count;
 	export let segment;

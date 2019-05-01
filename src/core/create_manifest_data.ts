@@ -246,13 +246,23 @@ type Part = {
 	content: string;
 	dynamic: boolean;
 	qualifier?: string;
+	spread?: boolean;
 };
+
+function is_spead(path: string) {
+	const spread_pattern = /\[\.{3}/g;
+	return spread_pattern.test(path)
+}
 
 function comparator(
 	a: { basename: string, parts: Part[], file: string, is_index: boolean },
 	b: { basename: string, parts: Part[], file: string, is_index: boolean }
 ) {
-	if (a.is_index !== b.is_index) return a.is_index ? -1 : 1;
+	if (a.is_index !== b.is_index) {
+		if (a.is_index) return is_spead(a.file) ? 1 : -1;
+
+		return is_spead(b.file) ? -1 : 1;
+	}
 
 	const max = Math.max(a.parts.length, b.parts.length);
 
@@ -262,6 +272,14 @@ function comparator(
 
 		if (!a_sub_part) return 1; // b is more specific, so goes first
 		if (!b_sub_part) return -1;
+
+		// if spread && index, order later
+		if (a_sub_part.spread && b_sub_part.spread) {
+			return a.is_index ? 1 : -1
+		}
+
+		// If one is ...spread order it later
+		if (a_sub_part.spread !== b_sub_part.spread) return a_sub_part.spread ? 1 : -1;
 
 		if (a_sub_part.dynamic !== b_sub_part.dynamic) {
 			return a_sub_part.dynamic ? 1 : -1;
@@ -306,6 +324,7 @@ function get_parts(part: string): Part[] {
 			return {
 				content,
 				dynamic,
+				spread: /^\.{3}.+$/.test(content),
 				qualifier
 			};
 		})
@@ -333,7 +352,7 @@ function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
 		segments.map(segment => {
 			return '\\/' + segment.map(part => {
 				return part.dynamic
-					? part.qualifier || '([^\\/]+?)'
+					? part.qualifier || part.spread ? '(.+)' : '([^\\/]+?)'
 					: encodeURI(part.content.normalize())
 						.replace(/\?/g, '%3F')
 						.replace(/#/g, '%23')

@@ -177,7 +177,7 @@ export function get_page_handler(
 
 		try {
 			if (redirect) {
-				const location = URL.resolve(req.baseUrl || '/', redirect.location);
+				const location = URL.resolve((req.baseUrl || '') + '/', redirect.location);
 
 				res.statusCode = redirect.statusCode;
 				res.setHeader('Location', location);
@@ -204,10 +204,22 @@ export function get_page_handler(
 			});
 
 			const props = {
+				stores: {
+					page: {
+						subscribe: writable({
+							path: req.path,
+							query: req.query,
+							params
+						}).subscribe
+					},
+					preloading: {
+						subscribe: writable(null).subscribe
+					},
+					session: writable(session)
+				},
 				segments: layout_segments,
 				status: error ? status : 200,
 				error: error ? error instanceof Error ? error : { message: error } : null,
-				session: writable(session),
 				level0: {
 					props: preloaded[0]
 				},
@@ -230,12 +242,6 @@ export function get_page_handler(
 					};
 				}
 			}
-
-			stores.page.set({
-				path: req.path,
-				query: req.query,
-				params: params
-			});
 
 			const { html, head, css } = App.render(props);
 

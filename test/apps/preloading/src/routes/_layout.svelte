@@ -7,11 +7,13 @@
 </script>
 
 <script>
-	import { preloading } from '@sapper/app';
+	import { stores } from '@sapper/app';
 	import { setContext } from 'svelte';
 
 	export let child;
 	export let rootPreloadFunctionRan;
+
+	const { preloading } = stores();
 
 	setContext('x', { rootPreloadFunctionRan });
 </script>

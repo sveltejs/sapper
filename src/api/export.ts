@@ -19,6 +19,7 @@ type Opts = {
 	static?: string,
 	basepath?: string,
 	timeout?: number | false,
+	concurrent?: number,
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 };
@@ -44,6 +45,7 @@ async function _export({
 	export_dir = '__sapper__/export',
 	basepath = '',
 	timeout = 5000,
+	concurrent = 8,
 	oninfo = noop,
 	onfile = noop
 }: Opts = {}) {
@@ -87,6 +89,7 @@ async function _export({
 
 	const seen = new Set();
 	const saved = new Set();
+	const q = yootils.queue(concurrent);
 
 	function save(url: string, status: number, type: string, body: string) {
 		const { pathname } = resolve(origin, url);
@@ -123,7 +126,7 @@ async function _export({
 	async function handle(url: URL) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
-		  pathname = pathname.replace(root.pathname, '') || '/'
+			pathname = pathname.replace(root.pathname, '') || '/'
 		}
 
 		if (seen.has(pathname)) return;
@@ -135,9 +138,9 @@ async function _export({
 		}, timeout);
 
 		const r = await Promise.race([
-			fetch(url.href, {
+			q.add(() => fetch(url.href, {
 				redirect: 'manual'
-			}),
+			})),
 			timeout_deferred.promise
 		]);
 
@@ -159,10 +162,9 @@ async function _export({
 							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
 					}
 				});
+
 				if (pathname !== '/service-worker-index.html') {
 					const cleaned = clean_html(body);
-
-					const q = yootils.queue(8);
 
 					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 					const base_href = base_match && get_href(base_match[1]);
@@ -170,6 +172,8 @@ async function _export({
 
 					let match;
 					let pattern = /<a ([\s\S]+?)>/gm;
+
+					let promise;
 
 					while (match = pattern.exec(cleaned)) {
 						const attrs = match[1];
@@ -179,12 +183,12 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								q.add(() => handle(url));
+								promise = handle(url);
 							}
 						}
 					}
 
-					await q.close();
+					await promise;
 				}
 			}
 		}
@@ -201,14 +205,17 @@ async function _export({
 		save(pathname, r.status, type, body);
 	}
 
-	return ports.wait(port)
-		.then(() => handle(root))
-		.then(() => handle(resolve(root.href, 'service-worker-index.html')))
-		.then(() => proc.kill())
-		.catch(err => {
-			proc.kill();
-			throw err;
-		});
+	try {
+		await ports.wait(port);
+		await handle(root);
+		await handle(resolve(root.href, 'service-worker-index.html'));
+		await q.close();
+
+		proc.kill()
+	} catch (err) {
+		proc.kill();
+		throw err;
+	}
 }
 
 function get_href(attrs: string) {
