@@ -1,5 +1,22 @@
 # sapper changelog
 
+## 0.26.0
+
+* Update to Svelte 3
+* Slot-based nested routes ([#573](https://github.com/sveltejs/sapper/issues/573))
+* Make `page`, `preloading` and `session` stores available to components ([#642](https://github.com/sveltejs/sapper/pull/642))
+* Handle missing/empty refs when exporting ([#602](https://github.com/sveltejs/sapper/issues/602))
+* Prevent race condition when exporting ([#585](https://github.com/sveltejs/sapper/pull/585))
+* Fix redirects with base path ([#589](https://github.com/sveltejs/sapper/issues/589))
+* Add `<link rel="preload">` to exported HTML ([#568](https://github.com/sveltejs/sapper/pull/568))
+* Handle deep links that are invalid selectors on initial load ([#516](https://github.com/sveltejs/sapper/issues/516))
+* Use shared queue for exporting ([#604](https://github.com/sveltejs/sapper/issues/604))
+* Handle `+` character in query string ([#618](https://github.com/sveltejs/sapper/issues/618))
+* Spread routes ([#545](https://github.com/sveltejs/sapper/issues/545))
+* Fix navigation from `/a/[id]` to `/b/[id]` ([#610](https://github.com/sveltejs/sapper/pull/610))
+* Allow `preload` functions to return falsy values ([#587](https://github.com/sveltejs/sapper/issues/587))
+* Mount error pages correctly ([#620](https://github.com/sveltejs/sapper/pull/620))
+
 ## 0.25.0
 
 * Force refresh on `goto(current_url)` ([#484](https://github.com/sveltejs/sapper/pull/484))
