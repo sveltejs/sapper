@@ -1,11 +1,11 @@
 # sapper
 
-[Military-grade progressive web apps, powered by Svelte.](https://sapper.svelte.technology)
+[Military-grade progressive web apps, powered by Svelte.](https://sapper.svelte.dev)
 
 
 ## What is Sapper?
 
-Sapper is a framework for building high-performance universal web apps. [Read the guide](https://sapper.svelte.technology/guide) or the [introductory blog post](https://svelte.technology/blog/sapper-towards-the-ideal-web-app-framework) to learn more.
+Sapper is a framework for building high-performance universal web apps. [Read the guide](https://sapper.svelte.dev/docs) or the [introductory blog post](https://svelte.dev/blog/sapper-towards-the-ideal-web-app-framework) to learn more.
 
 
 ## Get started
