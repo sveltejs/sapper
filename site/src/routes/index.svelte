@@ -25,26 +25,19 @@
 		<span class="learn-more">learn more</span>
 	</a>
 
-	<a href="TKTK" slot="two">
+	<a href="docs" slot="two">
 		<h2>Best of both worlds</h2>
 		<p>All the SEO and progressive enhancement of a server-rendered app, with the slick navigation of an SPA</p>
 
 		<span class="learn-more">learn more</span>
 	</a>
 
-	<a href="TKTK" slot="three">
+	<a href="docs" slot="three">
 		<h2>Build fast</h2>
 		<p>Hit the ground running with advanced routing, server-side rendering, code-splitting, offline support and more</p>
 
 		<span class="learn-more">learn more</span>
 	</a>
-
-	<!-- <a href="TKTK" slot="three">
-		<h2>Works everywhere</h2>
-		<p>Deploy as a cloud function or a traditional Node.js app, or export your app as a collection of static files</p>
-
-		<span class="learn-more">learn more</span>
-	</a> -->
 
 	<div class="description" slot="what">
 		<p>Sapper is a framework for building web applications of all sizes, with a beautiful development experience and flexible filesystem-based routing.</p>
@@ -63,8 +56,6 @@ npm install
 npm run dev & open http://localhost:5000
 		</pre>
 
-		<p style="flex: 1">See the <a href="blog/the-easiest-way-to-get-started">quickstart guide</a> for more information.</p>
-
-		<p class="cta"><a rel="prefetch" href="tutorial">Learn Svelte</a></p>
+		<p class="cta"><a rel="prefetch" href="docs">Learn Sapper</a></p>
 	</div>
 </Blurb>
