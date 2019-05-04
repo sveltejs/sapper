@@ -249,7 +249,7 @@ type Part = {
 	spread?: boolean;
 };
 
-function is_spead(path: string) {
+function is_spread(path: string) {
 	const spread_pattern = /\[\.{3}/g;
 	return spread_pattern.test(path)
 }
@@ -259,9 +259,9 @@ function comparator(
 	b: { basename: string, parts: Part[], file: string, is_index: boolean }
 ) {
 	if (a.is_index !== b.is_index) {
-		if (a.is_index) return is_spead(a.file) ? 1 : -1;
+		if (a.is_index) return is_spread(a.file) ? 1 : -1;
 
-		return is_spead(b.file) ? -1 : 1;
+		return is_spread(b.file) ? -1 : 1;
 	}
 
 	const max = Math.max(a.parts.length, b.parts.length);
