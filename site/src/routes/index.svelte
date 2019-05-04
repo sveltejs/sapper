@@ -49,11 +49,14 @@
 
 	<div style="grid-area: start; display: flex; flex-direction: column; min-width: 0" slot="how">
 		<pre class="language-bash" style="margin: 0 0 1em 0; min-width: 0; min-height: 0">
-npx degit sveltejs/template my-svelte-project
-cd my-svelte-project
+# for Rollup
+npx degit sveltejs/sapper-template#rollup my-app
+# for webpack
+npx degit sveltejs/sapper-template#webpack my-app
+cd my-app
 
 npm install
-npm run dev & open http://localhost:5000
+npm run dev & open http://localhost:3000
 		</pre>
 
 		<p class="cta"><a rel="prefetch" href="docs">Learn Sapper</a></p>
