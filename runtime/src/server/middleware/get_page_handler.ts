@@ -5,7 +5,6 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { IGNORE } from '../constants';
 import { Manifest, Page, Props, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import { stores } from '@sapper/internal/shared';
@@ -328,8 +327,6 @@ export function get_page_handler(
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		if (req[IGNORE]) return next();
-
 		if (req.path === '/service-worker-index.html') {
 			const homePage = pages.find(page => page.pattern.test('/'));
 			handle_page(homePage, req, res);
