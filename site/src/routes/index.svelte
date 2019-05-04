@@ -49,7 +49,7 @@
 
 	<div style="grid-area: start; display: flex; flex-direction: column; min-width: 0" slot="how">
 		<pre class="language-bash" style="margin: 0 0 1em 0; min-width: 0; min-height: 0">
-npx degit sveltejs/template my-svelte-project
+npx degit sveltejs/sapper-template my-svelte-project
 cd my-svelte-project
 
 npm install
