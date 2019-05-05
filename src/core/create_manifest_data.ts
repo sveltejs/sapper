@@ -25,6 +25,19 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		return false;
 	}
 
+	function find_layout(file_name: string, component_name: string, dir: string = '') {
+		const ext = component_extensions.find((ext) => fs.existsSync(path.join(cwd, dir, `${file_name}${ext}`)));
+		const file = posixify(path.join(dir, `${file_name}${ext}`))
+
+		return ext
+			? {
+				name: component_name,
+				file: file,
+				has_preload: has_preload(file)
+			}
+			: null;
+	}
+
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
@@ -65,7 +78,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 				const segment = is_dir
 					? basename
-					: basename.slice(0, -path.extname(basename).length);
+					: basename.slice(0, -ext.length);
 
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
@@ -106,8 +119,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			if (item.is_index && segments.length > 0) {
 				const last_segment = segments[segments.length - 1].slice();
 				const suffix = item.basename
-					.slice(0, -path.extname(item.basename).length).
-					replace('index', '');
+					.slice(0, -item.ext.length)
+					.replace('index', '');
 
 				if (suffix) {
 					const last_part = last_segment[last_segment.length - 1];
@@ -130,16 +143,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			params.push(...item.parts.filter(p => p.dynamic).map(p => p.content));
 
 			if (item.is_dir) {
-				const ext = component_extensions.find((ext: string) => {
-					const index = path.join(dir, item.basename, `_layout${ext}`);
-					return fs.existsSync(index);
-				});
-
-				const component = ext && {
-					name: `${get_slug(item.file)}__layout`,
-					file: `${item.file}/_layout${ext}`,
-					has_preload: has_preload(`${item.file}/_layout${ext}`)
-				};
+				const component = find_layout('_layout', `${get_slug(item.file)}__layout`, item.file);
 
 				if (component) components.push(component);
 
@@ -187,23 +191,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		});
 	}
 
-	const root_ext = component_extensions.find(ext => fs.existsSync(path.join(cwd, `_layout${ext}`)));
-	const root = root_ext
-		? {
-			name: 'main',
-			file: `_layout${root_ext}`,
-			has_preload: has_preload(`_layout${root_ext}`)
-		}
-		: default_layout;
-
-	const error_ext = component_extensions.find(ext => fs.existsSync(path.join(cwd, `_error${ext}`)));
-	const error = error_ext
-		? {
-			name: 'error',
-			file: `_error${error_ext}`,
-			has_preload: has_preload(`_error${error_ext}`)
-		}
-		: default_error;
+	const root = find_layout('_layout', 'main') || default_layout;
+	const error = find_layout('_error', 'error') || default_error;
 
 	walk(cwd, [], [], []);
 
