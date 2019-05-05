@@ -11,4 +11,4 @@
 
 <h1>{one}:{two}</h1>
 
-<a href="y/1">y/1</a>
+<a href="skipped/y/1">skipped/y/1</a>

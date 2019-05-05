@@ -288,14 +288,22 @@ export async function hydrate_target(target: Target): Promise<{
 	let l = 1;
 
 	try {
+		let segment_dirty = false;
 		branch = await Promise.all(route.parts.map(async (part, i) => {
+			const segment = segments[i];
+
+			if (current_branch[i] && current_branch[i].segment !== segment) segment_dirty = true;
+
 			props.segments[l] = segments[i + 1]; // TODO make this less confusing
-			if (!part) return null;
+			if (!part) return { segment };
 
 			const j = l++;
 
-			const segment = segments[i];
-			if (!session_dirty && current_branch[i] && current_branch[i].segment === segment && current_branch[i].part === part.i) return current_branch[i];
+			if (!session_dirty && !segment_dirty && current_branch[i] && current_branch[i].part === part.i) {
+				return current_branch[i];
+			}
+
+			segment_dirty = false;
 
 			const { default: component, preload } = await load_component(components[part.i]);
 
