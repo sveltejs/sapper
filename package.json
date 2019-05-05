@@ -54,14 +54,14 @@
     "sade": "^1.4.2",
     "sirv": "^0.4.0",
     "sucrase": "^3.10.1",
-    "svelte": "^3.0.0-beta.11",
+    "svelte": "^3.2.0",
     "svelte-loader": "^2.13.3",
     "webpack": "^4.30.0",
     "webpack-format-messages": "^2.0.5",
     "yootils": "0.0.15"
   },
   "peerDependencies": {
-    "svelte": "^3.0.0"
+    "svelte": "^3.2.0"
   },
   "scripts": {
     "test": "mocha --opts mocha.opts",
