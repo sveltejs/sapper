@@ -74,6 +74,9 @@ export default function create_manifest_data(cwd: string): ManifestData {
 				const is_dir = fs.statSync(resolved).isDirectory();
 
 				const ext = path.extname(basename);
+
+				if (basename[0] === '_') return null;
+				if (basename[0] === '.' && basename !== '.well-known') return null;
 				if (!is_dir && !/^\.[a-z]+$/i.test(ext)) return null; // filter out tmp files etc
 
 				const segment = is_dir
@@ -108,22 +111,17 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			.sort(comparator);
 
 		items.forEach(item => {
-			if (item.basename[0] === '_') return;
-
-			if (item.basename[0] === '.') {
-				if (item.file !== '.well-known') return;
-			}
-
 			const segments = parent_segments.slice();
 
 			if (item.is_index && segments.length > 0) {
-				const last_segment = segments[segments.length - 1].slice();
 				const suffix = item.basename
 					.slice(0, -item.ext.length)
 					.replace('index', '');
 
 				if (suffix) {
+					const last_segment = segments[segments.length - 1].slice();
 					const last_part = last_segment[last_segment.length - 1];
+
 					if (last_part.dynamic) {
 						last_segment.push({ dynamic: false, content: suffix });
 					} else {
