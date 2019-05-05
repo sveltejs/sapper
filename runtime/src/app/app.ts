@@ -101,7 +101,11 @@ export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
 	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 
-	const path = url.pathname.slice(initial_data.baseUrl.length);
+	let path = url.pathname.slice(initial_data.baseUrl.length);
+
+	if (path === '') {
+		path = '/';
+	}
 
 	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
