@@ -282,7 +282,7 @@ describe('basics', function() {
 		assert.equal(await title(), 'bar');
 	});
 
-  it('navigates to ...rest', async () => {
+	it('navigates to ...rest', async () => {
 		await page.goto(`${base}/abc/xyz`);
 		await start();
 
@@ -298,8 +298,8 @@ describe('basics', function() {
 			await page.evaluate(() => document.body.textContent),
 			'xyz,abc,qwe'
 		);
-  });
-  
+	});
+
 	it('navigates between dynamic routes with same segments', async () => {
 		await page.goto(`${base}/dirs/bar/xyz`);
 		await start();
@@ -310,7 +310,7 @@ describe('basics', function() {
 		await wait(50);
 		assert.equal(await title(), 'B page');
 	});
-  
+
 	it('runs server route handlers before page handlers, if they match', async () => {
 		const json = await get(`${base}/middleware`, {
 			headers: {
@@ -323,5 +323,19 @@ describe('basics', function() {
 		const html = await get(`${base}/middleware`);
 
 		assert.ok(html.body.indexOf('<h1>HTML</h1>') !== -1);
+	});
+
+	it('invalidates page when a segment is skipped', async () => {
+		await page.goto(`${base}/skipped/x/1`);
+		await start();
+		await prefetchRoutes();
+
+		await page.click('a[href="skipped/y/1"]');
+		await wait(50);
+
+		assert.equal(
+			await title(),
+			'y:1'
+		);
 	});
 });
