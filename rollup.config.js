@@ -52,7 +52,8 @@ export default [
 		output: {
 			dir: 'dist',
 			format: 'cjs',
-			sourcemap: true
+			sourcemap: true,
+			chunkFileNames: '[name].js'
 		},
 		external,
 		plugins: [
