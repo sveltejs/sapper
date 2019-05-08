@@ -1,8 +1,9 @@
 import polka from 'polka';
 import * as sapper from '@sapper/server';
 
-const { PORT } = process.env;
+import { start } from '../../common.js';
 
-polka()
+const app = polka()
 	.use(sapper.middleware())
-	.listen(PORT);
+
+start(app);

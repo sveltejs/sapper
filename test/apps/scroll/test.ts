@@ -1,93 +1,87 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('scroll', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, title } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('scrolls to active deeplink', async () => {
-		await page.goto(`${base}/tall-page#foo`);
-		await start();
+		await r.load('/tall-page#foo');
+		await r.sapper.start();
 
-		const scrollY = await page.evaluate(() => window.scrollY);
+		const scrollY = await r.page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0, String(scrollY));
 	});
 
 	it('scrolls to any deeplink if it was already active', async () => {
-		await page.goto(`${base}/tall-page#foo`);
-		await start();
+		await r.load('/tall-page#foo');
+		await r.sapper.start();
 
-		let scrollY = await page.evaluate(() => window.scrollY);
+		let scrollY = await r.page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0, String(scrollY));
 
-		scrollY = await page.evaluate(() => {
+		scrollY = await r.page.evaluate(() => {
 			window.scrollTo(0, 0)
 			return window.scrollY
 		});
 		assert.ok(scrollY === 0, String(scrollY));
 
-		await page.click('[href="tall-page#foo"]');
-		scrollY = await page.evaluate(() => window.scrollY);
+		await r.page.click('[href="tall-page#foo"]');
+		scrollY = await r.page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0, String(scrollY));
 	});
 
 	it('resets scroll when a link is clicked', async () => {
-		await page.goto(`${base}/tall-page#foo`);
-		await start();
-		await prefetchRoutes();
+		await r.load('/tall-page#foo');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="another-tall-page"]');
-		await wait(50);
+		await r.page.click('[href="another-tall-page"]');
+		await r.wait();
 
 		assert.equal(
-			await page.evaluate(() => window.scrollY),
+			await r.page.evaluate(() => window.scrollY),
 			0
 		);
 	});
 
 	it('preserves scroll when a link with sapper-noscroll is clicked', async () => {
-		await page.goto(`${base}/tall-page#foo`);
-		await start();
-		await prefetchRoutes();
+		await r.load('/tall-page#foo');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="another-tall-page"][sapper-noscroll]');
-		await wait(50);
+		await r.page.click('[href="another-tall-page"][sapper-noscroll]');
+		await r.wait();
 
-		const scrollY = await page.evaluate(() => window.scrollY);
+		const scrollY = await r.page.evaluate(() => window.scrollY);
 
 		assert.ok(scrollY > 0);
 	});
 
 	it('scrolls into a deeplink on a new page', async () => {
-		await page.goto(`${base}/tall-page#foo`);
-		await start();
-		await prefetchRoutes();
+		await r.load('/tall-page#foo');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="another-tall-page#bar"]');
-		await wait(50);
-		assert.equal(await title(), 'Another tall page');
-		const scrollY = await page.evaluate(() => window.scrollY);
+		await r.page.click('[href="another-tall-page#bar"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'Another tall page');
+		const scrollY = await r.page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

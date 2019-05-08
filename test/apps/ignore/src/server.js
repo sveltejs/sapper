@@ -1,7 +1,7 @@
 import polka from 'polka';
 import * as sapper from '@sapper/server';
 
-const { PORT } = process.env;
+import { start } from '../../common.js';
 
 const app = polka().use(sapper.middleware({
 	ignore: [
@@ -16,4 +16,4 @@ const app = polka().use(sapper.middleware({
 	app.get('/'+uri, (req, res) => res.end(uri));
 });
 
-app.listen(PORT);
+start(app);

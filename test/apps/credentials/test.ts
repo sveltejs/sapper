@@ -1,59 +1,54 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { wait } from '../../utils';
 import { AppRunner } from '../AppRunner';
 
 describe('credentials', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('sends cookies when using this.fetch with credentials: "include"', async () => {
-		await page.goto(`${base}/credentials?creds=include`);
+		await r.load('/credentials?creds=include');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'a: 1, b: 2, max-age: undefined'
 		);
 	});
 
 	it('does not send cookies when using this.fetch without credentials', async () => {
-		await page.goto(`${base}/credentials`);
+		await r.load('/credentials');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'unauthorized'
 		);
 	});
 
 	it('delegates to fetch on the client', async () => {
-		await page.goto(base)
-		await start();
-		await prefetchRoutes();
+		await r.load('/')
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="credentials?creds=include"]');
-		await wait(50);
+		await r.page.click('[href="credentials?creds=include"]');
+		await r.wait();
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'a: 1, b: 2, max-age: undefined'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

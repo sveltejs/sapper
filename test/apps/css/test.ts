@@ -1,78 +1,61 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('css', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
-	let prefetch: (href: string) => Promise<void>;
-	let goto: (href: string) => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, prefetch, goto, title } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('includes critical CSS with server render', async () => {
-		await page.goto(base);
+		await r.load('/');
 
 		assert.equal(
-			await page.evaluate(() => {
-				const h1 = document.querySelector('h1');
-				return getComputedStyle(h1).color;
-			}),
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(255, 0, 0)'
 		);
 	});
 
 	it('loads CSS when navigating client-side', async () => {
-		await page.goto(base);
+		await r.load('/');
 
-		await start();
-		await prefetchRoutes();
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click(`[href="foo"]`);
-		await wait(50);
+		await r.page.click(`[href="foo"]`);
+		await r.wait();
 
 		assert.equal(
-			await page.evaluate(() => {
-				const h1 = document.querySelector('h1');
-				return getComputedStyle(h1).color;
-			}),
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(0, 0, 255)'
 		);
 	});
 
 	it('loads CSS for a lazily-rendered component', async () => {
-		await page.goto(base);
+		await r.load('/');
 
-		await start();
-		await prefetchRoutes();
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click(`[href="bar"]`);
-		await wait(50);
+		await r.page.click(`[href="bar"]`);
+		await r.wait();
 
 		assert.equal(
-			await page.evaluate(() => {
-				const h1 = document.querySelector('h1');
-				return getComputedStyle(h1).color;
-			}),
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(0, 128, 0)'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

@@ -1,68 +1,63 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('encoding', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('encodes routes', async () => {
-		await page.goto(`${base}/fünke`);
+		await r.load('/fünke');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			`I'm afraid I just blue myself`
 		);
 	});
 
 	it('encodes req.params and req.query for server-rendered pages', async () => {
-		await page.goto(`${base}/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789`);
+		await r.load('/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
 		);
 	});
 
 	it('encodes req.params and req.query for client-rendered pages', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a');
-		await wait(50);
+		await r.page.click('a');
+		await r.wait();
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
 		);
 	});
 
 	it('encodes req.params for server routes', async () => {
-		await page.goto(`${base}/echo/server-route/encöded`);
+		await r.load('/echo/server-route/encöded');
 
 		assert.equal(
-			await page.$eval('h1', node => node.textContent),
+			await r.text('h1'),
 			'encöded'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });
