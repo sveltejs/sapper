@@ -7,10 +7,9 @@ describe('with-sourcemaps-webpack', function() {
 	this.timeout(10000);
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname, bundler: 'webpack' });
-	});
+	before('build app', () => build({ cwd: __dirname, bundler: 'webpack' }));
 
+	// tests
 	it('does not put sourcemap files in service worker shell', async () => {
 		const service_worker_source = fs.readFileSync(`${__dirname}/src/node_modules/@sapper/service-worker.js`, 'utf-8');
 		const shell_source = /shell = (\[[\s\S]+?\])/.exec(service_worker_source)[1];

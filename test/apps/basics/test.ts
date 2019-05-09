@@ -1,23 +1,23 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import * as http from 'http';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 declare let deleted: { id: number };
 declare let el: any;
 
-function get(url: string, opts?: any): Promise<{ headers: Record<string, string>, body: string }> {
+type Response = { headers: http.IncomingHttpHeaders, body: string };
+
+function get(url: string, opts: http.RequestOptions = {}): Promise<Response> {
 	return new Promise((fulfil, reject) => {
-		const req = http.get(url, opts || {}, res => {
+		const req = http.get(url, opts, res => {
 			res.on('error', reject);
 
 			let body = '';
 			res.on('data', chunk => body += chunk);
 			res.on('end', () => {
 				fulfil({
-					headers: res.headers as Record<string, string>,
+					headers: res.headers,
 					body
 				});
 			});
@@ -30,114 +30,104 @@ function get(url: string, opts?: any): Promise<{ headers: Record<string, string>
 describe('basics', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
-	let prefetch: (href: string) => Promise<void>;
-	let goto: (href: string) => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, prefetch, goto, title } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('serves /', async () => {
-		await page.goto(base);
+		await r.load('/');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'Great success!'
 		);
 	});
 
 	it('serves /?', async () => {
-		await page.goto(`${base}?`);
+		await r.load('/?');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'Great success!'
 		);
 	});
 
 	it('serves static route', async () => {
-		await page.goto(`${base}/a`);
+		await r.load('/a');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'a'
 		);
 	});
 
 	it('serves static route from dir/index.html file', async () => {
-		await page.goto(`${base}/b`);
+		await r.load('/b');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'b'
 		);
 	});
 
 	it('serves dynamic route', async () => {
-		await page.goto(`${base}/test-slug`);
+		await r.load('/test-slug');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'TEST-SLUG'
 		);
 	});
 
 	it('navigates to a new page without reloading', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		const requests: string[] = await runner.capture(async () => {
-			await page.click('a[href="a"]');
+		const requests: string[] = await r.capture_requests(async () => {
+			await r.page.click('a[href="a"]');
+			await r.wait();
 		});
 
 		assert.deepEqual(requests, []);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'a'
 		);
 	});
 
 	it('navigates programmatically', async () => {
-		await page.goto(`${base}/a`);
-		await start();
-
-		await goto('b');
+		await r.load('/a');
+		await r.sapper.start();
+		await r.sapper.goto('b');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'b'
 		);
 	});
 
 	it('prefetches programmatically', async () => {
-		await page.goto(`${base}/a`);
-		await start();
+		await r.load(`/a`);
+		await r.sapper.start();
 
-		const requests = await runner.capture(() => prefetch('b'));
+		const requests = await r.capture_requests(() => r.sapper.prefetch('b'));
 
 		assert.equal(requests.length, 2);
-		assert.equal(requests[1], `${base}/b.json`);
+		assert.equal(requests[1], `${r.base}/b.json`);
 	});
 
 	// TODO equivalent test for a webpack app
 	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', async () => {
-		const { headers } = await get(base);
+		const { headers } = await get(r.base);
 
 		assert.equal(
 			headers['content-type'],
@@ -157,162 +147,163 @@ describe('basics', function() {
 	});
 
 	it('calls a delete handler', async () => {
-		await page.goto(`${base}/delete-test`);
-		await start();
+		await r.load('/delete-test');
+		await r.sapper.start();
 
-		await page.click('.del');
-		await page.waitForFunction(() => deleted);
+		await r.page.click('.del');
+		await r.page.waitForFunction(() => deleted);
 
-		assert.equal(await page.evaluate(() => deleted.id), 42);
+		assert.equal(await r.page.evaluate(() => deleted.id), 42);
 	});
 
 	it('hydrates initial route', async () => {
-		await page.goto(base);
+		await r.load('/');
 
-		await page.evaluate(() => {
+		await r.page.evaluate(() => {
 			el = document.querySelector('.hydrate-test');
 		});
 
-		await start();
+		await r.sapper.start();
 
-		assert.ok(await page.evaluate(() => {
+		assert.ok(await r.page.evaluate(() => {
 			return document.querySelector('.hydrate-test') === el;
 		}));
 	});
 
 	it('does not attempt client-side navigation to server routes', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click(`[href="ambiguous/ok.json"]`);
-		await wait(50);
+		await r.page.click('[href="ambiguous/ok.json"]');
+		await r.wait();
 
 		assert.equal(
-			await page.evaluate(() => document.body.textContent),
+			await r.text('body'),
 			'ok'
 		);
 	});
 
 	it('allows reserved words as route names', async () => {
-		await page.goto(`${base}/const`);
-		await start();
+		await r.load('/const');
+		await r.sapper.start();
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'reserved words are okay as routes'
 		);
 	});
 
 	it('accepts value-less query string parameter on server', async () => {
-		await page.goto(`${base}/echo-query?message`);
+		await r.load('/echo-query?message');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'{"message":""}'
 		);
 	});
 
 	it('accepts value-less query string parameter on client', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a[href="echo-query?message"]')
+		await r.page.click('a[href="echo-query?message"]');
+		await r.wait();
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'{"message":""}'
 		);
 	});
 
 	it('accepts duplicated query string parameter on server', async () => {
-		await page.goto(`${base}/echo-query?p=one&p=two`);
+		await r.load('/echo-query?p=one&p=two');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'{"p":["one","two"]}'
 		);
 	});
 
 	it('accepts duplicated query string parameter on client', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a[href="echo-query?p=one&p=two"]')
+		await r.page.click('a[href="echo-query?p=one&p=two"]')
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'{"p":["one","two"]}'
 		);
 	});
 
 	// skipped because Nightmare doesn't seem to focus the <a> correctly
 	it('resets the active element after navigation', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="a"]');
-		await wait(50);
+		await r.page.click('[href="a"]');
+		await r.wait();
 
 		assert.equal(
-			await page.evaluate(() => document.activeElement.nodeName),
+			await r.page.evaluate(() => document.activeElement.nodeName),
 			'BODY'
 		);
 	});
 
 	it('replaces %sapper.xxx% tags safely', async () => {
-		await page.goto(`${base}/unsafe-replacement`);
-		await start();
+		await r.load('/unsafe-replacement');
+		await r.sapper.start();
 
-		const html = String(await page.evaluate(() => document.body.innerHTML));
+		const html = String(await r.page.evaluate(() => document.body.innerHTML));
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
 
 	it('navigates between routes with empty parts', async () => {
-		await page.goto(`${base}/dirs/foo`);
-		await start();
+		await r.load('/dirs/foo');
+		await r.sapper.start();
 
-		assert.equal(await title(), 'foo');
+		assert.equal(await r.text('h1'), 'foo');
 
-		await page.click('[href="dirs/bar"]');
-		await wait(50);
-		assert.equal(await title(), 'bar');
+		await r.page.click('[href="dirs/bar"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'bar');
 	});
 
 	it('navigates to ...rest', async () => {
-		await page.goto(`${base}/abc/xyz`);
-		await start();
+		await r.load('/abc/xyz');
+		await r.sapper.start();
 
-		assert.equal(await title(), 'abc,xyz');
+		assert.equal(await r.text('h1'), 'abc,xyz');
 
-		await page.click('[href="xyz/abc/deep"]');
-		await wait(50);
-		assert.equal(await title(), 'xyz,abc');
+		await r.page.click('[href="xyz/abc/deep"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'xyz,abc');
 
-		await page.click(`[href="xyz/abc/qwe/deep.json"]`);
-		await wait(50);
+		await r.page.click('[href="xyz/abc/qwe/deep.json"]');
+		await r.wait();
 		assert.equal(
-			await page.evaluate(() => document.body.textContent),
+			await r.text('body'),
 			'xyz,abc,qwe'
 		);
 	});
 
 	it('navigates between dynamic routes with same segments', async () => {
-		await page.goto(`${base}/dirs/bar/xyz`);
-		await start();
+		await r.load('/dirs/bar/xyz');
+		await r.sapper.start();
 
-		assert.equal(await title(), 'A page');
+		assert.equal(await r.text('h1'), 'A page');
 
-		await page.click('[href="dirs/foo/xyz"]');
-		await wait(50);
-		assert.equal(await title(), 'B page');
+		await r.page.click('[href="dirs/foo/xyz"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'B page');
 	});
 
 	it('runs server route handlers before page handlers, if they match', async () => {
-		const json = await get(`${base}/middleware`, {
+		const json = await get(`${r.base}/middleware`, {
 			headers: {
 				'Accept': 'application/json'
 			}
@@ -320,22 +311,26 @@ describe('basics', function() {
 
 		assert.equal(json.body, '{"json":true}');
 
-		const html = await get(`${base}/middleware`);
+		const html = await get(`${r.base}/middleware`);
 
 		assert.ok(html.body.indexOf('<h1>HTML</h1>') !== -1);
 	});
 
 	it('invalidates page when a segment is skipped', async () => {
-		await page.goto(`${base}/skipped/x/1`);
-		await start();
-		await prefetchRoutes();
+		await r.load('/skipped/x/1');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a[href="skipped/y/1"]');
-		await wait(50);
+		await r.page.click('a[href="skipped/y/1"]');
+		await r.wait();
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'y:1'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

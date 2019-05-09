@@ -1,13 +1,14 @@
 import polka from 'polka';
 import * as sapper from '@sapper/server';
 
-const { PORT } = process.env;
+import { start } from '../../common.js';
 
-polka()
+const app = polka()
 	.use((req, res, next) => {
 		// set test cookie
 		res.setHeader('Set-Cookie', ['a=1; Max-Age=3600', 'b=2; Max-Age=3600']);
 		next();
 	})
 	.use(sapper.middleware())
-	.listen(PORT);
+
+start(app);

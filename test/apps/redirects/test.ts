@@ -2,138 +2,137 @@ import * as assert from 'assert';
 import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('redirects', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, title } = await runner.start({
-			requestInterceptor: (interceptedRequest) => {
-				if (/example\.com/.test(interceptedRequest.url())) {
-					interceptedRequest.respond({
-						status: 200,
-						contentType: 'text/html',
-						body: `<h1>external</h1>`
-					});
-				} else {
-					interceptedRequest.continue();
-				}
-			}
-		}));
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('redirects on server', async () => {
-		await page.goto(`${base}/redirect-from`);
+		await r.load('/redirect-from');
 
 		assert.equal(
-			page.url(),
-			`${base}/redirect-to`
+			r.page.url(),
+			`${r.base}/redirect-to`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'redirected'
 		);
 	});
 
 	it('redirects in client', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="redirect-from"]');
-		await wait(50);
+		await r.page.click('[href="redirect-from"]');
+		await r.wait();
 
 		assert.equal(
-			page.url(),
-			`${base}/redirect-to`
+			r.page.url(),
+			`${r.base}/redirect-to`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'redirected'
 		);
 	});
 
 	it('redirects to root on server', async () => {
-		await page.goto(`${base}/redirect-to-root`);
+		await r.load('/redirect-to-root');
 
 		assert.equal(
-			page.url(),
-			`${base}/`
+			r.page.url(),
+			`${r.base}/`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'root'
 		);
 	});
 
 	it('redirects to root in client', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="redirect-to-root"]');
-		await wait(50);
+		await r.page.click('[href="redirect-to-root"]');
+		await r.wait();
 
 		assert.equal(
-			page.url(),
-			`${base}/`
+			r.page.url(),
+			`${r.base}/`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'root'
 		);
 	});
 
+	const interceptor = (request: puppeteer.Request) => {
+		if (/example\.com/.test(request.url())) {
+			request.respond({
+				status: 200,
+				contentType: 'text/html',
+				body: `<h1>external</h1>`
+			});
+		} else {
+			request.continue();
+		}
+	};
+
 	it('redirects to external URL on server', async () => {
-		await page.goto(`${base}/redirect-to-external`);
+		await r.intercept_requests(interceptor, async () => {
+			await r.load('/redirect-to-external');
+		});
 
 		assert.equal(
-			page.url(),
+			r.page.url(),
 			`https://example.com/`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'external'
 		);
 	});
 
 	it('redirects to external URL in client', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('[href="redirect-to-external"]');
-		await wait(50);
+		await r.intercept_requests(interceptor, async () => {
+			await r.page.click('[href="redirect-to-external"]');
+			await r.wait();
+		});
 
 		assert.equal(
-			page.url(),
+			r.page.url(),
 			`https://example.com/`
 		);
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'external'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

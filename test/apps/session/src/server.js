@@ -1,9 +1,9 @@
 import polka from 'polka';
 import * as sapper from '@sapper/server';
 
-const { PORT } = process.env;
+import { start } from '../../common.js';
 
-polka()
+const app = polka()
 	.use((req, res, next) => {
 		req.hello = 'hello';
 		res.locals = { name: 'world' };
@@ -15,5 +15,6 @@ polka()
 				title: `${req.hello} ${res.locals.name}`
 			})
 		})
-	)
-	.listen(PORT);
+	);
+
+start(app);
