@@ -5,9 +5,8 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { Manifest, Page, Props, Req, Res } from './types';
+import { Manifest, Page, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
-import { stores } from '@sapper/internal/shared';
 import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
