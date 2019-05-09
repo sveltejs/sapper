@@ -86,6 +86,7 @@ export default function create_manifest_data(cwd: string): ManifestData {
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
 				const is_page = component_extensions.indexOf(ext) !== -1;
+				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
 					if (/\]\[/.test(part.content)) {
@@ -104,7 +105,8 @@ export default function create_manifest_data(cwd: string): ManifestData {
 					file: posixify(file),
 					is_dir,
 					is_index,
-					is_page
+					is_page,
+					route_suffix
 				};
 			})
 			.filter(Boolean)
@@ -113,25 +115,25 @@ export default function create_manifest_data(cwd: string): ManifestData {
 		items.forEach(item => {
 			const segments = parent_segments.slice();
 
-			if (item.is_index && segments.length > 0) {
-				const suffix = item.basename
-					.slice(0, -item.ext.length)
-					.replace('index', '');
+			if (item.is_index) {
+				if (item.route_suffix) {
+					if (segments.length > 0) {
+						const last_segment = segments[segments.length - 1].slice();
+						const last_part = last_segment[last_segment.length - 1];
 
-				if (suffix) {
-					const last_segment = segments[segments.length - 1].slice();
-					const last_part = last_segment[last_segment.length - 1];
+						if (last_part.dynamic) {
+							last_segment.push({ dynamic: false, content: item.route_suffix });
+						} else {
+							last_segment[last_segment.length - 1] = {
+								dynamic: false,
+								content: `${last_part.content}${item.route_suffix}`
+							};
+						}
 
-					if (last_part.dynamic) {
-						last_segment.push({ dynamic: false, content: suffix });
+						segments[segments.length - 1] = last_segment;
 					} else {
-						last_segment[last_segment.length - 1] = {
-							dynamic: false,
-							content: `${last_part.content}${suffix}`
-						};
+						segments.push(item.parts);
 					}
-
-					segments[segments.length - 1] = last_segment;
 				}
 			} else {
 				segments.push(item.parts);
@@ -156,8 +158,6 @@ export default function create_manifest_data(cwd: string): ManifestData {
 			}
 
 			else if (item.is_page) {
-				const is_index = item.basename === `index${item.ext}`;
-
 				const component = {
 					name: get_slug(item.file),
 					file: item.file,
@@ -166,22 +166,20 @@ export default function create_manifest_data(cwd: string): ManifestData {
 
 				components.push(component);
 
-				const parts = (is_index && stack[stack.length - 1] === null)
+				const parts = (item.is_index && stack[stack.length - 1] === null)
 					? stack.slice(0, -1).concat({ component, params })
 					: stack.concat({ component, params })
 
-				const page = {
-					pattern: get_pattern(is_index ? parent_segments : segments, true),
+				pages.push({
+					pattern: get_pattern(segments, true),
 					parts
-				};
-
-				pages.push(page);
+				});
 			}
 
 			else {
 				server_routes.push({
 					name: `route_${get_slug(item.file)}`,
-					pattern: get_pattern(segments, false),
+					pattern: get_pattern(segments, !item.route_suffix),
 					file: item.file,
 					params: params
 				});
@@ -321,7 +319,6 @@ function get_parts(part: string): Part[] {
 function get_slug(file: string) {
 	let name = file
 		.replace(/[\\\/]index/, '')
-		.replace(/_default([\/\\index])?\.html$/, 'index')
 		.replace(/[\/\\]/g, '_')
 		.replace(/\.\w+$/, '')
 		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
@@ -334,19 +331,19 @@ function get_slug(file: string) {
 }
 
 function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
-	return new RegExp(
-		`^` +
-		segments.map(segment => {
-			return '\\/' + segment.map(part => {
-				return part.dynamic
-					? part.qualifier || part.spread ? '(.+)' : '([^\\/]+?)'
-					: encodeURI(part.content.normalize())
-						.replace(/\?/g, '%3F')
-						.replace(/#/g, '%23')
-						.replace(/%5B/g, '[')
-						.replace(/%5D/g, ']');
-			}).join('');
-		}).join('') +
-		(add_trailing_slash ? '\\\/?$' : '$')
-	);
+	const path = segments.map(segment => {
+		return segment.map(part => {
+			return part.dynamic
+				? part.qualifier || part.spread ? '(.+)' : '([^\\/]+?)'
+				: encodeURI(part.content.normalize())
+					.replace(/\?/g, '%3F')
+					.replace(/#/g, '%23')
+					.replace(/%5B/g, '[')
+					.replace(/%5D/g, ']');
+		}).join('');
+	}).join('\\/');
+
+	const trailing = add_trailing_slash && segments.length ? '\\/?$' : '$';
+
+	return new RegExp(`^\\/${path}${trailing}`);
 }

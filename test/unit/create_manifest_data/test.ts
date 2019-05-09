@@ -20,7 +20,7 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(pages, [
 			{
-				pattern: /^\/?$/,
+				pattern: /^\/$/,
 				parts: [
 					{ component: index, params: [] }
 				]
@@ -50,6 +50,13 @@ describe('manifest_data', () => {
 		]);
 
 		assert.deepEqual(server_routes, [
+			{
+				name: 'route_index',
+				pattern:  /^\/$/,
+				file: 'index.js',
+				params: []
+			},
+
 			{
 				name: 'route_blog_json',
 				pattern: /^\/blog.json$/,
@@ -167,7 +174,7 @@ describe('manifest_data', () => {
 			file: 'foo.js',
 			name: 'route_foo',
 			params: [],
-			pattern: /^\/foo$/
+			pattern: /^\/foo\/?$/
 		}]);
 	});
 });
