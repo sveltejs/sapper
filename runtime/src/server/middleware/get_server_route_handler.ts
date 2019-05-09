@@ -1,4 +1,3 @@
-import { IGNORE } from '../constants';
 import { Req, Res, ServerRoute } from './types';
 
 export function get_server_route_handler(routes: ServerRoute[]) {
@@ -64,8 +63,6 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		if (req[IGNORE]) return next();
-
 		for (const route of routes) {
 			if (route.pattern.test(req.path)) {
 				handle_route(route, req, res, next);

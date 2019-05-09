@@ -5,7 +5,6 @@ import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
-import { IGNORE } from '../constants';
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
@@ -15,15 +14,8 @@ export default function middleware(opts: {
 
 	let emitted_basepath = false;
 
-	return compose_handlers([
-		ignore && ((req: Req, res: Res, next: () => void) => {
-			req[IGNORE] = should_ignore(req.path, ignore);
-			next();
-		}),
-
+	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
-			if (req[IGNORE]) return next();
-
 			if (req.baseUrl === undefined) {
 				let { originalUrl } = req;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
@@ -73,24 +65,26 @@ export default function middleware(opts: {
 	].filter(Boolean));
 }
 
-export function compose_handlers(handlers: Handler[]) {
-	return (req: Req, res: Res, next: () => void) => {
-		let i = 0;
-		function go() {
-			const handler = handlers[i];
+export function compose_handlers(ignore: any, handlers: Handler[]): Handler {
+	const total = handlers.length;
 
-			if (handler) {
-				handler(req, res, () => {
-					i += 1;
-					go();
-				});
-			} else {
-				next();
-			}
+	function nth_handler(n: number, req: Req, res: Res, next: () => void) {
+		if (n >= total) {
+			return next();
 		}
 
-		go();
-	};
+		handlers[n](req, res, () => nth_handler(n+1, req, res, next));
+	}
+
+	return !ignore
+		? (req, res, next) => nth_handler(0, req, res, next)
+		: (req, res, next) => {
+			if (should_ignore(req.path, ignore)) {
+				next();
+			} else {
+				nth_handler(0, req, res, next);
+			}
+		};
 }
 
 export function should_ignore(uri: string, val: any) {
@@ -116,8 +110,6 @@ export function serve({ prefix, pathname, cache_control }: {
 		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(build_dir, file)))).get(file)
 
 	return (req: Req, res: Res, next: () => void) => {
-		if (req[IGNORE]) return next();
-
 		if (filter(req)) {
 			const type = lookup(req.path);
 
