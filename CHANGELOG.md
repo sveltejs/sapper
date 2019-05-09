@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.0
+
+* Change license from LIL to MIT ([#652](https://github.com/sveltejs/sapper/pull/652))
+* Fix index server route mapping ([#624](https://github.com/sveltejs/sapper/issues/624))
+
 ## 0.26.1
 
 * Handle skipped segments ([#663](https://github.com/sveltejs/sapper/pull/663))
