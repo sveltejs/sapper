@@ -1,33 +1,25 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('layout', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('only recreates components when necessary', async () => {
-		await page.goto(`${base}/foo/bar/baz`);
+		await r.load('/foo/bar/baz');
 
-		const text1 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		const text1 = await r.text('#sapper');
 		assert.deepEqual(text1.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
@@ -35,8 +27,8 @@ describe('layout', function() {
 			'child segment: baz'
 		]);
 
-		await start();
-		const text2 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		await r.sapper.start();
+		const text2 = await r.text('#sapper');
 		assert.deepEqual(text2.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
@@ -44,15 +36,19 @@ describe('layout', function() {
 			'child segment: baz'
 		]);
 
-		await page.click('[href="foo/bar/qux"]');
-		await wait(50);
+		await r.page.click('[href="foo/bar/qux"]');
+		await r.wait();
 
-		const text3 = String(await page.evaluate(() => document.querySelector('#sapper').textContent));
+		const text3 = await r.text('#sapper');
 		assert.deepEqual(text3.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: qux 2',
 			'click me',
 			'child segment: qux'
 		]);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

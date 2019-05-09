@@ -1,50 +1,46 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
 
 describe('session', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, title } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('renders session props', async () => {
-		await page.goto(`${base}/session`);
+		await r.load('/session');
 
-		assert.equal(await title(), 'hello world');
+		assert.equal(await r.text('h1'), 'hello world');
 
-		await start();
-		assert.equal(await title(), 'hello world');
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), 'hello world');
 
-		await page.click('button');
-		assert.equal(await title(), 'changed');
+		await r.page.click('button');
+		assert.equal(await r.text('h1'), 'changed');
 	});
 
 	it('preloads session props', async () => {
-		await page.goto(`${base}/preloaded`);
+		await r.load('/preloaded');
 
-		assert.equal(await title(), 'hello world');
+		assert.equal(await r.text('h1'), 'hello world');
 
-		await start();
-		assert.equal(await title(), 'hello world');
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), 'hello world');
 
-		await page.click('button');
-		assert.equal(await title(), 'changed');
+		await r.page.click('button');
+		assert.equal(await r.text('h1'), 'changed');
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });

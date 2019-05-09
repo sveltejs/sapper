@@ -6,11 +6,10 @@ describe('export', function() {
 	this.timeout(10000);
 
 	// hooks
-	before(async () => {
-		await api.build({ cwd: __dirname });
-		await api.export({ cwd: __dirname });
-	});
+	before('build app', () => api.build({ cwd: __dirname }));
+	before('export app', () => api.export({ cwd: __dirname }));
 
+	// tests
 	it('crawls a site', () => {
 		const files = walk(`${__dirname}/__sapper__/export`);
 

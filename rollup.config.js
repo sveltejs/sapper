@@ -1,5 +1,5 @@
 import sucrase from 'rollup-plugin-sucrase';
-import string from 'rollup-plugin-string';
+import { string } from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
@@ -52,7 +52,8 @@ export default [
 		output: {
 			dir: 'dist',
 			format: 'cjs',
-			sourcemap: true
+			sourcemap: true,
+			chunkFileNames: '[name].js'
 		},
 		external,
 		plugins: [

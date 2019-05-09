@@ -1,49 +1,77 @@
 import * as path from 'path';
 import puppeteer from 'puppeteer';
-import * as ports from 'port-authority';
 import { fork, ChildProcess } from 'child_process';
+import { AddressInfo } from 'net';
+
+import { wait } from '../utils'
+
+const DEFAULT_ENTRY = '__sapper__/build/server/server.js';
+const DELAY = parseInt(process.env.SAPPER_TEST_DELAY) || 50;
 
 declare const start: () => Promise<void>;
 declare const prefetchRoutes: () => Promise<void>;
 declare const prefetch: (href: string) => Promise<void>;
 declare const goto: (href: string) => Promise<void>;
 
-type StartOpts = {
-	requestInterceptor?: (interceptedRequst: puppeteer.Request) => any
-};
-
 export class AppRunner {
-	cwd: string;
-	entry: string;
-	port: number;
-	proc: ChildProcess;
+	exiting: boolean;
+	terminate: Promise<any>;
+
+	server: ChildProcess;
+	address: AddressInfo;
+	base: string;
 	messages: any[];
+	errors: Error[];
 
 	browser: puppeteer.Browser;
 	page: puppeteer.Page;
 
-	constructor(cwd: string, entry: string) {
-		this.cwd = cwd;
-		this.entry = path.join(cwd, entry);
+	sapper = {
+		start: () => this.page.evaluate(() => start()).then(() => void 0),
+		prefetchRoutes: () => this.page.evaluate(() => prefetchRoutes()).then(() => void 0),
+		prefetch: (href: string) => this.page.evaluate((href: string) => prefetch(href), href).then(() => void 0),
+		goto: (href: string) => this.page.evaluate((href: string) => goto(href), href).then(() => void 0)
+	};
+
+	constructor() {
 		this.messages = [];
+		this.errors = [];
 	}
 
-	async start({ requestInterceptor }: StartOpts = {}) {
-		this.port = await ports.find(3000);
+	async start(cwd: string, entry: string = DEFAULT_ENTRY) {
+		const server_listening = deferred();
+		const server_closed = deferred();
+		const browser_closed = deferred();
 
-		this.proc = fork(this.entry, [], {
-			cwd: this.cwd,
-			env: {
-				PORT: String(this.port)
+		this.terminate = Promise.all([server_closed, browser_closed]);
+
+		this.server = fork(path.join(cwd, entry), [], { cwd });
+		this.server.on('exit', () => {
+			server_listening.reject();
+			server_closed.settle(this.exiting);
+		});
+		this.server.on('message', message => {
+			if (!message.__sapper__) return;
+
+			switch (message.event) {
+				case 'listening':
+					this.address = message.address;
+					this.base = `http://localhost:${this.address.port}`;
+
+					server_listening.resolve();
+					break;
+
+				case 'error':
+					this.errors.push(Object.assign(new Error(), message.error));
+					break;
+
+				default:
+					this.messages.push(message);
 			}
 		});
 
-		this.proc.on('message', message => {
-			if (!message.__sapper__) return;
-			this.messages.push(message);
-		});
-
 		this.browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+		this.browser.on('disconnected', () => browser_closed.settle(this.exiting));
 
 		this.page = await this.browser.newPage();
 		this.page.on('console', msg => {
@@ -54,25 +82,28 @@ export class AppRunner {
 			}
 		});
 
-		if (requestInterceptor) {
-			await this.page.setRequestInterception(true);
-			this.page.on('request', requestInterceptor);
-		}
+		await server_listening;
 
-		return {
-			page: this.page,
-			base: `http://localhost:${this.port}`,
-
-			// helpers
-			start: () => this.page.evaluate(() => start()).then(() => void 0),
-			prefetchRoutes: () => this.page.evaluate(() => prefetchRoutes()).then(() => void 0),
-			prefetch: (href: string) => this.page.evaluate((href: string) => prefetch(href), href).then(() => void 0),
-			goto: (href: string) => this.page.evaluate((href: string) => goto(href), href).then(() => void 0),
-			title: () => this.page.$eval('h1', node => node.textContent).then(serializable => String(serializable))
-		};
+		return this;
 	}
 
-	capture(fn: () => any): Promise<string[]> {
+	load(url: string) {
+		if (url[0] === '/') {
+			url = `${this.base}${url}`;
+		}
+
+		return this.page.goto(url);
+	}
+
+	text(selector: string) {
+		return this.page.$eval(selector, node => node.textContent);
+	}
+
+	wait(extra_ms: number = 0) {
+		return wait(DELAY + extra_ms);
+	}
+
+	capture_requests(fn: () => any): Promise<string[]> {
 		return new Promise((fulfil, reject) => {
 			const requests: string[] = [];
 			const pending: Set<string> = new Set();
@@ -120,13 +151,55 @@ export class AppRunner {
 		});
 	}
 
-	end() {
-		return Promise.all([
-			this.browser.close(),
-			new Promise(fulfil => {
-				this.proc.once('exit', fulfil);
-				this.proc.kill();
-			})
-		]);
+	async intercept_requests(interceptor: (request: puppeteer.Request) => void, fn: () => any): Promise<void> {
+		const unique_interceptor = request => interceptor(request);
+
+		this.page.prependListener('request', unique_interceptor);
+		await this.page.setRequestInterception(true);
+
+		const result = await Promise.resolve(fn());
+
+		await this.page.setRequestInterception(false);
+		this.page.removeListener('request', unique_interceptor);
+
+		return result;
 	}
+
+	end() {
+		this.exiting = true;
+
+		this.server.kill();
+		this.browser.close();
+
+		return this.terminate;
+	}
+}
+
+interface Deferred<T> extends Promise<T> {
+	resolve: (value?: T | PromiseLike<T>) => void;
+	reject: (reason?: any) => void;
+	settle: (result?: boolean) => void;
+}
+
+function settle<T>(this: Deferred<T>, result: boolean) {
+	if (result) {
+		this.resolve();
+	} else {
+		this.reject();
+	}
+}
+
+function deferred<T>() {
+	let resolve, reject;
+
+	const deferred = new Promise((_resolve, _reject) => {
+		resolve = _resolve;
+		reject = _reject;
+	}) as Deferred<T>;
+
+	deferred.resolve = resolve;
+	deferred.reject = reject;
+	deferred.settle = settle;
+
+	return deferred;
 }

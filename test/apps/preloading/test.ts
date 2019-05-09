@@ -1,7 +1,5 @@
 import * as assert from 'assert';
-import * as puppeteer from 'puppeteer';
 import { build } from '../../../api';
-import { wait } from '../../utils';
 import { AppRunner } from '../AppRunner';
 
 declare const fulfil: () => Promise<void>;
@@ -9,112 +7,106 @@ declare const fulfil: () => Promise<void>;
 describe('preloading', function() {
 	this.timeout(10000);
 
-	let runner: AppRunner;
-	let page: puppeteer.Page;
-	let base: string;
-
-	// helpers
-	let start: () => Promise<void>;
-	let prefetchRoutes: () => Promise<void>;
-	let title: () => Promise<string>;
+	let r: AppRunner;
 
 	// hooks
-	before(async () => {
-		await build({ cwd: __dirname });
-
-		runner = new AppRunner(__dirname, '__sapper__/build/server/server.js');
-		({ base, page, start, prefetchRoutes, title } = await runner.start());
+	before('build app', () => build({ cwd: __dirname }));
+	before('start runner', async () => {
+		r = await new AppRunner().start(__dirname);
 	});
 
-	after(() => runner.end());
+	after(() => r && r.end());
 
+	// tests
 	it('serializes Set objects returned from preload', async () => {
-		await page.goto(`${base}/preload-values/set`);
+		await r.load('/preload-values/set');
 
-		assert.equal(await title(), 'true');
+		assert.equal(await r.text('h1'), 'true');
 
-		await start();
-		assert.equal(await title(), 'true');
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), 'true');
 	});
 
 	it('prevent crash if preload return nothing', async () => {
-		await page.goto(`${base}/preload-nothing`);
+		await r.load('/preload-nothing');
 
-		await start();
-		await wait(50);
+		await r.sapper.start();
 
-		assert.equal(await title(), 'Page loaded');
+		assert.equal(await r.text('h1'), 'Page loaded');
 	});
 
 	it('bails on custom classes returned from preload', async () => {
-		await page.goto(`${base}/preload-values/custom-class`);
+		await r.load('/preload-values/custom-class');
 
-		assert.equal(await title(), '42');
+		assert.equal(await r.text('h1'), '42');
 
-		await start();
-		assert.equal(await title(), '42');
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), '42');
 	});
 
 	it('sets preloading true when appropriate', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a[href="slow-preload"]');
+		await r.page.click('a[href="slow-preload"]');
 
-		assert.ok(await page.evaluate(() => !!document.querySelector('progress')));
+		assert.ok(await r.page.evaluate(() => !!document.querySelector('progress')));
 
-		await page.evaluate(() => fulfil());
-		assert.ok(await page.evaluate(() => !document.querySelector('progress')));
+		await r.page.evaluate(() => fulfil());
+		assert.ok(await r.page.evaluate(() => !document.querySelector('progress')));
 	});
 
 	it('runs preload in root component', async () => {
-		await page.goto(`${base}/preload-root`);
-		assert.equal(await title(), 'root preload function ran: true');
+		await r.load('/preload-root');
+		assert.equal(await r.text('h1'), 'root preload function ran: true');
 	});
 
 	it('cancels navigation if subsequent navigation occurs during preload', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.click('a[href="slow-preload"]');
-		await wait(100);
-		await page.click('a[href="foo"]');
+		await r.page.click('a[href="slow-preload"]');
+		await r.wait();
+		await r.page.click('a[href="foo"]');
 
-		assert.equal(page.url(), `${base}/foo`);
-		assert.equal(await title(), 'foo');
+		assert.equal(r.page.url(), `${r.base}/foo`);
+		assert.equal(await r.text('h1'), 'foo');
 
-		await page.evaluate(() => fulfil());
-		await wait(100);
-		assert.equal(page.url(), `${base}/foo`);
-		assert.equal(await title(), 'foo');
+		await r.page.evaluate(() => fulfil());
+		await r.wait();
+		assert.equal(r.page.url(), `${r.base}/foo`);
+		assert.equal(await r.text('h1'), 'foo');
 	});
 
 	it('navigates to prefetched urls', async () => {
-		await page.goto(base);
-		await start();
-		await prefetchRoutes();
+		await r.load('/');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
 
-		await page.hover('a[href="prefetch/qwe"]');
-		await wait(100);
-		await page.hover('a[href="prefetch/xyz"]');
-		await wait(100);
+		await r.page.hover('a[href="prefetch/qwe"]');
+		await r.wait(50);
+		await r.page.hover('a[href="prefetch/xyz"]');
+		await r.wait(50);
 
-		await page.click('a[href="prefetch/qwe"]');
-		await wait(50);
+		await r.page.click('a[href="prefetch/qwe"]');
+		await r.wait();
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'qwe'
 		);
 
-		await page.goto(`${base}/prefetch`);
-		await wait(50);
+		await r.load('/prefetch');
 
 		assert.equal(
-			await title(),
+			await r.text('h1'),
 			'prefetch'
 		);
+	});
+
+	it('survives the tests with no server errors', () => {
+		assert.deepEqual(r.errors, []);
 	});
 });
