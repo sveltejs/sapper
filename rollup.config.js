@@ -1,5 +1,5 @@
 import sucrase from 'rollup-plugin-sucrase';
-import string from 'rollup-plugin-string';
+import { string } from 'rollup-plugin-string';
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
