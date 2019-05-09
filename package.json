@@ -81,7 +81,7 @@
     "express"
   ],
   "author": "Rich Harris",
-  "license": "LIL",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/sveltejs/sapper/issues"
   },
