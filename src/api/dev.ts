@@ -326,19 +326,22 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
+				// TODO should be more explicit that to_json has effects
+				const build_info = result.to_json(manifest_data, this.dirs);
+
 				fs.writeFileSync(
 					path.join(dest, 'build.json'),
 
-					// TODO should be more explicit that to_json has effects
-					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+					JSON.stringify(build_info, null, '  ')
 				);
 
-				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
+				const js_files = result.chunks.map(chunk => chunk.file);
 
 				create_serviceworker_manifest({
 					manifest_data,
 					output,
-					client_files,
+					js_files,
+					css_files: build_info.css,
 					static_files
 				});
 

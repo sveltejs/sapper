@@ -27,13 +27,15 @@ export interface CompileResult {
 	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
 }
 
+export type CssBuildInfo = {
+	main: string | null,
+	chunks: Record<string, string[]>
+}
+
 export type BuildInfo = {
 	bundler: string;
 	shimport: string;
 	assets: Record<string, string>;
 	legacy_assets?: Record<string, string>;
-	css: {
-		main: string | null,
-		chunks: Record<string, string[]>
-	}
+	css: CssBuildInfo
 }
