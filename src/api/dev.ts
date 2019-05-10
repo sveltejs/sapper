@@ -206,14 +206,18 @@ class Watcher extends EventEmitter {
 						});
 					}
 				}
-			),
-
-			fs.watch(`${src}/template.html`, () => {
-				this.dev_server.send({
-					action: 'reload'
-				});
-			})
+			)
 		);
+
+		if (this.live) {
+			this.filewatchers.push(
+				fs.watch(`${src}/template.html`, () => {
+					this.dev_server.send({
+						action: 'reload'
+					});
+				})
+			);
+		}
 
 		let deferred = new Deferred();
 
@@ -252,7 +256,7 @@ class Watcher extends EventEmitter {
 									this.dev_server.send({
 										status: 'completed'
 									});
-								} else {
+								} else if (this.live) {
 									this.dev_server.send({
 										action: 'reload'
 									});
