@@ -97,7 +97,7 @@ This file is a template for responses from the server. Sapper will inject conten
 
 ### src/routes
 
-This is the meat of your app — the pages and server routes. See the section on [routing](docs#routing) for the juicy details.
+This is the meat of your app — the pages and server routes. See the section on [routing](docs#Routing) for the juicy details.
 
 
 ### static
