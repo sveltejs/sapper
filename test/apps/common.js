@@ -2,11 +2,12 @@ const { NODE_ENV, PORT } = process.env;
 
 export const dev = NODE_ENV === 'development';
 
-export function start(app) {
+export function start(server) {
 	const port = parseInt(PORT) || 0;
 
-	app.listen(port, () => {
-		const address = app.server.address();
+	server.listen(port, () => {
+		server = server.server || server;
+		const address = server.address();
 
 		process.env.PORT = address.port;
 

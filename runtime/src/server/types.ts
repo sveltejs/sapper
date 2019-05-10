@@ -57,7 +57,7 @@ export interface Req extends ClientRequest {
 	method: string;
 	path: string;
 	params: Record<string, string>;
-	query: Record<string, string>;
+	query: Record<string, string | string[]>;
 	headers: Record<string, string>;
 }
 

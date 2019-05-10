@@ -1,11 +1,10 @@
 import fs from 'fs';
-import path from 'path';
+import querystring from 'querystring';
 import sirv from 'sirv';
 import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { Handler, Req, Res, MiddlewareOptions } from '../types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
-import { lookup } from './mime';
 
 export default function middleware(opts: MiddlewareOptions = {}) {
 	const { session, ignore } = opts;
@@ -32,7 +31,10 @@ export default function middleware(opts: MiddlewareOptions = {}) {
 			maxAge: 300
 		}),
 
-		(req: Req, res: Res, next: () => void) => {
+		function condition_request(req: Req, res: Res, next: () => void) {
+			const qi = req.url.indexOf('?');
+			req.query = ~qi ? querystring.parse(req.url.slice(qi + 1)) : {}
+
 			if (req.baseUrl === undefined) {
 				let originalUrl = req.originalUrl || req.url;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
@@ -60,21 +62,6 @@ export default function middleware(opts: MiddlewareOptions = {}) {
 
 			next();
 		},
-
-		fs.existsSync(path.join(build_dir, 'service-worker.js')) && serve({
-			pathname: '/service-worker.js',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
-		fs.existsSync(path.join(build_dir, 'service-worker.js.map')) && serve({
-			pathname: '/service-worker.js.map',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
-		serve({
-			prefix: '/client/',
-			cache_control: dev ? 'no-cache' : 'max-age=31536000, immutable'
-		}),
 
 		get_server_route_handler(manifest.server_routes),
 
@@ -109,42 +96,6 @@ export function should_ignore(uri: string, val: any) {
 	if (val instanceof RegExp) return val.test(uri);
 	if (typeof val === 'function') return val(uri);
 	return uri.startsWith(val.charCodeAt(0) === 47 ? val : `/${val}`);
-}
-
-export function serve({ prefix, pathname, cache_control }: {
-	prefix?: string,
-	pathname?: string,
-	cache_control: string
-}) {
-	const filter = pathname
-		? (req: Req) => req.path === pathname
-		: (req: Req) => req.path.startsWith(prefix);
-
-	const cache: Map<string, Buffer> = new Map();
-
-	const read = dev
-		? (file: string) => fs.readFileSync(path.resolve(build_dir, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(build_dir, file)))).get(file)
-
-	return (req: Req, res: Res, next: () => void) => {
-		if (filter(req)) {
-			const type = lookup(req.path);
-
-			try {
-				const file = decodeURIComponent(req.path.slice(1));
-				const data = read(file);
-
-				res.setHeader('Content-Type', type);
-				res.setHeader('Cache-Control', cache_control);
-				res.end(data);
-			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
-			}
-		} else {
-			next();
-		}
-	};
 }
 
 function noop(){}
