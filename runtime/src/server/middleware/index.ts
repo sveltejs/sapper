@@ -6,7 +6,6 @@ import { Handler, Req, Res, MiddlewareOptions } from '../types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
-import { stringify } from 'querystring';
 
 export default function middleware(opts: MiddlewareOptions = {}) {
 	const { session, ignore } = opts;
@@ -14,7 +13,7 @@ export default function middleware(opts: MiddlewareOptions = {}) {
 	let emitted_basepath = false;
 
 	return compose_handlers(ignore, [
-		sirv('static', {
+		fs.existsSync('static') && sirv('static', {
 			dev,
 			setHeaders: opts.static && opts.static.headers && ((res: Response, pathname: string, stats: fs.Stats) => {
 				const headers = opts.static.headers(pathname, stats);
