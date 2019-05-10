@@ -18,8 +18,8 @@ describe('with-sourcemaps-webpack', function() {
 		assert.equal(shell.filter(_ => _.endsWith('.map')).length, 0,
 			'sourcemap files are not cached in SW');
 
-		const clientShellDir = path.resolve(`${__dirname}/__sapper__/build`, path.dirname(shell[0]));
-		const sourcemapFiles = fs.readdirSync(clientShellDir).filter(_ => _.endsWith('.map'));
-		assert.ok(sourcemapFiles.length > 0, 'sourcemap files exist');
+		const client_shell_dir = path.resolve(`${__dirname}/__sapper__/build/client`, path.dirname(shell[0]));
+		const sourcemap_files = fs.readdirSync(client_shell_dir).filter(_ => _.endsWith('.map'));
+		assert.ok(sourcemap_files.length > 0, 'sourcemap files exist');
 	});
 });

@@ -13,8 +13,8 @@ describe('export', function() {
 	it('crawls a site', () => {
 		const files = walk(`${__dirname}/__sapper__/export`);
 
-		const client_assets = files.filter(file => file.startsWith('client/'));
-		const non_client_assets = files.filter(file => !file.startsWith('client/')).sort();
+		const client_assets = files.filter(file => file.startsWith('sapper/'));
+		const non_client_assets = files.filter(file => !file.startsWith('sapper/')).sort();
 
 		assert.ok(client_assets.length > 0);
 

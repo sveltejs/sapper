@@ -140,7 +140,7 @@ describe('basics', function() {
 		);
 
 		// TODO preload more than just the entry point
-		const regex = /<\/client\/client\.\w+\.js>;rel="modulepreload"/;
+		const regex = /<\/sapper\/client\.\w+\.js>;rel="modulepreload"/;
 		const link = <string>headers['link'];
 
 		assert.ok(regex.test(link), link);

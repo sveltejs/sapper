@@ -1,4 +1,4 @@
-import * as http from 'http';
+import http from 'http';
 import middleware from './middleware/index';
 import { StartOptions, MiddlewareOptions, Handler } from './types';
 

@@ -40,8 +40,8 @@ describe('with-basepath', function() {
 	it('crawls an exported site with basepath', () => {
 		const files = walk(`${__dirname}/__sapper__/export`);
 
-		const client_assets = files.filter(file => file.startsWith('custom-basepath/client/'));
-		const non_client_assets = files.filter(file => !file.startsWith('custom-basepath/client/')).sort();
+		const client_assets = files.filter(file => file.startsWith('custom-basepath/sapper/'));
+		const non_client_assets = files.filter(file => !file.startsWith('custom-basepath/sapper/')).sort();
 
 		assert.ok(client_assets.length > 0);
 
