@@ -26,6 +26,15 @@ export function get_page_handler(
 	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;
 
+	function bail(req: Req, res: Res, err: Error) {
+		console.error(err);
+
+		const message = dev ? escape_html(err.message) : 'Internal server error';
+
+		res.statusCode = 500;
+		res.end(`<pre>${message}</pre>`);
+	}
+
 	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
 		handle_page({
 			pattern: null,
@@ -169,6 +178,10 @@ export function get_page_handler(
 
 			preloaded = await Promise.all(toPreload);
 		} catch (err) {
+			if (error) {
+				return bail(req, res, err)
+			}
+
 			preload_error = { statusCode: 500, message: err };
 			preloaded = []; // appease TypeScript
 		}
@@ -314,11 +327,8 @@ export function get_page_handler(
 			res.statusCode = status;
 			res.end(body);
 		} catch(err) {
-			console.log(err);
 			if (error) {
-				// we encountered an error while rendering the error page — oops
-				res.statusCode = 500;
-				res.end(`<pre>${escape_html(err.message)}</pre>`);
+				bail(req, res, err)
 			} else {
 				handle_error(req, res, 500, err);
 			}
