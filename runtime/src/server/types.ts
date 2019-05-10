@@ -1,3 +1,4 @@
+import { Stats } from 'fs';
 import { ClientRequest, ServerResponse } from 'http';
 
 export type ServerRoute = {
@@ -36,6 +37,18 @@ export type Props = {
 	};
 	[key: string]: any;
 };
+
+export interface MiddlewareOptions {
+	static?: {
+		headers?: (pathname: string, stats: Stats) => Record<string, string>
+	},
+	session?: (req: Req, res: Res) => any,
+	ignore?: any
+}
+
+export interface StartOptions extends MiddlewareOptions {
+	port?: number;
+}
 
 export interface Req extends ClientRequest {
 	url: string;

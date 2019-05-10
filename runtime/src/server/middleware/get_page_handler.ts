@@ -5,7 +5,7 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { Manifest, Page, Req, Res } from './types';
+import { Manifest, Page, Req, Res } from '../types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
@@ -21,9 +21,8 @@ export function get_page_handler(
 		? () => read_template(src_dir)
 		: (str => () => str)(read_template(build_dir));
 
-	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
+	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker/service-worker.js'));
 
-	const { server_routes, pages } = manifest;
 	const error_route = manifest.error;
 
 	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
@@ -63,7 +62,7 @@ export function get_page_handler(
 			// TODO add dependencies and CSS
 			const link = preloaded_chunks
 				.filter(file => file && !file.match(/\.map$/))
-				.map(file => `<${req.baseUrl}/client/${file}>;rel="modulepreload"`)
+				.map(file => `<${req.baseUrl}/sapper/${file}>;rel="modulepreload"`)
 				.join(', ');
 
 			res.setHeader('Link', link);
@@ -72,7 +71,7 @@ export function get_page_handler(
 				.filter(file => file && !file.match(/\.map$/))
 				.map((file) => {
 					const as = /\.css$/.test(file) ? 'style' : 'script';
-					return `<${req.baseUrl}/client/${file}>;rel="preload";as="${as}"`;
+					return `<${req.baseUrl}/sapper/${file}>;rel="preload";as="${as}"`;
 				})
 				.join(', ');
 
@@ -263,14 +262,14 @@ export function get_page_handler(
 			}
 
 			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
-			const main = `${req.baseUrl}/client/${file}`;
+			const main = `${req.baseUrl}/sapper/${file}`;
 
 			if (build_info.bundler === 'rollup') {
 				if (build_info.legacy_assets) {
-					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
-					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
+					const legacy_main = `${req.baseUrl}/sapper/legacy/${build_info.legacy_assets.main}`;
+					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/sapper/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
 				} else {
-					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
+					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/sapper/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
 				script += `</script><script src="${main}">`;
@@ -295,7 +294,7 @@ export function get_page_handler(
 				});
 
 				styles = Array.from(css_chunks)
-					.map(href => `<link rel="stylesheet" href="client/${href}">`)
+					.map(href => `<link rel="stylesheet" href="sapper/${href}">`)
 					.join('')
 			} else {
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');
@@ -327,12 +326,12 @@ export function get_page_handler(
 
 	return function find_route(req: Req, res: Res, next: () => void) {
 		if (req.path === '/service-worker-index.html') {
-			const homePage = pages.find(page => page.pattern.test('/'));
+			const homePage = manifest.pages.find(page => page.pattern.test('/'));
 			handle_page(homePage, req, res);
 			return;
 		}
 
-		for (const page of pages) {
+		for (const page of manifest.pages) {
 			if (page.pattern.test(req.path)) {
 				handle_page(page, req, res);
 				return;

@@ -336,7 +336,7 @@ export async function hydrate_target(target: Target): Promise<{
 }
 
 function load_css(chunk: string) {
-	const href = `client/${chunk}`;
+	const href = `sapper/${chunk}`;
 	if (document.querySelector(`link[href="${href}"]`)) return;
 
 	return new Promise((fulfil, reject) => {

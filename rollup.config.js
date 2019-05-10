@@ -24,8 +24,9 @@ function template(kind, external) {
 		external,
 		plugins: [
 			resolve({
-				extensions: ['.mjs', '.js', '.ts']
+				extensions: ['.mjs', '.js', '.json', '.ts']
 			}),
+			json(),
 			commonjs(),
 			string({
 				include: '**/*.md'

@@ -116,7 +116,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 
 	if (!client_result.css_files) return; // Rollup-only for now
 
-	let asset_dir = `${dirs.dest}/client`;
+	let asset_dir = `${dirs.dest}/client/sapper`;
 	if (process.env.SAPPER_LEGACY_BUILD) asset_dir += '/legacy';
 
 	const unclaimed = new Set(client_result.css_files.map(x => x.id));
@@ -238,7 +238,7 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		map.file = output_file_name;
 		map.sources = map.sources.map(source => path.relative(asset_dir, source));
 
-		fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
+		fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=sapper/${output_file_name}.map */`);
 		fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
 
 		result.main = output_file_name;

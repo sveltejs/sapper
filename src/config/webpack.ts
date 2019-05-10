@@ -12,10 +12,10 @@ export default {
 
 		output: () => {
 			return {
-				path: `${dest}/client`,
+				path: `${dest}/client/sapper`,
 				filename: '[hash]/[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
-				publicPath: `client/`
+				publicPath: `sapper/`
 			};
 		}
 	},
@@ -46,7 +46,7 @@ export default {
 
 		output: () => {
 			return {
-				path: dest,
+				path: `${dest}/service-worker`,
 				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js'
 			}

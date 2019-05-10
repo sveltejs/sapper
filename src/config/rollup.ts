@@ -9,7 +9,7 @@ export default {
 		},
 
 		output: () => {
-			let dir = `${dest}/client`;
+			let dir = `${dest}/client/sapper`;
 			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
 
 			return {
@@ -45,7 +45,7 @@ export default {
 
 		output: () => {
 			return {
-				file: `${dest}/service-worker.js`,
+				file: `${dest}/service-worker/service-worker.js`,
 				format: 'iife'
 			}
 		}

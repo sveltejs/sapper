@@ -1,23 +1,41 @@
 import fs from 'fs';
 import path from 'path';
+import sirv from 'sirv';
 import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
-import { Handler, Req, Res } from './types';
+import { Handler, Req, Res, MiddlewareOptions } from '../types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
+import { stringify } from 'querystring';
 
-export default function middleware(opts: {
-	session?: (req: Req, res: Res) => any,
-	ignore?: any
-} = {}) {
+export default function middleware(opts: MiddlewareOptions = {}) {
 	const { session, ignore } = opts;
 
 	let emitted_basepath = false;
 
 	return compose_handlers(ignore, [
+		sirv('static', {
+			dev,
+			setHeaders: opts.static && opts.static.headers && ((res: Response, pathname: string, stats: fs.Stats) => {
+				const headers = opts.static.headers(pathname, stats);
+				for (const k in headers) res.setHeader(k, headers[k]);
+			})
+		}),
+
+		sirv(`${build_dir}/client`, {
+			dev,
+			maxAge: 31536000,
+			immutable: true
+		}),
+
+		sirv(`${build_dir}/service-worker`, {
+			dev,
+			maxAge: 300
+		}),
+
 		(req: Req, res: Res, next: () => void) => {
 			if (req.baseUrl === undefined) {
-				let { originalUrl } = req;
+				let originalUrl = req.originalUrl || req.url;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
 					originalUrl += '/';
 				}

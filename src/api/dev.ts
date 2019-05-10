@@ -333,7 +333,7 @@ class Watcher extends EventEmitter {
 					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
 				);
 
-				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
+				const client_files = result.chunks.map(chunk => `sapper/${chunk.file}`);
 
 				create_serviceworker_manifest({
 					manifest_data,
