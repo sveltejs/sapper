@@ -23,7 +23,8 @@ describe('layout', function() {
 		assert.deepEqual(text1.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
-			'click me',
+			'goto foo/bar/qux',
+			'goto foo/abc/def',
 			'child segment: baz'
 		]);
 
@@ -32,7 +33,8 @@ describe('layout', function() {
 		assert.deepEqual(text2.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: baz 1',
-			'click me',
+			'goto foo/bar/qux',
+			'goto foo/abc/def',
 			'child segment: baz'
 		]);
 
@@ -43,8 +45,21 @@ describe('layout', function() {
 		assert.deepEqual(text3.split('\n').map(str => str.trim()).filter(Boolean), [
 			'y: bar 1',
 			'z: qux 2',
-			'click me',
+			'goto foo/bar/qux',
+			'goto foo/abc/def',
 			'child segment: qux'
+		]);
+
+		await r.page.click('[href="foo/abc/def"]');
+		await r.wait();
+
+		const text4 = await r.text('#sapper');
+		assert.deepEqual(text4.split('\n').map(str => str.trim()).filter(Boolean), [
+			'y: abc 2',
+			'z: def 3',
+			'goto foo/bar/qux',
+			'goto foo/abc/def',
+			'child segment: def'
 		]);
 	});
 

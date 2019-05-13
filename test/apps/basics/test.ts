@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as http from 'http';
-import { build } from '../../../api';
-import { AppRunner } from '../AppRunner';
+import {build} from '../../../api';
+import {AppRunner} from '../AppRunner';
 
 declare let deleted: { id: number };
 declare let el: any;
@@ -267,7 +267,6 @@ describe('basics', function() {
 		await r.sapper.start();
 
 		assert.equal(await r.text('h1'), 'foo');
-
 		await r.page.click('[href="dirs/bar"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'bar');
@@ -278,11 +277,26 @@ describe('basics', function() {
 		await r.sapper.start();
 
 		assert.equal(await r.text('h1'), 'abc,xyz');
-
+		await r.page.click('[href="xyz/abc/def/ghi"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'xyz,abc,def,ghi');
+		assert.equal(await r.text('h2'), 'xyz,abc,def,ghi');
+		await r.page.click('[href="xyz/abc/def"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'xyz,abc,def');
+		assert.equal(await r.text('h2'), 'xyz,abc,def');
+		await r.page.click('[href="xyz/abc/def"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'xyz,abc,def');
+		assert.equal(await r.text('h2'), 'xyz,abc,def');
+		await r.page.click('[href="xyz/abc"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'xyz,abc');
+		assert.equal(await r.text('h2'), 'xyz,abc');
 		await r.page.click('[href="xyz/abc/deep"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'xyz,abc');
-
+		assert.equal(await r.text('h2'), 'xyz,abc');
 		await r.page.click('[href="xyz/abc/qwe/deep.json"]');
 		await r.wait();
 		assert.equal(

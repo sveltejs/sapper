@@ -16,4 +16,5 @@
 </script>
 
 <span>z: {$page.params.z} {count}</span>
-<a href="foo/bar/qux">click me</a>
+<a href="foo/bar/qux">goto foo/bar/qux</a>
+<a href="foo/abc/def">goto foo/abc/def</a>
