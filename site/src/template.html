@@ -19,7 +19,7 @@
 	<!-- Sapper generates a <style> tag containing critical CSS
 	     for the current page. CSS for the rest of the app is
 	     lazily loaded when it precaches secondary pages -->
-	%sapper.styles%
+	<style>%sapper.styles%</style>
 
 	<style>
 		.hljs, .hljs-subst { color: #333; }
@@ -37,7 +37,7 @@
 
 	<!-- This contains the contents of the <svelte:head> component, if
 	     the current page has one -->
-	%sapper.head%
+	<noscript id='sapper-head-start'></noscript>%sapper.head%<noscript id='sapper-head-end'></noscript>
 </head>
 <body>
 	<!-- The application will be rendered inside this element,

@@ -311,7 +311,7 @@ export function get_page_handler(
 					.map(href => `<link rel="stylesheet" href="client/${href}">`)
 					.join('')
 			} else {
-				styles = (css && css.code ? `<style>${css.code}</style>` : '');
+				styles = (css && css.code ? css.code : '');
 			}
 
 			// users can set a CSP nonce using res.locals.nonce
@@ -321,7 +321,7 @@ export function get_page_handler(
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
 				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
-				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
+				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles);
 
 			res.statusCode = status;
