@@ -74,4 +74,4 @@ npm run test
 
 ## License
 
-[LIL](LICENSE)
+[MIT](LICENSE)
