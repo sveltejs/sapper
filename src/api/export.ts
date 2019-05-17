@@ -173,7 +173,7 @@ async function _export({
 					let match;
 					let pattern = /<a ([\s\S]+?)>/gm;
 
-					const promises = [];
+					const urls = [];
 
 					while (match = pattern.exec(cleaned)) {
 						const attrs = match[1];
@@ -183,12 +183,14 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								promises.push(handle(url));
+								urls.push(url);
 							}
 						}
 					}
 
-					await Promise.all(promises);
+					for (let i = 0; i < urls.length; i += concurrent) {
+						await Promise.all(urls.slice(i, i + concurrent).map(handle));
+					}
 				}
 			}
 		}
