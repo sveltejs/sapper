@@ -70,7 +70,7 @@ Dynamic parameters are encoded using `[brackets]`. For example, here's how you c
 </div>
 ```
 
-> See the section on [preloading](docs#preloading) for more info about `preload` and `this.fetch`
+> See the section on [preloading](docs#Preloading) for more info about `preload` and `this.fetch`
 
 
 ### Server routes

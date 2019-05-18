@@ -24,9 +24,9 @@ If you take a look inside the [sapper-template](https://github.com/sveltejs/sapp
 
 When you first run Sapper, it will create an additional `__sapper__` directory containing generated files.
 
-You'll notice a few extra files and a `cypress` directory which relates to [testing](docs#testing) — we don't need to worry about those right now.
+You'll notice a few extra files and a `cypress` directory which relates to [testing](docs#Testing) — we don't need to worry about those right now.
 
-> You *can* create these files from scratch, but it's much better to use the template. See [getting started](docs#getting-started) for instructions on how to easily clone it
+> You *can* create these files from scratch, but it's much better to use the template. See [getting started](docs#Getting_started) for instructions on how to easily clone it
 
 
 ### package.json
@@ -35,9 +35,9 @@ Your package.json contains your app's dependencies and defines a number of scrip
 
 * `npm run dev` — start the app in development mode, and watch source files for changes
 * `npm run build` — build the app in production mode
-* `npm run export` — bake out a static version, if applicable (see [exporting](docs#exporting))
+* `npm run export` — bake out a static version, if applicable (see [exporting](docs#Exporting))
 * `npm start` — start the app in production mode after you've built it
-* `npm test` — run the tests (see [testing](docs#testing))
+* `npm test` — run the tests (see [testing](docs#Testing))
 
 
 ### src
@@ -56,7 +56,7 @@ sapper.start({
 });
 ```
 
-In many cases, that's the entirety of your entry module, though you can do as much or as little here as you wish. See the [client API](docs#client-api) section for more information on functions you can import.
+In many cases, that's the entirety of your entry module, though you can do as much or as little here as you wish. See the [client API](docs#Client_API) section for more information on functions you can import.
 
 
 #### src/server.js
@@ -88,7 +88,7 @@ Because every app needs a slightly different service worker (sometimes it's appr
 
 This file is a template for responses from the server. Sapper will inject content that replaces the following tags:
 
-* `%sapper.base%` — a `<base>` element (see [base URLs](docs#base-urls))
+* `%sapper.base%` — a `<base>` element (see [base URLs](docs#Base_URLs))
 * `%sapper.styles%` — critical CSS for the page being requested
 * `%sapper.head%` — HTML representing page-specific `<head>` contents, like `<title>`
 * `%sapper.html%` — HTML representing the body of the page being rendered

@@ -32,7 +32,7 @@ For web developers, the stakes are generally lower than for combat engineers. Bu
 [Next.js](https://github.com/zeit/next.js) is a React framework from [Zeit](https://zeit.co), and is the inspiration for Sapper. There are a few notable differences, however:
 
 * Sapper is powered by Svelte instead of React, so it's faster and your apps are smaller
-* Instead of route masking, we encode route parameters in filenames (see the [routing](docs#routing) section below)
+* Instead of route masking, we encode route parameters in filenames (see the [routing](docs#Routing) section below)
 * As well as *pages*, you can create *server routes* in your `src/routes` directory. This makes it very easy to, for example, add a JSON API such as the one powering this very page (try visiting [/docs.json](/docs.json))
 * Links are just `<a>` elements, rather than framework-specific `<Link>` components. That means, for example, that [this link right here](/), despite being inside a blob of markdown, works with the router as you'd expect
 

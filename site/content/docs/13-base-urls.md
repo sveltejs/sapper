@@ -21,7 +21,7 @@ express() // or Polka, or a similar framework
 
 Sapper will detect the base path and configure both the server-side and client-side routers accordingly.
 
-If you're [exporting](docs#exporting) your app, you will need to tell the exporter where to begin crawling:
+If you're [exporting](docs#Exporting) your app, you will need to tell the exporter where to begin crawling:
 
 ```bash
 sapper export --basepath my-base-path

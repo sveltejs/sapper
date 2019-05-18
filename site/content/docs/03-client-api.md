@@ -36,7 +36,7 @@ Programmatically navigates to the given `href`. If the destination is a Sapper r
 
 * `href` — the page to prefetch
 
-Programmatically prefetches the given page, which means a) ensuring that the code for the page is loaded, and b) calling the page's `preload` method with the appropriate options. This is the same behaviour that Sapper triggers when the user taps or mouses over an `<a>` element with [rel=prefetch](docs#prefetching).
+Programmatically prefetches the given page, which means a) ensuring that the code for the page is loaded, and b) calling the page's `preload` method with the appropriate options. This is the same behaviour that Sapper triggers when the user taps or mouses over an `<a>` element with [rel=prefetch](docs#Prefetching).
 
 
 
