@@ -132,25 +132,31 @@ async function _export({
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
 
-		const timeout_deferred = new Deferred();
-		const the_timeout = setTimeout(() => {
-			timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
-		}, timeout);
+		const r = await q.add(async () => {
+			const timeout_deferred = new Deferred();
+			const the_timeout = setTimeout(() => {
+				timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
+			}, timeout);
 
-		const r = await Promise.race([
-			q.add(() => fetch(url.href, {
-				redirect: 'manual'
-			})),
-			timeout_deferred.promise
-		]);
+			const r = await Promise.race([
+				fetch(url.href, {
+					redirect: 'manual'
+				}),
+				timeout_deferred.promise
+			]);
 
-		clearTimeout(the_timeout); // prevent it hanging at the end
+			clearTimeout(the_timeout); // prevent it hanging at the end
+
+			return r;
+		}) as Response;
 
 		let type = r.headers.get('Content-Type');
 
 		let body = await r.text();
 
 		const range = ~~(r.status / 100);
+
+		let tasks = [];
 
 		if (range === 2) {
 			if (type === 'text/html') {
@@ -173,8 +179,6 @@ async function _export({
 					let match;
 					let pattern = /<a ([\s\S]+?)>/gm;
 
-					let promise;
-
 					while (match = pattern.exec(cleaned)) {
 						const attrs = match[1];
 						const href = get_href(attrs);
@@ -183,12 +187,10 @@ async function _export({
 							const url = resolve(base.href, href);
 
 							if (url.protocol === protocol && url.host === host) {
-								promise = handle(url);
+								tasks.push(handle(url));
 							}
 						}
 					}
-
-					await promise;
 				}
 			}
 		}
@@ -199,10 +201,12 @@ async function _export({
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
 
-			await handle(resolve(root.href, location));
+			tasks.push(handle(resolve(root.href, location)));
 		}
 
 		save(pathname, r.status, type, body);
+
+		await Promise.all(tasks);
 	}
 
 	try {
