@@ -267,48 +267,54 @@ class Watcher extends EventEmitter {
 							});
 					};
 
+					const start_server = () => {
+						// we need to give the child process its own DevTools port,
+						// otherwise Node will try to use the parent's (and fail)
+						const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
+						const execArgv = process.execArgv.slice();
+						if (execArgv.some((arg: string) => !!arg.match(debugArgRegex))) {
+							execArgv.push(`--inspect-port=${this.devtools_port}`);
+						}
+
+						this.proc = child_process.fork(`${dest}/server/server.js`, [], {
+							cwd: process.cwd(),
+							env: Object.assign({
+								PORT: this.port
+							}, process.env),
+							stdio: ['ipc'],
+							execArgv
+						});
+
+						this.proc.stdout.on('data', chunk => {
+							this.emit('stdout', chunk);
+						});
+
+						this.proc.stderr.on('data', chunk => {
+							this.emit('stderr', chunk);
+						});
+
+						this.proc.on('message', message => {
+							if (message.__sapper__ && message.event === 'basepath') {
+								this.emit('basepath', {
+									basepath: message.basepath
+								});
+							}
+						});
+
+						this.proc.on('exit', emitFatal);
+					};
+
 					if (this.proc) {
 						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
-						this.proc.on('exit', restart);
+						this.proc.on('exit', () => {
+							start_server();
+							restart();
+						});
 					} else {
+						start_server();
 						restart();
 					}
-
-					// we need to give the child process its own DevTools port,
-					// otherwise Node will try to use the parent's (and fail)
-					const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
-					const execArgv = process.execArgv.slice();
-					if (execArgv.some((arg: string) => !!arg.match(debugArgRegex))) {
-						execArgv.push(`--inspect-port=${this.devtools_port}`);
-					}
-
-					this.proc = child_process.fork(`${dest}/server/server.js`, [], {
-						cwd: process.cwd(),
-						env: Object.assign({
-							PORT: this.port
-						}, process.env),
-						stdio: ['ipc'],
-						execArgv
-					});
-
-					this.proc.stdout.on('data', chunk => {
-						this.emit('stdout', chunk);
-					});
-
-					this.proc.stderr.on('data', chunk => {
-						this.emit('stderr', chunk);
-					});
-
-					this.proc.on('message', message => {
-						if (message.__sapper__ && message.event === 'basepath') {
-							this.emit('basepath', {
-								basepath: message.basepath
-							});
-						}
-					});
-
-					this.proc.on('exit', emitFatal);
 				});
 			}
 		});
