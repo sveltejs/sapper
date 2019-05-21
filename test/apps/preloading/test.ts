@@ -109,4 +109,23 @@ describe('preloading', function() {
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});
+
+	it('re-runs preload when page.query changes', async () => {
+		await r.load('/echo?foo=1');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
+
+		assert.equal(
+			await r.text('pre'),
+			`{"foo":"1"}`
+		);
+
+		await r.page.click('a[href="echo?foo=2"]');
+		await r.wait();
+
+		assert.equal(
+			await r.text('pre'),
+			`{"foo":"2"}`
+		);
+	});
 });
