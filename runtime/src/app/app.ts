@@ -254,6 +254,18 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	session_dirty = false;
 }
 
+function part_changed(i, segment, match) {
+	const previous = current_branch[i];
+
+	if (!previous) return false;
+	if (segment !== previous.segment) return true;
+	if (previous.match) {
+		if (JSON.stringify(previous.match.slice(1, i + 2)) !== JSON.stringify(match.slice(1, i + 2))) {
+			return true;
+		}
+	}
+}
+
 export async function hydrate_target(target: Target): Promise<{
 	redirect?: Redirect;
 	props?: any;
@@ -292,22 +304,12 @@ export async function hydrate_target(target: Target): Promise<{
 	let l = 1;
 
 	try {
-		const { pattern } = route;
-		const match = pattern.exec(page.path);
+		const match = route.pattern.exec(page.path);
 		let segment_dirty = false;
 		branch = await Promise.all(route.parts.map(async (part, i) => {
 			const segment = segments[i];
 
-			if (
-				current_branch[i]
-				&& (
-					current_branch[i].segment !== segment
-					|| (
-						current_branch[i].match
-						&& JSON.stringify(current_branch[i].match.slice(1, i+2)) !== JSON.stringify(match.slice(1, i+2))
-					)
-				)
-			) segment_dirty = true;
+			if (part_changed(i, segment, match)) segment_dirty = true;
 
 			props.segments[l] = segments[i + 1]; // TODO make this less confusing
 			if (!part) return { segment };
