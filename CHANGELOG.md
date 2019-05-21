@@ -1,5 +1,17 @@
 # sapper changelog
 
+## 0.27.1
+
+* Prevent infinite loop if `preload` errors ([#677](https://github.com/sveltejs/sapper/pull/677))
+* Allow disabling of live reload ([#683](https://github.com/sveltejs/sapper/pull/683))
+* Let browser handle initial scroll ([#331](https://github.com/sveltejs/sapper/issues/331))
+* Allow custom route file extensions via `--ext` ([#632](https://github.com/sveltejs/sapper/pull/632))
+* Wait for server to restart before attaching debugger ([#694](https://github.com/sveltejs/sapper/pull/694))
+* Fix export queue ([#698](https://github.com/sveltejs/sapper/pull/698))
+* Rerun `preload` functions when query changes ([#701](https://github.com/sveltejs/sapper/issues/701))
+* Navigate when spread route changes ([#688](https://github.com/sveltejs/sapper/issues/688))
+
+
 ## 0.27.0
 
 * Change license from LIL to MIT ([#652](https://github.com/sveltejs/sapper/pull/652))
