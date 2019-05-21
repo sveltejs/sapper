@@ -22,6 +22,7 @@ let root_component: Component;
 let current_token: {};
 let root_preloaded: Promise<any>;
 let current_branch = [];
+let current_query = '{}';
 
 const stores = {
 	page: writable({}),
@@ -250,11 +251,17 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 	}
 
 	current_branch = branch;
+	current_query = JSON.stringify(page.query);
 	ready = true;
 	session_dirty = false;
 }
 
-function part_changed(i, segment, match) {
+function part_changed(i, segment, match, stringified_query) {
+	// TODO only check query string changes for preload functions
+	// that do in fact depend on it (using static analysis or
+	// runtime instrumentation)
+	if (stringified_query !== current_query) return true;
+
 	const previous = current_branch[i];
 
 	if (!previous) return false;
@@ -304,12 +311,15 @@ export async function hydrate_target(target: Target): Promise<{
 	let l = 1;
 
 	try {
+		const stringified_query = JSON.stringify(page.query);
 		const match = route.pattern.exec(page.path);
+
 		let segment_dirty = false;
+
 		branch = await Promise.all(route.parts.map(async (part, i) => {
 			const segment = segments[i];
 
-			if (part_changed(i, segment, match)) segment_dirty = true;
+			if (part_changed(i, segment, match, stringified_query)) segment_dirty = true;
 
 			props.segments[l] = segments[i + 1]; // TODO make this less confusing
 			if (!part) return { segment };
