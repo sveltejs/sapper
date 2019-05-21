@@ -292,11 +292,22 @@ export async function hydrate_target(target: Target): Promise<{
 	let l = 1;
 
 	try {
+		const { pattern } = route;
+		const match = pattern.exec(page.path);
 		let segment_dirty = false;
 		branch = await Promise.all(route.parts.map(async (part, i) => {
 			const segment = segments[i];
 
-			if (current_branch[i] && current_branch[i].segment !== segment) segment_dirty = true;
+			if (
+				current_branch[i]
+				&& (
+					current_branch[i].segment !== segment
+					|| (
+						current_branch[i].match
+						&& JSON.stringify(current_branch[i].match.slice(1, i+2)) !== JSON.stringify(match.slice(1, i+2))
+					)
+				)
+			) segment_dirty = true;
 
 			props.segments[l] = segments[i + 1]; // TODO make this less confusing
 			if (!part) return { segment };
@@ -324,7 +335,7 @@ export async function hydrate_target(target: Target): Promise<{
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return (props[`level${j}`] = { component, props: preloaded, segment, part: part.i });
+			return (props[`level${j}`] = { component, props: preloaded, segment, match, part: part.i });
 		}));
 	} catch (error) {
 		props.error = error;
