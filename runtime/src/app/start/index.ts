@@ -40,7 +40,7 @@ export default function start(opts: {
 		if (initial_data.error) return handle_error(url);
 
 		const target = select_target(url);
-		if (target) return navigate(target, uid, false, hash);
+		if (target) return navigate(target, uid, true, hash);
 	});
 }
 
