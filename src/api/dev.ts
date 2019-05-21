@@ -28,7 +28,8 @@ type Opts = {
 	hot?: boolean,
 	'devtools-port'?: number,
 	bundler?: 'rollup' | 'webpack',
-	port?: number
+	port?: number,
+	ext: string
 };
 
 export function dev(opts: Opts) {
@@ -47,7 +48,7 @@ class Watcher extends EventEmitter {
 	}
 	port: number;
 	closed: boolean;
-
+	
 	dev_port: number;
 	live: boolean;
 	hot: boolean;
@@ -67,6 +68,7 @@ class Watcher extends EventEmitter {
 		unique_warnings: Set<string>;
 		unique_errors: Set<string>;
 	}
+	ext: string;
 
 	constructor({
 		cwd = '.',
@@ -80,7 +82,8 @@ class Watcher extends EventEmitter {
 		hot,
 		'devtools-port': devtools_port,
 		bundler,
-		port = +process.env.PORT
+		port = +process.env.PORT, 
+		ext
 	}: Opts) {
 		super();
 
@@ -95,7 +98,7 @@ class Watcher extends EventEmitter {
 			output: path.resolve(cwd, output),
 			static: path.resolve(cwd, static_files)
 		};
-
+		this.ext = ext;
 		this.port = port;
 		this.closed = false;
 
@@ -161,7 +164,7 @@ class Watcher extends EventEmitter {
 		let manifest_data: ManifestData;
 
 		try {
-			manifest_data = create_manifest_data(routes);
+			manifest_data = create_manifest_data(routes, this.ext);
 			create_app({
 				bundler: this.bundler,
 				manifest_data,
@@ -189,7 +192,7 @@ class Watcher extends EventEmitter {
 				},
 				() => {
 					try {
-						const new_manifest_data = create_manifest_data(routes);
+						const new_manifest_data = create_manifest_data(routes, this.ext);
 						create_app({
 							bundler: this.bundler,
 							manifest_data, // TODO is this right? not new_manifest_data?

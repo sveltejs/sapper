@@ -31,6 +31,7 @@ prog.command('dev')
 	.option('--static', 'Static files directory', 'static')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
+	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.action(async (opts: {
 		port: number,
 		open: boolean,
@@ -43,7 +44,8 @@ prog.command('dev')
 		routes: string,
 		static: string,
 		output: string,
-		'build-dir': string
+		'build-dir': string,
+		ext: string
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -59,7 +61,8 @@ prog.command('dev')
 				'dev-port': opts['dev-port'],
 				live: opts.live,
 				hot: opts.hot,
-				bundler: opts.bundler
+				bundler: opts.bundler,
+				ext: opts.ext
 			});
 
 			let first = true;
@@ -151,6 +154,7 @@ prog.command('build [dest]')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
+	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -159,12 +163,13 @@ prog.command('build [dest]')
 		cwd: string,
 		src: string,
 		routes: string,
-		output: string
+		output: string,
+		ext: string
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -199,6 +204,7 @@ prog.command('export [dest]')
 	.option('--static', 'Static files directory', 'static')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
+	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -212,11 +218,12 @@ prog.command('export [dest]')
 		static: string,
 		output: string,
 		'build-dir': string,
+		ext: string
 	}) => {
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir']);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -265,7 +272,8 @@ async function _build(
 	src: string,
 	routes: string,
 	output: string,
-	dest: string
+	dest: string,
+	ext: string
 ) {
 	const { build } = await import('./api/build');
 
@@ -276,7 +284,7 @@ async function _build(
 		src,
 		routes,
 		dest,
-
+		ext,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);

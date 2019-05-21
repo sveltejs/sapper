@@ -4,9 +4,10 @@ import svelte from 'svelte/compiler';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
-const component_extensions = ['.svelte', '.html']; // TODO make this configurable (to include e.g. .svelte.md?)
+export default function create_manifest_data(cwd: string, extensions: string = '.svelte .html'): ManifestData {
+	
+	const component_extensions = extensions.split(' ');
 
-export default function create_manifest_data(cwd: string): ManifestData {
 	// TODO remove in a future version
 	if (!fs.existsSync(cwd)) {
 		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);
