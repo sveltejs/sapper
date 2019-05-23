@@ -11,6 +11,7 @@ export type Page = {
 	parts: Array<{
 		name: string;
 		component: Component;
+		file?: string;
 		params?: (match: RegExpMatchArray) => Record<string, string>;
 		preload?: (data: any) => any | Promise<any>;
 	}>

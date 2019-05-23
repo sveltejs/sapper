@@ -23,6 +23,7 @@ export interface CompileResult {
 	chunks: Chunk[];
 	assets: Record<string, string>;
 	css_files: CssFile[];
+	script_preloads: Record<string, string[]>;
 
 	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
 }
@@ -32,6 +33,7 @@ export type BuildInfo = {
 	shimport: string;
 	assets: Record<string, string>;
 	legacy_assets?: Record<string, string>;
+	script_preloads: Record<string, string[]>;
 	css: {
 		main: string | null,
 		chunks: Record<string, string[]>

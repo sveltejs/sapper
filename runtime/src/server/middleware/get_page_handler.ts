@@ -50,7 +50,8 @@ export function get_page_handler(
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
-			legacy_assets?: Record<string, string>
+			legacy_assets?: Record<string, string>,
+			script_preloads?: Record<string, string[]>
 		 } = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
@@ -67,6 +68,16 @@ export function get_page_handler(
 				preloaded_chunks = preloaded_chunks.concat(build_info.assets[part.name]);
 			});
 		}
+
+		page.parts.forEach((part) => {
+			if (build_info.script_preloads && part && build_info.script_preloads[part.file]) {
+				build_info.script_preloads[part.file].forEach((preloadFile) => {
+					if (preloaded_chunks.indexOf(preloadFile) === -1) {
+						preloaded_chunks.push(preloadFile)
+					}
+				})
+			}
+		})
 
 		if (build_info.bundler === 'rollup') {
 			// TODO add dependencies and CSS
