@@ -1,8 +1,10 @@
 <script>
-	import { page } from '@sapper/app';
+	import { stores } from '@sapper/app';
 	import { Icons, Icon, Nav, NavItem } from '@sveltejs/site-kit';
 
 	export let segment;
+
+	const { page } = stores();
 </script>
 
 <style>
