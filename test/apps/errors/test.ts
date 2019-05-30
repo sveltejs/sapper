@@ -85,6 +85,28 @@ describe('errors', function() {
 		);
 	});
 
+	// https://github.com/sveltejs/sapper/issues/710
+	// 
+	// In reported issue, error elements disappear, which is not the case in
+	// our test case. This is because the default layout `<slot/>` does not
+	// try to reclaim anything. Reporter probably has a custom `_layout.svelte`
+	// with some divs etc., and those will clear the existing DOM (if they
+	// don't find their element?).
+	// 
+	// Here we're not testing that the error is still here, but that the page 
+	// component has not been rendered (since only error page should be rendered 
+	// here). So we don't need a custom layout.
+	// 
+	it('does not replace server side rendered error', async () => {
+		await r.load('/preload-reject');
+		await r.sapper.start();
+
+		assert.equal(
+			await r.text('h1'),
+			'500'
+		);
+	});
+
 	it('does not serve error page for explicit non-page errors', async () => {
 		await r.load('/nope.json');
 
