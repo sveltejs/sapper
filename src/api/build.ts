@@ -95,11 +95,13 @@ export async function build({
 	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
 	build_info.legacy_assets = client_result.assets;
 	build_info.script_preloads = {};
-	Object.keys(client_result.script_preloads).forEach((facadeFileName) => {
-		// get relative filename, remove / or \ from the beginning of the string
-		const relativeFacedeFileName = facadeFileName.replace(routes, '').slice(1);
-		build_info.script_preloads[relativeFacedeFileName] = client_result.script_preloads[facadeFileName];
-	})
+	if (client_result.script_preloads) {
+		Object.keys(client_result.script_preloads).forEach((facadeFileName) => {
+			// get relative filename, remove / or \ from the beginning of the string
+			const relativeFacedeFileName = facadeFileName.replace(routes, '').slice(1);
+			build_info.script_preloads[relativeFacedeFileName] = client_result.script_preloads[facadeFileName];
+		})
+	}
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
