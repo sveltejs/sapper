@@ -261,7 +261,7 @@ export function get_page_handler(
 				session: session && try_serialize(session, err => {
 					throw new Error(`Failed to serialize session data: ${err.message}`);
 				}),
-				error: error && try_serialize(props.error)
+				error: error && serialize_error(props.error)
 			};
 
 			let script = `__SAPPER__={${[
@@ -364,6 +364,25 @@ function try_serialize(data: any, fail?: (err) => void) {
 		if (fail) fail(err);
 		return null;
 	}
+}
+
+// Try to serialize the given error, and ensure to return something truthy.
+// Otherwise, the client will think that it got preloaded data with no error
+// and rerender the page component over the error.
+// 
+// See: https://github.com/sveltejs/sapper/issues/710
+// 
+function serialize_error(error: Error|{message: string}) {
+	if (!error) return null
+	let serialized = try_serialize(error)
+	if (!serialized) {
+		const {name, message, stack} = error as Error
+		serialized = try_serialize({name, message, stack})
+	}
+	if (!serialized) {
+		serialized = '{}'
+	}
+	return serialized
 }
 
 function escape_html(html: string) {
