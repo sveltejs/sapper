@@ -3,6 +3,4 @@
 	const { page } = stores();
 </script>
 
-<h1>{$page.params.slug}</h1>
-
-<a href="234">regexp route</a>
+<h1>Nested regexp page {$page.params.id}</h1>
