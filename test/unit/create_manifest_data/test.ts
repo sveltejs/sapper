@@ -95,16 +95,15 @@ describe('manifest_data', () => {
 		]);
 	});
 
-	// this test broken
-	// it('allows regex qualifiers', () => {
-	// 	const { pages } = create_manifest_data(path.join(__dirname, 'samples/qualifiers'));
-	//
-	// 	assert.deepEqual(pages.map(p => p.pattern), [
-	// 		/^\/([0-9-a-z]{3,})\/?$/,
-	// 		/^\/([a-z]{2})\/?$/,
-	// 		/^\/([^\/]+?)\/?$/
-	// 	]);
-	// });
+	it('allows regex qualifiers', () => {
+		const { pages } = create_manifest_data(path.join(__dirname, 'samples/qualifiers'));
+
+		assert.deepEqual(pages.map(p => p.pattern), [
+			/^\/([0-9-a-z]{3,})\/?$/,
+			/^\/([a-z]{2})\/?$/,
+			/^\/([^\/]+?)\/?$/
+		]);
+	});
 
 	it('sorts routes correctly', () => {
 		const { pages } = create_manifest_data(path.join(__dirname, 'samples/sorting'));
