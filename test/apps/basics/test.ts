@@ -82,7 +82,7 @@ describe('basics', function() {
 
 		assert.equal(
 			await r.text('h1'),
-			'TEST-SLUG'
+			'test-slug'
 		);
 	});
 
@@ -314,6 +314,22 @@ describe('basics', function() {
 		await r.page.click('[href="dirs/foo/xyz"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'B page');
+	});
+
+	it('find regexp routes', async () => {
+		await r.load('/qwe');
+		await r.sapper.start();
+
+		assert.equal(await r.text('h1'), 'qwe');
+
+		await r.page.click('[href="234"]');
+		await r.wait();
+
+		assert.equal(await r.text('h1'), 'Regexp page 234');
+
+		await r.page.click('[href="regexp/234"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'Nested regexp page 234');
 	});
 
 	it('runs server route handlers before page handlers, if they match', async () => {

@@ -50,9 +50,9 @@
 	<div style="grid-area: start; display: flex; flex-direction: column; min-width: 0" slot="how">
 		<pre class="language-bash" style="margin: 0 0 1em 0; min-width: 0; min-height: 0">
 # for Rollup
-npx degit sveltejs/sapper-template#rollup my-app
+npx degit "sveltejs/sapper-template#rollup" my-app
 # for webpack
-npx degit sveltejs/sapper-template#webpack my-app
+npx degit "sveltejs/sapper-template#webpack" my-app
 cd my-app
 
 npm install
