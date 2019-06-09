@@ -5,7 +5,7 @@ import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
 export default function create_manifest_data(cwd: string, extensions: string = '.svelte .html'): ManifestData {
-	
+
 	const component_extensions = extensions.split(' ');
 
 	// TODO remove in a future version
@@ -335,7 +335,7 @@ function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
 	const path = segments.map(segment => {
 		return segment.map(part => {
 			return part.dynamic
-				? part.qualifier || part.spread ? '(.+)' : '([^\\/]+?)'
+				? part.qualifier || (part.spread ? '(.+)' : '([^\\/]+?)')
 				: encodeURI(part.content.normalize())
 					.replace(/\?/g, '%3F')
 					.replace(/#/g, '%23')

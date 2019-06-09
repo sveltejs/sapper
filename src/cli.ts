@@ -285,6 +285,7 @@ async function _build(
 		routes,
 		dest,
 		ext,
+		output,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);
