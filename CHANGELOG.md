@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.3
+
+* Accommodate Svelte 3.5.0
+
+
 ## 0.27.2
 
 * Fix routes with regular expressions ([#707](https://github.com/sveltejs/sapper/issues/707))
