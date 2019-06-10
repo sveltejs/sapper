@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store.mjs';
+import { writable } from 'svelte/store';
 import fs from 'fs';
 import path from 'path';
 import cookie from 'cookie';

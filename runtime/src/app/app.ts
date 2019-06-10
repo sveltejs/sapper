@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store.mjs';
+import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
 import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
