@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.4
+
+* Update devalue
+
+
 ## 0.27.3
 
 * Accommodate Svelte 3.5.0
