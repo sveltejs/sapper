@@ -194,6 +194,7 @@ prog.command('export [dest]')
 	.describe('Export your app as static files (if possible)')
 	.option('--build', '(Re)build app before exporting', true)
 	.option('--basepath', 'Specify a base path')
+	.option('--host', 'Host header to use when crawling site')
 	.option('--concurrent', 'Concurrent requests', 8)
 	.option('--timeout', 'Milliseconds to wait for a page (--no-timeout to disable)', 5000)
 	.option('--legacy', 'Create separate legacy build')
@@ -210,6 +211,7 @@ prog.command('export [dest]')
 		legacy: boolean,
 		bundler?: 'rollup' | 'webpack',
 		basepath?: string,
+		host?: string,
 		concurrent: number,
 		timeout: number | false,
 		cwd: string,
@@ -236,6 +238,7 @@ prog.command('export [dest]')
 				build_dir: opts['build-dir'],
 				export_dir: dest,
 				basepath: opts.basepath,
+				host_header: opts.host,
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
 
