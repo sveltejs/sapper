@@ -239,6 +239,15 @@ describe('basics', function() {
 		);
 	});
 
+	it('can access host through page store', async () => {
+		await r.load('/host');
+
+		assert.equal(await r.text('h1'), 'localhost');
+
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), 'localhost');
+	});
+
 	// skipped because Nightmare doesn't seem to focus the <a> correctly
 	it('resets the active element after navigation', async () => {
 		await r.load('/');
