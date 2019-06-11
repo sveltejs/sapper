@@ -56,6 +56,7 @@ export type Redirect = {
 };
 
 export type Page = {
+	host: string;
 	path: string;
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;
