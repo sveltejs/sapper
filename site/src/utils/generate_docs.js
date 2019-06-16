@@ -7,23 +7,6 @@ import { make_session_slug_processor } from '@sveltejs/site-kit/utils/slug';
 import marked from 'marked';
 import hljs from 'highlight.js';
 
-const escaped = {
-	'"': '&quot;',
-	"'": '&#39;',
-	'&': '&amp;',
-	'<': '&lt;',
-	'>': '&gt;',
-};
-
-const unescaped = Object.keys(escaped).reduce(
-	(unescaped, key) => ((unescaped[escaped[key]] = key), unescaped),
-	{}
-);
-
-function unescape(str) {
-	return String(str).replace(/&.+?;/g, match => unescaped[match] || match);
-}
-
 const block_types = [
 	'blockquote',
 	'html',
@@ -115,15 +98,13 @@ export default function generate_docs(dir) {
 				const slug = level <= 4 && make_slug(rawtext);
 
 				if (level === 3 || level === 4) {
-					const title = unescape(
-						text
-							.replace(/<\/?code>/g, '')
-							.replace(/\.(\w+)(\((.+)?\))?/, (m, $1, $2, $3) => {
-								if ($3) return `.${$1}(...)`;
-								if ($2) return `.${$1}()`;
-								return `.${$1}`;
-							})
-					);
+					const title = text
+						.replace(/<\/?code>/g, '')
+						.replace(/\.(\w+)(\((.+)?\))?/, (m, $1, $2, $3) => {
+							if ($3) return `.${$1}(...)`;
+							if ($2) return `.${$1}()`;
+							return `.${$1}`;
+						});
 
 					subsections.push({ slug, title, level });
 				}
