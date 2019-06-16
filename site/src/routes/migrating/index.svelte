@@ -19,4 +19,4 @@
 	<meta name="Description" content="The next small thing in web development">
 </svelte:head>
 
-<Docs {sections}/>
+<Docs {sections} project="sapper" dir="migrating"/>
