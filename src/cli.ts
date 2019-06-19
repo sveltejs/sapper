@@ -205,6 +205,7 @@ prog.command('export [dest]')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
+	.option('--entry', 'Custom entry points', '/')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -219,6 +220,7 @@ prog.command('export [dest]')
 		output: string,
 		'build-dir': string,
 		ext: string
+		entry: string
 	}) => {
 		try {
 			if (opts.build) {
@@ -238,6 +240,7 @@ prog.command('export [dest]')
 				basepath: opts.basepath,
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
+				entry: opts.entry,
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));

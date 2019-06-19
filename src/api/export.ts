@@ -22,6 +22,7 @@ type Opts = {
 	concurrent?: number,
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
+	entry?: string;
 };
 
 type Ref = {
@@ -32,6 +33,10 @@ type Ref = {
 
 function resolve(from: string, to: string) {
 	return url.parse(url.resolve(from, to));
+}
+
+function cleanPath(path: string) {
+	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '')
 }
 
 type URL = url.UrlWithStringQuery;
@@ -47,7 +52,8 @@ async function _export({
 	timeout = 5000,
 	concurrent = 8,
 	oninfo = noop,
-	onfile = noop
+	onfile = noop,
+	entry = '/'
 }: Opts = {}) {
 	basepath = basepath.replace(/^\//, '')
 
@@ -74,9 +80,16 @@ async function _export({
 	const root = resolve(origin, basepath);
 	if (!root.href.endsWith('/')) root.href += '/';
 
-	oninfo({
-		message: `Crawling ${root.href}`
+
+
+	const entryPoints = entry.split(' ').map(entryPoint => {
+		const entry = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
+		if (!entry.href.endsWith('/')) entry.href += '/';
+
+		return entry;
 	});
+
+	let currentRoot = 0;
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd,
@@ -201,7 +214,7 @@ async function _export({
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
 
-			tasks.push(handle(resolve(root.href, location)));
+			tasks.push(handle(resolve(entryPoints[currentRoot].href, location)));
 		}
 
 		save(pathname, r.status, type, body);
@@ -211,7 +224,15 @@ async function _export({
 
 	try {
 		await ports.wait(port);
-		await handle(root);
+
+		for (let i = 0; i < entryPoints.length; i++) {
+			oninfo({
+				message: `Crawling ${entryPoints[currentRoot].href}`
+			});
+			await handle(entryPoints[currentRoot]);
+			currentRoot++;
+		}
+
 		await handle(resolve(root.href, 'service-worker-index.html'));
 		await q.close();
 
