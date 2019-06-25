@@ -8,6 +8,7 @@ import {
 	select_target,
 	handle_error,
 	set_target,
+	set_context_getter,
 	uid,
 	set_uid,
 	set_cid
@@ -15,13 +16,16 @@ import {
 import prefetch from '../prefetch/index';
 
 export default function start(opts: {
-	target: Node
+	target: Node,
+	context: () => void
 }) {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
 
 	set_target(opts.target);
+	set_context_getter(opts.context);
+
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);

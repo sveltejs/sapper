@@ -13,6 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
+import * as svelteInternal from 'svelte/internal';
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -75,6 +76,34 @@ export let cid: number;
 export function set_cid(n) {
 	cid = n;
 }
+
+export let context_getter: () => (void | Map<any, any> | Array<[any, any]>);
+export function set_context_getter(c) {
+	context_getter = c;
+}
+
+const withContext = (context, fn) => {
+	// TODO - make this not hacky? How can I avoid using set_current_component from here?
+	// It's only needed so that getContext() and setContext() calls work.
+	// If we don't use that API, we don't need it.
+	const previous = svelteInternal.current_component;
+	try {
+		svelteInternal.set_current_component({ $$ : { context } });
+		return fn();
+	} finally {
+		svelteInternal.set_current_component(previous);
+	}
+};
+const initContext = () => {
+	// TODO - how exactly should this work? Should they use setContext() or return a Map initializer?
+	// This currently supports both, but that is confusing and we should pick one way or the other.
+	let context = new Map();
+	let gotten_context = context_getter && withContext(context, context_getter);
+	return new Map([
+		...context.entries(),
+		...(gotten_context instanceof Map ? gotten_context.entries() : gotten_context || [])
+	]);
+};
 
 const _history = typeof history !== 'undefined' ? history : {
 	pushState: (state: any, title: string, href: string) => {},
@@ -140,6 +169,7 @@ export function handle_error(url: URL) {
 		error,
 		status,
 		session,
+		context: initContext(),
 		level0: {
 			props: root_preloaded
 		},
@@ -283,7 +313,7 @@ export async function hydrate_target(target: Target): Promise<{
 
 	let redirect: Redirect = null;
 
-	const props = { error: null, status: 200, segments: [segments[0]] };
+	const props = { error: null, status: 200, segments: [segments[0]], context: null };
 
 	const preload_context = {
 		fetch: (url: string, opts?: any) => fetch(url, opts),
@@ -299,12 +329,14 @@ export async function hydrate_target(target: Target): Promise<{
 		}
 	};
 
+	let context = props.context = initContext();
+
 	if (!root_preloaded) {
-		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
+		root_preloaded = initial_data.preloaded[0] || withContext(context, () => root_preload.call(preload_context, {
 			path: page.path,
 			query: page.query,
 			params: {}
-		}, $session);
+		}, $session, context));
 	}
 
 	let branch;
@@ -337,11 +369,11 @@ export async function hydrate_target(target: Target): Promise<{
 			let preloaded;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
-					? await preload.call(preload_context, {
+					? await withContext(context, () => preload.call(preload_context, {
 						path: page.path,
 						query: page.query,
 						params: part.params ? part.params(target.match) : {}
-					}, $session)
+					}, $session, context))
 					: {};
 			} else {
 				preloaded = initial_data.preloaded[i + 1];

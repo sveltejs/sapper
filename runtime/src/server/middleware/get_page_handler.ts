@@ -8,10 +8,37 @@ import URL from 'url';
 import { Manifest, Page, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
+import * as svelteInternal from 'svelte/internal';
+
+// TODO - should I DRY this up with the same code in app.ts? What is the best way?
+const withContext = (context, fn) => {
+	// TODO - make this not hacky? How can I avoid using set_current_component from here?
+	// It's only needed so that getContext() and setContext() calls work.
+	// If we don't use that API, we don't need it.
+	const previous = svelteInternal.current_component;
+	try {
+		svelteInternal.set_current_component({ $$ : { context } });
+		return fn();
+	} finally {
+		svelteInternal.set_current_component(previous);
+	}
+}
+
+const initContext = (context_getter, req, res) => {
+	// TODO - how exactly should this work? Should they use setContext() or return a Map initializer?
+	// This currently supports both, but that is confusing and we should pick one way or the other.
+	let context = new Map();
+	let gotten_context = context_getter && withContext(context, () => context_getter(req, res));
+	return new Map([
+		...context.entries(),
+		...(gotten_context instanceof Map ? gotten_context.entries() : gotten_context || [])
+	]);
+};
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => any
+	session_getter: (req: Req, res: Res) => any,
+	context_getter: (req: Req, res: Res) => any
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -89,6 +116,7 @@ export function get_page_handler(
 		}
 
 		const session = session_getter(req, res);
+		const context = initContext(context_getter, req, res);
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
@@ -148,11 +176,11 @@ export function get_page_handler(
 
 		try {
 			const root_preloaded = manifest.root_preload
-				? manifest.root_preload.call(preload_context, {
+				? withContext(context, () => manifest.root_preload.call(preload_context, {
 					path: req.path,
 					query: req.query,
 					params: {}
-				}, session)
+				}, session, context))
 				: {};
 
 			match = error ? null : page.pattern.exec(req.path);
@@ -167,11 +195,11 @@ export function get_page_handler(
 					params = part.params ? part.params(match) : {};
 
 					return part.preload
-						? part.preload.call(preload_context, {
+						? withContext(context, () => part.preload.call(preload_context, {
 							path: req.path,
 							query: req.query,
 							params
-						}, session)
+						}, session, context))
 						: {};
 				}))
 			}
@@ -228,6 +256,7 @@ export function get_page_handler(
 					},
 					session: writable(session)
 				},
+				context,
 				segments: layout_segments,
 				status: error ? status : 200,
 				error: error ? error instanceof Error ? error : { message: error } : null,

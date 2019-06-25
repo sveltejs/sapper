@@ -275,10 +275,14 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 			export let error;
 			export let status;
 			export let segments;
+			export let context;
 			export let level0;
 			${levels.map(l => `export let level${l} = null;`).join('\n\t\t\t')}
 
 			setContext(CONTEXT_KEY, stores);
+			for (const [key, value] of context) {
+				setContext(key, value);
+			}
 		</script>
 
 		<Layout segment="{segments[0]}" {...level0.props}>
