@@ -223,7 +223,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, false);
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
 
 		const emitFatal = () => {
 			this.emit('fatal', <FatalEvent>{
