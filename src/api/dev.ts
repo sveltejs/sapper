@@ -48,7 +48,7 @@ class Watcher extends EventEmitter {
 	}
 	port: number;
 	closed: boolean;
-	
+
 	dev_port: number;
 	live: boolean;
 	hot: boolean;
@@ -82,7 +82,7 @@ class Watcher extends EventEmitter {
 		hot,
 		'devtools-port': devtools_port,
 		bundler,
-		port = +process.env.PORT, 
+		port = +process.env.PORT,
 		ext
 	}: Opts) {
 		super();
@@ -225,7 +225,7 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, false);
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
 
 		const emitFatal = () => {
 			this.emit('fatal', <FatalEvent>{
