@@ -1,14 +1,15 @@
 import { dev, src, dest } from './env';
+import { InputOption, OutputOptions } from 'rollup'
 
 export default {
 	dev,
 
 	client: {
-		input: () => {
+		input: (): InputOption => {
 			return `${src}/client.js`
 		},
 
-		output: () => {
+		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
 			let dir = `${dest}/client`;
 			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
 
@@ -17,33 +18,33 @@ export default {
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm',
-				sourcemap: dev
+				sourcemap
 			};
 		}
 	},
 
 	server: {
-		input: () => {
+		input: (): InputOption => {
 			return {
 				server: `${src}/server.js`
 			};
 		},
 
-		output: () => {
+		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
 			return {
 				dir: `${dest}/server`,
 				format: 'cjs',
-				sourcemap: dev
+				sourcemap
 			};
 		}
 	},
 
 	serviceworker: {
-		input: () => {
+		input: (): InputOption => {
 			return `${src}/service-worker.js`;
 		},
 
-		output: () => {
+		output: (): OutputOptions => {
 			return {
 				file: `${dest}/service-worker.js`,
 				format: 'iife'
