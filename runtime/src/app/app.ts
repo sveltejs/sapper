@@ -340,6 +340,7 @@ export async function hydrate_target(target: Target): Promise<{
 					? await preload.call(preload_context, {
 						path: page.path,
 						query: page.query,
+						data: {},
 						params: part.params ? part.params(target.match) : {}
 					}, $session)
 					: {};

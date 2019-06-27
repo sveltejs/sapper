@@ -41,6 +41,8 @@ export default function middleware(opts: {
 				req.path = req.url.replace(/\?.*/, '');
 			}
 
+			req.sapperPreloadData = {};
+
 			next();
 		},
 

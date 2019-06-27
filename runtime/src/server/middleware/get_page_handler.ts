@@ -170,6 +170,7 @@ export function get_page_handler(
 						? part.preload.call(preload_context, {
 							path: req.path,
 							query: req.query,
+							data: req.sapperPreloadData,
 							params
 						}, session)
 						: {};
