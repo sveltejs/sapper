@@ -18,10 +18,12 @@ export default class RollupResult implements CompileResult {
 		main: string,
 		chunks: Record<string, string[]>
 	};
+	sourcemap: boolean | 'inline';
 	summary: string;
 
-	constructor(duration: number, compiler: RollupCompiler) {
+	constructor(duration: number, compiler: RollupCompiler, sourcemap: boolean | 'inline') {
 		this.duration = duration;
+		this.sourcemap = sourcemap
 
 		this.errors = compiler.errors.map(munge_warning_or_error);
 		this.warnings = compiler.warnings.map(munge_warning_or_error); // TODO emit this as they happen
@@ -93,7 +95,7 @@ export default class RollupResult implements CompileResult {
 			bundler: 'rollup',
 			shimport: require('shimport/package.json').version,
 			assets: this.assets,
-			css: extract_css(this, manifest_data.components, dirs)
+			css: extract_css(this, manifest_data.components, dirs, this.sourcemap)
 		};
 	}
 
