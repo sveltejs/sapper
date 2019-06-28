@@ -18,7 +18,7 @@ export default {
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm',
-				sourcemap
+				sourcemap: sourcemap !== undefined ? sourcemap : (dev === true ? 'inline' : false)
 			};
 		}
 	},
@@ -34,7 +34,7 @@ export default {
 			return {
 				dir: `${dest}/server`,
 				format: 'cjs',
-				sourcemap
+				sourcemap: sourcemap !== undefined ? sourcemap : (dev === true ? 'inline' : false)
 			};
 		}
 	},
