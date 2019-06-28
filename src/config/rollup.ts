@@ -1,6 +1,9 @@
 import { dev, src, dest } from './env';
 import { InputOption, OutputOptions } from 'rollup'
 
+const defaultSourcemap =
+	dev === true ? 'inline' : false
+
 export default {
 	dev,
 
@@ -18,7 +21,7 @@ export default {
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm',
-				sourcemap: sourcemap !== undefined ? sourcemap : (dev === true ? 'inline' : false)
+				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
 			};
 		}
 	},
@@ -34,7 +37,7 @@ export default {
 			return {
 				dir: `${dest}/server`,
 				format: 'cjs',
-				sourcemap: sourcemap !== undefined ? sourcemap : (dev === true ? 'inline' : false)
+				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
 			};
 		}
 	},
@@ -44,10 +47,11 @@ export default {
 			return `${src}/service-worker.js`;
 		},
 
-		output: (): OutputOptions => {
+		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
 			return {
 				file: `${dest}/service-worker.js`,
-				format: 'iife'
+				format: 'iife',
+				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
 			}
 		}
 	}
