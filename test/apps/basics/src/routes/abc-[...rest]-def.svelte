@@ -13,6 +13,8 @@
 
 <h1>{$page.params.rest.join(',')}</h1>
 <h2>{rest.join(',')}</h2>
+<p>{rest.length}</p>
 
-<a href="xyz/abc/qwe/deep.json">deep</a>
-<a href="xyz/abc">back</a>
+<a href="abc--def">nothing</a>
+<a href="abc-def-def">something</a>
+<a href="abc-def/ghi-def">many things</a>

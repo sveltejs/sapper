@@ -11,10 +11,10 @@
 	export let rest;
 </script>
 
-<h1>{$page.params.rest.join(',')}</h1>
+<h1>Deep {$page.params.rest.join(',')}</h1>
 <h2>{rest.join(',')}</h2>
+<p>{rest.length}</p>
 
-<a href="xyz/abc/deep">deep</a>
-<a href="xyz/abc">deep</a>
-<a href="xyz/abc/def">deep</a>
-<a href="xyz/abc/def/ghi">deep</a>
+<a href="rest-variable/xyz/abc/qwe/deep.json">deep</a>
+<a href="rest-variable/xyz/abc">back</a>
+<a href="rest-variable">zero</a>

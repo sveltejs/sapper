@@ -273,36 +273,62 @@ describe('basics', function() {
 	});
 
 	it('navigates to ...rest', async () => {
-		await r.load('/abc/xyz');
+		await r.load('/rest-variable/abc/xyz');
 		await r.sapper.start();
 
 		assert.equal(await r.text('h1'), 'abc,xyz');
-		await r.page.click('[href="xyz/abc/def/ghi"]');
+		await r.page.click('[href="rest-variable/xyz/abc/def/ghi"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'xyz,abc,def,ghi');
 		assert.equal(await r.text('h2'), 'xyz,abc,def,ghi');
-		await r.page.click('[href="xyz/abc/def"]');
+		await r.page.click('[href="rest-variable/xyz/abc/def"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'xyz,abc,def');
 		assert.equal(await r.text('h2'), 'xyz,abc,def');
-		await r.page.click('[href="xyz/abc/def"]');
+		await r.page.click('[href="rest-variable/xyz/abc/def"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'xyz,abc,def');
 		assert.equal(await r.text('h2'), 'xyz,abc,def');
-		await r.page.click('[href="xyz/abc"]');
+		await r.page.click('[href="rest-variable/xyz/abc"]');
 		await r.wait();
 		assert.equal(await r.text('h1'), 'xyz,abc');
 		assert.equal(await r.text('h2'), 'xyz,abc');
-		await r.page.click('[href="xyz/abc/deep"]');
+		await r.page.click('[href="rest-variable/xyz/abc/deep"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), 'xyz,abc');
+		assert.equal(await r.text('h1'), 'Deep xyz,abc');
 		assert.equal(await r.text('h2'), 'xyz,abc');
-		await r.page.click('[href="xyz/abc/qwe/deep.json"]');
+		await r.page.click('[href="rest-variable"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), '');
+		assert.equal(await r.text('h2'), '');
+		await r.page.click('[href="rest-variable/deep"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'Deep ');
+		assert.equal(await r.text('h2'), '');
+		assert.equal(await r.text('p'), '0');
+		await r.page.click('[href="rest-variable/xyz/abc/qwe/deep.json"]');
 		await r.wait();
 		assert.equal(
 			await r.text('body'),
 			'xyz,abc,qwe'
 		);
+	});
+
+	it('navigates to ...rest as a segment partial', async () => {
+
+		await r.load('/abc--def');
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), '');
+		assert.equal(await r.text('h2'), '');
+		assert.equal(await r.text('p'), '0');
+		await r.page.click('[href="abc-def-def"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'def');
+		assert.equal(await r.text('h2'), 'def');
+		await r.page.click('[href="abc-def/ghi-def"]');
+		await r.wait();
+		assert.equal(await r.text('h1'), 'def,ghi');
+		assert.equal(await r.text('h2'), 'def,ghi');
 	});
 
 	it('navigates between dynamic routes with same segments', async () => {

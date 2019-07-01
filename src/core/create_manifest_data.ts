@@ -331,20 +331,41 @@ function get_slug(file: string) {
 	return name;
 }
 
+const spread_pattern = '((?:[^\\/]+\\/)*?[^\\/]+?)'; // 'a' or 'a/b' or 'a/b/c'
+const optional_spread_pattern = spread_pattern + '?'; // '' or 'a' or 'a/b' or 'a/b/c'
+const optional_spread_with_leading_slash_pattern = '(?:\\/' + spread_pattern + ')?'; // '' or '/a' or '/a/b' or '/a/b/c'
+
 function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
+	if (segments.length === 0) {
+		return /^\/$/;
+	}
+
+	const trailing_slash = add_trailing_slash ? '\\/?' : '';
+
+	const only_spread = segments.length === 1 && segments[0].length === 1 && segments[0][0].spread;
+	if (only_spread) {
+		// special case ensures that a lone zero-length spread still requires a leading slash.
+		return new RegExp(`^\\/(?:${spread_pattern}${trailing_slash})?$`);
+	}
+
 	const path = segments.map(segment => {
-		return segment.map(part => {
+		// abc-[...rest]-xyz -> requires a leading slash on the segment. Requires NO leading slash on the ...rest (design decision, arguable).
+		// [...rest]-xyz     -> requires a leading slash on the segment. Requires NO leading slash on the ...rest (to avoid double up).
+		// [...rest]         -> requires a leading slash on the ....rest (if any). Requires NO leading slash on the segment (to avoid double-up)
+		if (segment.length === 1 && segment[0].spread) {
+			return optional_spread_with_leading_slash_pattern;
+		}
+
+		return '\\/' + segment.map(part => {
 			return part.dynamic
-				? part.qualifier || (part.spread ? '(.+)' : '([^\\/]+?)')
+				? part.qualifier || (part.spread ? optional_spread_pattern : '([^\\/]+?)')
 				: encodeURI(part.content.normalize())
 					.replace(/\?/g, '%3F')
 					.replace(/#/g, '%23')
 					.replace(/%5B/g, '[')
 					.replace(/%5D/g, ']');
 		}).join('');
-	}).join('\\/');
+	}).join('');
 
-	const trailing = add_trailing_slash && segments.length ? '\\/?$' : '$';
-
-	return new RegExp(`^\\/${path}${trailing}`);
+	return new RegExp(`^${path}${trailing_slash}$`);
 }

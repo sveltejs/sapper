@@ -72,7 +72,7 @@ export function create_serviceworker_manifest({ manifest_data, output, client_fi
 
 function create_param_match(param: string, i: number) {
 	return /^\.{3}.+$/.test(param)
-		? `${param.replace(/.{3}/, '')}: d(match[${i + 1}]).split('/')`
+		? `${param.replace(/.{3}/, '')}: match[${i + 1}] ? d(match[${i + 1}]).split('/') : []`
 		: `${param}: d(match[${i + 1}])`
 }
 
