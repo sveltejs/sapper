@@ -54,6 +54,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 			try {
 				await handle_method(req, res, handle_next);
 			} catch (err) {
+				console.error(err);
 				handle_next(err);
 			}
 		} else {
