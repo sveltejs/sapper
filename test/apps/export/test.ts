@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
+import { readFileSync } from 'fs'
 
 describe('export', function() {
 	this.timeout(10000);
@@ -39,9 +40,16 @@ describe('export', function() {
 			'index.html',
 			'service-worker-index.html',
 			'service-worker.js',
+			'test.pdf',
 			...boom
 		].sort());
 	});
+
+	it('does not corrupt binary file links (like pdf)', () => {
+		const input = readFileSync(`${__dirname}/static/test.pdf`)
+		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`)
+		assert.ok(input.equals(output))
+	})
 
 	// TODO test timeout, basepath
 });
