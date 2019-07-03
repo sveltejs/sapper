@@ -114,6 +114,7 @@ async function _export({
 		});
 
 		const export_file = path.join(export_dir, file);
+		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
 		fs.writeFileSync(export_file, body);
 	}
