@@ -31,6 +31,8 @@ sapper.start({
 
 Programmatically navigates to the given `href`. If the destination is a Sapper route, Sapper will handle the navigation, otherwise the page will be reloaded with the new `href`. (In other words, the behaviour is as though the user clicked on a link with this `href`.)
 
+Returns a `Promise` that resolves when the navigation is complete.
+
 
 ### prefetch(href)
 
@@ -38,6 +40,7 @@ Programmatically navigates to the given `href`. If the destination is a Sapper r
 
 Programmatically prefetches the given page, which means a) ensuring that the code for the page is loaded, and b) calling the page's `preload` method with the appropriate options. This is the same behaviour that Sapper triggers when the user taps or mouses over an `<a>` element with [rel=prefetch](docs#Prefetching).
 
+Returns a `Promise` that resolves when the prefetch is complete.
 
 
 ### prefetchRoutes(routes?)
@@ -45,3 +48,5 @@ Programmatically prefetches the given page, which means a) ensuring that the cod
 * `routes` — an optional array of strings representing routes to prefetch
 
 Programmatically prefetches the code for routes that haven't yet been fetched. Typically, you might call this after `sapper.start()` is complete, to speed up subsequent navigation (this is the 'L' of the [PRPL pattern](https://developers.google.com/web/fundamentals/performance/prpl-pattern/)). Omitting arguments will cause all routes to be fetched, or you can specify routes by any matching pathname such as `/about` (to match `src/routes/about.svelte`) or `/blog/*` (to match `src/routes/blog/[slug].svelte`). Unlike `prefetch`, this won't call `preload` for individual pages.
+
+Returns a `Promise` that resolves when the routes have been prefetched.
