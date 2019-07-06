@@ -386,5 +386,7 @@ export function load_component(component: ComponentLoader): Promise<{
 }
 
 function detach(node: Node) {
+	if (!node.parentNode) return;
+
 	node.parentNode.removeChild(node);
 }
