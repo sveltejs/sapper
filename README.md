@@ -1,6 +1,6 @@
 # sapper
 
-[Military-grade progressive web apps, powered by Svelte.](https://sapper.svelte.dev)
+[The next small thing in web development, powered by Svelte.](https://sapper.svelte.dev)
 
 
 ## What is Sapper?
