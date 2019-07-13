@@ -14,17 +14,24 @@ A clear and concise description of what the bug is.
 Please include browser console and server logs around the time this bug occured.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+To help us help you, if you've found a bug please consider the following:
+
+* If possible, we recommend creating a small repo that illustrates the problem.
+* Reproductions should be small, self-contained, correct examples – http://sscce.org.
+
+Occasionally, this won't be possible, and that's fine – we still appreciate you raising the issue. But please understand that Svelte is run by unpaid volunteers in their free time, and issues that follow these instructions will get fixed faster.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Stacktraces**
+If you have a stack trace to include, we recommend putting inside a `<details>` block for the sake of the thread's readability:
+
+<details>
+  <summary>Stack trace</summary>
+
+  Stack trace goes here...
+</details>
 
 **Information about your Sapper Installation:**
 - Your browser and the version: (e.x. Chrome 52.1, Firefox 48.0, IE 10)
@@ -34,6 +41,8 @@ If applicable, add screenshots to help explain your problem.
 - Your hosting environment: (i.e. Local, GCP, AWS, Now, etc...)
 
 - Sapper version (Please check you can reproduce the issue with the latest release!)
+
+- Svelte version (Please check you can reproduce the issue with the latest release!)
 
 - If it is an exported (npm run export) or dynamic application.
 
