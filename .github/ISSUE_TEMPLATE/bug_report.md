@@ -26,7 +26,7 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Information about your Metabase Installation:**
+**Information about your Sapper Installation:**
 - Your browser and the version: (e.x. Chrome 52.1, Firefox 48.0, IE 10)
 
 - Your operating system: (e.x. OS X 10, Ubuntu Linux 19.10, Windows XP, etc)
