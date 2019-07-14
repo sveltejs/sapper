@@ -464,6 +464,7 @@ application/vnd.yellowriver-custom-menu		cmp
 application/vnd.zul				zir zirz
 application/vnd.zzazz.deck+xml			zaz
 application/voicexml+xml			vxml
+application/wasm				wasm
 application/widget				wgt
 application/winhlp				hlp
 application/wsdl+xml				wsdl
