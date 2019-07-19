@@ -229,8 +229,21 @@ export default function extract_css(
 
 		const source = fs.readFileSync(`${asset_dir}/${file}`, 'utf-8');
 
-		const replaced = source.replace(/["']__SAPPER_CSS_PLACEHOLDER:(.+?)__["']/g, (m, route) => {
-			return JSON.stringify(result.chunks[route]);
+		const replaced = source.replace(/(\\?["'])__SAPPER_CSS_PLACEHOLDER:([^"']+?)__\1/g, (m, quotes, route) => {
+			let replacement = JSON.stringify(result.chunks[route]);
+
+			// If the quotation marks are escaped, then
+			// the source code is in a string literal
+			// (e.g., source maps) rather than raw
+			// JavaScript source. We need to stringify
+			// again and then remove the extra quotation
+			// marks so that replacement is correct.
+			if (quotes[0] === '\\') {
+				replacement = JSON.stringify(replacement);
+				replacement = replacement.substring(1, replacement.length - 1);
+			}
+
+			return replacement;
 		});
 
 		fs.writeFileSync(`${asset_dir}/${file}`, replaced);
