@@ -118,6 +118,25 @@ The `error` object is made available to the template along with the HTTP `status
 
 
 
+### Error handling for server routes
+
+By default, errors occurred in server routes are sent as a text response with the HTTP 500 status. You can define your own error handler by passing it as an option to Sapper middleware:
+
+```js
+function on_error(err, req, res, next) {
+  res.setHeader('Content-Type', 'application/json');
+  res.statusCode = 500;
+	res.end(JSON.stringify({ error: err.message }));
+  // Log error here, etc
+}
+
+app.use(sapper.middleware({ error_handler: on_error }));
+```
+
+Your error handler should either serve the response by calling `res.end()` or pass the error to the default error handler by calling `next(err)`. If your handler throws an error, the default error handler will be used as a fallback (with the original server route error, not your error handler error).
+
+
+
 ### Regexes in routes
 
 You can use a subset of regular expressions to qualify route parameters, by placing them in parentheses after the parameter name.
