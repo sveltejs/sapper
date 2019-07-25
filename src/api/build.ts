@@ -1,5 +1,5 @@
-import * as fs from 'fs';
 import * as path from 'path';
+import { sync as writeFileSync } from 'write-file-atomic';
 import minify_html from './utils/minify_html';
 import { create_compilers, create_app, create_manifest_data, create_serviceworker_manifest } from '../core';
 import { copy_shimport } from './utils/copy_shimport';
@@ -68,7 +68,7 @@ export async function build({
 		throw error;
 	}
 
-	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
+	writeFileSync(`${dest}/template.html`, minify_html(template));
 
 	const manifest_data = create_manifest_data(routes, ext);
 
@@ -110,7 +110,7 @@ export async function build({
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+	writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
 	oncompile({
