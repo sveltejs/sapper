@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as path from 'path';
 import { mkdirp } from './fs_utils';
 
@@ -16,6 +17,6 @@ const runtime = [
 export function copy_runtime(output: string) {
 	runtime.forEach(({ file, source }) => {
 		mkdirp(path.dirname(`${output}/${file}`));
-		fs.writeFileSync(`${output}/${file}`, source);
+		writeFileSync(`${output}/${file}`, source);
 	});
 }

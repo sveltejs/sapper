@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as path from 'path';
 
 export function left_pad(str: string, len: number) {
@@ -47,7 +48,7 @@ const previous_contents = new Map();
 export function write_if_changed(file: string, code: string) {
 	if (code !== previous_contents.get(file)) {
 		previous_contents.set(file, code);
-		fs.writeFileSync(file, code);
+		writeFileSync(file, code);
 		fudge_mtime(file);
 	}
 }

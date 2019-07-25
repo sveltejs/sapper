@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as path from 'path';
 import * as assert from 'assert';
 import clean_html from '../../../src/api/utils/clean_html';
@@ -15,7 +16,7 @@ describe('clean_html', () => {
 
 			const actual = clean_html(input);
 
-			fs.writeFileSync(`${samples}/${dir}/.actual.html`, actual);
+			writeFileSync(`${samples}/${dir}/.actual.html`, actual);
 
 			assert.equal(
 				actual.replace(/\s+$/gm, ''),

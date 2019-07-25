@@ -1,5 +1,5 @@
 import * as child_process from 'child_process';
-import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as path from 'path';
 import * as url from 'url';
 import fetch from 'node-fetch';
@@ -115,7 +115,7 @@ async function _export({
 
 		const export_file = path.join(export_dir, file);
 		mkdirp(path.dirname(export_file));
-		fs.writeFileSync(export_file, body);
+		writeFileSync(export_file, body);
 	}
 
 	proc.on('message', message => {

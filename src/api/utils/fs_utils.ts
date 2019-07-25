@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as path from 'path';
 
 export function mkdirp(dir: string) {
@@ -41,6 +42,6 @@ export function copy(from: string, to: string) {
 		});
 	} else {
 		mkdirp(path.dirname(to));
-		fs.writeFileSync(to, fs.readFileSync(from));
+		writeFileSync(to, fs.readFileSync(from));
 	}
 }

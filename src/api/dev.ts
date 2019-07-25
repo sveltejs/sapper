@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import { sync as writeFileSync } from 'write-file-atomic';
 import * as http from 'http';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
@@ -339,7 +340,7 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
-				fs.writeFileSync(
+				writeFileSync(
 					path.join(dest, 'build.json'),
 
 					// TODO should be more explicit that to_json has effects
