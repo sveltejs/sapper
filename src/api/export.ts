@@ -18,6 +18,7 @@ type Opts = {
 	cwd?: string,
 	static?: string,
 	basepath?: string,
+	host_header?: string,
 	timeout?: number | false,
 	concurrent?: number,
 	oninfo?: ({ message }: { message: string }) => void;
@@ -44,6 +45,7 @@ async function _export({
 	build_dir = '__sapper__/build',
 	export_dir = '__sapper__/export',
 	basepath = '',
+	host_header,
 	timeout = 5000,
 	concurrent = 8,
 	oninfo = noop,
@@ -141,6 +143,7 @@ async function _export({
 
 			const r = await Promise.race([
 				fetch(url.href, {
+					headers: { host: host_header || host },
 					redirect: 'manual'
 				}),
 				timeout_deferred.promise

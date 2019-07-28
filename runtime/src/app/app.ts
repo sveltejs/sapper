@@ -116,7 +116,7 @@ export function select_target(url: URL): Target {
 			const part = route.parts[route.parts.length - 1];
 			const params = part.params ? part.params(match) : {};
 
-			const page = { path, query, params };
+			const page = { host: location.host, path, query, params };
 
 			return { href: url.href, route, match, page };
 		}
@@ -124,7 +124,7 @@ export function select_target(url: URL): Target {
 }
 
 export function handle_error(url: URL) {
-	const { pathname, search } = location;
+	const { host, pathname, search } = location;
 	const { session, preloaded, status, error } = initial_data;
 
 	if (!root_preloaded) {
@@ -149,7 +149,7 @@ export function handle_error(url: URL) {
 
 	}
 	const query = extract_query(search);
-	render(null, [], props, { path: pathname, query, params: {} });
+	render(null, [], props, { host, path: pathname, query, params: {} });
 }
 
 export function scroll_state() {
@@ -296,6 +296,7 @@ export async function hydrate_target(target: Target): Promise<{
 
 	if (!root_preloaded) {
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
+			host: page.host,
 			path: page.path,
 			query: page.query,
 			params: {}
@@ -333,6 +334,7 @@ export async function hydrate_target(target: Target): Promise<{
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
 					? await preload.call(preload_context, {
+						host: page.host,
 						path: page.path,
 						query: page.query,
 						params: part.params ? part.params(target.match) : {}

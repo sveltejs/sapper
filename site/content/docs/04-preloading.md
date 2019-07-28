@@ -23,7 +23,7 @@ It lives in a `context="module"` script — see the [tutorial](https://svelte.de
 
 The `preload` function receives two arguments — `page` and `session`.
 
-`page` is a `{ path, params, query }` object where `path` is the URL's pathname, `params` is derived from `path` and the route filename, and `query` is an object of values in the query string.
+`page` is a `{ host, path, params, query }` object where `host` is the URL's host, `path` is its pathname, `params` is derived from `path` and the route filename, and `query` is an object of values in the query string.
 
 So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/blog/some-post?foo=bar&baz`, the following would be true:
 

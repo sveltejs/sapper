@@ -27,6 +27,15 @@ describe('preloading', function() {
 		assert.equal(await r.text('h1'), 'true');
 	});
 
+	it('retrieves host from preload', async () => {
+		await r.load('/preload-values/host');
+
+		assert.equal(await r.text('h1'), 'localhost');
+
+		await r.sapper.start();
+		assert.equal(await r.text('h1'), 'localhost');
+	});
+
 	it('prevent crash if preload return nothing', async () => {
 		await r.load('/preload-nothing');
 
