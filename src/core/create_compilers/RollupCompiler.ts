@@ -61,6 +61,7 @@ export default class RollupCompiler {
 
 	async compile(): Promise<CompileResult> {
 		const config = await this._;
+		const sourcemap = config.output.sourcemap;
 
 		const start = Date.now();
 
@@ -68,7 +69,7 @@ export default class RollupCompiler {
 			const bundle = await rollup.rollup(config);
 			await bundle.write(config.output);
 
-			return new RollupResult(Date.now() - start, this);
+			return new RollupResult(Date.now() - start, this, sourcemap);
 		} catch (err) {
 			if (err.filename) {
 				// TODO this is a bit messy. Also, can
@@ -85,6 +86,7 @@ export default class RollupCompiler {
 
 	async watch(cb: (err?: Error, stats?: any) => void) {
 		const config = await this._;
+		const sourcemap = config.output.sourcemap;
 
 		const watcher = rollup.watch(config);
 
@@ -113,7 +115,7 @@ export default class RollupCompiler {
 
 				case 'ERROR':
 					this.errors.push(event.error);
-					cb(null, new RollupResult(Date.now() - this._start, this));
+					cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
 					break;
 
 				case 'START':
@@ -126,7 +128,7 @@ export default class RollupCompiler {
 					break;
 
 				case 'BUNDLE_END':
-					cb(null, new RollupResult(Date.now() - this._start, this));
+					cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
 					break;
 
 				default:

@@ -46,7 +46,7 @@ type SourceMap = {
 	mappings: string;
 };
 
-function get_css_from_modules(modules: string[], css_map: Map<string, string>, dirs: Dirs) {
+function get_css_from_modules(modules: string[], css_map: Map<string, string>, asset_dir: string) {
 	const parts: string[] = [];
 	const mappings: number[][][] = [];
 
@@ -94,7 +94,7 @@ function get_css_from_modules(modules: string[], css_map: Map<string, string>, d
 	if (parts.length > 0) {
 		combined_map.mappings = codec.encode(mappings);
 
-		combined_map.sources = combined_map.sources.map(source => path.relative(`${dirs.dest}/client`, source));
+		combined_map.sources = combined_map.sources.map(source => path.relative(asset_dir, source).replace(/\\/g, '/'));
 
 		return {
 			code: parts.join('\n'),
@@ -105,7 +105,12 @@ function get_css_from_modules(modules: string[], css_map: Map<string, string>, d
 	return null;
 }
 
-export default function extract_css(client_result: CompileResult, components: PageComponent[], dirs: Dirs) {
+export default function extract_css(
+	client_result: CompileResult,
+	components: PageComponent[],
+	dirs: Dirs,
+	sourcemap: boolean | 'inline'
+) {
 	const result: {
 		main: string | null;
 		chunks: Record<string, string[]>
@@ -138,17 +143,25 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		const css_modules = chunk.modules.filter(m => css_map.has(m));
 		if (!css_modules.length) return;
 
-		const css = get_css_from_modules(css_modules, css_map, dirs);
+		const css = get_css_from_modules(css_modules, css_map, asset_dir);
 
-		const { code, map } = css;
+		let { code, map } = css;
 
 		const output_file_name = chunk.file.replace(/\.js$/, '.css');
 
 		map.file = output_file_name;
-		map.sources = map.sources.map(source => path.relative(`${asset_dir}`, source));
 
-		fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=./${output_file_name}.map */`);
-		fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+		if (sourcemap === true) {
+			fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+			code += `\n/*# sourceMappingURL=${output_file_name}.map */`;
+		}
+
+		if (sourcemap === 'inline') {
+			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64')
+			code += `\n/*# sourceMappingURL=${inline_sourcemap_header}${base64} */`;
+		}
+
+		fs.writeFileSync(`${asset_dir}/${output_file_name}`, code);
 
 		chunks_with_css.add(chunk);
 	});
@@ -227,19 +240,27 @@ export default function extract_css(client_result: CompileResult, components: Pa
 		entry_css_modules.push(file);
 	});
 
-	const leftover = get_css_from_modules(entry_css_modules, css_map, dirs);
+	const leftover = get_css_from_modules(entry_css_modules, css_map, asset_dir);
 	if (leftover) {
-		const { code, map } = leftover;
+		let { code, map } = leftover;
 
 		const main_hash = hash(code);
 
 		const output_file_name = `main.${main_hash}.css`;
 
 		map.file = output_file_name;
-		map.sources = map.sources.map(source => path.relative(asset_dir, source));
 
-		fs.writeFileSync(`${asset_dir}/${output_file_name}`, `${code}\n/* sourceMappingURL=client/${output_file_name}.map */`);
-		fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+		if (sourcemap === true) {
+			fs.writeFileSync(`${asset_dir}/${output_file_name}.map`, JSON.stringify(map, null, '  '));
+			code += `\n/*# sourceMappingURL=client/${output_file_name}.map */`;
+		}
+
+		if (sourcemap === 'inline') {
+			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64')
+			code += `\n/*# sourceMappingURL=${inline_sourcemap_header}${base64} */`;
+		}
+
+		fs.writeFileSync(`${asset_dir}/${output_file_name}`, code);
 
 		result.main = output_file_name;
 	}
