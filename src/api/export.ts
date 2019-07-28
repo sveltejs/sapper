@@ -87,8 +87,6 @@ async function _export({
 		return entry;
 	});
 
-	let currentRoot = 0;
-
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd,
 		env: Object.assign({
@@ -212,7 +210,7 @@ async function _export({
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
 
-			tasks.push(handle(resolve(entryPoints[currentRoot].href, location)));
+			tasks.push(handle(resolve(root.href, location)));
 		}
 
 		save(pathname, r.status, type, body);
@@ -223,12 +221,11 @@ async function _export({
 	try {
 		await ports.wait(port);
 
-		for (let i = 0; i < entryPoints.length; i++) {
+		for (const entryPoint of entryPoints) {
 			oninfo({
-				message: `Crawling ${entryPoints[currentRoot].href}`
+				message: `Crawling ${entryPoint.href}`
 			});
-			await handle(entryPoints[currentRoot]);
-			currentRoot++;
+			await handle(entryPoint);
 		}
 
 		await handle(resolve(root.href, 'service-worker-index.html'));
