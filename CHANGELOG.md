@@ -1,5 +1,15 @@
 # sapper changelog
 
+## 0.27.5
+
+* Fix exported sites with links to static files ([#572](https://github.com/sveltejs/sapper/issues/572))
+* Properly update manifest data during changes in dev mode ([#713](https://github.com/sveltejs/sapper/pull/713))
+* Don't silently ignore unknown options passed to CLI ([#729])(https://github.com/sveltejs/sapper/issues/729))
+* Add `host` value to `page` store, giving uniform access to `req.headers.host`/`location.host` ([#735](https://github.com/sveltejs/sapper/issues/735))
+* Log uncaught exceptions in server routes ([#782](https://github.com/sveltejs/sapper/issues/782))
+* Fix default error template ([#817](https://github.com/sveltejs/sapper/issues/817))
+
+
 ## 0.27.4
 
 * Update devalue
