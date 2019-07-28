@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.7
+
+* Revert erroring on unknown options passed to CLI, pending upstream bug investigation
+
+
 ## 0.27.6
 
 * Various fixes for CSS sourcemaps ([#421](https://github.com/sveltejs/sapper/issues/421), [#537](https://github.com/sveltejs/sapper/issues/537), [#808](https://github.com/sveltejs/sapper/issues/808))
