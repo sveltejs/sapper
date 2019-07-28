@@ -268,7 +268,7 @@ prog.command('export [dest]')
 		}
 	});
 
-prog.parse(process.argv, { unknown: (arg: string) => `Unknown option: ${arg}` });
+prog.parse(process.argv);
 
 
 async function _build(
