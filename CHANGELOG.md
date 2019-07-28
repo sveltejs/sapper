@@ -1,5 +1,12 @@
 # sapper changelog
 
+## 0.27.6
+
+* Various fixes for CSS sourcemaps ([#421](https://github.com/sveltejs/sapper/issues/421), [#537](https://github.com/sveltejs/sapper/issues/537), [#808](https://github.com/sveltejs/sapper/issues/808))
+* Add `export` option `--entry` for specifying multiple entry points ([#749](https://github.com/sveltejs/sapper/issues/749))
+* Fix paths to component CSS in legacy build ([#775](https://github.com/sveltejs/sapper/issues/775))
+
+
 ## 0.27.5
 
 * Fix exported sites with links to static files ([#572](https://github.com/sveltejs/sapper/issues/572))
