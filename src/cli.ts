@@ -154,7 +154,7 @@ prog.command('build [dest]')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
-	.option('--ext', 'Custom Route Extension', '.svelte .html')
+	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -204,8 +204,8 @@ prog.command('export [dest]')
 	.option('--static', 'Static files directory', 'static')
 	.option('--output', 'Sapper output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
-	.option('--ext', 'Custom Route Extension', '.svelte .html')
-	.option('--entry', 'Custom entry points', '/')
+	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
+	.option('--entry', 'Custom entry points (space separated)', '/')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
