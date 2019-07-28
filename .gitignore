@@ -10,4 +10,3 @@ dist
 !rollup.config.js
 /runtime/app.mjs
 /runtime/server.mjs
-.vscode

@@ -80,8 +80,6 @@ async function _export({
 	const root = resolve(origin, basepath);
 	if (!root.href.endsWith('/')) root.href += '/';
 
-
-
 	const entryPoints = entry.split(' ').map(entryPoint => {
 		const entry = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
 		if (!entry.href.endsWith('/')) entry.href += '/';
