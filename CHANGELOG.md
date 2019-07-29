@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.27.8
+
+* Enable sourcemaps in dev mode only by default ([#590](https://github.com/sveltejs/sapper/issues/590))
+* Don't silently ignore unknown options passed to CLI (again) ([#729](https://github.com/sveltejs/sapper/issues/729))
+
+
 ## 0.27.7
 
 * Revert erroring on unknown options passed to CLI, pending upstream bug investigation
