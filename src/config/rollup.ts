@@ -1,7 +1,7 @@
 import { dev, src, dest } from './env';
 import { InputOption, OutputOptions } from 'rollup';
 
-const defaultSourcemap = dev ? 'inline' : false;
+const sourcemap = dev ? 'inline' : false;
 
 export default {
 	dev,
@@ -11,7 +11,7 @@ export default {
 			return `${src}/client.js`
 		},
 
-		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
+		output: (): OutputOptions => {
 			let dir = `${dest}/client`;
 			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
 
@@ -32,7 +32,7 @@ export default {
 			};
 		},
 
-		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
+		output: (): OutputOptions => {
 			return {
 				dir: `${dest}/server`,
 				format: 'cjs',
@@ -46,7 +46,7 @@ export default {
 			return `${src}/service-worker.js`;
 		},
 
-		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
+		output: (): OutputOptions => {
 			return {
 				file: `${dest}/service-worker.js`,
 				format: 'iife',
