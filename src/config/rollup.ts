@@ -1,8 +1,7 @@
 import { dev, src, dest } from './env';
-import { InputOption, OutputOptions } from 'rollup'
+import { InputOption, OutputOptions } from 'rollup';
 
-const defaultSourcemap =
-	dev === true ? 'inline' : false
+const defaultSourcemap = dev ? 'inline' : false;
 
 export default {
 	dev,
@@ -12,7 +11,7 @@ export default {
 			return `${src}/client.js`
 		},
 
-		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
+		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
 			let dir = `${dest}/client`;
 			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
 
@@ -21,7 +20,7 @@ export default {
 				entryFileNames: '[name].[hash].js',
 				chunkFileNames: '[name].[hash].js',
 				format: 'esm',
-				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
+				sourcemap
 			};
 		}
 	},
@@ -33,11 +32,11 @@ export default {
 			};
 		},
 
-		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
+		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
 			return {
 				dir: `${dest}/server`,
 				format: 'cjs',
-				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
+				sourcemap
 			};
 		}
 	},
@@ -47,11 +46,11 @@ export default {
 			return `${src}/service-worker.js`;
 		},
 
-		output: (sourcemap?: boolean | 'inline'): OutputOptions => {
+		output: (sourcemap: boolean | 'inline' = defaultSourcemap): OutputOptions => {
 			return {
 				file: `${dest}/service-worker.js`,
 				format: 'iife',
-				sourcemap: sourcemap !== undefined ? sourcemap : defaultSourcemap
+				sourcemap
 			}
 		}
 	}
