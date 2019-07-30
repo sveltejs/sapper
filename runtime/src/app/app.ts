@@ -185,7 +185,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 	const token = current_token = {};
 	const { redirect, props, branch } = await loaded;
-	if (token !== current_token) return false;
+	if (token !== current_token) return false; // a secondary navigation happened while we were loading
 
 	await render(redirect, branch, props, target.page);
 	if (document.activeElement) document.activeElement.blur();
@@ -213,7 +213,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 }
 
 async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
-	if (redirect) 	return goto(redirect.location, { replaceState: true });
+	if (redirect) return goto(redirect.location, { replaceState: true });
 
 	stores.page.set(page);
 	stores.preloading.set(false);
