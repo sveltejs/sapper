@@ -185,7 +185,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 	const token = current_token = {};
 	const { redirect, props, branch } = await loaded;
-	if (token !== current_token) return; // a secondary navigation happened while we were loading
+	if (token !== current_token) return false;
 
 	await render(redirect, branch, props, target.page);
 	if (document.activeElement) document.activeElement.blur();
@@ -208,10 +208,12 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 		scroll_history[cid] = scroll;
 		if (scroll) scrollTo(scroll.x, scroll.y);
 	}
+
+	return true;
 }
 
 async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
-	if (redirect) return goto(redirect.location, { replaceState: true });
+	if (redirect) 	return goto(redirect.location, { replaceState: true });
 
 	stores.page.set(page);
 	stores.preloading.set(false);

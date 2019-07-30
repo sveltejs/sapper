@@ -60,7 +60,7 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 	prefetch(a.href);
 }
 
-function handle_click(event: MouseEvent) {
+async function handle_click(event: MouseEvent) {
 	// Adapted from https://github.com/visionmedia/page.js
 	// MIT license https://github.com/visionmedia/page.js#license
 	if (which(event) !== 1) return;
@@ -98,9 +98,11 @@ function handle_click(event: MouseEvent) {
 	const target = select_target(url);
 	if (target) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
-		navigate(target, null, noscroll, url.hash);
+		const navigated = await navigate(target, null, noscroll, url.hash)
+		if (navigated) {
+			history.pushState({ id: cid }, '', url.href);
+		}
 		event.preventDefault();
-		history.pushState({ id: cid }, '', url.href);
 	}
 }
 
