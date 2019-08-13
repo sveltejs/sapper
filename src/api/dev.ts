@@ -507,7 +507,8 @@ function watch_dir(
 		watch = new CheapWatch({ dir, filter, debounce: 50 });
 
 		watch.on('+', ({ isNew }: { isNew: boolean }) => {
-			if (isNew) callback();
+			// ignore isNew to refresh the manifest_data.components has_preload values
+			callback();
 		});
 
 		watch.on('-', callback);
