@@ -64,6 +64,18 @@ now -e SAPPER_TIMESTAMP=$(date +%s%3N)
 [Now]: https://zeit.co/now
 
 
+## Deploying to App Engine
+
+[Google App Engine](https://cloud.google.com/appengine/) is a fully managed serverless platform. The app engine will run the dynamic server so its not necessary to perform `npm run export`. Before deploying you need to add an `app.yaml` file to your project, that specifies the required node runtime:
+
+```
+# app.yaml
+runtime: nodejs10
+```
+
+A [custom build step](https://cloud.google.com/appengine/docs/standard/nodejs/running-custom-build-step) can be run by adding `"gcp-build": "run-p build"` as a `scripts` entry to your `package.json` scripts. This ensures that the build step will be performed before the application starts. Now you can deploy using the `gcloud app deploy` command.
+
+
 ## Deploying to Docker
 
 [Docker](https://docs.docker.com/install/) can be used to build an image and run it on your local system. Doing this locally allows testing the build process before building and deploying it on a cloud platform. The Docker image can be build by adding a `Dockerfile` into your project:
