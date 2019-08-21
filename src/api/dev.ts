@@ -212,7 +212,7 @@ class Watcher extends EventEmitter {
 
 		if (this.live) {
 			this.filewatchers.push(
-				fs.watch(`${static_files}/global.css`, () => {
+				watch_dir(static_files, null, () => {
 					this.dev_server.send({
 						action: 'reload'
 					});
