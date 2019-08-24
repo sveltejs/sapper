@@ -122,7 +122,7 @@ Commands available to build and run a local Docker image listed below. The names
 # build a docker image
 docker build -t sapper-image .
 # run docker image locally
-docker run --name sapper-image -p 3000:3000 -d sapper-container
+docker run --name sapper-container -p 3000:3000 -d sapper-image
 # show running containers
 docker ps
 # show container stats
