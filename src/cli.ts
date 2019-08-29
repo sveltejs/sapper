@@ -231,7 +231,7 @@ prog.command('export [dest]')
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
-			const { export: _export } = await import('./api/export_backpressure');
+			const { export: _export } = await import('./api/export');
 			const { default: pb } = await import('pretty-bytes');
 
 			await _export({
