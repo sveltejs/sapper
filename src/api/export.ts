@@ -67,7 +67,7 @@ async function _export({
 	// Prep output directory
 	rimraf(export_dir);
 
-	copy(static_files, export_dir);
+	const seen = copy(static_files, export_dir);
 	copy(path.join(build_dir, 'client'), path.join(export_dir, 'client'));
 	copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
 	copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
@@ -98,7 +98,6 @@ async function _export({
 		}, process.env)
 	});
 
-	const seen = new Set();
 	const saved = new Set();
 	const q = yootils.queue(concurrent);
 

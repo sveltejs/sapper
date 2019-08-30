@@ -31,16 +31,24 @@ export function rimraf(thing: string) {
 }
 
 export function copy(from: string, to: string) {
-	if (!fs.existsSync(from)) return;
-
-	const stats = fs.statSync(from);
-
-	if (stats.isDirectory()) {
+	const seen = new Set();
+	const startDir = from + "/";
+	copyFiles(from, to);
+	return seen;
+  
+	function copyFiles(from: string, to: string) {
+	  if (!fs.existsSync(from)) return;
+  
+	  const stats = fs.statSync(from);
+  
+	  if (stats.isDirectory()) {
 		fs.readdirSync(from).forEach(file => {
-			copy(path.join(from, file), path.join(to, file));
+		  copyFiles(path.join(from, file), path.join(to, file));
 		});
-	} else {
+	  } else {
 		mkdirp(path.dirname(to));
 		fs.writeFileSync(to, fs.readFileSync(from));
+		seen.add(from.replace(startDir, ""));
+	  }
 	}
-}
+  }
