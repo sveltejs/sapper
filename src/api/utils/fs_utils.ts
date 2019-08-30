@@ -31,10 +31,10 @@ export function rimraf(thing: string) {
 }
 
 export function copy(from: string, to: string) {
-	const seen = new Set();
+	const copied = new Set();
 	const startDir = from + "/";
 	copyFiles(from, to);
-	return seen;
+	return copied;
   
 	function copyFiles(from: string, to: string) {
 	  if (!fs.existsSync(from)) return;
@@ -48,7 +48,7 @@ export function copy(from: string, to: string) {
 	  } else {
 		mkdirp(path.dirname(to));
 		fs.writeFileSync(to, fs.readFileSync(from));
-		seen.add(from.replace(startDir, ""));
+		copied.add(from.replace(startDir, ""));
 	  }
 	}
   }
