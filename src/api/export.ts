@@ -130,7 +130,7 @@ async function _export({
 	const saved = new Set();
 
 	function save(url: string, status: number, type: string, body: string) {
-		const { pathname } = resolve(origin, url);
+		let { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
@@ -186,6 +186,11 @@ async function _export({
 	async function handleResponse(fetched: Promise<FetchRet>, fetchOpts: FetchOpts) {
 		const { response, url } = await fetched;
 		const { protocol, host, root } = fetchOpts;
+		let pathname = url.pathname;
+
+		if (pathname !== '/service-worker-index.html') {
+			pathname = pathname.replace(root.pathname, '') || '/';
+		}
 
 		let type = response.headers.get('Content-Type');
 
@@ -203,7 +208,7 @@ async function _export({
 				}
 			});
 
-			if (url.pathname !== '/service-worker-index.html') {
+			if (pathname !== '/service-worker-index.html') {
 				const cleaned = clean_html(body);
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
@@ -237,7 +242,7 @@ async function _export({
 			handle(resolve(root.href, location), fetchOpts, queue.add);
 		}
 
-		return save(url.pathname, response.status, type, body);
+		return save(pathname, response.status, type, body);
 	}
 
 	const fetchOpts = {
