@@ -30,25 +30,18 @@ export function rimraf(thing: string) {
 	}
 }
 
-export function copy(from: string, to: string) {
-	const copied = new Set();
-	const startDir = from + "/";
-	copyFiles(from, to);
-	return copied;
-  
-	function copyFiles(from: string, to: string) {
-	  if (!fs.existsSync(from)) return;
-  
-	  const stats = fs.statSync(from);
-  
-	  if (stats.isDirectory()) {
-		fs.readdirSync(from).forEach(file => {
-		  copyFiles(path.join(from, file), path.join(to, file));
-		});
-	  } else {
-		mkdirp(path.dirname(to));
-		fs.writeFileSync(to, fs.readFileSync(from));
-		copied.add(from.replace(startDir, ""));
-	  }
+export function copy(from: string, to: string, seen?: Set<string>, basedir?: string) {
+	if (!fs.existsSync(from)) return;
+
+	const stats = fs.statSync(from);
+
+	if (stats.isDirectory()) {
+	fs.readdirSync(from).forEach(file => {
+		copy(path.join(from, file), path.join(to, file), seen, basedir);
+	});
+	} else {
+	mkdirp(path.dirname(to));
+	fs.writeFileSync(to, fs.readFileSync(from));
+	if (seen instanceof Set) seen.add(from.replace(basedir, ""));
 	}
-  }
+}
