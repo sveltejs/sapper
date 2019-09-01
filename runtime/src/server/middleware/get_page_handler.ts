@@ -293,15 +293,6 @@ export function get_page_handler(
 				script += `</script><script src="${main}">`;
 			}
 
-			if(req.baseUrl.startsWith('.')) {
-				let reloadIfNonCanonical;
-				if(req.url === '/') {
-					reloadIfNonCanonical = `if(location.href.lastIndexOf('index.html') === location.href.length-10) { location.replace(location.href.slice(0,location.href.length - 10)) } else if(location.href.lastIndexOf('/') !== location.href.length-1) location.replace(location.href + '/')`;
-				} else {
-					reloadIfNonCanonical = `if(location.href.lastIndexOf('index.html') === location.href.length-10) { location.replace(location.href.slice(0,location.href.length - 11)) } else if(location.href.lastIndexOf('/') === location.href.length-1) location.replace(location.href.slice(0,location.href.length-1))`;
-				}
-				script += `</script><script>${reloadIfNonCanonical}`
-			}
 
 			let styles: string;
 

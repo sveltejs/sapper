@@ -39,7 +39,7 @@ export default function start(opts: {
 
 		if (initial_data.error) return handle_error(url);
 
-		const target = select_target(url);
+		const target = select_target(url, true);
 		if (target) return navigate(target, uid, true, hash);
 	});
 }
@@ -100,7 +100,7 @@ function handle_click(event: MouseEvent) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
 		navigate(target, null, noscroll, url.hash);
 		event.preventDefault();
-		history.pushState({ id: cid }, '', url.href);
+		history.pushState({ id: cid }, '', target.pathname);
 	}
 }
 

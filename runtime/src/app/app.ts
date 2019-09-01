@@ -93,27 +93,59 @@ export function extract_query(search: string) {
 	return query;
 }
 
-export function select_target(url: URL): Target {
+function countBaseDepth(baseUrl: string): number {
+	let depth = 0;
+	const splitted = baseUrl.split('/');
+	for (let split of splitted) {
+		if (split === '..') {
+			depth++;
+		}
+	}
+	return depth;
+}
+
+function trimSlashes(path: string): string {
+	if (path.startsWith('/')) {
+		path = path.slice(1);
+	}
+	if (path.endsWith('/')) {
+		path = path.slice(0, path.length - 1);
+	}
+	return path;
+}
+
+let pathToCut;
+export function select_target(url: URL, start: boolean = false): Target {
 	if (url.origin !== location.origin) return null;
 
 	let path = url.pathname;
+	let pathname = url.pathname;
+
 	if (initial_data.baseUrl.startsWith('.')) {
-		let numBackward = 1;
-		const splitted = initial_data.baseUrl.split('/');
-		for (let split of splitted) {
-			if (split === '..') {
-				numBackward++;
-			}
+		if (start) {
+			const baseDepth = countBaseDepth(initial_data.baseUrl);
+			const splitPath = trimSlashes(path).split('/');
+			pathToCut = '/' + splitPath.slice(0,splitPath.length-baseDepth).join('/')		
+		}		
+		path = path.substr(pathToCut.length);
+		if (!path.startsWith('/')) {
+			path = '/' + path;
 		}
-		const pathPart = path.split('/');
-		path = '/' + pathPart.slice(pathPart.length - numBackward).join('/');
+		if(pathToCut !== '/' && !path.endsWith('/')) {
+			path = path + '/';
+		}
+		if(pathToCut === '/') {
+			pathname = path;
+		} else {
+			pathname = pathToCut + path;
+		}
+		if (path === '') {
+			path = '/';
+			pathname = pathToCut;
+		}
 	} else {
 		if (!path.startsWith(initial_data.baseUrl)) return null;
 		path = path.slice(initial_data.baseUrl.length);
-	}
-
-	if (path === '') {
-		path = '/';
 	}
 
 	// avoid accidental clashes between server routes and page routes
@@ -131,7 +163,7 @@ export function select_target(url: URL): Target {
 
 			const page = { host: location.host, path, query, params };
 
-			return { href: url.href, route, match, page };
+			return { href: url.href, pathname, route, match, page };
 		}
 	}
 }

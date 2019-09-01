@@ -19,12 +19,15 @@ export default function middleware(opts: {
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
 			if (useRelativeBasePath) {
-				req.baseUrl = '.';
-				const numParts = req.path.split('/').length - 1;
-				if (numParts > 1) {
-					req.baseUrl = '..';
-					for (let i = 2; i < numParts; i++) {
-						req.baseUrl += '/..';
+				if(req.url === '/') {
+					req.baseUrl = '.';
+				} else {
+					const numParts = req.path.split('/').length;
+					if (numParts > 1) {
+						req.baseUrl = '..';
+						for (let i = 2; i < numParts; i++) {
+							req.baseUrl += '/..';
+						}
 					}
 				}
 			}

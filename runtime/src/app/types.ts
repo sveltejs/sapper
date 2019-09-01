@@ -48,6 +48,7 @@ export type Target = {
 	route: Route;
 	match: RegExpExecArray;
 	page: Page;
+	pathname: string;
 };
 
 export type Redirect = {
