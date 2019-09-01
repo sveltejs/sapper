@@ -130,29 +130,12 @@ export function select_target(url: URL, start: boolean = false): Target {
 			const splitPath = trimSlashes(path).split('/');
 			pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
 
-			if(pathToCut === '/') {
-				if (url.href.lastIndexOf('index.html') === url.href.length - 10) {
-					location.replace(url.href.slice(0, url.href.length - 11));
-					return null;
-				 } else if(url.pathname !== '/' && url.href.lastIndexOf('/') === url.href.length - 1) {
-					location.replace(url.href.slice(0, url.href.length - 1));
-					return null;
-				}
-			} else {
-				if (url.href.lastIndexOf('index.html') === url.href.length - 10) {
-					location.replace(url.href.slice(0, url.href.length - 10));
-					return null;
-				} else if(url.href.lastIndexOf('/') !== url.href.length -1) {
-					location.replace(url.href + '/');
-					return null;
-				}
-			}
 		}		
 		path = path.substr(pathToCut.length);
 		if (!path.startsWith('/')) {
 			path = '/' + path;
 		}
-		if(pathToCut !== '/' && !path.endsWith('/')) {
+		if(!path.endsWith('/')) {
 			path = path + '/';
 		}
 		if(pathToCut === '/') {

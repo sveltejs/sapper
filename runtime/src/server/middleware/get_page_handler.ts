@@ -45,7 +45,8 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
-		const prefix = req.baseUrl.startsWith('.') ? '' : req.baseUrl + '/';
+		const baseHref = req.params.baseHref || req.baseUrl;
+		const prefix = baseHref.startsWith('.') ? '' : baseHref + '/';
 		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
@@ -270,7 +271,7 @@ export function get_page_handler(
 
 			let script = `__SAPPER__={${[
 				error && `error:${serialized.error},status:${status}`,
-				`baseUrl:"${req.baseUrl}"`,
+				`baseUrl:"${baseHref}"`,
 				serialized.preloaded && `preloaded:${serialized.preloaded}`,
 				serialized.session && `session:${serialized.session}`
 			].filter(Boolean).join(',')}};`;
@@ -293,11 +294,13 @@ export function get_page_handler(
 				script += `</script><script src="${main}">`;
 			}
 
-			// force redirect to canonical url so links/scripts... can be fetched: 
-			// - append / for sub folder path
-			// - leave it for root path (will be redirected by app code)
-			if(req.baseUrl.startsWith('.')) {
-				const reloadIfNonCanonical = `
+			let pre_script = '';
+			// This force redirect to canonical url so links/scripts... can be fetched: 
+			// This simply ensure path finish by "/"
+			// this will also redirect from /index.html
+			if(baseHref.startsWith('.')) {
+				pre_script = `
+				<script>
 					function countBaseDepth(baseUrl) {
 						let depth = 0;
 						const splitted = baseUrl.split('/');
@@ -322,15 +325,13 @@ export function get_page_handler(
 					var baseDepth = countBaseDepth(baseHref);
 					var splitPath = trimSlashes(location.pathname).split('/');
 					var pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
-					if(pathToCut !== '/') {
-						if (location.href.lastIndexOf('index.html') === location.href.length - 10) {
-							location.replace(location.href.slice(0, location.href.length - 10));
-						} else if(location.href.lastIndexOf('/') !== location.href.length -1) {
-							location.replace(location.href + '/');
-						}
+					if (location.href.endsWith('index.html')) {
+						location.replace(location.href.slice(0, location.href.length - 10));
+					} else if(!location.href.endsWith('/')) {
+						location.replace(location.href + '/');
 					}
+				</script>
 				`;
-				script += `</script><script>${reloadIfNonCanonical}`
 			}
 
 			let styles: string;
@@ -362,8 +363,8 @@ export function get_page_handler(
 			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
 
 			const body = template()
-				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
+				.replace('%sapper.base%', () => `<base href="${baseHref}/">`)
+				.replace('%sapper.scripts%', () => `${pre_script}<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
 				.replace('%sapper.styles%', () => styles);

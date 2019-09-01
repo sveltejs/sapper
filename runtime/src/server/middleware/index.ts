@@ -20,13 +20,13 @@ export default function middleware(opts: {
 		(req: Req, res: Res, next: () => void) => {
 			if (useRelativeBasePath) {
 				if(req.url === '/') {
-					req.baseUrl = '.';
+					req.params.baseHref = '.';
 				} else {
 					const numParts = req.path.split('/').length;
 					if (numParts > 1) {
-						req.baseUrl = '..';
+						req.params.baseHref = '..';
 						for (let i = 2; i < numParts; i++) {
-							req.baseUrl += '/..';
+							req.params.baseHref += '/..';
 						}
 					}
 				}
