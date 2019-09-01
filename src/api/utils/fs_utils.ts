@@ -34,7 +34,7 @@ export function rimraf(thing: string) {
 export function copy(from: string, to: string): Set<string> { // returns a Set which contains all the paths of the copied files
 	const copied: Set<string> = new Set();
 	
-	if (!fs.existsSync(from)) return;
+	if (!fs.existsSync(from)) return copied;
 
 	const stats = fs.statSync(from);
 
