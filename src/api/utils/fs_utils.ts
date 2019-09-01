@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { stringify } from '../../utils';
 
 export function mkdirp(dir: string) {
 	const parent = path.dirname(dir);
@@ -34,7 +33,7 @@ export function rimraf(thing: string) {
 export function copy(from: string, to: string): Set<string> { // returns a Set which contains all the paths of the copied files
 	const copied: Set<string> = new Set();
 	
-	if (!fs.existsSync(from)) return;
+	if (!fs.existsSync(from)) return copied;
 
 	const stats = fs.statSync(from);
 
