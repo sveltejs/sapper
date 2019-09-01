@@ -45,6 +45,7 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
+		const prefix = req.baseUrl.startsWith('.') ? '' : req.baseUrl + '/';
 		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
@@ -72,7 +73,7 @@ export function get_page_handler(
 			// TODO add dependencies and CSS
 			const link = preloaded_chunks
 				.filter(file => file && !file.match(/\.map$/))
-				.map(file => `<${req.baseUrl}/client/${file}>;rel="modulepreload"`)
+				.map(file => `<${prefix}client/${file}>;rel="modulepreload"`)
 				.join(', ');
 
 			res.setHeader('Link', link);
@@ -81,7 +82,7 @@ export function get_page_handler(
 				.filter(file => file && !file.match(/\.map$/))
 				.map((file) => {
 					const as = /\.css$/.test(file) ? 'style' : 'script';
-					return `<${req.baseUrl}/client/${file}>;rel="preload";as="${as}"`;
+					return `<${prefix}client/${file}>;rel="preload";as="${as}"`;
 				})
 				.join(', ');
 
@@ -275,18 +276,18 @@ export function get_page_handler(
 			].filter(Boolean).join(',')}};`;
 
 			if (has_service_worker) {
-				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
+				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${prefix}service-worker.js');`;
 			}
 
 			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
-			const main = `${req.baseUrl}/client/${file}`;
+			const main = `${prefix}client/${file}`;
 
 			if (build_info.bundler === 'rollup') {
 				if (build_info.legacy_assets) {
-					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
-					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
+					const legacy_main = `${prefix}client/legacy/${build_info.legacy_assets.main}`;
+					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${prefix}client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
 				} else {
-					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
+					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${prefix}client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
 				script += `</script><script src="${main}">`;

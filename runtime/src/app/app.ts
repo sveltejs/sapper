@@ -95,9 +95,22 @@ export function extract_query(search: string) {
 
 export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
-	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 
-	let path = url.pathname.slice(initial_data.baseUrl.length);
+	let path = url.pathname;
+	if (initial_data.baseUrl.startsWith('.')) {
+		let numBackward = 1;
+		const splitted = initial_data.baseUrl.split('/');
+		for (let split of splitted) {
+			if (split === '..') {
+				numBackward++;
+			}
+		}
+		const pathPart = path.split('/');
+		path = '/' + pathPart.slice(pathPart.length - numBackward).join('/');
+	} else {
+		if (!path.startsWith(initial_data.baseUrl)) return null;
+		path = path.slice(initial_data.baseUrl.length);
+	}
 
 	if (path === '') {
 		path = '/';

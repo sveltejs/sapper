@@ -14,8 +14,20 @@ export default function middleware(opts: {
 
 	let emitted_basepath = false;
 
+	const useRelativeBasePath = process.env['SAPPER_RELATIVE_BASEPATH'] === 'true';
+	
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
+			if (useRelativeBasePath) {
+				req.baseUrl = '.';
+				const numParts = req.path.split('/').length - 1;
+				if (numParts > 1) {
+					req.baseUrl = '..';
+					for (let i = 2; i < numParts; i++) {
+						req.baseUrl += '/..';
+					}
+				}
+			}
 			if (req.baseUrl === undefined) {
 				let { originalUrl } = req;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {

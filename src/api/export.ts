@@ -24,6 +24,7 @@ type Opts = {
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 	entry?: string;
+	relative_basepath?: boolean;
 };
 
 type Ref = {
@@ -55,7 +56,8 @@ async function _export({
 	concurrent = 8,
 	oninfo = noop,
 	onfile = noop,
-	entry = '/'
+	entry = '/',
+	relative_basepath = false,
 }: Opts = {}) {
 	basepath = basepath.replace(/^\//, '')
 
@@ -94,7 +96,8 @@ async function _export({
 		env: Object.assign({
 			PORT: port,
 			NODE_ENV: 'production',
-			SAPPER_EXPORT: 'true'
+			SAPPER_EXPORT: 'true',
+			SAPPER_RELATIVE_BASEPATH: relative_basepath ? 'true' : undefined,
 		}, process.env)
 	});
 
