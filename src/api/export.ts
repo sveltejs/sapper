@@ -68,7 +68,9 @@ async function _export({
 	rimraf(export_dir);
 
 	const seen: Set<string> = new Set();
-	copy(static_files, export_dir, seen, static_files + "/");
+	copy(static_files, export_dir)
+		.forEach((element:string) => seen.add(element.replace(static_files + "/", "")));
+
 	copy(path.join(build_dir, 'client'), path.join(export_dir, 'client'));
 	copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
 	copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
