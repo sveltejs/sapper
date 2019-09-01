@@ -122,10 +122,31 @@ export function select_target(url: URL, start: boolean = false): Target {
 	let pathname = url.pathname;
 
 	if (initial_data.baseUrl.startsWith('.')) {
+		if(path.endsWith('index.html')) {
+			path = path.slice(0, path.length-10);
+		}
 		if (start) {
 			const baseDepth = countBaseDepth(initial_data.baseUrl);
 			const splitPath = trimSlashes(path).split('/');
-			pathToCut = '/' + splitPath.slice(0,splitPath.length-baseDepth).join('/')		
+			pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
+
+			if(pathToCut === '/') {
+				if (url.href.lastIndexOf('index.html') === url.href.length - 10) {
+					location.replace(url.href.slice(0, url.href.length - 11));
+					return null;
+				 } else if(url.pathname !== '/' && url.href.lastIndexOf('/') === url.href.length - 1) {
+					location.replace(url.href.slice(0, url.href.length - 1));
+					return null;
+				}
+			} else {
+				if (url.href.lastIndexOf('index.html') === url.href.length - 10) {
+					location.replace(url.href.slice(0, url.href.length - 10));
+					return null;
+				} else if(url.href.lastIndexOf('/') !== url.href.length -1) {
+					location.replace(url.href + '/');
+					return null;
+				}
+			}
 		}		
 		path = path.substr(pathToCut.length);
 		if (!path.startsWith('/')) {

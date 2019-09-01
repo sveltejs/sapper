@@ -293,6 +293,45 @@ export function get_page_handler(
 				script += `</script><script src="${main}">`;
 			}
 
+			// force redirect to canonical url so links/scripts... can be fetched: 
+			// - append / for sub folder path
+			// - leave it for root path (will be redirected by app code)
+			if(req.baseUrl.startsWith('.')) {
+				const reloadIfNonCanonical = `
+					function countBaseDepth(baseUrl) {
+						let depth = 0;
+						const splitted = baseUrl.split('/');
+						for (let split of splitted) {
+							if (split === '..') {
+								depth++;
+							}
+						}
+						return depth;
+					}
+					
+					function trimSlashes(path) {
+						if (path.startsWith('/')) {
+							path = path.slice(1);
+						}
+						if (path.endsWith('/')) {
+							path = path.slice(0, path.length - 1);
+						}
+						return path;
+					}
+					var baseHref = document.getElementsByTagName('base')[0].getAttribute('href');
+					var baseDepth = countBaseDepth(baseHref);
+					var splitPath = trimSlashes(location.pathname).split('/');
+					var pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
+					if(pathToCut !== '/') {
+						if (location.href.lastIndexOf('index.html') === location.href.length - 10) {
+							location.replace(location.href.slice(0, location.href.length - 10));
+						} else if(location.href.lastIndexOf('/') !== location.href.length -1) {
+							location.replace(location.href + '/');
+						}
+					}
+				`;
+				script += `</script><script>${reloadIfNonCanonical}`
+			}
 
 			let styles: string;
 
