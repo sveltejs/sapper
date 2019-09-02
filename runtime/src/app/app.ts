@@ -150,6 +150,9 @@ export function select_target(url: URL, start: boolean = false): Target {
 	} else {
 		if (!path.startsWith(initial_data.baseUrl)) return null;
 		path = path.slice(initial_data.baseUrl.length);
+		if (path === '') {
+			path = '/';
+		}
 		normalPath = path;
 	}
 
