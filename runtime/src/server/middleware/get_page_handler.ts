@@ -45,7 +45,10 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
-		const baseHref = req.params.baseHref || req.baseUrl;
+		let baseHref = req.baseUrl;
+		if(req.params && req.params.baseHref) {
+			baseHref = req.params.baseHref;
+		}
 		const prefix = baseHref.startsWith('.') ? '' : baseHref + '/';
 		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
