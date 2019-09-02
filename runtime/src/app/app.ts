@@ -120,7 +120,7 @@ export function select_target(url: URL, start: boolean = false): Target {
 
 	let path = url.pathname;
 	let pathname = url.pathname;
-
+	let normalPath = pathname;
 	if (initial_data.baseUrl.startsWith('.')) {
 		if(path.endsWith('index.html')) {
 			path = path.slice(0, path.length-10);
@@ -129,12 +129,12 @@ export function select_target(url: URL, start: boolean = false): Target {
 			const baseDepth = countBaseDepth(initial_data.baseUrl);
 			const splitPath = trimSlashes(path).split('/');
 			pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
-
 		}		
 		path = path.substr(pathToCut.length);
 		if (!path.startsWith('/')) {
 			path = '/' + path;
 		}
+		normalPath = path;
 		if(!path.endsWith('/')) {
 			path = path + '/';
 		}
@@ -150,10 +150,11 @@ export function select_target(url: URL, start: boolean = false): Target {
 	} else {
 		if (!path.startsWith(initial_data.baseUrl)) return null;
 		path = path.slice(initial_data.baseUrl.length);
+		normalPath = path;
 	}
 
 	// avoid accidental clashes between server routes and page routes
-	if (ignore.some(pattern => pattern.test(path))) return;
+	if (ignore.some(pattern => pattern.test(normalPath))) return;
 
 	for (let i = 0; i < routes.length; i += 1) {
 		const route = routes[i];
