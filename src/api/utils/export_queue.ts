@@ -28,16 +28,19 @@ type QueueOpts = {
 	}
 };
 
+// determines current state of a promise
 function promiseState(p: Promise<any>) {
 	const t = {}
 	return Promise.race([p, t]).then(v => (v === t) ? "pending" : "fulfilled", () => "rejected");
 }
 
+// finds first non-pending promise in a list of promises
 async function findNotPendingIndex(list: Promise<any>[]) {
 	const states = await Promise.all(list.map(p => promiseState(p)));
 	return states.findIndex(state => state !== 'pending');
 }
 
+// filters any non-pending promises out of a list of promises
 async function filterNotPending(list: Promise<any>[]) {
 	const states = await Promise.all(list.map(p => promiseState(p)));
 	return states.reduce((acc, curr, index) => {
@@ -48,6 +51,11 @@ async function filterNotPending(list: Promise<any>[]) {
 	}, []);
 }
 
+// sapper export queue
+// uses three arrays to help alleviate io backpressure during export process
+// url array can contain any number of urls found during export process
+// fetching array can contain a number of fetch api returns equal to the concurrent option
+// saving array can contain a number of promisified writeFile returns equal to the concurrent option
 function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callbacks } : QueueOpts) {
 	const urls: URL[] = [];
 	let fetching : Promise<any>[] = [];
