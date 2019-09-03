@@ -30,28 +30,22 @@ type QueueOpts = {
 
 function promiseState(p: Promise<any>) {
 	const t = {}
-	return Promise.race([p, t]).then(v => (v === t)? "pending" : "fulfilled", () => "rejected");
+	return Promise.race([p, t]).then(v => (v === t) ? "pending" : "fulfilled", () => "rejected");
 }
 
 async function findNotPendingIndex(list: Promise<any>[]) {
-	for (let i = 0; i < list.length; i++) {
-		const state = await promiseState(list[i]);
-		if (state !== 'pending') {
-			return i;
-		}
-	}
-	return -1;
+	const states = await Promise.all(list.map(p => promiseState(p)));
+	return states.findIndex(state => state !== 'pending');
 }
 
 async function filterNotPending(list: Promise<any>[]) {
-	const filtered = [];
-	for (let i = 0; i < list.length; i++) {
-		const state = await promiseState(list[i]);
-		if (state === 'pending') {
-			filtered.push(list[i]);
+	const states = await Promise.all(list.map(p => promiseState(p)));
+	return states.reduce((acc, curr, index) => {
+		if (curr === 'pending') {
+			acc.push(list[index]);
 		}
-	}
-	return filtered;
+		return acc;
+	}, []);
 }
 
 function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callbacks } : QueueOpts) {
