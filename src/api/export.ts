@@ -32,6 +32,8 @@ type Ref = {
 	as: string
 };
 
+type URL = url.UrlWithStringQuery;
+
 function resolve(from: string, to: string) {
 	return url.parse(url.resolve(from, to));
 }
@@ -44,31 +46,6 @@ function get_href(attrs: string) {
 	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
 	return match && (match[1] || match[2] || match[3]);
 }
-
-async function handleFetch(url: URL, { timeout, host, host_header }: FetchOpts) {
-	const href = url.href;
-	const timeout_deferred = new Deferred();
-	const the_timeout = setTimeout(() => {
-		timeout_deferred.reject(new Error(`Timed out waiting for ${href}`));
-	}, timeout);
-
-	const r = await Promise.race([
-		fetch(href, {
-			headers: { host: host_header || host },
-			redirect: 'manual'
-		}),
-		timeout_deferred.promise
-	]);
-
-	clearTimeout(the_timeout); // prevent it hanging at the end
-
-	return {
-		response: r,
-		url,
-	};
-}
-
-type URL = url.UrlWithStringQuery;
 
 export { _export as export };
 
@@ -181,6 +158,29 @@ async function _export({
 
 		seen.add(pathname);
 		addCallback(url);
+	}
+
+	async function handleFetch(url: URL, { timeout, host, host_header }: FetchOpts) {
+		const href = url.href;
+		const timeout_deferred = new Deferred();
+		const the_timeout = setTimeout(() => {
+			timeout_deferred.reject(new Error(`Timed out waiting for ${href}`));
+		}, timeout);
+
+		const r = await Promise.race([
+			fetch(href, {
+				headers: { host: host_header || host },
+				redirect: 'manual'
+			}),
+			timeout_deferred.promise
+		]);
+
+		clearTimeout(the_timeout); // prevent it hanging at the end
+
+		return {
+			response: r,
+			url,
+		};
 	}
 
 	async function handleResponse(fetched: Promise<FetchRet>, fetchOpts: FetchOpts) {
