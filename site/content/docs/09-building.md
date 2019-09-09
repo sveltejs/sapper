@@ -13,3 +13,14 @@ The output is a Node app that you can run from the project root:
 ```bash
 node __sapper__/build
 ```
+
+Options can be passed in via the CLI's flags, e.g. `sapper build --cwd MySpecialDir`, or via the API, e.g. `api.build({ cwd: __dirname })`.
+
+- `port`: the port used by the build process (default `3000`)
+- `bundler`: either `rollup` or `webpack` (default auto)
+- `legacy`: create a separate legacy build in addition to modern JS build (default `false`)
+- `cwd`: set current working directory (default `.`)
+- `src`: set source directory (default `src`)
+- `routes`: set routes directory (default `src/routes`)
+- `output`: set Sapper intermediate file output directory (default `src/node_modules/@sapper`)
+- `ext`: Custom page route extensions (space separated) (default `.svelte .html`)
