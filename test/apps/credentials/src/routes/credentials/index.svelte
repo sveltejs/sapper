@@ -1,6 +1,6 @@
 <script context="module">
 	export function preload({ query }) {
-		return this.fetch(`credentials/test.json`, {
+		return this.fetch(`credentials/${query.type}.json`, {
 			credentials: query.creds
 		}).then(r => r.json());
 	}

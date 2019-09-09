@@ -106,38 +106,42 @@ export function get_page_handler(
 			},
 			fetch: (url: string, opts?: any) => {
 				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+					
+				opts = opts ? Object.assign({}, opts) : {};
 
-				if (opts) {
-					opts = Object.assign({}, opts);
-
-					const include_cookies = (
+				const includeCredentials = (
+					opts.credentials !== 'omit' && (
 						opts.credentials === 'include' ||
-						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+						parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+					)
+				);
+
+				if (includeCredentials) {
+					opts.headers = Object.assign({}, opts.headers);
+
+					const cookies = Object.assign(
+						{},
+						cookie.parse(req.headers.cookie || ''),
+						cookie.parse(opts.headers.cookie || '')
 					);
 
-					if (include_cookies) {
-						opts.headers = Object.assign({}, opts.headers);
+					const set_cookie = res.getHeader('Set-Cookie');
+					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
+						const match = /([^=]+)=([^;]+)/.exec(<string>str);
+						if (match) cookies[match[1]] = match[2];
+					});
 
-						const cookies = Object.assign(
-							{},
-							cookie.parse(req.headers.cookie || ''),
-							cookie.parse(opts.headers.cookie || '')
-						);
+					const str = Object.keys(cookies)
+						.map(key => `${key}=${cookies[key]}`)
+						.join('; ');
 
-						const set_cookie = res.getHeader('Set-Cookie');
-						(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-							const match = /([^=]+)=([^;]+)/.exec(<string>str);
-							if (match) cookies[match[1]] = match[2];
-						});
+					opts.headers.cookie = str;
 
-						const str = Object.keys(cookies)
-							.map(key => `${key}=${cookies[key]}`)
-							.join('; ');
-
-						opts.headers.cookie = str;
+					if (!opts.headers.authorization && req.headers.authorization) {
+						opts.headers.authorization = req.headers.authorization;
 					}
 				}
-
+				
 				return fetch(parsed.href, opts);
 			}
 		};
