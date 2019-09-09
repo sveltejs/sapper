@@ -104,7 +104,7 @@ async function _export({
 
 	function save(url: string, status: number, type: string, body: string) {
 		const { pathname } = resolve(origin, url);
-		let file = decodeURIComponent(pathname.slice(1));
+		let file = url;
 
 		if (saved.has(file)) return;
 		saved.add(file);
@@ -136,7 +136,7 @@ async function _export({
 	});
 
 	async function handle(url: URL) {
-		let pathname = url.pathname;
+		let pathname = url.path;
 		if (pathname !== '/service-worker-index.html') {
 			pathname = pathname.replace(root.pathname, '') || '/'
 		}

@@ -9,3 +9,5 @@
 <a>empty anchor #6</a>
 <a href="boom">boom</a>
 <a href="test.pdf">pdf file</a>
+<a href="querystring?q=0">querystring?q=0</a>
+<a href="querystring?q=1">querystring?q=1</a>

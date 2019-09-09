@@ -27,6 +27,10 @@ describe('export', function() {
 			}
 		}
 
+		const querystring = [];
+		querystring.push('querystring?q=0/index.html');
+		querystring.push('querystring?q=1/index.html');
+
 		assert.deepEqual(non_client_assets.sort(), [
 			'blog.json',
 			'blog/bar.json',
@@ -41,7 +45,8 @@ describe('export', function() {
 			'service-worker-index.html',
 			'service-worker.js',
 			'test.pdf',
-			...boom
+			...boom,
+			...querystring
 		].sort());
 	});
 
