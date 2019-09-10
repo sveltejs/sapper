@@ -19,7 +19,7 @@ In the CLI, you can pass flags to each command, e.g. `sapper dev --legacy --ext 
 - `output` (`string`): the output folder to build to. Default `src/node_modules/@sapper`
 - `static` (`string`): the output folder for static files. Default `static`
 - `bundler`: can be either `rollup` or `webpack`. Default: automatically determined
-- `ext` (`string`): space separated string of file extensions to read. Default: `.svelte`
+- `ext` (`string`): space separated string of file extensions to read. Default: `.svelte`. Remember you will also have to configure your webpack/rollup client and server `extensions` accordingly.
 
 Commands specific to `sapper dev`:
 

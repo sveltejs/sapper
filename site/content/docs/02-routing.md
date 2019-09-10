@@ -9,6 +9,8 @@ As we've seen, there are two types of route in Sapper — pages, and server rout
 
 Pages are Svelte components written in `.svelte` files. When a user first visits the application, they will be served a server-rendered version of the route in question, plus some JavaScript that 'hydrates' the page and initialises a client-side router. From that point forward, navigating to other pages is handled entirely on the client for a fast, app-like feel.
 
+> More extensions can be added via the `ext` option. See the [CLI API](docs#CLI_and_Programmatic_API) section for more info.
+
 The filename determines the route. For example, `src/routes/index.svelte` is the root of your site:
 
 ```html

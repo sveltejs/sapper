@@ -39,6 +39,7 @@ You can also add a script to your package.json...
 
 ...allowing you to `npm run export` your app.
 
+> `sapper export` has more options to customize the build. See the [CLI API](docs#CLI_and_Programmatic_API) section for more info.
 
 ### How it works
 
