@@ -10,7 +10,7 @@ Sapper ships a small CLI that you can use to build, serve, and export your Sappe
 
 You may call these via API or programmatically by importing the API (check the Sapper source for details on this).
 
-In the CLI, you can pass flags to each command, e.g. `sapper dev --legacy --ext '.svelte .svexy'`. Here is a full list of common API flags/options and what they do:
+In the CLI, you can pass flags to each command, e.g. `sapper dev --legacy --ext ".svelte .svexy"`. Here is a full list of common API flags/options and what they do:
 
 - `cwd` (`string`): the current working directory. Default `.`
 - `src` (`string`): the source to build from. Default `src`
@@ -19,7 +19,7 @@ In the CLI, you can pass flags to each command, e.g. `sapper dev --legacy --ext 
 - `output` (`string`): the output folder to build to. Default `src/node_modules/@sapper`
 - `static` (`string`): the output folder for static files. Default `static`
 - `bundler`: can be either `rollup` or `webpack`. Default: automatically determined
-- `ext` (`string`): space separated string of file extensions to read. Default: `.svelte`. Remember you will also have to configure your webpack/rollup client and server `extensions` accordingly.
+- `ext` (`string`): space separated string of file extensions to read, e.g. `--ext ".svelte .svexy"`. Default: `.svelte`. Remember you will also have to configure your webpack/rollup client and server `extensions` accordingly.
 
 Commands specific to `sapper dev`:
 
@@ -43,4 +43,4 @@ Lastly, `sapper export` inherits the same commands as `sapper build`, plus these
 - `concurrent` (`number`): set number of concurrent builds. Default `8`.
 - `oninfo` (`({ message }: { message: string }) => void;`): callback
 - `onfile` (`({ file, size, status }: { file: string, size: number, status: number }) => void;`): callback
-- `entry` (`string`): Set entry point of your static site, in case it is hosted at a subdirectory. It takes a space separated string of entries. You want this if you don't have links to a certain part of your app but want it statically built for whatever reason then it solves that case. Eg a marketing section. Default `/`
+- `entry` (`string`): Set entry point of your static site, in case it is hosted at a subdirectory. It takes a space separated string of entries, e.g. `--entry "/ /reports /marketing/2019"`. Sapper will crawl each of these entry points. You want this if you don't have links to a certain part of your app but want it statically built for whatever reason then it solves that case. Default `/`
