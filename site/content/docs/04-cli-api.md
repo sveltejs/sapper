@@ -43,4 +43,4 @@ Lastly, `sapper export` inherits the same commands as `sapper build`, plus these
 - `concurrent` (`number`): set number of concurrent builds. Default `8`.
 - `oninfo` (`({ message }: { message: string }) => void;`): callback
 - `onfile` (`({ file, size, status }: { file: string, size: number, status: number }) => void;`): callback
-- `entry` (`string`): Set entry point of your static site, in case it is hosted at a subdirectory. Default `/`
+- `entry` (`string`): Set entry point of your static site, in case it is hosted at a subdirectory. It takes a space separated string of entries. You want this if you don't have links to a certain part of your app but want it statically built for whatever reason then it solves that case. Eg a marketing section. Default `/`
