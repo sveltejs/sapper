@@ -10,14 +10,16 @@ Sapper ships a small CLI that you can use to build, serve, and export your Sappe
 
 In the CLI, you can pass flags to each command, e.g. `sapper dev --legacy --ext ".svelte .html"`. Here is a full list of common API flags/options and what they do:
 
-- `cwd` (`string`): the current working directory. Default `.`
-- `src` (`string`): the source to build from. Default `src`
-- `dest` (`string`): the folder to build to. Default `__sapper__/build`
-- `routes` (`string`): the routes folder to build from. Default `src/routes`
-- `output` (`string`): the output folder to build to. Default `src/node_modules/@sapper`
-- `static` (`string`): the output folder for static files. Default `static`
-- `bundler`: can be either `rollup` or `webpack`. Default: automatically determined
-- `ext` (`string`): space separated string of file extensions to read, e.g. `--ext ".svelte .html"`. Default: `.svelte`. Remember you will also have to configure your webpack/rollup client and server `extensions` accordingly.
+| option | default | description |
+| --- | --- | --- |
+| `cwd` | `'.'` | The current working directory
+| `src` | `'src'` | The source to build from
+| `dest` | `'__sapper__/build'` | The folder to build to
+| `routes` | `'src/routes'` | The routes folder to build from
+| `output` | `'src/node_modules/@sapper'` | The output folder to build to
+| `static` | `'static'` | The input folder for static files
+| `bundler` | auto | Force bundler to be either `rollup` or `webpack`. Default: automatically determined
+| `ext` | `'.svelte'` | space separated string of file extensions to read, e.g. `--ext ".svelte .html"`. Remember you will also have to configure your webpack/rollup client and server `extensions` accordingly.
 
 Options specific to `sapper dev`:
 
