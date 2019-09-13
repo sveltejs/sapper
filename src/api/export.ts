@@ -146,9 +146,10 @@ async function _export({
 
 		const r = await q.add(async () => {
 			const timeout_deferred = new Deferred();
+			
 			const the_timeout = setTimeout(() => {
 				timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
-			}, timeout);
+			}, timeout === false ? undefined : timeout);
 
 			const r = await Promise.race([
 				fetch(url.href, {
