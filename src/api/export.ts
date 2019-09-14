@@ -11,6 +11,7 @@ import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
+import util from 'util'
 
 type Opts = {
 	build_dir?: string,
@@ -102,7 +103,7 @@ async function _export({
 	const saved = new Set();
 	const q = yootils.queue(concurrent);
 
-	function save(url: string, status: number, type: string, body: string) {
+	async function save(url: string, status: number, type: string, body: string) {
 		const { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
@@ -125,9 +126,10 @@ async function _export({
 		});
 
 		const export_file = path.join(export_dir, file);
-		if (fs.existsSync(export_file)) return;
+		const fileExists = await util.promisify(fs.stat)(export_file).catch((): null => null)
+		if (fileExists) return;
 		mkdirp(path.dirname(export_file));
-		fs.writeFileSync(export_file, body);
+		return util.promisify(fs.writeFile)(export_file, body)
 	}
 
 	proc.on('message', message => {
