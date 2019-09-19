@@ -26,7 +26,7 @@ On the server, you can populate `session` by passing an option to `sapper.middle
 // src/server.js
 express() // or Polka, or a similar framework
 	.use(
-		serve('assets'),
+		serve('static'),
 		authenticationMiddleware(),
 		sapper.middleware({
 			session: (req, res) => ({
