@@ -99,6 +99,9 @@ export function select_target(url: URL): Target {
 
 	let path = url.pathname.slice(initial_data.baseUrl.length);
 
+	// support url with suffix index.html in export mode
+	path = path.replace(/index\.html$/, '');
+
 	if (path === '') {
 		path = '/';
 	}
