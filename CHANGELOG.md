@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.9
+
+* Recheck whether a component has a `preload` whenever the file changes ([#611](https://github.com/sveltejs/sapper/issues/611))
+
+
 ## 0.27.8
 
 * Enable sourcemaps in dev mode only by default ([#590](https://github.com/sveltejs/sapper/issues/590))
