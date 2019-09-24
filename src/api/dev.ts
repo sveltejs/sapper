@@ -506,9 +506,7 @@ function watch_dir(
 
 		watch = new CheapWatch({ dir, filter, debounce: 50 });
 
-		watch.on('+', ({ isNew }: { isNew: boolean }) => {
-			if (isNew) callback();
-		});
+		watch.on('+', callback);
 
 		watch.on('-', callback);
 
