@@ -47,7 +47,7 @@ If we create pages for `/`, `/about` and `/settings`...
 
 ### Nested routes
 
-Suppose we don't just have a single `/settings` page, but instead have nested pages like `/settings/profile` and `/settings/notifications` with a shared submenu (for an real-life example, see [github.com/settings](https://github.com/settings)).
+Suppose we don't just have a single `/settings` page, but instead have nested pages like `/settings/profile` and `/settings/notifications` with a shared submenu (for a real-life example, see [github.com/settings](https://github.com/settings)).
 
 We can create a layout that only applies to pages below `/settings` (while inheriting the root layout with the top-level nav):
 
