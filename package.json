@@ -1,7 +1,7 @@
 {
-  "name": "sapper",
-  "version": "0.27.9",
-  "description": "The next small thing in web development, powered by Svelte",
+  "name": "@ssgjs/sapper",
+  "version": "0.27.9-fork.0",
+  "description": "static export fork of sapper",
   "bin": {
     "sapper": "./sapper"
   },
@@ -72,7 +72,7 @@
     "prepublishOnly": "npm test",
     "update_mime_types": "curl http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types | grep -e \"^[^#]\" > runtime/src/server/middleware/mime-types.md"
   },
-  "repository": "https://github.com/sveltejs/sapper",
+  "repository": "https://github.com/sw-yx/sapper",
   "keywords": [
     "svelte",
     "isomorphic",
@@ -83,7 +83,7 @@
   "author": "Rich Harris",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sveltejs/sapper/issues"
+    "url": "https://github.com/sw-yx/sapper/issues"
   },
-  "homepage": "https://github.com/sveltejs/sapper#readme"
+  "homepage": "https://github.com/sw-yx/sapper#readme"
 }
