@@ -357,7 +357,11 @@ export function get_page_handler(
 }
 
 function read_template(dir = build_dir) {
-	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
+	let templatePath = `${dir}/template.html`
+	if (!fs.existsSync(templatePath)) {
+	templatePath = path.resolve(__dirname, '../runtime/internal/template.html')
+	}
+	return fs.readFileSync(templatePath, 'utf-8');
 }
 
 function try_serialize(data: any, fail?: (err) => void) {

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-
+import * as path from 'path'
 export default function read_template(dir: string) {
 	try {
 		return fs.readFileSync(`${dir}/template.html`, 'utf-8');
@@ -10,7 +10,8 @@ export default function read_template(dir: string) {
   routes/ --> src/routes/
   assets/ --> static/`);
 		}
-
-		throw err;
+		// use fallback template
+		const fallbackPath = path.resolve(__dirname, '../runtime/internal/template.html')
+		return fs.readFileSync(fallbackPath, 'utf-8')
 	}
 }

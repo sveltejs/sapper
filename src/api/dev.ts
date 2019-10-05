@@ -211,8 +211,12 @@ class Watcher extends EventEmitter {
 		);
 
 		if (this.live) {
+			let templatePath = `${src}/template.html`
+			if (!fs.existsSync(templatePath)) {
+			templatePath = path.resolve(__dirname, '../runtime/internal/template.html')
+			}
 			this.filewatchers.push(
-				fs.watch(`${src}/template.html`, () => {
+				fs.watch(templatePath, () => {
 					this.dev_server.send({
 						action: 'reload'
 					});
