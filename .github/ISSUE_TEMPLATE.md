@@ -15,6 +15,8 @@ as you can on your use case.
 If you're filing an issue about a bug please include as much information
 as you can, including the following.
 
+<!-- please include the output of npx envinfo --system --npmPackages svelte* --binaries --browsers -->
+
 - Your browser and the version: (e.x. Chrome 52.1, Firefox 48.0, IE 10)
 - Your operating system: (e.x. OS X 10, Windows XP, etc)
 - Sapper version (Please check you can reproduce the issue with the latest release!)
