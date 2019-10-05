@@ -8,5 +8,6 @@ It includes:
 - Handle i/o backpressure with sapper export https://github.com/sveltejs/sapper/pull/869
 - (partially merged) Export filter urls by regex https://github.com/sveltejs/sapper/pull/859
 - fallback rollup.config.js https://github.com/sw-yx/sapper/pull/2 and https://github.com/sw-yx/sapper/pull/1
+- fallback client/server/template https://github.com/sw-yx/sapper/pull/3
 
 We maintain this fork because we feel pain points around sapper static export, and still have hope it is merged upstream oneday.
