@@ -140,7 +140,10 @@ export default class RollupCompiler {
 	static async load_config(cwd: string) {
 		if (!rollup) rollup = relative('rollup', cwd);
 
-		const input = path.resolve(cwd, 'rollup.config.js');
+    // const input = path.resolve(cwd, 'rollup.config.js');
+
+    const input = path.resolve(__dirname, '../runtime/internal/fallback.rollup.js')
+    console.log('sapper loading rollup ', input)
 
 		const bundle = await rollup.rollup({
 			input,
