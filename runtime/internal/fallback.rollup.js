@@ -28,8 +28,6 @@ if (!fs.existsSync(clientInput)) clientInput = path.resolve(__dirname, './client
 if (!fs.existsSync(serverInput)) serverInput = path.resolve(__dirname, './server.js') // fallback
 if (!fs.existsSync(swInput)) swInput = path.resolve(__dirname, './service-worker.js') // fallback
 
-console.log({ clientInput, serverInput })
-
 const onwarn = (warning, onwarn) =>
   (warning.code === 'CIRCULAR_DEPENDENCY' && /[/\\]@sapper[/\\]/.test(warning.message)) || onwarn(warning)
 const dedupe = (importee) => importee === 'svelte' || importee.startsWith('svelte/')
