@@ -359,7 +359,10 @@ export function get_page_handler(
 function read_template(dir = build_dir) {
 	let templatePath = `${dir}/template.html`
 	if (!fs.existsSync(templatePath)) {
-	templatePath = path.resolve(__dirname, '../runtime/internal/template.html')
+	// this doesnt work bc it is run in __sapper__/dev. dont try it
+	// templatePath = path.resolve(__dirname, '../runtime/internal/template.html')
+	// this works
+	templatePath = require('@ssgjs/sapper/runtime/internal/template.html');
 	}
 	return fs.readFileSync(templatePath, 'utf-8');
 }
