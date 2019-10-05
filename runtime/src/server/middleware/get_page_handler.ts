@@ -357,7 +357,14 @@ export function get_page_handler(
 }
 
 function read_template(dir = build_dir) {
-	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
+	let templatePath = `${dir}/template.html`
+	if (!fs.existsSync(templatePath)) {
+	// this doesnt work bc it is run in __sapper__/dev. dont try it
+	// templatePath = path.resolve(__dirname, '../runtime/internal/template.html')
+	// this works
+	templatePath = path.resolve(process.cwd(), 'node_modules/@ssgjs/sapper/runtime/internal/template.html');
+	}
+	return fs.readFileSync(templatePath, 'utf-8');
 }
 
 function try_serialize(data: any, fail?: (err) => void) {

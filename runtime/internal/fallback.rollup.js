@@ -20,6 +20,14 @@ const config = require('../../config/rollup.js')
 // replacement for `import pkg from './package.json'`
 const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')))
 
+let clientInput = config.client.input()
+let serverInput = config.server.input()
+let swInput = config.serviceworker.input() //'node_modules/ssg/defaultSrcFiles/service-worker.js',
+
+if (!fs.existsSync(clientInput)) clientInput = path.resolve(__dirname, './client.js') // fallback
+if (!fs.existsSync(serverInput)) serverInput = path.resolve(__dirname, './server.js') // fallback
+if (!fs.existsSync(swInput)) swInput = path.resolve(__dirname, './service-worker.js') // fallback
+
 const onwarn = (warning, onwarn) =>
   (warning.code === 'CIRCULAR_DEPENDENCY' && /[/\\]@sapper[/\\]/.test(warning.message)) || onwarn(warning)
 const dedupe = (importee) => importee === 'svelte' || importee.startsWith('svelte/')
@@ -39,7 +47,7 @@ const preprocess = mdsvex({
 
 const defaultRollupConfig = {
   client: {
-    input: config.client.input(), // 'src/client.js',
+    input: clientInput,
     output: config.client.output(),
     plugins: [
       replace({
@@ -94,7 +102,7 @@ const defaultRollupConfig = {
   },
 
   server: {
-    input: config.server.input(), //'node_modules/ssg/defaultSrcFiles/server.js',
+    input: serverInput,
     output: config.server.output(),
     plugins: [
       replace({
@@ -122,7 +130,7 @@ const defaultRollupConfig = {
   },
 
   serviceworker: {
-    input: config.serviceworker.input(), //'node_modules/ssg/defaultSrcFiles/service-worker.js',
+    input: swInput,
     output: config.serviceworker.output(),
     plugins: [
       resolve(),
