@@ -7,14 +7,15 @@ import svelte from 'rollup-plugin-svelte'
 import babel from 'rollup-plugin-babel'
 import json from 'rollup-plugin-json'
 import { terser } from 'rollup-plugin-terser'
-import config from '../../config/rollup.js'
 import { mdsvex } from 'mdsvex'
 import path from 'path'
 import fs from 'fs'
-import produce from 'immer'
+// import produce from 'immer'
 const mode = process.env.NODE_ENV
 const dev = mode === 'development'
 const legacy = !!process.env.SAPPER_LEGACY_BUILD
+
+const config = require('../../config/rollup.js')
 
 // replacement for `import pkg from './package.json'`
 const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')))
@@ -137,13 +138,14 @@ const defaultRollupConfig = {
   },
 }
 
-// call this function with no arguments to just get a default rollup config
-// export default (modifier) => {
-export default async function() {
-  return defaultRollupConfig
-  // if (modifier) {
-  //   return produce(defaultRollupConfig, modifier)
-  // } else {
-  //   return defaultRollupConfig
-  // }
-}
+// // call this function with no arguments to just get a default rollup config
+// // export default (modifier) => {
+// export default async function() {
+//   return defaultRollupConfig
+//   // if (modifier) {
+//   //   return produce(defaultRollupConfig, modifier)
+//   // } else {
+//   //   return defaultRollupConfig
+//   // }
+// }
+export default defaultRollupConfig
