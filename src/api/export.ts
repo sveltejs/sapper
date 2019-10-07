@@ -143,11 +143,6 @@ async function _export({
 		});
 	}
 
-	proc.on('message', message => {
-		if (!message.__sapper__ || message.event !== 'file') return;
-		save(message.url, message.status, message.type, message.body);
-	});
-
 	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
@@ -263,6 +258,11 @@ async function _export({
 		callbacks: {
 			onDone: () => {},
 		},
+	});
+
+	proc.on('message', message => {
+		if (!message.__sapper__ || message.event !== 'file') return;
+		queue.addSave(save(message.url, message.status, message.type, message.body));
 	});
 
 	return new Promise(async (res, rej) => {

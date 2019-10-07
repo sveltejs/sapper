@@ -61,6 +61,20 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 	let fetching : Promise<any>[] = [];
 	let saving : Promise<any>[] = [];
 
+	function addToQueue(p: Promise<any>, queue: Promise<any>[]) {
+		const queuePromise = new Promise((res, rej) => {
+			p.then((ret?: any) => {
+				res(ret);
+				processQueue();
+			})
+			.catch((err: Error) => {
+				rej(err);
+				processQueue();
+			});
+		});
+		queue.push(queuePromise);
+	}
+
 	async function processQueue() {
 		// empty finished saves from saving queue
 		saving = await filterNotPending(saving);
@@ -69,36 +83,14 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 		let fetchedIndex = await findNotPendingIndex(fetching);
 		while (saving.length < concurrent && fetchedIndex !== -1) {
 			const fetched = fetching.splice(fetchedIndex, 1).pop();
-			const savingPromise = new Promise((res, rej) => {
-				handleResponse(fetched, fetchOpts)
-					.then(() => {
-						res();
-						processQueue();
-					})
-					.catch((err: Error) => {
-						rej(err);
-						processQueue();
-					});
-			});
-			saving.push(savingPromise);
+			addToQueue(handleResponse(fetched, fetchOpts), saving);
 			fetchedIndex = await findNotPendingIndex(fetching);
 		}
 
 		// move urls from urls queue and into fetching queue until fetching queue is full
 		while (fetching.length < concurrent && urls.length) {
 			const url = urls.shift();
-			const fetchingPromise = new Promise((res, rej) => {
-				handleFetch(url, fetchOpts)
-					.then((ret: FetchRet) => {
-						res(ret);
-						processQueue();
-					})
-					.catch((err: Error) => {
-						rej(err);
-						processQueue();
-					});
-			});
-			fetching.push(fetchingPromise);
+			addToQueue(handleFetch(url, fetchOpts), fetching);
 		}
 
 		if (urls.length === 0 && saving.length === 0 && fetching.length === 0) {
@@ -111,6 +103,10 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 	return {
 		add: (url: URL) => {
 			urls.push(url);
+			return processQueue();
+		},
+		addSave: (p: Promise<any>) => {
+			addToQueue(p, saving);
 			return processQueue();
 		},
 		setCallback: (event: string, fn: Function) => {
