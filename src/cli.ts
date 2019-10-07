@@ -158,6 +158,7 @@ prog.command('build [dest]')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
+	.option('--basepath', 'Specify a base path')
 	.option('--spa', 'SPA', false)
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
@@ -169,12 +170,13 @@ prog.command('build [dest]')
 		routes: string,
 		output: string,
 		ext: string
+		basepath?: string,
 		spa: boolean
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.spa);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.spa, opts.basepath);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -234,7 +236,7 @@ prog.command('export [dest]')
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.spa);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.spa, opts.basepath);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -251,6 +253,7 @@ prog.command('export [dest]')
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
 				entry: opts.entry,
+				spa: opts.spa,
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));
@@ -287,7 +290,8 @@ async function _build(
 	output: string,
 	dest: string,
 	ext: string,
-	spa: boolean
+	spa: boolean,
+	basepath: string
 ) {
 	const { build } = await import('./api/build');
 
@@ -301,6 +305,7 @@ async function _build(
 		ext,
 		output,
 		spa,
+		basepath,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);
