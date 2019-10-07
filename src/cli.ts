@@ -32,6 +32,7 @@ prog.command('dev')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
+	.option('--spa', 'SPA', false)
 	.action(async (opts: {
 		port: number,
 		open: boolean,
@@ -45,7 +46,8 @@ prog.command('dev')
 		static: string,
 		output: string,
 		'build-dir': string,
-		ext: string
+		ext: string,
+		spa: boolean
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -62,7 +64,8 @@ prog.command('dev')
 				live: opts.live,
 				hot: opts.hot,
 				bundler: opts.bundler,
-				ext: opts.ext
+				ext: opts.ext,
+				spa: opts.spa
 			});
 
 			let first = true;
@@ -155,6 +158,7 @@ prog.command('build [dest]')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
+	.option('--spa', 'SPA', false)
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -165,11 +169,12 @@ prog.command('build [dest]')
 		routes: string,
 		output: string,
 		ext: string
+		spa: boolean
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.spa);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -207,6 +212,7 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--entry', 'Custom entry points (space separated)', '/')
+	.option('--spa', 'SPA', false)
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -223,11 +229,12 @@ prog.command('export [dest]')
 		'build-dir': string,
 		ext: string
 		entry: string
+		spa: boolean
 	}) => {
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.spa);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -279,7 +286,8 @@ async function _build(
 	routes: string,
 	output: string,
 	dest: string,
-	ext: string
+	ext: string,
+	spa: boolean
 ) {
 	const { build } = await import('./api/build');
 
@@ -292,6 +300,7 @@ async function _build(
 		dest,
 		ext,
 		output,
+		spa,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);

@@ -210,14 +210,14 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 	const seen_routes: Map<string, ServerRoute> = new Map();
 	server_routes.forEach(route => {
-		const pattern = route.pattern.toString();
-		if (seen_routes.has(pattern)) {
-			const other_route = seen_routes.get(pattern);
-			throw new Error(`The ${other_route.file} and ${route.file} routes clash`);
-		}
+			const pattern = route.pattern.toString();
+			if (seen_routes.has(pattern)) {
+				const other_route = seen_routes.get(pattern);
+				throw new Error(`The ${other_route.file} and ${route.file} routes clash`);
+			}
 
-		seen_routes.set(pattern, route);
-	});
+			seen_routes.set(pattern, route);
+		});
 
 	return {
 		root,
@@ -322,7 +322,7 @@ function get_slug(file: string) {
 		.replace(/[\\\/]index/, '')
 		.replace(/[\/\\]/g, '_')
 		.replace(/\.\w+$/, '')
-		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
+		.replace(/\[([^([]+)(?:\([^(]+\))?\]/g, '$$$1')
 		.replace(/[^a-zA-Z0-9_$]/g, c => {
 			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
 		});

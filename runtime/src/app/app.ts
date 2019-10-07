@@ -13,6 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
+import { extract_hash, extract_path } from "./spa";
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -86,8 +87,11 @@ export function extract_query(search: string) {
 		search.slice(1).split('&').forEach(searchParam => {
 			let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
 			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
-			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
-			else query[key] = value;
+			if (typeof query[key] === 'object') {
+				(query[key] as string[]).push(value);
+			} else {
+				query[key] = value;
+			}
 		});
 	}
 	return query;
@@ -95,13 +99,13 @@ export function extract_query(search: string) {
 
 export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
-	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
-
-	let path = url.pathname.slice(initial_data.baseUrl.length);
-
-	if (path === '') {
-		path = '/';
+	if (initial_data.spa) {
+		if (url.pathname !== location.pathname) return null;
+	} else {
+		if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 	}
+
+	let path = extract_path(url);
 
 	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
@@ -120,6 +124,13 @@ export function select_target(url: URL): Target {
 
 			return { href: url.href, route, match, page };
 		}
+	}
+
+	if (initial_data.spa) {
+		const query: Query = extract_query(url.search);
+		const page = { host: location.host, path, query, params: {} };
+
+		return { href: url.href, route: null, match: null, page };
 	}
 }
 
@@ -191,23 +202,40 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 	if (document.activeElement) document.activeElement.blur();
 
 	if (!noscroll) {
-		let scroll = scroll_history[id];
-
-		if (hash) {
-			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.getElementById(hash.slice(1));
-
-			if (deep_linked) {
-				scroll = {
-					x: 0,
-					y: deep_linked.getBoundingClientRect().top
-				};
-			}
-		}
-
-		scroll_history[cid] = scroll;
-		if (scroll) scrollTo(scroll.x, scroll.y);
+		scroll_to_target(hash);
 	}
+}
+
+function getOffsetY() {
+	if (self.pageYOffset) {
+		return self.pageYOffset;
+	} // Firefox, Chrome, Opera, Safari.
+	if (document.documentElement && document.documentElement.scrollTop) {
+		return document.documentElement.scrollTop;
+	} // Internet Explorer 6 (standards mode).
+	if (document.body.scrollTop) {
+		return document.body.scrollTop;
+	} // Internet Explorer 6, 7 and 8.
+	return 0; // None of the above.
+}
+
+export function scroll_to_target(hash: string) {
+	let scroll = scroll_history[cid];
+
+	if (hash) {
+		// scroll is an element id (from a hash), we need to compute y.
+		const deep_linked = document.getElementById(hash.slice(1));
+
+		if (deep_linked) {
+			scroll = {
+				x: 0,
+				y: deep_linked.getBoundingClientRect().top + getOffsetY()
+			};
+		}
+	}
+
+	scroll_history[cid] = scroll;
+	if (scroll) scrollTo(scroll.x, scroll.y);
 }
 
 async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
@@ -280,6 +308,15 @@ export async function hydrate_target(target: Target): Promise<{
 
 	const props = { error: null, status: 200, segments: [segments[0]] };
 
+	if (route === null && initial_data.spa) {
+		if (!page.path) {
+			return { redirect: { statusCode: 302, location: '#!/' } }
+		}
+		props.error = { message: 'Page not found.' };
+		props.status = 404;
+		return { redirect, props, branch: [] };
+	}
+
 	const preload_context = {
 		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
@@ -344,7 +381,13 @@ export async function hydrate_target(target: Target): Promise<{
 				preloaded = initial_data.preloaded[i + 1];
 			}
 
-			return (props[`level${j}`] = { component, props: preloaded, segment, match, part: part.i });
+			return (props[`level${j}`] = {
+				component,
+				props: preloaded,
+				segment,
+				match,
+				part: part.i
+			});
 		}));
 	} catch (error) {
 		props.error = error;

@@ -5,6 +5,7 @@ import {
 	navigate,
 	scroll_history,
 	scroll_state,
+	scroll_to_target,
 	select_target,
 	handle_error,
 	set_target,
@@ -13,6 +14,9 @@ import {
 	set_cid
 } from '../app';
 import prefetch from '../prefetch/index';
+import { extract_hash, extract_path, hash_is_route, location_not_include_hash } from "../spa";
+import { debug, init } from "svelte/internal";
+import goto from "../goto";
 
 export default function start(opts: {
 	target: Node
@@ -25,13 +29,16 @@ export default function start(opts: {
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);
+	if (initial_data.spa) {
+		addEventListener('hashchange', handle_hashchange);
+	}
 
 	// prefetch
 	addEventListener('touchstart', trigger_prefetch);
 	addEventListener('mousemove', handle_mousemove);
 
 	return Promise.resolve().then(() => {
-		const { hash, href } = location;
+		const { href } = location;
 
 		history.replaceState({ id: uid }, '', href);
 
@@ -40,6 +47,7 @@ export default function start(opts: {
 		if (initial_data.error) return handle_error(url);
 
 		const target = select_target(url);
+		const hash = extract_hash(url.hash);
 		if (target) return navigate(target, uid, true, hash);
 	});
 }
@@ -78,7 +86,7 @@ function handle_click(event: MouseEvent) {
 	const href = String(svg ? (<SVGAElement>a).href.baseVal : a.href);
 
 	if (href === location.href) {
-		if (!location.hash) event.preventDefault();
+		if (location_not_include_hash()) event.preventDefault();
 		return;
 	}
 
@@ -93,14 +101,34 @@ function handle_click(event: MouseEvent) {
 	const url = new URL(href);
 
 	// Don't handle hash changes
-	if (url.pathname === location.pathname && url.search === location.search) return;
+	if (extract_path(url) === extract_path(location) && url.search === location.search) {
+		return;
+	}
 
 	const target = select_target(url);
 	if (target) {
 		const noscroll = a.hasAttribute('sapper-noscroll');
-		navigate(target, null, noscroll, url.hash);
+		navigate(target, null, noscroll, extract_hash(url.hash));
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
+	}
+}
+
+function handle_hashchange(event: HashChangeEvent) {
+	const from = new URL(event.oldURL);
+	const to = new URL(event.newURL);
+	const hash = extract_hash(to.hash);
+
+	if (extract_path(from) === extract_path(to)) {
+		// same page
+		scroll_to_target(hash);
+		return;
+	}
+
+	const target = select_target(to);
+
+	if (target) {
+		navigate(target, null, true, hash);
 	}
 }
 

@@ -6,7 +6,7 @@ import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { create_manifest_data, create_app, create_compilers, create_serviceworker_manifest } from '../core';
 import { Compiler, Compilers } from '../core/create_compilers';
-import { CompileResult } from '../core/create_compilers/interfaces';
+import { BuildInfo, CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
 import validate_bundler from './utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
@@ -15,6 +15,7 @@ import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import { create_index_html } from "../core/generate_index_html";
 
 type Opts = {
 	cwd?: string,
@@ -29,7 +30,9 @@ type Opts = {
 	'devtools-port'?: number,
 	bundler?: 'rollup' | 'webpack',
 	port?: number,
-	ext: string
+	ext: string,
+	'basepath'?: string,
+	spa: boolean
 };
 
 export function dev(opts: Opts) {
@@ -45,6 +48,7 @@ class Watcher extends EventEmitter {
 		routes: string;
 		output: string;
 		static: string;
+		basepath: string;
 	}
 	port: number;
 	closed: boolean;
@@ -69,6 +73,7 @@ class Watcher extends EventEmitter {
 		unique_errors: Set<string>;
 	}
 	ext: string;
+	spa: boolean;
 
 	constructor({
 		cwd = '.',
@@ -78,14 +83,18 @@ class Watcher extends EventEmitter {
 		static: static_files = 'static',
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
+		'basepath': basepath = '',
 		live,
 		hot,
 		'devtools-port': devtools_port,
 		bundler,
 		port = +process.env.PORT,
-		ext
+		ext,
+		spa = false
 	}: Opts) {
 		super();
+		
+		basepath = basepath.replace(/^\//, '')
 
 		cwd = path.resolve(cwd);
 
@@ -96,11 +105,13 @@ class Watcher extends EventEmitter {
 			dest: path.resolve(cwd, dest),
 			routes: path.resolve(cwd, routes),
 			output: path.resolve(cwd, output),
-			static: path.resolve(cwd, static_files)
+			static: path.resolve(cwd, static_files),
+			basepath: basepath
 		};
 		this.ext = ext;
 		this.port = port;
 		this.closed = false;
+		this.spa = spa
 
 		this.dev_port = dev_port;
 		this.live = live;
@@ -146,11 +157,11 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
+		const { cwd, src, dest, routes, output, static: static_files, basepath} = this.dirs;
 
 		rimraf(output);
 		mkdirp(output);
-		copy_runtime(output);
+		copy_runtime(output, this.spa);
 
 		rimraf(dest);
 		mkdirp(`${dest}/client`);
@@ -170,6 +181,7 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
+				spa: this.spa,
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
@@ -198,6 +210,7 @@ class Watcher extends EventEmitter {
 							manifest_data,
 							dev: true,
 							dev_port: this.dev_port,
+							spa: this.spa,
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
@@ -337,11 +350,12 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
+				const build_info: BuildInfo = result.to_json(manifest_data, this.dirs);
 				fs.writeFileSync(
 					path.join(dest, 'build.json'),
 
 					// TODO should be more explicit that to_json has effects
-					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+					JSON.stringify(build_info, null, '  ')
 				);
 
 				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
@@ -350,8 +364,31 @@ class Watcher extends EventEmitter {
 					manifest_data,
 					output,
 					client_files,
-					static_files
+					static_files,
+					spa: this.spa
 				});
+
+				if (this.spa) {
+					create_index_html({
+						basepath,
+						build_info,
+						dev: true,
+						output,
+						cwd,
+						src,
+						dest,
+					});
+
+					if (this.hot && this.bundler === 'webpack') {
+						this.dev_server.send({
+							status: 'completed'
+						});
+					} else if (this.live) {
+						this.dev_server.send({
+							action: 'reload'
+						});
+					}
+				}
 
 				deferred.fulfil();
 

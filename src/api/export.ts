@@ -24,6 +24,7 @@ type Opts = {
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 	entry?: string;
+	spa?: boolean;
 };
 
 type Ref = {
@@ -55,6 +56,7 @@ async function _export({
 	concurrent = 8,
 	oninfo = noop,
 	onfile = noop,
+	spa = false,
 	entry = '/'
 }: Opts = {}) {
 	basepath = basepath.replace(/^\//, '')
@@ -232,7 +234,7 @@ async function _export({
 			await handle(entryPoint);
 		}
 
-		await handle(resolve(root.href, 'service-worker-index.html'));
+		await handle(resolve(root.href, spa ? 'index.html' : 'service-worker-index.html'));
 		await q.close();
 
 		proc.kill()

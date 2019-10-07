@@ -9,6 +9,7 @@ import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import { create_index_html } from "../core/generate_index_html";
 
 type Opts = {
 	cwd?: string;
@@ -17,10 +18,12 @@ type Opts = {
 	dest?: string;
 	output?: string;
 	static?: string;
+	'base-url'?: string,
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
 	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
+	spa?: boolean;
 };
 
 export async function build({
@@ -30,6 +33,8 @@ export async function build({
 	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
+	spa = false,
+	'base-url': base_url = '',
 
 	bundler,
 	legacy = false,
@@ -51,7 +56,7 @@ export async function build({
 
 	rimraf(output);
 	mkdirp(output);
-	copy_runtime(output);
+	copy_runtime(output, spa);
 
 	rimraf(dest);
 	mkdirp(`${dest}/client`);
@@ -81,6 +86,7 @@ export async function build({
 		dest,
 		routes,
 		output,
+		spa,
 		dev: false
 	});
 
@@ -93,6 +99,18 @@ export async function build({
 	});
 
 	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
+
+	if (spa) {
+		create_index_html({
+			base_url,
+			build_info,
+			dev: false,
+			output,
+			cwd,
+			src,
+			dest,
+		});
+	}
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
@@ -130,7 +148,8 @@ export async function build({
 			manifest_data,
 			output,
 			client_files,
-			static_files
+			static_files,
+			spa,
 		});
 
 		serviceworker_stats = await serviceworker.compile();
