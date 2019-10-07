@@ -91,6 +91,11 @@ async function _export({
 		return entry;
 	});
 
+	if (spa) {
+		copy(path.join(build_dir, 'index.html'), path.join(export_dir, 'index.html'));
+		return;
+	}
+	
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd,
 		env: Object.assign({
@@ -234,7 +239,7 @@ async function _export({
 			await handle(entryPoint);
 		}
 
-		await handle(resolve(root.href, spa ? 'index.html' : 'service-worker-index.html'));
+		await handle(resolve(root.href, 'service-worker-index.html'));
 		await q.close();
 
 		proc.kill()
