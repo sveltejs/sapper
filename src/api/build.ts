@@ -18,7 +18,7 @@ type Opts = {
 	dest?: string;
 	output?: string;
 	static?: string;
-	'base-url'?: string,
+	basepath?: string,
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
@@ -34,7 +34,7 @@ export async function build({
 	static: static_files = 'static',
 	dest = '__sapper__/build',
 	spa = false,
-	'base-url': base_url = '',
+	basepath: basepath = '',
 
 	bundler,
 	legacy = false,
@@ -102,7 +102,7 @@ export async function build({
 
 	if (spa) {
 		create_index_html({
-			base_url,
+			basepath,
 			build_info,
 			dev: false,
 			output,
