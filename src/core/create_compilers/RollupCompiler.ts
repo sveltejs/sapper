@@ -146,7 +146,6 @@ export default class RollupCompiler {
     if (!fs.existsSync(input)) {
       input = path.resolve(__dirname, '../runtime/internal/fallback.rollup.js')
     }
-    // console.log('sapper loading rollup ', input)
 
 		const bundle = await rollup.rollup({
 			input,
