@@ -64,7 +64,7 @@ export function create_index_html({
 			.map(href => `<link rel="stylesheet" href="client/${href}">`)
 			.join('')
 	} else {
-		styles = (css && css.code ? `<style>${css.code}</style>` : '');
+		styles = '';
 	}
 
 	const body = template()
