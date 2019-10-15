@@ -32,7 +32,8 @@ type Opts = {
 	port?: number,
 	ext: string,
 	'basepath'?: string,
-	spa: boolean
+	ssr: boolean,
+	hashbang: boolean,
 };
 
 export function dev(opts: Opts) {
@@ -73,7 +74,8 @@ class Watcher extends EventEmitter {
 		unique_errors: Set<string>;
 	}
 	ext: string;
-	spa: boolean;
+	ssr: boolean;
+	hashbang: boolean;
 
 	constructor({
 		cwd = '.',
@@ -90,7 +92,8 @@ class Watcher extends EventEmitter {
 		bundler,
 		port = +process.env.PORT,
 		ext,
-		spa = false
+		ssr = true,
+		hashbang = false,
 	}: Opts) {
 		super();
 		
@@ -111,7 +114,8 @@ class Watcher extends EventEmitter {
 		this.ext = ext;
 		this.port = port;
 		this.closed = false;
-		this.spa = spa
+		this.ssr = ssr;
+		this.hashbang = hashbang;
 
 		this.dev_port = dev_port;
 		this.live = live;
@@ -161,7 +165,7 @@ class Watcher extends EventEmitter {
 
 		rimraf(output);
 		mkdirp(output);
-		copy_runtime(output, this.spa);
+		copy_runtime(output, this.ssr);
 
 		rimraf(dest);
 		mkdirp(`${dest}/client`);
@@ -181,7 +185,8 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
-				spa: this.spa,
+				ssr: this.ssr,
+				hashbang: this.hashbang,
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
@@ -210,7 +215,8 @@ class Watcher extends EventEmitter {
 							manifest_data,
 							dev: true,
 							dev_port: this.dev_port,
-							spa: this.spa,
+							ssr: this.ssr,
+							hashbang: this.hashbang,
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
@@ -365,10 +371,10 @@ class Watcher extends EventEmitter {
 					output,
 					client_files,
 					static_files,
-					spa: this.spa
+					ssr: this.ssr
 				});
 
-				if (this.spa) {
+				if (!this.ssr) {
 					create_index_html({
 						basepath,
 						build_info,
@@ -377,6 +383,8 @@ class Watcher extends EventEmitter {
 						cwd,
 						src,
 						dest,
+						ssr: this.ssr,
+						hashbang: this.hashbang,
 					});
 
 					if (this.hot && this.bundler === 'webpack') {

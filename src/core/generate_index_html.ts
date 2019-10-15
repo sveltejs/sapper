@@ -10,7 +10,9 @@ export function create_index_html({
 		output,
 		cwd,
 		src,
-		dest
+	dest,
+	ssr,
+	hashbang
 	}: {
 		basepath: string,
 		build_info: BuildInfo;
@@ -19,6 +21,8 @@ export function create_index_html({
 		cwd: string,
 		src: string,
 		dest: string,
+		ssr: boolean,
+		hashbang: boolean,
 	}
 ) {
 
@@ -31,7 +35,9 @@ export function create_index_html({
 
 
 	let script = `__SAPPER__={${[
-		'spa:true',
+		'ssr:false',
+		`hashbang:${hashbang ? 'true' : 'false'}`,
+		`baseUrl:'${basepath || ''}'`,
 		'preloaded:[]'
 	].join(',')}};`;
 

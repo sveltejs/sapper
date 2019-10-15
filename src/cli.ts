@@ -32,7 +32,8 @@ prog.command('dev')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
-	.option('--spa', 'SPA', false)
+	.option('--ssr', 'Server-Side Rendering', true)
+	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
 	.action(async (opts: {
 		port: number,
 		open: boolean,
@@ -47,7 +48,8 @@ prog.command('dev')
 		output: string,
 		'build-dir': string,
 		ext: string,
-		spa: boolean
+		ssr: boolean,
+		hashbang: boolean,
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -65,7 +67,8 @@ prog.command('dev')
 				hot: opts.hot,
 				bundler: opts.bundler,
 				ext: opts.ext,
-				spa: opts.spa
+				ssr: opts.ssr,
+				hashbang: opts.hashbang
 			});
 
 			let first = true;
@@ -159,7 +162,8 @@ prog.command('build [dest]')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--basepath', 'Specify a base path')
-	.option('--spa', 'SPA', false)
+	.option('--ssr', 'Server-Side Rendering', true)
+	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -171,12 +175,13 @@ prog.command('build [dest]')
 		output: string,
 		ext: string
 		basepath?: string,
-		spa: boolean
+		ssr: boolean,
+		hashbang: boolean,
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.spa, opts.basepath);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.ssr, opts.hashbang, opts.basepath);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -214,7 +219,8 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--entry', 'Custom entry points (space separated)', '/')
-	.option('--spa', 'SPA', false)
+	.option('--ssr', 'Server-Side Rendering', true)
+	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -231,12 +237,13 @@ prog.command('export [dest]')
 		'build-dir': string,
 		ext: string
 		entry: string
-		spa: boolean
+		ssr: boolean,
+		hashbang: boolean,
 	}) => {
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.spa, opts.basepath);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.ssr, opts.hashbang, opts.basepath);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -253,7 +260,7 @@ prog.command('export [dest]')
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
 				entry: opts.entry,
-				spa: opts.spa,
+				ssr: opts.ssr,
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));
@@ -290,7 +297,8 @@ async function _build(
 	output: string,
 	dest: string,
 	ext: string,
-	spa: boolean,
+	ssr: boolean,
+	hashbang: boolean,
 	basepath: string
 ) {
 	const { build } = await import('./api/build');
@@ -304,8 +312,9 @@ async function _build(
 		dest,
 		ext,
 		output,
-		spa,
+		ssr,
 		basepath,
+		hashbang,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);

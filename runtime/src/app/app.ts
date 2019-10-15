@@ -13,7 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
-import { extract_hash, extract_path } from "./spa";
+import { extract_path } from "./utils/route_path";
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -99,7 +99,7 @@ export function extract_query(search: string) {
 
 export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
-	if (initial_data.spa) {
+	if (initial_data.hashbang) {
 		if (url.pathname !== location.pathname) return null;
 	} else {
 		if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
@@ -126,7 +126,7 @@ export function select_target(url: URL): Target {
 		}
 	}
 
-	if (initial_data.spa) {
+	if (!initial_data.ssr) {
 		const query: Query = extract_query(url.search);
 		const page = { host: location.host, path, query, params: {} };
 
@@ -308,7 +308,7 @@ export async function hydrate_target(target: Target): Promise<{
 
 	const props = { error: null, status: 200, segments: [segments[0]] };
 
-	if (route === null && initial_data.spa) {
+	if (route === null && initial_data.hashbang) {
 		if (!page.path) {
 			return { redirect: { statusCode: 302, location: '#!/' } }
 		}

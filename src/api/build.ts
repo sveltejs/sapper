@@ -23,7 +23,8 @@ type Opts = {
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
 	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
-	spa?: boolean;
+	ssr?: boolean;
+	hashbang?: boolean,
 };
 
 export async function build({
@@ -33,8 +34,9 @@ export async function build({
 	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
-	spa = false,
-	basepath: basepath = '',
+	ssr = true,
+	hashbang = false,
+	basepath = '',
 
 	bundler,
 	legacy = false,
@@ -56,7 +58,7 @@ export async function build({
 
 	rimraf(output);
 	mkdirp(output);
-	copy_runtime(output, spa);
+	copy_runtime(output, ssr);
 
 	rimraf(dest);
 	mkdirp(`${dest}/client`);
@@ -86,7 +88,8 @@ export async function build({
 		dest,
 		routes,
 		output,
-		spa,
+		ssr,
+		hashbang,
 		dev: false
 	});
 
@@ -100,7 +103,7 @@ export async function build({
 
 	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
 
-	if (spa) {
+	if (!ssr) {
 		create_index_html({
 			basepath,
 			build_info,
@@ -109,6 +112,8 @@ export async function build({
 			cwd,
 			src,
 			dest,
+			ssr,
+			hashbang,
 		});
 	}
 
@@ -149,7 +154,7 @@ export async function build({
 			output,
 			client_files,
 			static_files,
-			spa,
+			ssr,
 		});
 
 		serviceworker_stats = await serviceworker.compile();

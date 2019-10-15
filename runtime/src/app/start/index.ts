@@ -14,7 +14,7 @@ import {
 	set_cid
 } from '../app';
 import prefetch from '../prefetch/index';
-import { extract_hash, extract_path, hash_is_route, location_not_include_hash } from "../spa";
+import { extract_hash, extract_path, location_not_include_hash } from "../utils/route_path";
 import { debug, init } from "svelte/internal";
 import goto from "../goto";
 
@@ -29,7 +29,7 @@ export default function start(opts: {
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);
-	if (initial_data.spa) {
+	if (initial_data.hashbang) {
 		addEventListener('hashchange', handle_hashchange);
 	}
 

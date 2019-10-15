@@ -13,9 +13,9 @@ const runtime = [
 	source: fs.readFileSync(path.join(__dirname, `../runtime/${file}`), 'utf-8')
 }));
 
-export function copy_runtime(output: string, spa: boolean) {
+export function copy_runtime(output: string, ssr: boolean) {
 	runtime.forEach(({ file, source }) => {
-		if (spa && file === 'server.mjs') {
+		if (!ssr && file === 'server.mjs') {
 			return;
 		}
 		mkdirp(path.dirname(`${output}/${file}`));

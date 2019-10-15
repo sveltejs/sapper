@@ -24,7 +24,8 @@ type Opts = {
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 	entry?: string;
-	spa?: boolean;
+	ssr?: boolean;
+	hashbang?: boolean,
 };
 
 type Ref = {
@@ -56,7 +57,8 @@ async function _export({
 	concurrent = 8,
 	oninfo = noop,
 	onfile = noop,
-	spa = false,
+	ssr = true,
+	hashbang = false,
 	entry = '/'
 }: Opts = {}) {
 	basepath = basepath.replace(/^\//, '')
@@ -91,7 +93,7 @@ async function _export({
 		return entry;
 	});
 
-	if (spa) {
+	if (!ssr) {
 		copy(path.join(build_dir, 'index.html'), path.join(export_dir, 'index.html'));
 		return;
 	}
