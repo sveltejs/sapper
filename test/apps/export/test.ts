@@ -41,6 +41,7 @@ describe('export', function() {
 			'service-worker-index.html',
 			'service-worker.js',
 			'test.pdf',
+			'img/cat.png',
 			...boom
 		].sort());
 	});
@@ -48,6 +49,12 @@ describe('export', function() {
 	it('does not corrupt binary file links (like pdf)', () => {
 		const input = readFileSync(`${__dirname}/static/test.pdf`)
 		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`)
+		assert.ok(input.equals(output))
+	});
+
+	it('does not corrupt image files', () => {
+		const input = readFileSync(`${__dirname}/content/cat.png`)
+		const output = readFileSync(`${__dirname}/__sapper__/export/img/cat.png`)
 		assert.ok(input.equals(output))
 	})
 

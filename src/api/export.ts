@@ -165,10 +165,11 @@ async function _export({
 			return r;
 		}) as Response;
 
+
 		let type = r.headers.get('Content-Type');
 
 		let body;
-		if (type.startsWith('image')) { // Should probably be more generic on the content-types
+		if (type && type.startsWith('image')) { // Should probably be more generic on the content-types
 			body = await r.arrayBuffer();
 		} else {
 			body = await r.text();
