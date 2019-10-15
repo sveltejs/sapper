@@ -118,16 +118,18 @@ async function _export({
 			body = minify_html(body);
 		}
 
+		const buffer = Buffer.from(body); // Automatically detects the form of the body.
+
 		onfile({
 			file,
-			size: body.length,
+			size: buffer.byteLength, // It can be a string or ArrayBuffer
 			status
 		});
 
 		const export_file = path.join(export_dir, file);
 		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
-		fs.writeFileSync(export_file, body);
+		fs.writeFileSync(export_file, buffer);
 	}
 
 	proc.on('message', message => {
@@ -165,13 +167,19 @@ async function _export({
 
 		let type = r.headers.get('Content-Type');
 
-		let body = await r.text();
+		let body;
+		if (type.startsWith('image')) { // Should probably be more generic on the content-types
+			body = await r.arrayBuffer();
+		} else {
+			body = await r.text();
+		}
 
 		const range = ~~(r.status / 100);
 
 		let tasks = [];
 
 		if (range === 2) {
+
 			if (type === 'text/html') {
 				// parse link rel=preload headers and embed them in the HTML
 				let link = parseLinkHeader(r.headers.get('Link') || '');
@@ -190,11 +198,11 @@ async function _export({
 					const base = resolve(url.href, base_href);
 
 					let match;
-					let pattern = /<a ([\s\S]+?)>/gm;
+					let pattern = /<(a|img) ([\s\S]+?)>/gm;
 
 					while (match = pattern.exec(cleaned)) {
-						const attrs = match[1];
-						const href = get_href(attrs);
+						const attrs = match[2];
+						const href = get_href(attrs) || get_src(attrs);
 
 						if (href) {
 							const url = resolve(base.href, href);
@@ -244,5 +252,10 @@ async function _export({
 
 function get_href(attrs: string) {
 	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
+	return match && (match[1] || match[2] || match[3]);
+}
+
+function get_src(attrs: string) {
+	const match = /src\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
 	return match && (match[1] || match[2] || match[3]);
 }
