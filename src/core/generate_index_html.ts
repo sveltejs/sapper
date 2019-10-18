@@ -38,7 +38,8 @@ export function create_index_html({
 		'ssr:false',
 		`hashbang:${hashbang ? 'true' : 'false'}`,
 		`baseUrl:'${basepath || ''}'`,
-		'preloaded:[]'
+		'preloaded:[]',
+		'session:{user:null}',
 	].join(',')}};`;
 
 	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
