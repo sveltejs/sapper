@@ -349,22 +349,26 @@ function get_file(path_to_routes: string, component: PageComponent) {
 }
 
 function get_route_factory(file: string, has_params: boolean, hashbang: boolean) {
-	
 	const prefix = hashbang ? '#!' : '';
-	
+
 	let template = posixify(file)
-		.replace(/\/index/, '')
 		.replace(/\.\w+$/, '')
-		.replace(/^index$/, '');
+		.replace(/index$/, '')
+		.replace(/\/$/, '');
 
 	if (!has_params) {
 		return `() => "${prefix}/${template}"`;
 	}
 
-	template = template
-		.replace(/\[/g, '"+o.')
-		.replace(/]/g, '+"');
+	const slot_pattern = /\[(\.{3})?(\w+)(\(.+\))?\]/g;
+	const merge = `.join('/')`;
+	const slot_replace: (substring: string, ...args: any[]) => string
+		= (match, spread, slot, qualifier) => `"+o.${slot}${spread ? merge : ''}+"`;
 
+	template = posixify(template)
+		.split(/\//)
+		.map(part => part.replace(slot_pattern, slot_replace))
+		.join('/');
 
 	return `(o) => "${prefix}/${template}"`
 		.replace(/\+""$/, '');
