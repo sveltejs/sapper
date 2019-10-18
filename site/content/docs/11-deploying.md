@@ -4,22 +4,6 @@ title: Deployment
 
 Sapper apps run anywhere that supports Node 8 or higher.
 
-
-### Deploying to Now
-
-> This section relates to Now 1, not Now 2
-
-We can very easily deploy our apps to [Now][]:
-
-```bash
-npm install -g now
-now
-```
-
-This will upload the source code to Now, whereupon it will do `npm run build` and `npm start` and give you a URL for the deployed app.
-
-For other hosting environments, you may need to do `npm run build` yourself.
-
 ### Deploying service workers
 
 Sapper makes the Service Worker file (`service-worker.js`) unique by including a timestamp in the source code
@@ -53,12 +37,6 @@ Then you can set it using the environment variable, e.g.:
 
 ```bash
 SAPPER_TIMESTAMP=$(date +%s%3N) npm run build
-```
-
-When deploying to [Now][], you can pass the environment variable into Now itself:
-
-```bash
-now -e SAPPER_TIMESTAMP=$(date +%s%3N)
 ```
 
 [Now]: https://zeit.co/now
