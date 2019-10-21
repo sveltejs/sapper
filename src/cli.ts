@@ -155,6 +155,7 @@ prog.command('build [dest]')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
+	.option('--silent', 'Do not log on zero errors')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -164,12 +165,15 @@ prog.command('build [dest]')
 		src: string,
 		routes: string,
 		output: string,
-		ext: string
+		ext: string,
+		silent: string
 	}) => {
-		console.log(`> Building...`);
+		if (! silent) {
+			console.log(`> Building...`);
+		}
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.silent);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -182,7 +186,9 @@ prog.command('build [dest]')
 				require('./server/server.js');
 			`.replace(/^\t+/gm, '').trim());
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`node ${dest}`)} to run the app.`);
+			if (! silent) {
+				console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`node ${dest}`)} to run the app.`);
+			}
 		} catch (err) {
 			console.log(`${colors.bold().red(`> ${err.message}`)}`);
 			console.log(colors.gray(err.stack));
@@ -279,7 +285,8 @@ async function _build(
 	routes: string,
 	output: string,
 	dest: string,
-	ext: string
+	ext: string,
+	silent: string
 ) {
 	const { build } = await import('./api/build');
 
@@ -302,12 +309,14 @@ async function _build(
 				c = (txt: string) => colors.cyan(txt);
 			}
 
-			console.log();
-			console.log(c(`┌─${repeat('─', banner.length)}─┐`));
-			console.log(c(`│ ${colors.bold(banner)       } │`));
-			console.log(c(`└─${repeat('─', banner.length)}─┘`));
+			if (! silent || warnings.length > 0) {
+				console.log();
+				console.log(c(`┌─${repeat('─', banner.length)}─┐`));
+				console.log(c(`│ ${colors.bold(banner)       } │`));
+				console.log(c(`└─${repeat('─', banner.length)}─┘`));
 
-			console.log(event.result.print());
+				console.log(event.result.print());
+			}
 		}
 	});
 }
