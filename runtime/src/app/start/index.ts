@@ -48,7 +48,7 @@ export default function start(opts: {
 
 		const target = select_target(url);
 		const hash = extract_hash(url.hash);
-		if (target) return navigate(target, uid, true, hash);
+		if (target) return navigate(target, uid, !initial_data.hashbang, hash);
 	});
 }
 
