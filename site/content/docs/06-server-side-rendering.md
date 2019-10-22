@@ -30,3 +30,32 @@ The way to get around this is to use a dynamic import for your component, from w
 
 <svelte:component this={MyComponent} foo="bar"/>
 ```
+
+This method can also be used to import client-side libraries. For example, importing and using [Quill.js](https://github.com/quilljs/quill/)
+
+```html
+<script>
+	import { onMount } from 'svelte'
+
+	onMount(async () => {
+
+		const module = await import('quill');
+		let Quill = module.default;
+
+		let editor = new Quill('#editor', {
+			modules: { toolbar: '#toolbar' },
+			theme: 'snow'
+		});
+	});
+</script>
+
+<div id="toolbar">
+  <button class="ql-bold">Bold</button>
+  <button class="ql-italic">Italic</button>
+</div>
+
+<div id="editor">
+  <p>Hello World!</p>
+</div>
+
+```
