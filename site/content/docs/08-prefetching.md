@@ -9,7 +9,7 @@ For *dynamic* routes, such as our `src/routes/blog/[slug].svelte` example, that'
 
 ### rel=prefetch
 
-We can mitigate that by *prefetching* the data. Adding a `rel=prefetch` attribute to a link...
+We can mitigate that by *prefetching* the data. In `src/components/Nav` we can add a `rel=prefetch` attribute to the last link in the list...
 
 ```html
 <a rel=prefetch href='blog/what-is-sapper'>What is Sapper?</a>
