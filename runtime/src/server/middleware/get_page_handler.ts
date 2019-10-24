@@ -11,7 +11,8 @@ import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => any
+	session_getter: (req: Req, res: Res) => any,
+	errorRedirect: any
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -186,6 +187,21 @@ export function get_page_handler(
 
 			preload_error = { statusCode: 500, message: err };
 			preloaded = []; // appease TypeScript
+		}
+		
+		// TODO validate location path against available routes
+		// TODO right now if location path doesn't exist, infinite redirects occur
+		try {
+			if (errorRedirect) {
+				const { errorStatusCode = 404, statusCode = 301, location = '/' } = errorRedirect;
+				const errStatusCode = (typeof errorStatusCode === 'number' || typeof errorStatusCode === 'string') ?
+					[Number(errorStatusCode)] : errorStatusCode.map(v => Number(v));
+				if (~errStatusCode.indexOf(status)) {
+					redirect = { statusCode: statusCode, location: location }
+				}
+			}
+		} catch (err) {
+			console.log(err)
 		}
 
 		try {
