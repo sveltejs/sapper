@@ -145,7 +145,7 @@ export function handle_error(url: URL) {
 			},
 			component: ErrorComponent
 		},
-		segments: preloaded
+		segments: ['_error']
 
 	}
 	const query = extract_query(search);
@@ -274,7 +274,8 @@ export async function hydrate_target(target: Target): Promise<{
 	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
 }> {
 	const { route, page } = target;
-	const segments = page.path.split('/').filter(Boolean);
+	const segments = page.path === '/' ? ['index'] : page.path.split('/').filter(Boolean);
+	
 
 	let redirect: Redirect = null;
 
