@@ -38,16 +38,18 @@ Lastly, but definitely no less important we will need to export our runtime envi
 replace
 
 ```js
-polka().use( //same with Express
-	[...]
-)
+polka() //same with Express
+  .use(
+    [...]
+  )
 ```
 
 with
 ```js
-const app = polka().use( //same with Express
-	[...]
-)
+const app = polka //same with Express
+  .use(
+    [...]
+  )
 
 export default app.handler // Remove .handler when using Express
 ```
