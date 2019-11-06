@@ -7,9 +7,55 @@ Sapper apps run anywhere that supports Node 8 or higher.
 
 ### Deploying to Now
 
-> This section relates to Now 1, not Now 2
+We can very easily deploy our apps to [Now][https://zeit.co/dashboard]:
 
-We can very easily deploy our apps to [Now][]:
+#### Using Now v2 (recommended)
+
+We can use the [now-sapper loader](https://www.npmjs.com/package/now-sapper) to deploy our project and start the runtime.
+
+To do so, we will need set up our environment to work with `now`.  
+We do this by adding a `now.json` file to our project that specifies our loader and scripts to use. (`build` and `start` for runtime)
+
+```json
+{
+  "version": 2,
+    "builds": [
+    { "src": "package.json", "use": "now-sapper" }
+  ],
+}
+```
+
+We should also ignore some files using the `.nowignore`
+
+```
+__sapper__
+cypress
+node_modules
+```
+
+Lastly, but definitely no less important we will need to export our runtime environment in our `server.js`
+
+replace
+
+```js
+polka().use( //same with Express
+	[...]
+)
+```
+
+with
+```js
+const app = polka().use( //same with Express
+	[...]
+)
+
+export default app.handler // Remove .handler when using Express
+```
+
+
+#### Using Now v1 (deprecated)
+
+> This section relates to Now 1, not Now 2
 
 ```bash
 npm install -g now
