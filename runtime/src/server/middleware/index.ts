@@ -7,15 +7,19 @@ import { get_page_handler } from './get_page_handler';
 import { lookup } from './mime';
 
 export default function middleware(opts: {
+	baseTag: Boolean,
 	session?: (req: Req, res: Res) => any,
 	ignore?: any
 } = {}) {
-	const { session, ignore } = opts;
+	const { session, ignore, baseTag = true } = opts;
 
 	let emitted_basepath = false;
 
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
+			if (req.baseTag === undefined) {
+				req.baseTag = baseTag
+			}
 			if (req.baseUrl === undefined) {
 				let { originalUrl } = req;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
