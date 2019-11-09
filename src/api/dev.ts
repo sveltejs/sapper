@@ -245,9 +245,11 @@ class Watcher extends EventEmitter {
 				deferred.promise.then(() => {
 					const restart = () => {
 						this.crashed = false;
+						this.restarted_at = this.restarted_at || Date.now()
 
 						ports.wait(this.port)
 							.then((() => {
+								this.restarted_at = 0
 								this.emit('ready', <ReadyEvent>{
 									port: this.port,
 									process: this.proc
@@ -266,9 +268,14 @@ class Watcher extends EventEmitter {
 							.catch(err => {
 								if (this.crashed) return;
 
+								const delay = Math.round((Date.now() - this.restarted_at) / 1000)
 								this.emit('fatal', <FatalEvent>{
-									message: `Server is not listening on port ${this.port}`
+									message: `Server is not listening on port ${this.port} after ${delay} seconds`
 								});
+
+								if (delay < 30) {
+									restart()
+								}
 							});
 					};
 
