@@ -51,7 +51,7 @@ const app = polka() //same with Express
     [...]
   )
 
-export default app.handler // Remove .handler when using Express
+export default app
 ```
 
 
