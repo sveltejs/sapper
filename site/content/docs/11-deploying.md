@@ -46,7 +46,7 @@ polka() //same with Express
 
 with
 ```js
-const app = polka //same with Express
+const app = polka() //same with Express
   .use(
     [...]
   )
