@@ -1,6 +1,6 @@
 import { Req, Res, ServerRoute } from './types';
 
-export function get_server_route_handler(routes: ServerRoute[], handleServerErrors: boolean) {
+export function get_server_route_handler(routes: ServerRoute[], handleServerErrors?: boolean) {
 	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
