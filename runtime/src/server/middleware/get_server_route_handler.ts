@@ -1,6 +1,6 @@
 import { Req, Res, ServerRoute } from './types';
 
-export function get_server_route_handler(routes: ServerRoute[]) {
+export function get_server_route_handler(routes: ServerRoute[], handleServerErrors: boolean) {
 	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
@@ -43,11 +43,11 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 			}
 
 			const handle_next = (err?: Error) => {
-				if (err) {
+				if (err && !handleServerErrors) {
 					res.statusCode = 500;
 					res.end(err.message);
 				} else {
-					process.nextTick(next);
+					process.nextTick(() => next(err));
 				}
 			};
 

@@ -8,7 +8,8 @@ import { lookup } from './mime';
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
-	ignore?: any
+	ignore?: any,
+	handleServerErrors?: boolean
 } = {}) {
 	const { session, ignore } = opts;
 
@@ -59,7 +60,7 @@ export default function middleware(opts: {
 			cache_control: dev ? 'no-cache' : 'max-age=31536000, immutable'
 		}),
 
-		get_server_route_handler(manifest.server_routes),
+		get_server_route_handler(manifest.server_routes, handleServerErrors),
 
 		get_page_handler(manifest, session || noop)
 	].filter(Boolean));
