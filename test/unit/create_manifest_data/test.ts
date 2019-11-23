@@ -156,6 +156,19 @@ describe('manifest_data', () => {
 		]);
 	});
 
+	it('allows mutliple slugs with nested square brackets', () => {
+		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/nested-square-brackets'));
+
+		assert.deepEqual(server_routes, [
+			{
+				name: "route_$file_$91ext$40$91a$45z$93$43$41$93",
+				pattern: /^\/([a-z]+)\.([a-z]+)$/,
+				file: "[file([a-z]+)].[ext([a-z]+)].js",
+				params: ["file", "ext"]
+			}
+		]);
+	});
+
 	it('fails on clashes', () => {
 		assert.throws(() => {
 			const { pages } = create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
