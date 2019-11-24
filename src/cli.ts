@@ -207,6 +207,7 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--entry', 'Custom entry points (space separated)', '/')
+	.option('--subfolders', 'Generate /path/index.html instead of /path.html', true)
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean;
 		legacy: boolean;
@@ -223,6 +224,7 @@ prog.command('export [dest]')
 		'build-dir': string;
 		ext: string;
 		entry: string;
+		subfolders: boolean;
 	}) => {
 		try {
 			if (opts.build) {
@@ -244,6 +246,7 @@ prog.command('export [dest]')
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
 				entry: opts.entry,
+				subfolders: opts.subfolders,
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));

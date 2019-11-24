@@ -69,3 +69,5 @@ Because `sapper export` writes to the filesystem, it isn't possible to have two 
 The solution is to rename one of the routes to avoid conflict — for example, `src/routes/foo-bar.js`. (Note that you would also need to update any code that fetches data from `/foo/bar` to reference `/foo-bar` instead.)
 
 For *pages*, we skirt around this problem by writing `export/foo/index.html` instead of `export/foo`.
+
+For hosts that prefer `export/foo.html` instead of `export/foo/index.html` pass the `--no-subfolders` option to prevent a redirect with a trailing slash added to the url.

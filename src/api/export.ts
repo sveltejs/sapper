@@ -22,6 +22,7 @@ type Opts = {
 	static?: string;
 	basepath?: string;
 	host_header?: string;
+	subfolders?: boolean,
 	timeout?: number | false;
 	concurrent?: number;
 	oninfo?: ({ message }: { message: string }) => void;
@@ -82,6 +83,7 @@ async function _export({
 	export_dir = '__sapper__/export',
 	basepath = '',
 	host_header = undefined,
+	subfolders = true,
 	timeout = 5000,
 	concurrent = 8,
 	oninfo = noop,
@@ -147,7 +149,11 @@ async function _export({
 
 		if (is_html) {
 			if (!file.endsWith('.html')) {
-				file = file === '' ? 'index.html' : `${file}/index.html`;
+				if (file === '') {
+					file = 'index.html';
+				} else if (file !== 'manifest.json') {
+					file = subfolders ? `${file}/index.html` : `${file}.html`;
+				}
 			}
 
 			if (typeof body === 'string') {
