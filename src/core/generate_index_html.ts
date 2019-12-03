@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {BuildInfo} from "./create_compilers/interfaces";
-import {posixify, write_if_changed} from "../utils";
+import { BuildInfo } from "./create_compilers/interfaces";
+import { posixify, write_if_changed } from "../utils";
 
 export function create_index_html({
 		basepath,
@@ -10,9 +10,9 @@ export function create_index_html({
 		output,
 		cwd,
 		src,
-	dest,
-	ssr,
-	hashbang
+		dest,
+		ssr,
+		hashbang
 	}: {
 		basepath: string,
 		build_info: BuildInfo;
@@ -77,6 +77,7 @@ export function create_index_html({
 	const body = template()
 		.replace('%sapper.base%', () => `<base href="${basepath}/">`)
 		.replace('%sapper.scripts%', () => `<script>${script}</script>`)
+		.replace('%sapper.TIMESTAMP%', () => process.env.TIMESTAMP || Date.now().toString())
 		.replace('%sapper.html%', () => '')
 		.replace('%sapper.head%', () => '')
 		.replace('%sapper.styles%', () => styles);
