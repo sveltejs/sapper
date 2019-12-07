@@ -207,6 +207,7 @@ prog.command('export [dest]')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--entry', 'Custom entry points (space separated)', '/')
+	.option('--no-crawl', 'Only export the specified entry points, or index if none specified', false)
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -222,7 +223,8 @@ prog.command('export [dest]')
 		output: string,
 		'build-dir': string,
 		ext: string
-		entry: string
+		entry: string,
+		'no-crawl': boolean
 	}) => {
 		try {
 			if (opts.build) {
@@ -244,6 +246,7 @@ prog.command('export [dest]')
 				timeout: opts.timeout,
 				concurrent: opts.concurrent,
 				entry: opts.entry,
+				no_crawl: opts["no-crawl"],
 
 				oninfo: event => {
 					console.log(colors.bold().cyan(`> ${event.message}`));
