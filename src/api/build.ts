@@ -103,20 +103,6 @@ export async function build({
 
 	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
 
-	if (!ssr) {
-		create_index_html({
-			basepath,
-			build_info,
-			dev: false,
-			output,
-			cwd,
-			src,
-			dest,
-			ssr,
-			hashbang,
-		});
-	}
-
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
 		const { client } = await create_compilers(bundler, cwd, src, dest, false);
@@ -131,6 +117,20 @@ export async function build({
 		client_result.to_json(manifest_data, { src, routes, dest });
 		build_info.legacy_assets = client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
+	}
+
+	if (!ssr) {
+		create_index_html({
+			basepath,
+			build_info,
+			dev: false,
+			output,
+			cwd,
+			src,
+			dest,
+			ssr,
+			hashbang,
+		});
 	}
 
 	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
