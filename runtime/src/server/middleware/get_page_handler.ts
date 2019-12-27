@@ -364,7 +364,7 @@ function replace(
 ) {
     for (const key in replacers) {
         if (replacers.hasOwnProperty(key)) {
-            template = template.replace(`%sapper.${key}%`, replacers[key] as any);
+            template = template.replace(new RegExp(`%sapper.${key}%`, 'g'), replacers[key] as any);
         }
     }
     return template;
