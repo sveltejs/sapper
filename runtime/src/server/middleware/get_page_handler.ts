@@ -320,12 +320,14 @@ export function get_page_handler(
 			// users can set a CSP nonce using res.locals.nonce
 			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
 
-			const body = template()
-				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
-				.replace('%sapper.html%', () => html)
-				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', () => styles);
+			const body = replace(template(), {
+				...res.replacers,
+				base: () => `<base href="${req.baseUrl}/">`,
+				scripts: () => `<script${nonce_attr}>${script}</script>`,
+				html: () => html,
+				head: () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`,
+				styles: () => styles
+			});
 
 			res.statusCode = status;
 			res.end(body);
@@ -354,6 +356,18 @@ export function get_page_handler(
 
 		handle_error(req, res, 404, 'Not found');
 	};
+}
+
+function replace(
+    template: string,
+    replacers: Record<string, string | CallableFunction>
+) {
+    for (const key in replacers) {
+        if (replacers.hasOwnProperty(key)) {
+            template = template.replace(`%sapper.${key}%`, replacers[key] as any);
+        }
+    }
+    return template;
 }
 
 function read_template(dir = build_dir) {
