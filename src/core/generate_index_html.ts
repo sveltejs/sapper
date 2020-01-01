@@ -12,7 +12,8 @@ export function create_index_html({
 		src,
 		dest,
 		ssr,
-		hashbang
+		hashbang,
+		template_file = 'template.html',
 	}: {
 		basepath: string,
 		build_info: BuildInfo;
@@ -23,6 +24,7 @@ export function create_index_html({
 		dest: string,
 		ssr: boolean,
 		hashbang: boolean,
+		template_file?: string,
 	}
 ) {
 
@@ -30,8 +32,8 @@ export function create_index_html({
 	const src_dir = posixify(path.relative(cwd, src));
 
 	const template = dev
-		? () => read_template(src_dir)
-		: (str => () => str)(read_template(build_dir));
+		? () => read_template(src_dir, template_file)
+		: (str => () => str)(read_template(build_dir, template_file));
 
 
 	let script = `__SAPPER__={${[
@@ -86,7 +88,7 @@ export function create_index_html({
 	write_if_changed(`${build_dir}/index.html`, body);
 }
 
-function read_template(dir: string) {
-	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
+function read_template(dir: string, file: string) {
+	return fs.readFileSync(path.resolve(dir, file), 'utf-8');
 }
 

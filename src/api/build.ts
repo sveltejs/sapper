@@ -25,6 +25,7 @@ type Opts = {
 	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
 	ssr?: boolean;
 	hashbang?: boolean,
+	template_file?: string;
 };
 
 export async function build({
@@ -36,6 +37,7 @@ export async function build({
 	dest = '__sapper__/build',
 	ssr = true,
 	hashbang = false,
+	template_file = 'template.html',
 	basepath = '',
 
 	bundler,
@@ -66,7 +68,7 @@ export async function build({
 
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = read_template(src);
+	const template = read_template(src, template_file);
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -75,7 +77,7 @@ export async function build({
 		throw error;
 	}
 
-	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
+	fs.writeFileSync(`${dest}/${template_file}`, minify_html(template));
 
 	const manifest_data = create_manifest_data(routes, ext);
 
@@ -90,6 +92,7 @@ export async function build({
 		output,
 		ssr,
 		hashbang,
+		template: template_file,
 		dev: false
 	});
 
@@ -101,7 +104,11 @@ export async function build({
 		result: client_result
 	});
 
-	const build_info = client_result.to_json(manifest_data, { src, routes, dest });
+	const build_info = client_result.to_json(manifest_data, {
+		src,
+		routes,
+		dest
+	});
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
@@ -162,6 +169,7 @@ export async function build({
 			dest,
 			ssr,
 			hashbang,
+			template_file,
 		});
 	}
 }

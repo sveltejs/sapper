@@ -6,7 +6,7 @@ import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
 import { Manifest, Page, Req, Res } from './types';
-import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
+import { build_dir, dev, src_dir, template as template_file } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
@@ -18,8 +18,8 @@ export function get_page_handler(
 		: (assets => () => assets)(JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8')));
 
 	const template = dev
-		? () => read_template(src_dir)
-		: (str => () => str)(read_template(build_dir));
+		? () => read_template(src_dir, template_file)
+		: (str => () => str)(read_template(build_dir, template_file));
 
 	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
 
@@ -35,7 +35,12 @@ export function get_page_handler(
 		res.end(`<pre>${message}</pre>`);
 	}
 
-	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
+	function handle_error(
+		req: Req,
+		res: Res,
+		statusCode: number,
+		error: Error | string
+	) {
 		handle_page({
 			pattern: null,
 			parts: [
@@ -44,14 +49,20 @@ export function get_page_handler(
 		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
 
-	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
+	async function handle_page(
+		page: Page,
+		req: Req,
+		res: Res,
+		status = 200,
+		error: Error | string = null
+	) {
 		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
 			legacy_assets?: Record<string, string>
-		 } = get_build_info();
+		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 		res.setHeader('Cache-Control', dev ? 'no-cache' : 'max-age=600');
@@ -105,7 +116,7 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' : ''}`);
 
 				if (opts) {
 					opts = Object.assign({}, opts);
@@ -329,7 +340,7 @@ export function get_page_handler(
 
 			res.statusCode = status;
 			res.end(body);
-		} catch(err) {
+		} catch (err) {
 			if (error) {
 				bail(req, res, err)
 			} else {
@@ -356,8 +367,8 @@ export function get_page_handler(
 	};
 }
 
-function read_template(dir = build_dir) {
-	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
+function read_template(dir = build_dir, file: string = 'template.html') {
+	return fs.readFileSync(`${dir}/${file}`, 'utf-8');
 }
 
 function try_serialize(data: any, fail?: (err) => void) {
@@ -371,11 +382,11 @@ function try_serialize(data: any, fail?: (err) => void) {
 
 function escape_html(html: string) {
 	const chars: Record<string, string> = {
-		'"' : 'quot',
+		'"': 'quot',
 		"'": '#39',
 		'&': 'amp',
-		'<' : 'lt',
-		'>' : 'gt'
+		'<': 'lt',
+		'>': 'gt'
 	};
 
 	return html.replace(/["'&<>]/g, c => `&${chars[c]};`);

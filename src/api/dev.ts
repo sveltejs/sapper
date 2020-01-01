@@ -34,6 +34,7 @@ type Opts = {
 	'basepath'?: string,
 	ssr: boolean,
 	hashbang: boolean,
+	template_file: string,
 };
 
 export function dev(opts: Opts) {
@@ -76,6 +77,7 @@ class Watcher extends EventEmitter {
 	ext: string;
 	ssr: boolean;
 	hashbang: boolean;
+	template_file: string;
 
 	constructor({
 		cwd = '.',
@@ -94,9 +96,10 @@ class Watcher extends EventEmitter {
 		ext,
 		ssr = true,
 		hashbang = false,
+		template_file = 'template.html',
 	}: Opts) {
 		super();
-		
+
 		basepath = basepath.replace(/^\//, '')
 
 		cwd = path.resolve(cwd);
@@ -116,6 +119,7 @@ class Watcher extends EventEmitter {
 		this.closed = false;
 		this.ssr = ssr;
 		this.hashbang = hashbang;
+		this.template_file = template_file;
 
 		this.dev_port = dev_port;
 		this.live = live;
@@ -133,7 +137,7 @@ class Watcher extends EventEmitter {
 		};
 
 		// remove this in a future version
-		const template = read_template(src);
+		const template = read_template(src, template_file);
 		if (template.indexOf('%sapper.base%') === -1) {
 			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
 			error.code = `missing-sapper-base`;
@@ -161,7 +165,7 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { cwd, src, dest, routes, output, static: static_files, basepath} = this.dirs;
+		const { cwd, src, dest, routes, output, static: static_files, basepath } = this.dirs;
 
 		rimraf(output);
 		mkdirp(output);
@@ -187,6 +191,7 @@ class Watcher extends EventEmitter {
 				dev_port: this.dev_port,
 				ssr: this.ssr,
 				hashbang: this.hashbang,
+				template: this.template_file,
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
@@ -217,6 +222,7 @@ class Watcher extends EventEmitter {
 							dev_port: this.dev_port,
 							ssr: this.ssr,
 							hashbang: this.hashbang,
+							template: this.template_file,
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
@@ -231,7 +237,7 @@ class Watcher extends EventEmitter {
 
 		if (this.live) {
 			this.filewatchers.push(
-				fs.watch(`${src}/template.html`, () => {
+				fs.watch(`${src}/${this.template_file}`, () => {
 					this.dev_server.send({
 						action: 'reload'
 					});

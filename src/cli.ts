@@ -34,6 +34,7 @@ prog.command('dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.option('--ssr', 'Server-Side Rendering', true)
 	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
+	.option('--template', 'Template file', 'template.html')
 	.action(async (opts: {
 		port: number,
 		open: boolean,
@@ -50,6 +51,7 @@ prog.command('dev')
 		ext: string,
 		ssr: boolean,
 		hashbang: boolean,
+		template: string,
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -68,7 +70,8 @@ prog.command('dev')
 				bundler: opts.bundler,
 				ext: opts.ext,
 				ssr: opts.ssr,
-				hashbang: opts.hashbang
+				hashbang: opts.hashbang,
+				template_file: opts.template,
 			});
 
 			let first = true;
@@ -164,6 +167,7 @@ prog.command('build [dest]')
 	.option('--basepath', 'Specify a base path')
 	.option('--ssr', 'Server-Side Rendering', true)
 	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
+	.option('--template', 'Template file', 'template.html')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string,
@@ -177,11 +181,12 @@ prog.command('build [dest]')
 		basepath?: string,
 		ssr: boolean,
 		hashbang: boolean,
+		template: string,
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.ssr, opts.hashbang, opts.basepath);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.ssr, opts.hashbang, opts.basepath, opts.template);
 
 			const launcher = path.resolve(dest, 'index.js');
 
@@ -221,6 +226,7 @@ prog.command('export [dest]')
 	.option('--entry', 'Custom entry points (space separated)', '/')
 	.option('--ssr', 'Server-Side Rendering', true)
 	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
+	.option('--template', 'Template file', 'template.html')
 	.action(async (dest = '__sapper__/export', opts: {
 		build: boolean,
 		legacy: boolean,
@@ -239,11 +245,12 @@ prog.command('export [dest]')
 		entry: string
 		ssr: boolean,
 		hashbang: boolean,
+		template: string,
 	}) => {
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.ssr, opts.hashbang, opts.basepath);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.ssr, opts.hashbang, opts.basepath, opts.template);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -268,13 +275,13 @@ prog.command('export [dest]')
 
 				onfile: event => {
 					const size_color = event.size > 150000 ? colors.bold().red : event.size > 50000 ? colors.bold().yellow : colors.bold().gray;
-						const size_label = size_color(left_pad(pb(event.size), 10));
+					const size_label = size_color(left_pad(pb(event.size), 10));
 
-						const file_label = event.status === 200
-							? event.file
-							: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+					const file_label = event.status === 200
+						? event.file
+						: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
 
-						console.log(`${size_label}   ${file_label}`);
+					console.log(`${size_label}   ${file_label}`);
 				}
 			});
 
@@ -299,7 +306,8 @@ async function _build(
 	ext: string,
 	ssr: boolean,
 	hashbang: boolean,
-	basepath: string
+	basepath: string,
+	template_file: string,
 ) {
 	const { build } = await import('./api/build');
 
@@ -315,6 +323,7 @@ async function _build(
 		ssr,
 		basepath,
 		hashbang,
+		template_file,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);
@@ -327,7 +336,7 @@ async function _build(
 
 			console.log();
 			console.log(c(`┌─${repeat('─', banner.length)}─┐`));
-			console.log(c(`│ ${colors.bold(banner)       } │`));
+			console.log(c(`│ ${colors.bold(banner)} │`));
 			console.log(c(`└─${repeat('─', banner.length)}─┘`));
 
 			console.log(event.result.print());

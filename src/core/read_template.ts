@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 
-export default function read_template(dir: string) {
+export default function read_template(
+	dir: string,
+	file: string = 'template.html'
+) {
 	try {
-		return fs.readFileSync(`${dir}/template.html`, 'utf-8');
+		return fs.readFileSync(`${dir}/${file}`, 'utf-8');
 	} catch (err) {
 		if (fs.existsSync(`app/template.html`)) {
 			throw new Error(`As of Sapper 0.21, the default folder structure has been changed:
