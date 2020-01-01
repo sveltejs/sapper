@@ -119,20 +119,6 @@ export async function build({
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	if (!ssr) {
-		create_index_html({
-			basepath,
-			build_info,
-			dev: false,
-			output,
-			cwd,
-			src,
-			dest,
-			ssr,
-			hashbang,
-		});
-	}
-
 	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
 
 	const server_stats = await server.compile();
@@ -162,6 +148,20 @@ export async function build({
 		oncompile({
 			type: 'serviceworker',
 			result: serviceworker_stats
+		});
+	}
+
+	if (!ssr) {
+		create_index_html({
+			basepath,
+			build_info,
+			dev: false,
+			output,
+			cwd,
+			src,
+			dest,
+			ssr,
+			hashbang,
 		});
 	}
 }
