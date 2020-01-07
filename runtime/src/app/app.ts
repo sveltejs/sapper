@@ -72,6 +72,7 @@ export function set_cid(n) {
 }
 
 const _history = typeof history !== 'undefined' ? history : {
+	go: (delta: number) => {},
 	pushState: (state: any, title: string, href: string) => {},
 	replaceState: (state: any, title: string, href: string) => {},
 	scrollRestoration: ''

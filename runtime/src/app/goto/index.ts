@@ -1,9 +1,14 @@
 import { history, select_target, navigate, cid } from '../app';
+import { canNavigate } from '../onNavigate/index';
 
-export default function goto(href: string, opts = { replaceState: false }) {
+export default async function goto(href: string, opts = { replaceState: false }) {
 	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {
+		if (!(await canNavigate(target.page))) {
+			return;
+		}
+
 		history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
 		return navigate(target, null).then(() => {});
 	}

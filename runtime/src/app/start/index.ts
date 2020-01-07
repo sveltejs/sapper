@@ -13,6 +13,7 @@ import {
 	set_cid
 } from '../app';
 import prefetch from '../prefetch/index';
+import { canNavigate } from '../onNavigate/index';
 
 export default function start(opts: {
 	target: Node
@@ -60,7 +61,7 @@ function trigger_prefetch(event: MouseEvent | TouchEvent) {
 	prefetch(a.href);
 }
 
-function handle_click(event: MouseEvent) {
+async function handle_click(event: MouseEvent) {
 	// Adapted from https://github.com/visionmedia/page.js
 	// MIT license https://github.com/visionmedia/page.js#license
 	if (which(event) !== 1) return;
@@ -97,9 +98,13 @@ function handle_click(event: MouseEvent) {
 
 	const target = select_target(url);
 	if (target) {
+		event.preventDefault();
+		if (!(await canNavigate(target.page))) {
+			return;
+		}
+
 		const noscroll = a.hasAttribute('sapper-noscroll');
 		navigate(target, null, noscroll, url.hash);
-		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
 	}
 }
@@ -113,13 +118,18 @@ function find_anchor(node: Node) {
 	return node;
 }
 
-function handle_popstate(event: PopStateEvent) {
+async function handle_popstate(event: PopStateEvent) {
 	scroll_history[cid] = scroll_state();
 
 	if (event.state) {
 		const url = new URL(location.href);
 		const target = select_target(url);
 		if (target) {
+			if (!(await canNavigate(target.page))) {
+				history.go(cid - event.state.id);
+				return;
+			}
+
 			navigate(target, event.state.id);
 		} else {
 			location.href = location.href;
