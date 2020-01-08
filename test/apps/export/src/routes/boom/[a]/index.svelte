@@ -12,4 +12,5 @@
 
 {#each list as b}
 	<a href="boom/{a}/{b}">{a}/{b}</a>
+	<a href="boom/{a}/{b}.html">{a}/{b}.html</a>
 {/each}

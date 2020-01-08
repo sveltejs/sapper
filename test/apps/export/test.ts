@@ -23,7 +23,8 @@ describe('export', function() {
 		for (let a = 1; a <= 20; a += 1) {
 			boom.push(`boom/${a}/index.html`);
 			for (let b = 1; b <= 20; b += 1) {
-				boom.push(`boom/${a}/${b}/index.html`);
+                boom.push(`boom/${a}/${b}.html`);
+                boom.push(`boom/${a}/${b}/index.html`);
 			}
 		}
 
