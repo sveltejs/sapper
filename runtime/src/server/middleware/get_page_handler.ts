@@ -275,7 +275,7 @@ export function get_page_handler(
 			].filter(Boolean).join(',')}};`;
 
 			if (has_service_worker) {
-				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
+				script += `if('serviceWorker' in navigator) window.addEventListener('load',function(){navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');});`;
 			}
 
 			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
