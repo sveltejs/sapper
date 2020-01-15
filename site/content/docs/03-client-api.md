@@ -38,7 +38,7 @@ import { goto } from '@sapper/app
 
 const navigateAndSave = () => {
 	goto('/');
-	saveItem()
+	saveItem();
 }
 	
 const saveItem = () => {
