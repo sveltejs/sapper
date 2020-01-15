@@ -33,6 +33,20 @@ Programmatically navigates to the given `href`. If the destination is a Sapper r
 
 Returns a `Promise` that resolves when the navigation is complete.
 
+```html
+<script>
+	import { goto } from 'sapper/app
+	const navigateAndSave = () => {
+		goto('/');
+		saveItem()
+	}
+	
+	const saveItem = () => {
+	...
+	}
+</script>
+```
+
 
 ### prefetch(href)
 
