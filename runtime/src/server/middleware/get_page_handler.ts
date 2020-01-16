@@ -328,10 +328,19 @@ export function get_page_handler(
 					var baseDepth = countBaseDepth(baseHref);
 					var splitPath = trimSlashes(location.pathname).split('/');
 					var pathToCut = '/' + splitPath.slice(0, splitPath.length-baseDepth).join('/');
-					if (location.href.endsWith('index.html')) {
-						location.replace(location.href.slice(0, location.href.length - 10));
-					} else if(!location.href.endsWith('/')) {
-						location.replace(location.href + '/');
+					var hrefBeforeParams = location.href; 
+					var paramsString = '';
+					var paramsIndex = hrefBeforeParams.indexOf('?');
+					if (paramsIndex > -1) {
+						paramsString = hrefBeforeParams.substring(paramsIndex);
+						hrefBeforeParams = hrefBeforeParams.substring(0, paramsIndex);
+					}
+					if (hrefBeforeParams.endsWith('index.html')) {
+						hrefBeforeParams = hrefBeforeParams.slice(0, hrefBeforeParams.length - 10);
+						location.replace(hrefBeforeParams + paramsString);
+					} else if(!hrefBeforeParams.endsWith('/')) {
+						hrefBeforeParams = hrefBeforeParams + '/';
+						location.replace(hrefBeforeParams + paramsString);
 					}
 				</script>
 				`;
