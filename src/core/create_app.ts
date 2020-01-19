@@ -26,7 +26,7 @@ export function create_app({
 }) {
 	if (!fs.existsSync(output)) fs.mkdirSync(output);
 
-	const path_to_routes = path.relative(`${output}/internal`, routes);
+	const path_to_routes = routes;
 
 	const client_manifest = generate_client_manifest(manifest_data, path_to_routes, bundler, dev, dev_port);
 	const server_manifest = generate_server_manifest(manifest_data, path_to_routes, cwd, src, dest, dev);
