@@ -122,6 +122,16 @@ The `error` object is made available to the template along with the HTTP `status
 
 You can use a subset of regular expressions to qualify route parameters, by placing them in parentheses after the parameter name.
 
-For example, `src/routes/items/[id([0-9]+)].svelte` would only match numeric IDs — `/items/123` would match, but `/items/xyz` would not.
+For example, `src/routes/items/[id([0-9]+)].svelte` would only match numeric IDs — `/items/123` would match, but `/items/xyz` would not. These dynamic parameters will be available in `page.params`. See the [Pages section](docs#Pages) for more details.
+
+Examples:
+
+```
+index.html                         # normal
+[page].html                        # match anything. page.params.page holds the value
+[lang([a-z]{2})]/index.html        # match two letters in directory. page.params.lang holds the value
+[lang([a-z]{2})]/[page].html       # match two letters. page.params is {lang: String, page: String}
+[category([a-z-]{3,})]/[page].html
+```
 
 Because of technical limitations, the following characters cannot be used: `/`, `\`, `?`, `:`, `(` and `)`.
