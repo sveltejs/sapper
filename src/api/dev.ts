@@ -88,11 +88,12 @@ class Watcher extends EventEmitter {
 		super();
 
 		cwd = path.resolve(cwd);
+		src = path.resolve(cwd, src);
 
 		this.bundler = validate_bundler(bundler);
 		this.dirs = {
 			cwd,
-			src: path.resolve(cwd, src),
+			src,
 			dest: path.resolve(cwd, dest),
 			routes: path.resolve(cwd, routes),
 			output: path.resolve(cwd, output),
