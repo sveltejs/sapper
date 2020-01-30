@@ -70,6 +70,8 @@ Dynamic parameters are encoded using `[brackets]`. For example, here's how you c
 </div>
 ```
 
+If you want to capture more params you can create nested folders using the same naming convention: `[slug]/[language]`.
+
 If you don't want to create several folders to capture more than one parameter like `[year]/[month]/...` you can do so by spreading the param. For example, if you want to capture the following params: `/blog/[slug]/[year]/[month]/[day]` you can create a file called `[...slug].svelte` and extract them like so:
 
 ```html
