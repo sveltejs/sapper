@@ -168,7 +168,8 @@ function generate_server_manifest(
 		manifest_data.components.map((component, i) =>
 			`import component_${i}${component.has_preload ? `, { preload as preload_${i} }` : ''} from ${stringify(get_file(path_to_routes, component))};`),
 		`import root${manifest_data.root.has_preload ? `, { preload as root_preload }` : ''} from ${stringify(get_file(path_to_routes, manifest_data.root))};`,
-		`import error from ${stringify(get_file(path_to_routes, manifest_data.error))};`
+		`import error from ${stringify(get_file(path_to_routes, manifest_data.error))};`,
+		`import path from 'path'`
 	);
 
 	const component_lookup: Record<string, number> = {};
@@ -231,7 +232,7 @@ function generate_server_manifest(
 			error
 		};
 
-		export const build_dir = ${JSON.stringify(build_dir)};
+		export const build_dir = path.join(path.relative(process.cwd(), __dirname), '..');
 
 		export const src_dir = ${JSON.stringify(src_dir)};
 
