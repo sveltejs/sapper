@@ -137,10 +137,10 @@ export default class RollupCompiler {
 		});
 	}
 
-	static async load_config(cwd: string) {
+	static async load_config(cwd: string, bundlerConfig: string = 'rollup.config.js') {
 		if (!rollup) rollup = relative('rollup', cwd);
 
-		const input = path.resolve(cwd, 'rollup.config.js');
+		const input = path.resolve(cwd, bundlerConfig);
 
 		const bundle = await rollup.rollup({
 			input,

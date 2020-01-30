@@ -29,6 +29,7 @@ prog.command('dev')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--static', 'Static files directory', 'static')
+	.option('--bundlerConfig', 'Path to rollup.config.js or webpack.config.js relative to the cwd.')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
@@ -45,7 +46,8 @@ prog.command('dev')
 		static: string,
 		output: string,
 		'build-dir': string,
-		ext: string
+		ext: string,
+		bundlerConfig?: string
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -62,6 +64,7 @@ prog.command('dev')
 				live: opts.live,
 				hot: opts.hot,
 				bundler: opts.bundler,
+				bundlerConfig: opts.bundlerConfig,
 				ext: opts.ext
 			});
 
@@ -153,6 +156,8 @@ prog.command('build [dest]')
 	.option('--cwd', 'Current working directory', '.')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
+	.option('--static', 'Static files directory', 'static')
+	.option('--bundlerConfig', 'Path to rollup.config.js or webpack.config.js relative to the cwd.')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.example(`build custom-dir -p 4567`)
@@ -164,12 +169,14 @@ prog.command('build [dest]')
 		src: string,
 		routes: string,
 		output: string,
-		ext: string
+		static: string,
+		ext: string,
+		bundlerConfig?: string,
 	}) => {
 		console.log(`> Building...`);
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, opts.static, opts.bundlerConfig);
 
 			const launcher = opts.cwd ?
 				path.resolve(opts.cwd, dest, 'index.js') :
@@ -205,6 +212,7 @@ prog.command('export [dest]')
 	.option('--src', 'Source directory', 'src')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--static', 'Static files directory', 'static')
+	.option('--bundlerConfig', 'Path to rollup.config.js or webpack.config.js relative to the cwd.')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--build-dir', 'Intermediate build directory', '__sapper__/build')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
@@ -224,12 +232,13 @@ prog.command('export [dest]')
 		output: string,
 		'build-dir': string,
 		ext: string
-		entry: string
+		entry: string,
+		bundlerConfig?: string
 	}) => {
 		try {
 			if (opts.build) {
 				console.log(`> Building...`);
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, opts.static, opts.bundlerConfig);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -281,7 +290,9 @@ async function _build(
 	routes: string,
 	output: string,
 	dest: string,
-	ext: string
+	ext: string,
+	static_files: string,
+	bundlerConfig: string | undefined,
 ) {
 	const { build } = await import('./api/build');
 
@@ -294,6 +305,8 @@ async function _build(
 		dest,
 		ext,
 		output,
+		bundlerConfig,
+		static_files,
 		oncompile: event => {
 			let banner = `built ${event.type}`;
 			let c = (txt: string) => colors.cyan(txt);
