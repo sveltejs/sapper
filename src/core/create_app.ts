@@ -180,7 +180,6 @@ function generate_server_manifest(
 	let code = `
 		`.replace(/^\t\t/gm, '').trim();
 
-	const build_dir = posixify(path.relative(cwd, dest));
 	const src_dir = posixify(path.relative(cwd, src));
 
 	return `
