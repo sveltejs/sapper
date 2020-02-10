@@ -100,7 +100,7 @@ export function extract_query(search: string) {
 export function select_target(url: URL): Target {
 	if (url.origin !== location.origin) return null;
 	if (initial_data.hashbang) {
-		if (url.pathname !== location.pathname) return null;
+		if (url.pathname && url.pathname !== location.pathname) return null;
 	} else {
 		if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
 	}
