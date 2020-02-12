@@ -77,7 +77,7 @@ If you don't want to create several folders to capture more than one parameter l
 ```html
 <!-- src/routes/blog/[...slug].svelte -->
 <script context="module">
-	export async function preload(page, session) {
+	export async function preload({ params }) {
 		let [slug, year, month, day] = params.slug;
 	
 		return { slug, year, month, day };
