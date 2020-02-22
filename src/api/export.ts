@@ -91,11 +91,14 @@ async function _export({
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd,
-		env: Object.assign({
-			PORT: port,
-			NODE_ENV: 'production',
-			SAPPER_EXPORT: 'true'
-		}, process.env)
+		env: { 
+			...process.env,
+			...{
+				PORT: port,
+				NODE_ENV: 'production',
+				SAPPER_EXPORT: 'true'
+			}
+		}
 	});
 
 	const seen = new Set();
