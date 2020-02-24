@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 export default function validate_bundler(dir: string, bundler?: 'rollup' | 'webpack') {
 	if (!bundler) {
