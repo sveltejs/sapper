@@ -36,7 +36,7 @@ export async function build({
 	ext,
 	oncompile = noop
 }: Opts = {}) {
-	bundler = validate_bundler(bundler);
+	bundler = validate_bundler(cwd, bundler);
 
 	cwd = path.resolve(cwd);
 	src = path.resolve(cwd, src);
