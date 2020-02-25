@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.10
+
+* Fix component styles being duplicated between `client.css` and `main.css` ([#1076](https://github.com/sveltejs/sapper/issues/1076))
+
+
 ## 0.27.9
 
 * Recheck whether a component has a `preload` whenever the file changes ([#611](https://github.com/sveltejs/sapper/issues/611))
