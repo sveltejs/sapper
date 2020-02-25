@@ -253,11 +253,7 @@ export default function extract_css(
 		fs.writeFileSync(`${asset_dir}/${file}`, replaced);
 	});
 
-	unclaimed.forEach(file => {
-		entry_css_modules.push(file);
-	});
-
-	const leftover = get_css_from_modules(entry_css_modules, css_map, asset_dir);
+	const leftover = get_css_from_modules(Array.from(unclaimed), css_map, asset_dir);
 	if (leftover) {
 		let { code, map } = leftover;
 
