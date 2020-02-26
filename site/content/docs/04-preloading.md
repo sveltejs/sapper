@@ -33,12 +33,14 @@ So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/bl
 * `page.query.baz === true`
 
 `session` is generated on the server by the `session` option passed to `sapper.middleware`. For example:
-`sapper.middleware({
+
+```js
+sapper.middleware({
 	session: (req, res) => ({
 		user: req.user
 	})
-})`
-(TODO this needs further documentation. Perhaps a server API section?)
+})
+```
 
 
 ### Return value
