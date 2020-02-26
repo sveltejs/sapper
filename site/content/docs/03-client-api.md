@@ -34,15 +34,15 @@ Programmatically navigates to the given `href`. If the destination is a Sapper r
 Returns a `Promise` that resolves when the navigation is complete. This can be used to perform actions once the navigation has completed, such as updating a database, store, etc.
 
 ```js
-import { goto } from '@sapper/app
+import { goto } from '@sapper/app';
 
 const navigateAndSave = async () => {
 	await goto('/');
 	saveItem();
 }
-	
+
 const saveItem = () => {
-  // update a database/store, etc.
+	// do something with the database
 }
 ```
 
