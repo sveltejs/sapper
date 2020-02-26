@@ -44,7 +44,7 @@ So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/bl
 
 ### Return value
 
-If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object. The value will be available within the components as props.
+If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object. In both cases, the values in the object will be passed into the components as props.
 
 When Sapper renders a page on the server, it will attempt to serialize the resolved value (using [devalue](https://github.com/Rich-Harris/devalue)) and include it on the page, so that the client doesn't also need to call `preload` upon initialization. Serialization will fail if the value includes functions or custom classes (cyclical and repeated references are fine, as are built-ins like `Date`, `Map`, `Set` and `RegExp`).
 
