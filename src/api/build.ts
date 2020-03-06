@@ -9,6 +9,7 @@ import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import add_version_to_assets from "./utils/add_version_to_assets";
 
 type Opts = {
 	cwd?: string;
@@ -59,7 +60,7 @@ export async function build({
 
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
-	const template = read_template(src);
+	let template = read_template(src);
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
@@ -68,6 +69,7 @@ export async function build({
 		throw error;
 	}
 
+	template = add_version_to_assets(template, static_files);
 	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
 	const manifest_data = create_manifest_data(routes, ext);
