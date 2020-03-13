@@ -112,7 +112,8 @@ async function _export({
 		const is_html = type === 'text/html';
 
 		if (is_html) {
-			if (pathname !== '/service-worker-index.html') {
+			if (pathname !== '/service-worker-index.html'
+			   && pathname.substr(pathname.length - 5) !== '.html') {
 				file = file === '' ? 'index.html' : `${file}/index.html`;
 			}
 			body = minify_html(body);
@@ -186,7 +187,7 @@ async function _export({
 					const cleaned = clean_html(body);
 
 					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-					const base_href = base_match && get_href(base_match[1]);
+					const base_href =  base_match ? get_href(base_match[1]) : '/'
 					const base = resolve(url.href, base_href);
 
 					let match;

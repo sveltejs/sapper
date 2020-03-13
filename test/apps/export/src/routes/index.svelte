@@ -8,4 +8,5 @@
 <a href>empty anchor #5</a>
 <a>empty anchor #6</a>
 <a href="boom">boom</a>
+<a href="test.html">html file</a>
 <a href="test.pdf">pdf file</a>
