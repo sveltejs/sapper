@@ -25,6 +25,7 @@ type Opts = {
 	output?: string,
 	static?: string,
 	'dev-port'?: number,
+	'dev-host'?: string,
 	live?: boolean,
 	hot?: boolean,
 	'devtools-port'?: number,
@@ -56,6 +57,7 @@ class Watcher extends EventEmitter {
 	closed: boolean;
 
 	dev_port: number;
+	dev_host: string;
 	live: boolean;
 	hot: boolean;
 
@@ -87,6 +89,7 @@ class Watcher extends EventEmitter {
 		static: static_files = 'static',
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
+		'dev-host': dev_host,
 		'basepath': basepath = '',
 		live,
 		hot,
@@ -122,6 +125,7 @@ class Watcher extends EventEmitter {
 		this.template_file = template_file;
 
 		this.dev_port = dev_port;
+		this.dev_host = dev_host;
 		this.live = live;
 		this.hot = hot;
 
@@ -176,6 +180,7 @@ class Watcher extends EventEmitter {
 		if (this.bundler === 'rollup') copy_shimport(dest);
 
 		if (!this.dev_port) this.dev_port = await ports.find(10000);
+		if (!this.dev_host) this.dev_host = '0.0.0.0';
 
 		// Chrome looks for debugging targets on ports 9222 and 9229 by default
 		if (!this.devtools_port) this.devtools_port = await ports.find(9222);
@@ -201,7 +206,7 @@ class Watcher extends EventEmitter {
 			return;
 		}
 
-		this.dev_server = new DevServer(this.dev_port);
+		this.dev_server = new DevServer(this.dev_port, 10000, this.dev_host);
 
 		this.filewatchers.push(
 			watch_dir(
@@ -499,7 +504,7 @@ class DevServer {
 	interval: NodeJS.Timer;
 	_: http.Server;
 
-	constructor(port: number, interval = 10000) {
+	constructor(port: number, interval = 10000, host = '0.0.0.0') {
 		this.clients = new Set();
 
 		this._ = http.createServer((req, res) => {
@@ -525,7 +530,7 @@ class DevServer {
 			});
 		});
 
-		this._.listen(port);
+		this._.listen(port, host);
 
 		this.interval = setInterval(() => {
 			this.send(null);
