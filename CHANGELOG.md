@@ -1,5 +1,11 @@
 # sapper changelog
 
+## 0.27.11
+
+* Fix vulnerability when serving `/client/...` files — **Please upgrade!**
+* Revert CSS handling change from 0.27.10
+
+
 ## 0.27.10
 
 * Fix component styles being duplicated between `client.css` and `main.css` ([#1076](https://github.com/sveltejs/sapper/issues/1076))
