@@ -29,7 +29,7 @@ application/java-archive			jar
 application/java-serialized-object		ser
 application/java-vm				class
 application/javascript				js
-application/json				json map
+application/json				json
 application/jsonml+json				jsonml
 application/lost+xml				lostxml
 application/mac-binhex40			hqx
@@ -464,7 +464,6 @@ application/vnd.yellowriver-custom-menu		cmp
 application/vnd.zul				zir zirz
 application/vnd.zzazz.deck+xml			zaz
 application/voicexml+xml			vxml
-application/wasm				wasm
 application/widget				wgt
 application/winhlp				hlp
 application/wsdl+xml				wsdl
