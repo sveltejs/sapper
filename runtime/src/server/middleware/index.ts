@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import mime from 'mime/lite';
 import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
-import { lookup } from './mime';
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
@@ -111,7 +111,7 @@ export function serve({ prefix, pathname, cache_control }: {
 
 	return (req: Req, res: Res, next: () => void) => {
 		if (filter(req)) {
-			const type = lookup(req.path);
+			const type = mime.getType(req.path);
 
 			try {
 				const file = path.posix.normalize(decodeURIComponent(req.path));
