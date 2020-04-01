@@ -81,6 +81,26 @@ describe('scroll', function() {
 		assert.ok(scrollY > 0);
 	});
 
+	it('scrolls to a deeplink on a new page no matter the previous scroll position', async () => {
+		await r.load('/a-third-tall-page#top');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
+
+		await r.page.click('a#top');
+		await r.wait();
+		const firstScrollY = await r.page.evaluate(() => window.scrollY);
+
+		await r.load('/a-third-tall-page#bottom');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
+
+		await r.page.click('a#bottom');
+		await r.wait();
+		const secondScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.equal(firstScrollY, secondScrollY);
+	});
+
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});
