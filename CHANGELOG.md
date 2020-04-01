@@ -1,5 +1,10 @@
 # sapper changelog
 
+## 0.27.12
+
+* Fix missing MIME types when serving files from `/client/` ([#1136](https://github.com/sveltejs/sapper/issues/1136))
+
+
 ## 0.27.11
 
 * Fix vulnerability when serving `/client/...` files — **Please upgrade!**
