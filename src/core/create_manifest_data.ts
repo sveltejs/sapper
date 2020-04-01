@@ -145,6 +145,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 			if (item.is_dir) {
 				const component = find_layout('_layout', `${get_slug(item.file)}__layout`, item.file);
+				const reset = find_layout('_reset', null, item.file);
 
 				if (component) components.push(component);
 
@@ -152,9 +153,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 					path.join(dir, item.basename),
 					segments,
 					params,
-					component
-						? stack.concat({ component, params })
-						: stack.concat(null)
+					(reset ? [] : stack).concat(component ? { component, params } : null)
 				);
 			}
 
