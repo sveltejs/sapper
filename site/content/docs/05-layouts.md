@@ -84,3 +84,5 @@ Layout components receive a `segment` property which is useful for things like s
 +	>Notifications</a>
 </div>
 ```
+
+If in some cases you would like to disable layout inheritance - you can place a file called `_reset.svelte` in the folder. In this case only root layout will be applied.
