@@ -15,6 +15,13 @@ As seen in the [routing](docs#Routing) section, page components can have an opti
 		return { article };
 	}
 </script>
+
+<script>
+	export let article;
+</script>
+
+<h1>{article.title}</h1>
+
 ```
 
 It lives in a `context="module"` script — see the [tutorial](https://svelte.dev/tutorial/module-exports) — because it's not part of the component instance itself; instead, it runs *before* the component is created, allowing you to avoid flashes while data is fetched.
@@ -32,12 +39,20 @@ So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/bl
 * `page.query.foo === 'bar'`
 * `page.query.baz === true`
 
-`session` is generated on the server by the `session` option passed to `sapper.middleware` (TODO this needs further documentation. Perhaps a server API section?)
+`session` is generated on the server by the `session` option passed to `sapper.middleware`. For example:
+
+```js
+sapper.middleware({
+	session: (req, res) => ({
+		user: req.user
+	})
+})
+```
 
 
 ### Return value
 
-If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object.
+If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object. In both cases, the values in the object will be passed into the components as props.
 
 When Sapper renders a page on the server, it will attempt to serialize the resolved value (using [devalue](https://github.com/Rich-Harris/devalue)) and include it on the page, so that the client doesn't also need to call `preload` upon initialization. Serialization will fail if the value includes functions or custom classes (cyclical and repeated references are fine, as are built-ins like `Date`, `Map`, `Set` and `RegExp`).
 

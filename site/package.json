@@ -5,9 +5,7 @@
   "scripts": {
     "dev": "sapper dev",
     "export": "sapper export --legacy",
-    "stage": "netlify deploy --dir=__sapper__/export",
-    "deploy": "netlify deploy --dir=__sapper__/export --prod",
-    "prestage": "npm run export",
+    "deploy": "./scripts/deploy.sh",
     "predeploy": "npm run export",
     "cy:run": "cypress run",
     "cy:open": "cypress open",

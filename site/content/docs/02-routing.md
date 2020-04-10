@@ -70,6 +70,22 @@ Dynamic parameters are encoded using `[brackets]`. For example, here's how you c
 </div>
 ```
 
+If you want to capture more params, you can create nested folders using the same naming convention: `[slug]/[language]`.
+
+If you don't want to create several folders to capture more than one parameter like `[year]/[month]/...`, or if the number of parameters is dynamic, you can use a spread route parameter. For example, instead of individually capturing `/blog/[slug]/[year]/[month]/[day]`, you can create a file for `/blog/[...slug].svelte` and extract the params like so:
+
+```html
+<!-- src/routes/blog/[...slug].svelte -->
+<script context="module">
+	export async function preload({ params }) {
+		let [slug, year, month, day] = params.slug;
+
+		return { slug, year, month, day };
+	}
+</script>
+```
+
+
 > See the section on [preloading](docs#Preloading) for more info about `preload` and `this.fetch`
 
 
