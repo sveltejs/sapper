@@ -68,7 +68,7 @@ export interface PageContent {
 	head: string,
 	styles: string,
 	html: string,
-	nonce_attr: string,
+	nonceAttr: string,
 	script: string,
 }
 

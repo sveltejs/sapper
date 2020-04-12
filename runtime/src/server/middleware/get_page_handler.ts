@@ -317,9 +317,6 @@ export function get_page_handler(
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');
 			}
 
-			// users can set a CSP nonce using res.locals.nonce
-			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
-
 			let replacers: PageContentReducer[] = res.replacers || [];
 			replacers = replacers.concat([
 				(ctx) => (ctx.body = ctx.body.replace('%sapper.base%', `<base href="${ctx.baseUrl}/">`), ctx),
@@ -335,7 +332,8 @@ export function get_page_handler(
 					baseUrl: req.baseUrl,
 					head,
 					html,
-					nonce_attr,
+					// users can set a CSP nonce using res.locals.nonce
+					nonceAttr: (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '',
 					script,
 					styles
 				}
