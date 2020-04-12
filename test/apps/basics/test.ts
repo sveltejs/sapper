@@ -271,6 +271,16 @@ describe('basics', function() {
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
 
+	it('lets middleware control replacers', async () => {
+		const page = await get(`${r.base}/middleware`, {
+			headers: {
+				'disable-js': 'true'
+			}
+		});
+
+		assert.equal(page.body.indexOf('<script'), -1);
+	});
+
 	it('navigates between routes with empty parts', async () => {
 		await r.load('/dirs/foo');
 		await r.sapper.start();
