@@ -319,11 +319,11 @@ export function get_page_handler(
 
 			let replacers: PageContentReducer[] = res.replacers || [];
 			replacers = replacers.concat([
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.base%', `<base href="${ctx.baseUrl}/">`), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${ctx.head}<noscript id='sapper-head-end'></noscript>`), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.styles%', ctx.styles), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.html%', ctx.html), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.scripts%', `<script${ctx.nonce_attr}>${ctx.script}</script>`), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.base%', () => `<base href="${ctx.baseUrl}/">`), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${ctx.head}<noscript id='sapper-head-end'></noscript>`), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.styles%', () => ctx.styles), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.html%', () => ctx.html), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.scripts%', () => `<script${ctx.nonceAttr}>${ctx.script}</script>`), ctx),
 			]);
 
 			const pageContent = replacers.reduce((ctx: PageContent, replace: PageContentReducer) => replace(ctx),
