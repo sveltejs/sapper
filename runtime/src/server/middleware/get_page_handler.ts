@@ -5,7 +5,7 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { Manifest, Page, Req, Res } from './types';
+import { Manifest, Page, Req, Res, PageContentReducer, PageContent } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
@@ -320,15 +320,29 @@ export function get_page_handler(
 			// users can set a CSP nonce using res.locals.nonce
 			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
 
-			const body = template()
-				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
-				.replace('%sapper.html%', () => html)
-				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', () => styles);
+			let replacers: PageContentReducer[] = res.replacers || [];
+			replacers = replacers.concat([
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.base%', `<base href="${ctx.baseUrl}/">`), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.head%', `<noscript id='sapper-head-start'></noscript>${ctx.head}<noscript id='sapper-head-end'></noscript>`), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.styles%', ctx.styles), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.html%', ctx.html), ctx),
+				(ctx) => (ctx.body = ctx.body.replace('%sapper.scripts%', `<script${ctx.nonce_attr}>${ctx.script}</script>`), ctx),
+			]);
+
+			const pageContent = replacers.reduce((ctx: PageContent, replace: PageContentReducer) => replace(ctx),
+				{
+					body: template(),
+					baseUrl: req.baseUrl,
+					head,
+					html,
+					nonce_attr,
+					script,
+					styles
+				}
+			)
 
 			res.statusCode = status;
-			res.end(body);
+			res.end(pageContent.body);
 		} catch(err) {
 			if (error) {
 				bail(req, res, err)

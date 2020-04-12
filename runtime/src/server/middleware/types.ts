@@ -61,3 +61,15 @@ interface Component {
 		html: string
 	}
 }
+
+export interface PageContent {
+	body: string,
+	baseUrl: string,
+	head: string,
+	styles: string,
+	html: string,
+	nonce_attr: string,
+	script: string,
+}
+
+export type PageContentReducer = (context: PageContent) => PageContent;
