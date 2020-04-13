@@ -51,7 +51,7 @@ export function get_page_handler(
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
 			legacy_assets?: Record<string, string>
-		 } = get_build_info();
+		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 		res.setHeader('Cache-Control', dev ? 'no-cache' : 'max-age=600');
@@ -105,14 +105,13 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
-
+				const parsed = new URL.URL(url, `http://${req.headers.host}${req.baseUrl ? req.baseUrl + '/' : ''}`);
 				if (opts) {
 					opts = Object.assign({}, opts);
 
 					const include_cookies = (
 						opts.credentials === 'include' ||
-						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+						opts.credentials === 'same-origin' && parsed.origin === `http://${req.headers.host}`
 					);
 
 					if (include_cookies) {
@@ -329,7 +328,7 @@ export function get_page_handler(
 
 			res.statusCode = status;
 			res.end(body);
-		} catch(err) {
+		} catch (err) {
 			if (error) {
 				bail(req, res, err)
 			} else {
@@ -371,11 +370,11 @@ function try_serialize(data: any, fail?: (err) => void) {
 
 function escape_html(html: string) {
 	const chars: Record<string, string> = {
-		'"' : 'quot',
+		'"': 'quot',
 		"'": '#39',
 		'&': 'amp',
-		'<' : 'lt',
-		'>' : 'gt'
+		'<': 'lt',
+		'>': 'gt'
 	};
 
 	return html.replace(/["'&<>]/g, c => `&${chars[c]};`);
