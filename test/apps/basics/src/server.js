@@ -6,15 +6,10 @@ import { start } from '../../common.js';
 const app = polka()
 	.use((req, res, next) => {
 		if (req.headers['disable-js'] === 'true') {
-			res.replacers = [doNotInsertScript]
+			res.replacers = [(body) => body.replace('%sapper.scripts%', '')]
 		}
 		next()
 	})
 	.use(sapper.middleware())
 
 start(app);
-
-function doNotInsertScript (ctx) {
-	ctx.body = ctx.body.replace('%sapper.scripts%', '');
-	return ctx;
-}

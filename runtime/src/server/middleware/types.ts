@@ -62,14 +62,4 @@ interface Component {
 	}
 }
 
-export interface PageContent {
-	body: string,
-	baseUrl: string,
-	head: string,
-	styles: string,
-	html: string,
-	nonceAttr: string,
-	script: string,
-}
-
-export type PageContentReducer = (context: PageContent) => PageContent;
+export type TemplateReducer = (body: string) => string;

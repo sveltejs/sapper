@@ -5,7 +5,7 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { Manifest, Page, Req, Res, PageContentReducer, PageContent } from './types';
+import { Manifest, Page, Req, Res, TemplateReducer, PageContent } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
@@ -317,30 +317,22 @@ export function get_page_handler(
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');
 			}
 
-			let replacers: PageContentReducer[] = res.replacers || [];
+			// users can set a CSP nonce using res.locals.nonce
+			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
+
+			let replacers: TemplateReducer[] = res.replacers || [];
 			replacers = replacers.concat([
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.base%', () => `<base href="${ctx.baseUrl}/">`), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${ctx.head}<noscript id='sapper-head-end'></noscript>`), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.styles%', () => ctx.styles), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.html%', () => ctx.html), ctx),
-				(ctx) => (ctx.body = ctx.body.replace('%sapper.scripts%', () => `<script${ctx.nonceAttr}>${ctx.script}</script>`), ctx),
+				(body) => body.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`),
+				(body) => body.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`),
+				(body) => body.replace('%sapper.styles%', () => styles),
+				(body) => body.replace('%sapper.html%', () => html),
+				(body) => body.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`),
 			]);
 
-			const pageContent = replacers.reduce((ctx: PageContent, replace: PageContentReducer) => replace(ctx),
-				{
-					body: template(),
-					baseUrl: req.baseUrl,
-					head,
-					html,
-					// users can set a CSP nonce using res.locals.nonce
-					nonceAttr: (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '',
-					script,
-					styles
-				}
-			)
+			const body = replacers.reduce((body: string, replace: TemplateReducer) => replace(body), template())
 
 			res.statusCode = status;
-			res.end(pageContent.body);
+			res.end(body);
 		} catch(err) {
 			if (error) {
 				bail(req, res, err)
