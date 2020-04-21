@@ -13,6 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
+import { pageStore } from './stores';
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -25,7 +26,7 @@ let current_branch = [];
 let current_query = '{}';
 
 const stores = {
-	page: writable({}),
+	page: pageStore({}),
 	preloading: writable(null),
 	session: writable(initial_data && initial_data.session)
 };
@@ -242,6 +243,10 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			target,
 			props,
 			hydrate: true
+		});
+
+		root_component.$$.after_update.push(() => {
+			stores.page.notify();
 		});
 	}
 
