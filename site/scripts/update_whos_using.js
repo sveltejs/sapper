@@ -10,3 +10,6 @@ sh.exec('npx degit sveltejs/community scripts/community');
 sh.cp('scripts/community/whos-using-sapper/WhosUsingSapper.svelte', 'src/routes/_components/WhosUsingSapper.svelte');
 sh.rm('-rf', 'static/organisations');
 sh.cp('-r', 'scripts/community/whos-using-sapper/organisations', 'static');
+
+// cleanup
+sh.rm('-rf', 'scripts/community');
