@@ -1,5 +1,6 @@
 <script>
-	import { Hero, Blurb } from '@sveltejs/site-kit';
+	import { Hero, Blurb, Section } from '@sveltejs/site-kit';
+	import WhosUsingSapper from './_components/WhosUsingSapper.svelte';
 </script>
 
 <style>
@@ -62,3 +63,9 @@ npm run dev & open http://localhost:3000
 		<p class="cta"><a rel="prefetch" href="docs">Learn Sapper</a></p>
 	</div>
 </Blurb>
+
+<Section>
+	<h3>Who's using Sapper?</h3>
+
+	<WhosUsingSapper/>
+</Section>

@@ -9,7 +9,8 @@
     "predeploy": "npm run export",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
-    "test": "run-p --race dev cy:run"
+    "test": "run-p --race dev cy:run",
+    "update": "node scripts/update_whos_using.js"
   },
   "dependencies": {
     "@polka/send": "^0.4.0",
@@ -36,6 +37,7 @@
     "rollup-plugin-svelte": "^5.1.0",
     "rollup-plugin-terser": "^5.1.1",
     "sapper": "^0.27.8",
+    "shelljs": "^0.8.3",
     "svelte": "^3.10.1"
   }
 }
