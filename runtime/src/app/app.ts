@@ -228,6 +228,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 		props.level0 = {
 			props: await root_preloaded
 		};
+		props.notify = stores.page.notify;
 
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -243,10 +244,6 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			target,
 			props,
 			hydrate: true
-		});
-
-		root_component.$$.after_update.push(() => {
-			stores.page.notify();
 		});
 	}
 
