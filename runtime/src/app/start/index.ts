@@ -20,6 +20,19 @@ export default function start(opts: {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
+	
+	// Adopted from Nuxt.js
+	// Reset scrollRestoration to auto when leaving page, allowing page reload
+	// and back-navigation from other pages to use the browser to restore the
+	// scrolling position.
+	addEventListener('beforeunload', () => {
+		history.scrollRestoration = 'auto';
+	});
+
+	// Setting scrollRestoration to manual again when returning to this page.
+	addEventListener('load', () => {
+		history.scrollRestoration = 'manual';
+	});
 
 	set_target(opts.target);
 
