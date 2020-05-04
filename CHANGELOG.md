@@ -4,6 +4,7 @@
 
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
 * Maintain scroll location when refreshing page ([#784](https://github.com/sveltejs/sapper/issues/784))
+* Preserve timestamps when copying files during `export` ([#1110](https://github.com/sveltejs/sapper/issues/1110))
 * Fix issue with scrolling to deeplinks ([#1139](https://github.com/sveltejs/sapper/pull/1139))
 
 
