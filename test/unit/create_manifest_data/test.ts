@@ -59,14 +59,14 @@ describe('manifest_data', () => {
 
 			{
 				name: 'route_blog_json',
-				pattern: /^\/blog.json$/,
+				pattern: /^\/blog\.json$/,
 				file: 'blog/index.json.js',
 				params: []
 			},
 
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?).json$/,
+				pattern: /^\/blog\/([^\/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
@@ -140,6 +140,32 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(server_routes.map(r => r.file), [
 			'.well-known/dnt-policy.txt.js'
+		]);
+	});
+
+	it('allows mutliple slugs', () => {
+		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/multiple-slugs'));
+
+		assert.deepEqual(server_routes, [
+			{
+				name: "route_$file$93_$91ext",
+				pattern: /^\/([^\/]+?)\.([^\/]+?)$/,
+				file: "[file].[ext].js",
+				params: ["file", "ext"]
+			}
+		]);
+	});
+
+	it('allows mutliple slugs with nested square brackets', () => {
+		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/nested-square-brackets'));
+
+		assert.deepEqual(server_routes, [
+			{
+				name: "route_$file_$91ext$40$91a$45z$93$43$41$93",
+				pattern: /^\/([a-z]+)\.([a-z]+)$/,
+				file: "[file([a-z]+)].[ext([a-z]+)].js",
+				params: ["file", "ext"]
+			}
 		]);
 	});
 
@@ -226,13 +252,13 @@ describe('manifest_data', () => {
 		assert.deepEqual(server_routes, [
 			{
 				name: 'route_blog_json',
-				pattern: /^\/blog.json$/,
+				pattern: /^\/blog\.json$/,
 				file: 'blog/index.json.js',
 				params: []
 			},
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?).json$/,
+				pattern: /^\/blog\/([^\/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
