@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
+* Fix issue with scrolling to deeplinks ([#1139](https://github.com/sveltejs/sapper/pull/1139))
 
 
 ## 0.27.12
