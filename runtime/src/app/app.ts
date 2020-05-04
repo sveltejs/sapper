@@ -200,7 +200,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 			if (deep_linked) {
 				scroll = {
 					x: 0,
-					y: deep_linked.getBoundingClientRect().top
+					y: deep_linked.getBoundingClientRect().top + scrollY
 				};
 			}
 		}
