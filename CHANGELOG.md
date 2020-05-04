@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
+
+
 ## 0.27.12
 
 * Fix missing MIME types when serving files from `/client/` ([#1136](https://github.com/sveltejs/sapper/issues/1136))
