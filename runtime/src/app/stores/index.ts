@@ -20,29 +20,27 @@ interface PageStore<T> extends Readable<T> {
 	set(value: T): void;
 }
 
-function ignoreFirst<T>(val: T): void {
-	if (this.val && this.val !== val) {
-		this.run(val);
-	}
-	this.val = val;
-}
-
 export function pageStore<T>(value: T): PageStore<T> {
 	const store = writable(value);
+	let ready = true;
 
 	function notify(): void {
-		store.set(value);
+		ready = true;
+		store.update(val => val);
 	}
 	
 	function set(new_value: T): void {
-		value = new_value;
+		ready = false;
+		store.set(new_value);
 	}
 
 	function subscribe(run: Subscriber<T>): Unsubscriber {
-		const sub = ignoreFirst.bind({ run });
-		const unsubscribe = store.subscribe(sub);
-		sub(value);
-		return unsubscribe;
+		return store.subscribe((function (val) {
+			if (this.value === undefined || (ready && val !== this.value)) {
+				this.value = val;
+				run(val);
+			}
+		}).bind({}));
 	}
 
 	return { notify, set, subscribe };
