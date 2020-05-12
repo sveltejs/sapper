@@ -7,7 +7,7 @@ import {
 	scroll_state,
 	select_target,
 	handle_error,
-	set_target,
+	set_options,
 	uid,
 	set_uid,
 	set_cid
@@ -15,7 +15,8 @@ import {
 import prefetch from '../prefetch/index';
 
 export default function start(opts: {
-	target: Node
+	target: Node,
+	apiBaseUrl?: string
 }) {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
@@ -34,7 +35,7 @@ export default function start(opts: {
 		history.scrollRestoration = 'manual';
 	});
 
-	set_target(opts.target);
+	set_options(opts);
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);

@@ -57,8 +57,9 @@ export function set_prefetching(href, promise) {
 }
 
 export let target: Node;
-export function set_target(element) {
-	target = element;
+let apiBaseUrl: string;
+export function set_options(opts) {
+	({ target, apiBaseUrl } = opts);
 }
 
 export let uid = 1;
@@ -281,7 +282,7 @@ export async function hydrate_target(target: Target): Promise<{
 	const props = { error: null, status: 200, segments: [segments[0]] };
 
 	const preload_context = {
-		fetch: (url: string, opts?: any) => fetch(url, opts),
+		fetch: (url: string, opts?: any) => fetch(new URL(url, apiBaseUrl || document.baseURI), opts),
 		redirect: (statusCode: number, location: string) => {
 			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
 				throw new Error(`Conflicting redirects`);

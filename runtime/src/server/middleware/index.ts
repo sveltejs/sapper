@@ -8,9 +8,10 @@ import { get_page_handler } from './get_page_handler';
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
+	apiBaseUrl?: string,
 	ignore?: any
 } = {}) {
-	const { session, ignore } = opts;
+	const { session, apiBaseUrl, ignore } = opts;
 
 	let emitted_basepath = false;
 
@@ -61,7 +62,7 @@ export default function middleware(opts: {
 
 		get_server_route_handler(manifest.server_routes),
 
-		get_page_handler(manifest, session || noop)
+		get_page_handler(manifest, session || noop, apiBaseUrl)
 	].filter(Boolean));
 }
 

@@ -2,6 +2,8 @@
 title: Base URLs
 ---
 
+### base path
+
 Ordinarily, the root of your Sapper app is served at `/`. But in some cases, your app may need to be served from a different base path — for example, if Sapper only controls part of your domain, or if you have multiple Sapper apps living side-by-side.
 
 This can be done like so:
@@ -26,3 +28,9 @@ If you're [exporting](docs#Exporting) your app, you will need to tell the export
 ```bash
 sapper export --basepath my-base-path
 ```
+
+### `apiBaseUrl`
+
+You can specify a base URL to use only when fetching data with `sapper.middleware({ apiBaseUrl })`. E.g. if you've written an API server in another language, you can utilize this option to fetch data from that server.
+
+You'll probably also want to set a base URL in `start` for the client-side. You may specify a different base URL here on the server-side even if referring to the same server. E.g. some server orchestration tools such as Kubernetes will modify `resolv.conf` to provide internal hostnames for your services.
