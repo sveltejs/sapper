@@ -279,9 +279,7 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 			${levels.map(l => `export let level${l} = null;`).join('\n\t\t\t')}
 			export let notify;
 
-			afterUpdate(() => {
-				notify();
-			});
+			afterUpdate(notify);
 			setContext(CONTEXT_KEY, stores);
 		</script>
 

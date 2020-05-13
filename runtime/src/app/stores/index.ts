@@ -14,13 +14,13 @@ interface PageStore<T> extends Readable<T> {
 	notify(): void;
 
 	/**
-	 * Set value and inform subscribers.
+	 * Set value without informing subscribers.
 	 * @param value to set
 	 */
 	set(value: T): void;
 }
 
-export function pageStore<T>(value: T): PageStore<T> {
+export function page_store<T>(value: T): PageStore<T> {
 	const store = writable(value);
 	let ready = true;
 
@@ -28,19 +28,19 @@ export function pageStore<T>(value: T): PageStore<T> {
 		ready = true;
 		store.update(val => val);
 	}
-	
+
 	function set(new_value: T): void {
 		ready = false;
 		store.set(new_value);
 	}
 
 	function subscribe(run: Subscriber<T>): Unsubscriber {
-		return store.subscribe((function (val) {
-			if (this.value === undefined || (ready && val !== this.value)) {
-				this.value = val;
-				run(val);
+		let old_value;
+		return store.subscribe((value) => {
+			if (old_value === undefined || (ready && value !== old_value)) {
+				run(old_value = value);
 			}
-		}).bind({}));
+		});
 	}
 
 	return { notify, set, subscribe };
