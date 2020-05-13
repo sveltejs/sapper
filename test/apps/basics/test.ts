@@ -369,6 +369,20 @@ describe('basics', function() {
 		);
 	});
 
+	it('page store functions as expected', async () => {
+		await r.load('/store');
+		await r.sapper.start();
+
+		assert.equal(await r.text('h1'), 'Test');
+		assert.equal(await r.text('h2'), 'Called 1 time');
+
+		await r.page.click('a[href="store/result"]');
+		await r.wait();
+
+		assert.equal(await r.text('h1'), 'Result');
+		assert.equal(await r.text('h2'), 'Called 1 time');
+	});
+
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});

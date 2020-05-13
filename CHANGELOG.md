@@ -1,5 +1,30 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
+* Fix erroneously notifying a component's `$page` subscribers of the upcoming URL upon leaving a route ([#633](https://github.com/sveltejs/sapper/issues/633))
+* Maintain scroll location when refreshing page ([#784](https://github.com/sveltejs/sapper/issues/784))
+* Preserve timestamps when copying files during `export` ([#1110](https://github.com/sveltejs/sapper/issues/1110))
+* Fix issue with scrolling to deeplinks ([#1139](https://github.com/sveltejs/sapper/pull/1139))
+
+
+## 0.27.12
+
+* Fix missing MIME types when serving files from `/client/` ([#1136](https://github.com/sveltejs/sapper/issues/1136))
+
+
+## 0.27.11
+
+* Fix vulnerability when serving `/client/...` files — **Please upgrade!**
+* Revert CSS handling change from 0.27.10
+
+
+## 0.27.10
+
+* Fix component styles being duplicated between `client.css` and `main.css` ([#1076](https://github.com/sveltejs/sapper/issues/1076))
+
+
 ## 0.27.9
 
 * Recheck whether a component has a `preload` whenever the file changes ([#611](https://github.com/sveltejs/sapper/issues/611))

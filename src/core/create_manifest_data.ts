@@ -84,16 +84,16 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 					? basename
 					: basename.slice(0, -ext.length);
 
+				if (/\]\[/.test(segment)) {
+					throw new Error(`Invalid route ${file} — parameters must be separated`);
+				}
+
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
 				const is_page = component_extensions.indexOf(ext) !== -1;
 				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
-					if (/\]\[/.test(part.content)) {
-						throw new Error(`Invalid route ${file} — parameters must be separated`);
-					}
-
 					if (part.qualifier && /[\(\)\?\:]/.test(part.qualifier.slice(1, -1))) {
 						throw new Error(`Invalid route ${file} — cannot use (, ), ? or : in route qualifiers`);
 					}
@@ -298,7 +298,7 @@ function comparator(
 }
 
 function get_parts(part: string): Part[] {
-	return part.split(/\[(.+)\]/)
+	return part.split(/\[(.+?\(.+?\)|.+?)\]/)
 		.map((str, i) => {
 			if (!str) return null;
 			const dynamic = i % 2 === 1;
@@ -340,7 +340,8 @@ function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
 					.replace(/\?/g, '%3F')
 					.replace(/#/g, '%23')
 					.replace(/%5B/g, '[')
-					.replace(/%5D/g, ']');
+					.replace(/%5D/g, ']')
+					.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 		}).join('');
 	}).join('\\/');
 
