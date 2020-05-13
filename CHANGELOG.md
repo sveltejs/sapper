@@ -5,6 +5,7 @@
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
 * Fix erroneously notifying a component's `$page` subscribers of the upcoming URL upon leaving a route ([#633](https://github.com/sveltejs/sapper/issues/633))
 * Maintain scroll location when refreshing page ([#784](https://github.com/sveltejs/sapper/issues/784))
+* Support detecting bundler by `*.config.ts` files ([#1005](https://github.com/sveltejs/sapper/pull/1005))
 * When exporting, create regular files instead of directories for page routes ending in `.html` ([#1043](https://github.com/sveltejs/sapper/issues/1043))
 * Preserve timestamps when copying files during `export` ([#1110](https://github.com/sveltejs/sapper/issues/1110))
 * Fix issue with scrolling to deeplinks ([#1139](https://github.com/sveltejs/sapper/pull/1139))
