@@ -1,6 +1,6 @@
 # sapper changelog
 
-## Unreleased
+## 0.27.13
 
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
 * Fix erroneously notifying a component's `$page` subscribers of the upcoming URL upon leaving a route ([#633](https://github.com/sveltejs/sapper/issues/633))
