@@ -29,7 +29,7 @@ For web developers, the stakes are generally lower than for combat engineers. Bu
 
 ### Comparison with Next.js
 
-[Next.js](https://github.com/zeit/next.js) is a React framework from [Zeit](https://zeit.co), and is the inspiration for Sapper. There are a few notable differences, however:
+[Next.js](https://github.com/zeit/next.js) is a React framework from [Vercel (formerly ZEIT)](https://vercel.com), and is the inspiration for Sapper. There are a few notable differences, however:
 
 * Sapper is powered by Svelte instead of React, so it's faster and your apps are smaller
 * Instead of route masking, we encode route parameters in filenames (see the [routing](docs#Routing) section below)
