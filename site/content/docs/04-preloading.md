@@ -83,7 +83,12 @@ To fix this, Sapper provides `this.fetch`, which works on the server as well as 
 </script>
 ```
 
-Note that you will need to use session middleware such as [express-session](https://github.com/expressjs/session) in your `app/server.js` in order to maintain user sessions or do anything involving authentication.
+It is important to note that `preload` may run on either the server or in the client browser. Code called inside `preload` blocks:
+  - should run on the same domain as any upstream API servers requiring credentials; otherwise, `credentials: 'include'` cannot guarantee access to 3rd party session cookies
+  - should not reference `window`, `document` or any browser-specific objects
+  - should not reference any API keys or secrets, which will be exposed to the client
+
+If you are using Sapper as an authentication/authorization server, you can use session middleware such as [express-session](https://github.com/expressjs/session) in your `app/server.js` in order to maintain user sessions.
 
 
 #### this.error
