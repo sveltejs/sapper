@@ -13,6 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
+import { page_store } from './stores';
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -25,7 +26,7 @@ let current_branch = [];
 let current_query = '{}';
 
 const stores = {
-	page: writable({}),
+	page: page_store({}),
 	preloading: writable(null),
 	session: writable(initial_data && initial_data.session)
 };
@@ -227,6 +228,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 		props.level0 = {
 			props: await root_preloaded
 		};
+		props.notify = stores.page.notify;
 
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
