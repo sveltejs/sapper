@@ -99,9 +99,14 @@ export function serve({ prefix, pathname, cache_control }: {
 	pathname?: string,
 	cache_control: string
 }) {
+	// Filter requests based on req.path.
 	const filter = pathname
 		? (req: Req) => req.path === pathname
-		: (req: Req) => req.path.startsWith(prefix);
+		/*
+			* [#1442](https://github.com/sveltejs/sapper/issues/1142)
+			* Exception: Ensure an extension exists in the pathname, to filter out the first request to routes under "/client/". 
+			*/
+		: (req: Req) => req.path.startsWith(prefix) && /\..*$/.test(req.path);
 
 	const cache: Map<string, Buffer> = new Map();
 
