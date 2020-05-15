@@ -99,9 +99,11 @@ export function serve({ prefix, pathname, cache_control }: {
 	pathname?: string,
 	cache_control: string
 }) {
+	// [#1442](https://github.com/sveltejs/sapper/issues/1142)
+	// Requests to addresses under "/client" cannot be filtered out on their prefix, therefore additionally check for the presence of an extension.
 	const filter = pathname
 		? (req: Req) => req.path === pathname
-		: (req: Req) => req.path.startsWith(prefix);
+		: (req: Req) => req.path.startsWith(prefix) && /\..*$/.test(req.path);
 
 	const cache: Map<string, Buffer> = new Map();
 

@@ -383,6 +383,15 @@ describe('basics', function() {
 		assert.equal(await r.text('h2'), 'Called 1 time');
 	});
 
+	it('finds routes under /client/', async () => {
+		await r.load('/client');
+		assert.equal(await r.text('h1'), 'Success.');
+		await r.load('/client/new');
+		assert.equal(await r.text('h1'), 'Success.');
+		await r.load('/client/client/new');
+		assert.equal(await r.text('h1'), 'Success.');
+	});
+
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});
