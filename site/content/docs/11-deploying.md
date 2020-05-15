@@ -4,28 +4,25 @@ title: Deployment
 
 Sapper apps run anywhere that supports Node 8 or higher.
 
+### Deploying to Vercel ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel))
 
-### Deploying to Now
+#### Using Now v2
 
-> This section relates to Now 1, not Now 2
+We can use an unoffical third-party libary like [now-sapper loader](https://www.npmjs.com/package/now-sapper) to deploy our projects to [Vercel] and even use our sapper runtime environment there.
 
-We can very easily deploy our apps to [Now][]:
+Visit the corresponding github repository of [now-sapper loader](https://github.com/thgh/now-sapper#readme) for implementation details and bug reports regarding [Vercel] deployments.
 
-```bash
-npm install -g now
-now
-```
-
-This will upload the source code to Now, whereupon it will do `npm run build` and `npm start` and give you a URL for the deployed app.
-
-For other hosting environments, you may need to do `npm run build` yourself.
+> Note about Now v1
+>
+> Now v1 is deprecated and using it should be avoided, see [this comment](https://github.com/zeit/now/issues/1805#issuecomment-452470953).  
+> If you are still running v1 consider upgrating to the newest version.
 
 ### Deploying service workers
 
 Sapper makes the Service Worker file (`service-worker.js`) unique by including a timestamp in the source code
 (calculated using `Date.now()`).
 
-In environments where the app is deployed to multiple servers (such as [Now][]), it is advisable to use a
+In environments where the app is deployed to multiple servers (such as [Vercel]), it is advisable to use a
 consistent timestamp for all deployments. Otherwise, users may run into issues where the Service Worker
 updates unexpectedly because the app hits server 1, then server 2, and they have slightly different timestamps.
 
@@ -55,10 +52,10 @@ Then you can set it using the environment variable, e.g.:
 SAPPER_TIMESTAMP=$(date +%s%3N) npm run build
 ```
 
-When deploying to [Now][], you can pass the environment variable into Now itself:
+When deploying to [Vercel], you can pass the environment variable into Now itself:
 
 ```bash
 now -e SAPPER_TIMESTAMP=$(date +%s%3N)
 ```
 
-[Now]: https://zeit.co/now
+[Vercel]: https://vercel.com/home
