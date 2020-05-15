@@ -3,10 +3,10 @@ import { CompileResult } from './core/create_compilers/interfaces';
 
 export type Route = {
 	id: string;
-	handlers: {
+	handlers: Array<{
 		type: 'page' | 'route';
 		file: string;
-	}[];
+	}>;
 	pattern: RegExp;
 	test: (url: string) => boolean;
 	exec: (url: string) => Record<string, string>;
@@ -38,7 +38,7 @@ export type Page = {
 	parts: Array<{
 		component: PageComponent;
 		params: string[];
-	}>
+	}>;
 };
 
 export type ServerRoute = {
@@ -49,9 +49,9 @@ export type ServerRoute = {
 };
 
 export type Dirs = {
-	dest: string,
-	src: string,
-	routes: string
+	dest: string;
+	src: string;
+	routes: string;
 };
 
 export type ManifestData = {
@@ -82,13 +82,13 @@ export type InvalidEvent = {
 		client: boolean;
 		server: boolean;
 		serviceworker: boolean;
-	}
+	};
 };
 
 export type BuildEvent = {
 	type: string;
-	errors: Array<{ file: string, message: string, duplicate: boolean }>;
-	warnings: Array<{ file: string, message: string, duplicate: boolean }>;
+	errors: Array<{ file: string; message: string; duplicate: boolean }>;
+	warnings: Array<{ file: string; message: string; duplicate: boolean }>;
 	duration: number;
 	result: CompileResult;
 };
