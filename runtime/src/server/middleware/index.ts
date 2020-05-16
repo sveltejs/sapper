@@ -123,7 +123,6 @@ export function serve({ prefix, pathname, cache_control }: {
 			} catch (err) {
 				// [#1442](https://github.com/sveltejs/sapper/issues/1142)
 				// Requests to addresses under "/client" cannot be filtered out on their prefix, and can therefore end up here.
-				console.log(path.posix.normalize(decodeURIComponent(req.path)));
 				if (req.path.startsWith(prefix) && !/\..*$/.test(req.path)) {
 					next();
 				} else {
