@@ -50,8 +50,6 @@ The `--entry` option expects a string of space-separated values. Examples:
 
 ```bash
 sapper export --entry "some-page some-other-page"
-
-sapper export --entry single-entry
 ```
 
 Additionally, any non-page routes should be requested in `preload`, *not* in `onMount` or elsewhere.
