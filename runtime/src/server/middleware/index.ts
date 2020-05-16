@@ -99,11 +99,9 @@ export function serve({ prefix, pathname, cache_control }: {
 	pathname?: string,
 	cache_control: string
 }) {
-	// [#1442](https://github.com/sveltejs/sapper/issues/1142)
-	// Requests to addresses under "/client" cannot be filtered out on their prefix, therefore additionally check for the presence of an extension.
 	const filter = pathname
 		? (req: Req) => req.path === pathname
-		: (req: Req) => req.path.startsWith(prefix) && /\..*$/.test(req.path);
+		: (req: Req) => req.path.startsWith(prefix);
 
 	const cache: Map<string, Buffer> = new Map();
 
@@ -123,8 +121,15 @@ export function serve({ prefix, pathname, cache_control }: {
 				res.setHeader('Cache-Control', cache_control);
 				res.end(data);
 			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
+				// [#1442](https://github.com/sveltejs/sapper/issues/1142)
+				// Requests to addresses under "/client" cannot be filtered out on their prefix, and can therefore end up here.
+				console.log(path.posix.normalize(decodeURIComponent(req.path)));
+				if (req.path.startsWith(prefix) && !/\..*$/.test(req.path)) {
+					next();
+				} else {
+					res.statusCode = 404;
+					res.end('not found');
+				}
 			}
 		} else {
 			next();
