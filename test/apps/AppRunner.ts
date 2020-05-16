@@ -20,6 +20,7 @@ export class AppRunner {
 	server: ChildProcess;
 	address: AddressInfo;
 	base: string;
+	console_messages: string[];
 	messages: any[];
 	errors: Error[];
 
@@ -34,6 +35,7 @@ export class AppRunner {
 	};
 
 	constructor() {
+		this.console_messages = [];
 		this.messages = [];
 		this.errors = [];
 	}
@@ -75,6 +77,7 @@ export class AppRunner {
 
 		this.page = await this.browser.newPage();
 		this.page.on('console', msg => {
+			this.console_messages.push(msg._text);
 			const text = msg.text();
 
 			if (!text.startsWith('Failed to load resource')) {
