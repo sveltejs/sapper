@@ -13,3 +13,15 @@ The output is a Node app that you can run from the project root:
 ```bash
 node __sapper__/build
 ```
+
+### Browser support
+
+By default, Sapper builds your site only for the latest versions of modern evergreen browsers.
+
+For older browsers, like Internet Explorer, you will need to use the `--legacy` flag:
+
+```
+npx sapper build --legacy
+```
+
+You will also need to polyfill APIs that are not present in older browsers.
