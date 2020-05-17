@@ -112,7 +112,12 @@ async function _export({
 		const is_html = type === 'text/html';
 
 		if (is_html) {
+<<<<<<< HEAD
 			if (!file.endsWith('.html')) {
+=======
+			if (pathname !== '/service-worker-index.html'
+			   && pathname.substr(pathname.length - 5) !== '.html') {
+>>>>>>> 9068f42c6369ba9ef82a744e5de1e4317ccaf399
 				file = file === '' ? 'index.html' : `${file}/index.html`;
 			}
 			body = minify_html(body);
