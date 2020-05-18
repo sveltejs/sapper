@@ -9,6 +9,7 @@ import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import { replaceAssetsPrefix } from './utils/replace_assets_prefix';
 
 type Opts = {
 	cwd?: string;
@@ -85,7 +86,12 @@ export async function build({
 	});
 
 	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, dest, false);
-
+	if (bundler === 'webpack') {
+		const {
+			_: { options: clientConfig }
+		} = client;
+		replaceAssetsPrefix(output, clientConfig.output.publicPath);
+	}
 	const client_result = await client.compile();
 	oncompile({
 		type: 'client',

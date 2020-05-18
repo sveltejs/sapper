@@ -81,7 +81,7 @@ export function get_page_handler(
 				.filter(file => file && !file.match(/\.map$/))
 				.map((file) => {
 					const as = /\.css$/.test(file) ? 'style' : 'script';
-					return `<${req.baseUrl}/client/${file}>;rel="preload";as="${as}"`;
+					return `<%sapper.assetsPrefix%/client/${file}>;rel="preload";as="${as}"`;
 				})
 				.join(', ');
 
@@ -279,7 +279,9 @@ export function get_page_handler(
 			}
 
 			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
-			const main = `${req.baseUrl}/client/${file}`;
+			const main = build_info.bundler === 'rollup' ? 
+				`${req.baseUrl}/client/${file}` :
+				`%sapper.assetsPrefix%/client/${file}`;
 
 			if (build_info.bundler === 'rollup') {
 				if (build_info.legacy_assets) {
@@ -309,9 +311,10 @@ export function get_page_handler(
 						});
 					}
 				});
-
+				const prefix = build_info.bundler === 'rollup' ? 
+					'' : `%sapper.assetsPrefix%/`;
 				styles = Array.from(css_chunks)
-					.map(href => `<link rel="stylesheet" href="client/${href}">`)
+					.map(href => `<link rel="stylesheet" href="${prefix}client/${href}">`)
 					.join('')
 			} else {
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');

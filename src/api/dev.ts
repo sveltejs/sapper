@@ -15,6 +15,7 @@ import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import { replaceAssetsPrefix } from './utils/replace_assets_prefix';
 
 type Opts = {
 	cwd?: string,
@@ -224,6 +225,12 @@ class Watcher extends EventEmitter {
 
 		// TODO watch the configs themselves?
 		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
+		if (this.bundler === 'webpack') {
+			const {
+				client: { _: { options: clientConfig } }
+			} = compilers;
+			replaceAssetsPrefix(output, clientConfig.output.publicPath);
+		}
 
 		const emitFatal = () => {
 			this.emit('fatal', <FatalEvent>{

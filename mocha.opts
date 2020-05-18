@@ -2,4 +2,4 @@
 --require sucrase/register
 --recursive
 test/unit/*/test.ts
-test/apps/*/test.ts
+test/apps/**/test.ts
