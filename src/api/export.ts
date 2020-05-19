@@ -144,7 +144,7 @@ async function _export({
 		if (seen.has(pathname)) return;
 		seen.add(pathname);
 
-		const r = await q.add(async () => {
+		const response = await q.add(async () => {
 			const timeout_deferred = new Deferred();
 			const the_timeout = setTimeout(() => {
 				timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
@@ -163,45 +163,43 @@ async function _export({
 			return r;
 		}) as Response;
 
-		let type = r.headers.get('Content-Type');
+		let type = response.headers.get('Content-Type');
 
-		let body = await r.text();
+		let body = await response.text();
 
-		const range = ~~(r.status / 100);
+		const range = ~~(response.status / 100);
 
 		let tasks = [];
 
-		if (range === 2) {
-			if (type === 'text/html') {
-				// parse link rel=preload headers and embed them in the HTML
-				let link = parseLinkHeader(r.headers.get('Link') || '');
-				link.refs.forEach((ref: Ref) => {
-					if (ref.rel === 'preload') {
-						body = body.replace('</head>',
-							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
-					}
-				});
+		if (range === 2 && type === 'text/html') {
+			// parse link rel=preload headers and embed them in the HTML
+			let link = parseLinkHeader(response.headers.get('Link') || '');
+			link.refs.forEach((ref: Ref) => {
+				if (ref.rel === 'preload') {
+					body = body.replace('</head>',
+						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+				}
+			});
 
-				if (pathname !== '/service-worker-index.html') {
-					const cleaned = clean_html(body);
+			if (pathname !== '/service-worker-index.html') {
+				const cleaned = clean_html(body);
 
-					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-					const base_href = base_match && get_href(base_match[1]);
-					const base = resolve(url.href, base_href);
+				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
+				const base_href = base_match && get_href(base_match[1]);
+				const base = resolve(url.href, base_href);
 
-					let match;
-					let pattern = /<a ([\s\S]+?)>/gm;
+				let match;
+				let pattern = /<a ([\s\S]+?)>/gm;
 
-					while (match = pattern.exec(cleaned)) {
-						const attrs = match[1];
-						const href = get_href(attrs);
+				while (match = pattern.exec(cleaned)) {
+					const attrs = match[1];
+					const href = get_href(attrs);
 
-						if (href) {
-							const url = resolve(base.href, href);
+					if (href) {
+						const url = resolve(base.href, href);
 
-							if (url.protocol === protocol && url.host === host) {
-								tasks.push(handle(url));
-							}
+						if (url.protocol === protocol && url.host === host) {
+							tasks.push(handle(url));
 						}
 					}
 				}
@@ -209,7 +207,7 @@ async function _export({
 		}
 
 		if (range === 3) {
-			const location = r.headers.get('Location');
+			const location = response.headers.get('Location');
 
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
@@ -217,7 +215,7 @@ async function _export({
 			tasks.push(handle(resolve(root.href, location)));
 		}
 
-		save(pathname, r.status, type, body);
+		save(pathname, response.status, type, body);
 
 		await Promise.all(tasks);
 	}
