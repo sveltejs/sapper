@@ -55,7 +55,7 @@ SAPPER_TIMESTAMP=$(date +%s%3N) npm run build
 When deploying to [Vercel][], you can pass the environment variable into Now itself:
 
 ```bash
-now -e SAPPER_TIMESTAMP=$(date +%s%3N)
+vercel -e SAPPER_TIMESTAMP=$(date +%s%3N)
 ```
 
 [Vercel]: https://vercel.com/
