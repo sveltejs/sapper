@@ -11,7 +11,8 @@ import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => any
+	session_getter: (req: Req, res: Res) => any,
+	originAliases?: Map<String, String>
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -105,15 +106,24 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+				const defaultOrigin = `http://127.0.0.1:${process.env.PORT}`;
+				const target = new URL.URL(url, `${defaultOrigin}${req.baseUrl ? req.baseUrl + '/' : ''}`);
+
+				// origin is read-only, so set the properties that comprise it if necessary
+				const targetAlias = (originAliases && originAliases.get(target.origin));
+				if (targetAlias) {
+					const alias = new URL.URL(targetAlias);
+					target.protocol = alias.protocol;
+					target.host = alias.host;
+				}
 
 				if (opts) {
 					opts = Object.assign({}, opts);
 
-					const include_cookies = (
+					const thisOrigin = (originAliases && originAliases.get(defaultOrigin)) || defaultOrigin;
+					const include_cookies =
 						opts.credentials === 'include' ||
-						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
-					);
+						(opts.credentials === 'same-origin' && target.origin === thisOrigin);
 
 					if (include_cookies) {
 						opts.headers = Object.assign({}, opts.headers);
@@ -138,7 +148,7 @@ export function get_page_handler(
 					}
 				}
 
-				return fetch(parsed.href, opts);
+				return fetch(target.href, opts);
 			}
 		};
 

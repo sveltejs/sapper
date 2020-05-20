@@ -10,9 +10,10 @@ type IgnoreValue = Array | RegExp | function | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
+	originAliases?: Map<String,String>,
 	ignore?: IgnoreValue
 } = {}) {
-	const { session, ignore } = opts;
+	const { session, originAliases, ignore } = opts;
 
 	let emitted_basepath = false;
 
@@ -63,7 +64,7 @@ export default function middleware(opts: {
 
 		get_server_route_handler(manifest.server_routes),
 
-		get_page_handler(manifest, session || noop)
+		get_page_handler(manifest, session || noop, originAliases)
 	].filter(Boolean));
 }
 
