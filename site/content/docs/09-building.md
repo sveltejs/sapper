@@ -18,10 +18,13 @@ node __sapper__/build
 
 By default, Sapper builds your site only for the latest versions of modern evergreen browsers.
 
-For older browsers, like Internet Explorer, you will need to use the `--legacy` flag:
+If you are using Rollup, you can use the `--legacy` flag to build two bundles: one for modern browsers and one for legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime.
 
+You may wish to add this flag to a script in your `package.json`:
 ```
-npx sapper build --legacy
+  "scripts": {
+    "build": "sapper build --legacy",
+  },
 ```
 
 You will also need to polyfill APIs that are not present in older browsers.
