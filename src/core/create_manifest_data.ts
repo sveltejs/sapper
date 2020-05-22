@@ -15,15 +15,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 	function has_preload(file: string) {
 		const source = fs.readFileSync(path.join(cwd, file), 'utf-8');
-
-		if (/preload/.test(source)) {
-			try {
-				const { vars } = svelte.compile(source.replace(/<style\b[^>]*>[^]*?<\/style>/g, ''), { generate: false });
-				return vars.some((variable: any) => variable.module && variable.export_name === 'preload');
-			} catch (err) {}
-		}
-
-		return false;
+		return /export\s+(async\s+)?function\s+preload/.test(source);
 	}
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {
