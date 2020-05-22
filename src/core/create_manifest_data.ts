@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import svelte from 'svelte/compiler';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
@@ -15,7 +14,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 	function has_preload(file: string) {
 		const source = fs.readFileSync(path.join(cwd, file), 'utf-8');
-		return /export\s+(async\s+)?function\s+preload/.test(source);
+		return /export\s+.*?preload/.test(source);
 	}
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {
