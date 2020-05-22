@@ -19,6 +19,9 @@ export default function middleware(opts: {
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
 			if (useRelativeBasePath) {
+				if (!req.params) {
+					req.params = {}
+				}
 				if(req.url === '/') {
 					req.params.baseHref = '.';
 				} else {
