@@ -6,9 +6,11 @@ import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
+type IgnoreValue = Array | RegExp | function | string;
+
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
-	ignore?: any
+	ignore?: IgnoreValue
 } = {}) {
 	const { session, ignore } = opts;
 
@@ -65,7 +67,7 @@ export default function middleware(opts: {
 	].filter(Boolean));
 }
 
-export function compose_handlers(ignore: any, handlers: Handler[]): Handler {
+export function compose_handlers(ignore: IgnoreValue, handlers: Handler[]): Handler {
 	const total = handlers.length;
 
 	function nth_handler(n: number, req: Req, res: Res, next: () => void) {
@@ -87,7 +89,7 @@ export function compose_handlers(ignore: any, handlers: Handler[]): Handler {
 		};
 }
 
-export function should_ignore(uri: string, val: any) {
+export function should_ignore(uri: string, val: IgnoreValue) {
 	if (Array.isArray(val)) return val.some(x => should_ignore(uri, x));
 	if (val instanceof RegExp) return val.test(uri);
 	if (typeof val === 'function') return val(uri);
