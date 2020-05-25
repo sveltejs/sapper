@@ -8,9 +8,9 @@ Sapper apps run anywhere that supports Node 8 or higher.
 
 #### Using Now v2
 
-We can use an unoffical third-party libary like [now-sapper loader](https://www.npmjs.com/package/now-sapper) to deploy our projects to [Vercel] and even use our sapper runtime environment there.
+We can use an unoffical third-party libary like [vercel-sapper](https://www.npmjs.com/package/vercel-sapper) builder to deploy our projects to [Vercel] and even use our sapper runtime environment there.
 
-Visit the corresponding github repository of [now-sapper loader](https://github.com/thgh/now-sapper#readme) for implementation details and bug reports regarding [Vercel] deployments.
+Visit the corresponding github repository of [vercel-sapper](https://github.com/thgh/vercel-sapper#readme) builder for implementation details and bug reports regarding [Vercel] deployments.
 
 > Note about Now v1
 >
