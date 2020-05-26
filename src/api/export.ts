@@ -188,12 +188,12 @@ async function _export({
 
 					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 					const base_href = base_match && get_href(base_match[1]);
-					if(base_href === null) {
-                                            oninfo({
-                                                    message: `ignoring html file with missing base element`
-                                            });
-                                            break handle_html
-                                        }
+					if (base_href === null) {
+					    oninfo({
+						    message: `ignoring html file with missing base element`
+					    });
+					    break handle_html
+					}
 					const base = resolve(url.href, base_href);
 
 					let match;
