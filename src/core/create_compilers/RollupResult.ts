@@ -26,7 +26,7 @@ export default class RollupResult implements CompileResult {
 		this.sourcemap = sourcemap
 
 		this.errors = compiler.errors.map(munge_warning_or_error);
-		this.warnings = compiler.warnings.map(munge_warning_or_error); // TODO emit this as they happen
+		this.warnings = compiler.warnings.map(munge_warning_or_error);
 
 		this.chunks = compiler.chunks.map(chunk => ({
 			file: chunk.fileName,
