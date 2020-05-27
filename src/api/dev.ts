@@ -310,14 +310,14 @@ class Watcher extends EventEmitter {
 					};
 
 					if (this.proc) {
-                        if (this.restarting) return;
-                        this.restarting = true;
+						if (this.restarting) return;
+						this.restarting = true;
 						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
 						this.proc.on('exit', async () => {
 							start_server();
 							await restart();
-                            this.restarting = false;
+							this.restarting = false;
 						});
 					} else {
 						start_server();
