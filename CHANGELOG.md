@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
+
+
 ## 0.27.13
 
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))
