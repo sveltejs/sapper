@@ -26,7 +26,7 @@ As seen in the [routing](docs#Routing) section, page components can have an opti
 
 It lives in a `context="module"` script — see the [tutorial](https://svelte.dev/tutorial/module-exports) — because it's not part of the component instance itself; instead, it runs *before* the component is created, allowing you to avoid flashes while data is fetched.
 
-### Argument
+### Arguments
 
 The `preload` function receives two arguments — `page` and `session`.
 
