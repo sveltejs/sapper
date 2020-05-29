@@ -1,7 +1,7 @@
 import * as path from 'path';
 import color from 'kleur';
 import relative from 'require-relative';
-import { RollupError } from 'rollup/types';
+import type { RollupError } from 'rollup';
 import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
@@ -161,7 +161,7 @@ export default class RollupCompiler {
 			}
 		};
 
-		const config: any = require(input);
+		const config: any = require(input); // eslint-disable-line
 		delete require.cache[input];
 
 		return config;
@@ -187,7 +187,7 @@ export function handleError(err: RollupError, recover = false) {
 	}
 
 	if (err.loc) {
-		stderr(`${(err.loc.file || err.id)!} (${err.loc.line}:${err.loc.column})`);
+		stderr(`${err.loc.file || err.id} (${err.loc.line}:${err.loc.column})`);
 	} else if (err.id) {
 		stderr(err.id);
 	}

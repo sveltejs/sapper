@@ -9,6 +9,7 @@ function munge_warning_or_error(message: string) {
 	const lines = message.split('\n');
 
 	const file = lines.shift()
+		// eslint-disable-next-line
 		.replace('[7m', '') // careful — there is a special character at the beginning of this string
 		.replace('[27m', '')
 		.replace('./', '');

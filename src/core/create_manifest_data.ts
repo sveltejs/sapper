@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import svelte from 'svelte/compiler';
+import svelte from 'svelte/compiler'; // eslint-disable-line
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
@@ -20,7 +20,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 			try {
 				const { vars } = svelte.compile(source.replace(/<style\b[^>]*>[^]*?<\/style>/g, ''), { generate: false });
 				return vars.some((variable: any) => variable.module && variable.export_name === 'preload');
-			} catch (err) {}
+			} catch (err) {} // eslint-disable-line
 		}
 
 		return false;
@@ -94,7 +94,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
-					if (part.qualifier && /[\(\)\?\:]/.test(part.qualifier.slice(1, -1))) {
+					if (part.qualifier && /[()?:]/.test(part.qualifier.slice(1, -1))) {
 						throw new Error(`Invalid route ${file} — cannot use (, ), ? or : in route qualifiers`);
 					}
 				});
@@ -305,7 +305,7 @@ function get_parts(part: string): Part[] {
 
 			const [, content, qualifier] = dynamic
 				? /([^(]+)(\(.+\))?$/.exec(str)
-				: [, str, null];
+				: [null, str, null];
 
 			return {
 				content,
@@ -319,8 +319,8 @@ function get_parts(part: string): Part[] {
 
 function get_slug(file: string) {
 	let name = file
-		.replace(/[\\\/]index/, '')
-		.replace(/[\/\\]/g, '_')
+		.replace(/[\\/]index/, '')
+		.replace(/[/\\]/g, '_')
 		.replace(/\.\w+$/, '')
 		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
 		.replace(/[^a-zA-Z0-9_$]/g, c => {

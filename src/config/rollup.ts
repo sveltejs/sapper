@@ -1,5 +1,5 @@
 import { dev, src, dest } from './env';
-import { InputOption, OutputOptions } from 'rollup';
+import { InputOption, OutputOptions } from 'rollup'; // eslint-disable-line
 
 const sourcemap = dev ? 'inline' : false;
 
