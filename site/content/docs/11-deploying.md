@@ -6,7 +6,7 @@ Sapper apps run anywhere that supports Node 8 or higher.
 
 ### Deploying to Vercel ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel))
 
-#### Using Now v2
+#### Using Vercel
 
 We can use an unoffical third-party libary like [vercel-sapper](https://www.npmjs.com/package/vercel-sapper) builder to deploy our projects to [Vercel] and even use our sapper runtime environment there.
 
