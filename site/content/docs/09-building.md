@@ -27,4 +27,5 @@ You may wish to add this flag to a script in your `package.json`:
   },
 ```
 
-You will also need to polyfill APIs that are not present in older browsers.
+[1] You will also need to polyfill APIs that are not present in older browsers.
+[2] Browsers which do not support `async/await` syntax will be served the legacy bundle
