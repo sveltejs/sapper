@@ -52,10 +52,10 @@ Then you can set it using the environment variable, e.g.:
 SAPPER_TIMESTAMP=$(date +%s%3N) npm run build
 ```
 
-When deploying to [Vercel], you can pass the environment variable into the Vercel cli tool itself:
+When deploying to [Vercel], you can pass the environment variable into the Vercel CLI tool itself:
 
 ```bash
-now -e SAPPER_TIMESTAMP=$(date +%s%3N)
+vercel -e SAPPER_TIMESTAMP=$(date +%s%3N)
 ```
 
 [Vercel]: https://vercel.com/home
