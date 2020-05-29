@@ -12,10 +12,6 @@ We can use an unoffical third-party libary like [vercel-sapper](https://www.npmj
 
 Visit the corresponding github repository of [vercel-sapper](https://github.com/thgh/vercel-sapper#readme) builder for implementation details and bug reports regarding [Vercel] deployments.
 
-> Note about Now v1
->
-> Now v1 is deprecated and using it should be avoided, see [this comment](https://github.com/zeit/now/issues/1805#issuecomment-452470953).  
-> If you are still running v1 consider upgrating to the newest version.
 
 ### Deploying service workers
 
