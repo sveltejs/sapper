@@ -6,56 +6,29 @@ Sapper, by default, renders server-side first (SSR), and then re-mounts any dyna
 
 ### Making a component SSR compatible
 
-Sapper works well with most third-party libraries you are likely to come across. However, sometimes, a third-party library comes bundled in a way which allows it to work with multiple different module loaders. Sometimes, this code creates a dependency on `window`, such as checking for the existence of `window.global` might do.
+Sapper works well with most third-party libraries you are likely to come across. However, sometimes a third-party library depends on browser objects like `window` or `document`.
 
-Since there is no `window` in a server-side environment like Sapper's, the action of simply importing such a module can cause the import to fail, and terminate the Sapper's server with an error such as:
+Since there are no browser objects in a server-side environment like Sapper's, importing a module dependant on them can cause the import to fail and terminate the Sapper's server with an error such as:
 
 ```bash
 ReferenceError: window is not defined
 ```
 
-The way to get around this is to use a dynamic import for your component, from within the `onMount` function (which is only called on the client), so that your import code is never called on the server.
+The way to get around this is to dynamically import the library from within the `onMount` function (which is only called on the client) so that the import is never called on the server.
+
+For example, importing and mounting [Quill.js](https://github.com/quilljs/quill/)
 
 ```html
 <script>
-	import { onMount } from 'svelte';
-
-	let MyComponent;
-
-	onMount(async () => {
-		const module = await import('my-non-ssr-component');
-		MyComponent = module.default;
-	});
+	import {onMount} from 'svelte'
+        let editor
+	
+	onMount(async() => {
+		const { default: Quill } = await import('quill')
+		new Quill(editor)
+	})
 </script>
 
-<svelte:component this={MyComponent} foo="bar"/>
-```
-
-This method can also be used to import client-side libraries. For example, importing and using [Quill.js](https://github.com/quilljs/quill/)
-
-```html
-<script>
-	import { onMount } from 'svelte'
-
-	onMount(async () => {
-
-		const module = await import('quill');
-		let Quill = module.default;
-
-		let editor = new Quill('#editor', {
-			modules: { toolbar: '#toolbar' },
-			theme: 'snow'
-		});
-	});
-</script>
-
-<div id="toolbar">
-  <button class="ql-bold">Bold</button>
-  <button class="ql-italic">Italic</button>
-</div>
-
-<div id="editor">
-  <p>Hello World!</p>
-</div>
+<div bind:this={editor}></div>
 
 ```
