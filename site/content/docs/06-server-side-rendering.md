@@ -23,7 +23,7 @@ For example, importing and mounting [Quill.js](https://github.com/quilljs/quill/
 	import {onMount} from 'svelte'
 	let editor
 
-	onMount(async() => {
+	onMount(async () => {
 		const { default: Quill } = await import('quill')
 		new Quill(editor)
 	})
