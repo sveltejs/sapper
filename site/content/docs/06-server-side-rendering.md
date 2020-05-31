@@ -21,8 +21,8 @@ For example, importing and mounting [Quill.js](https://github.com/quilljs/quill/
 ```html
 <script>
 	import {onMount} from 'svelte'
-        let editor
-	
+	let editor
+
 	onMount(async() => {
 		const { default: Quill } = await import('quill')
 		new Quill(editor)
@@ -30,5 +30,4 @@ For example, importing and mounting [Quill.js](https://github.com/quilljs/quill/
 </script>
 
 <div bind:this={editor}></div>
-
 ```
