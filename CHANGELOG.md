@@ -7,6 +7,7 @@
 * In SSR, default to `credentials: 'same-origin'` ([#881](https://github.com/sveltejs/sapper/issues/881))
 * Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
 * Avoid console error in dev mode when reloading page ([#981](https://github.com/sveltejs/sapper/issues/981))
+* Correctly handle `src` or `dest` being the current directory ([#1069](https://github.com/sveltejs/sapper/issues/1069))
 * Log details of Rollup errors instead of swallowing them ([#1221](https://github.com/sveltejs/sapper/issues/1221), [#1234](https://github.com/sveltejs/sapper/issues/1234))
 
 
