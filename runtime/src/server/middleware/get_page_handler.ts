@@ -366,23 +366,18 @@ function try_serialize(data: any, fail?: (err) => void) {
 	}
 }
 
-// Try to serialize the given error, and ensure to return something truthy.
-// Otherwise, the client will think that it got preloaded data with no error
-// and rerender the page component over the error.
-// 
-// See: https://github.com/sveltejs/sapper/issues/710
-// 
-function serialize_error(error: Error|{message: string}) {
-	if (!error) return null
-	let serialized = try_serialize(error)
+// Ensure we return something truthy so the client will not re-render the page over the error
+function serialize_error(error: Error | { message: string }) {
+	if (!error) return null;
+	let serialized = try_serialize(error);
 	if (!serialized) {
-		const {name, message, stack} = error as Error
-		serialized = try_serialize({name, message, stack})
+		const { name, message, stack } = error as Error;
+		serialized = try_serialize({ name, message, stack });
 	}
 	if (!serialized) {
-		serialized = '{}'
+		serialized = '{}';
 	}
-	return serialized
+	return serialized;
 }
 
 function escape_html(html: string) {
