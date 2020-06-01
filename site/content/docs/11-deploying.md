@@ -6,9 +6,7 @@ Sapper apps run anywhere that supports Node 8 or higher.
 
 ### Deploying to Vercel ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel))
 
-We can use an unoffical third-party library like [vercel-sapper](https://www.npmjs.com/package/vercel-sapper) builder to deploy our projects to [Vercel] and even use our Sapper runtime environment there.
-
-Visit the corresponding github repository of [vercel-sapper](https://github.com/thgh/vercel-sapper#readme) builder for implementation details and bug reports regarding [Vercel] deployments.
+We can use a third-party library like [the `vercel-sapper` builder](https://www.npmjs.com/package/vercel-sapper) to deploy our projects to [Vercel]. See [that project's readme](https://github.com/thgh/vercel-sapper#readme) for more details regarding [Vercel] deployments.
 
 ### Deploying service workers
 
