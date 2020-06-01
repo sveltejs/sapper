@@ -46,7 +46,7 @@ describe('credentials', function() {
 		);
 	});
 
-	// TODO: does not send cookies to different origin with credentials: "same-origin"
+	// TODO: write a test for not sending cookies to different origin with credentials: "same-origin"
 
 	// authorization header test
 	it('sends authorization when using this.fetch with credentials: "include"', async () => {
@@ -76,7 +76,7 @@ describe('credentials', function() {
 		);
 	});
 
-	// TODO: does not send authorization to different origin with credentials: "same-origin"
+	// TODO: write a test for not sending authorization to different origin with credentials: "same-origin"
 
 	it('delegates to fetch on the client', async () => {
 		await r.load('/')

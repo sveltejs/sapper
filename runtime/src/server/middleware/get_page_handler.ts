@@ -106,17 +106,15 @@ export function get_page_handler(
 			},
 			fetch: (url: string, opts?: any) => {
 				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
-					
-				opts = opts ? Object.assign({}, opts) : {};
 
-				const includeCredentials = (
-					opts.credentials !== 'omit' && (
-						opts.credentials === 'include' ||
-						parsed.origin === `http://127.0.0.1:${process.env.PORT}`
-					)
+				opts = Object.assign({}, opts);
+
+				const include_credentials = (
+					opts.credentials === 'include' ||
+					opts.credentials !== 'omit' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
 				);
 
-				if (includeCredentials) {
+				if (include_credentials) {
 					opts.headers = Object.assign({}, opts.headers);
 
 					const cookies = Object.assign(
@@ -141,7 +139,7 @@ export function get_page_handler(
 						opts.headers.authorization = req.headers.authorization;
 					}
 				}
-				
+
 				return fetch(parsed.href, opts);
 			}
 		};
