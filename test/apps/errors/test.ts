@@ -85,6 +85,16 @@ describe('errors', function() {
 		);
 	});
 
+	it('does not replace server side rendered error', async () => {
+		await r.load('/preload-reject');
+		await r.sapper.start();
+
+		assert.equal(
+			await r.text('h1'),
+			'500'
+		);
+	});
+
 	it('does not serve error page for explicit non-page errors', async () => {
 		await r.load('/nope.json');
 

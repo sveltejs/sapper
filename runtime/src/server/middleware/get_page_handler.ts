@@ -264,7 +264,7 @@ export function get_page_handler(
 				session: session && try_serialize(session, err => {
 					throw new Error(`Failed to serialize session data: ${err.message}`);
 				}),
-				error: error && try_serialize(props.error)
+				error: error && serialize_error(props.error)
 			};
 
 			let script = `__SAPPER__={${[
@@ -367,6 +367,20 @@ function try_serialize(data: any, fail?: (err) => void) {
 		if (fail) fail(err);
 		return null;
 	}
+}
+
+// Ensure we return something truthy so the client will not re-render the page over the error
+function serialize_error(error: Error | { message: string }) {
+	if (!error) return null;
+	let serialized = try_serialize(error);
+	if (!serialized) {
+		const { name, message, stack } = error as Error;
+		serialized = try_serialize({ name, message, stack });
+	}
+	if (!serialized) {
+		serialized = '{}';
+	}
+	return serialized;
 }
 
 function escape_html(html: string) {
