@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Prevent client-side app from re-rendering over a server-generated error ([#720](https://github.com/sveltejs/sapper/issues/720))
 * Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
 * Log details of Rollup errors instead of swallowing them ([#1221](https://github.com/sveltejs/sapper/issues/1221), [#1234](https://github.com/sveltejs/sapper/issues/1234))
 
