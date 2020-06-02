@@ -25,6 +25,7 @@
 
 <Nav {segment} {page} logo="sapper-logo-horizontal.svg">
 	<NavItem segment="docs">Docs</NavItem>
+	<NavItem segment="faq">FAQ</NavItem>
 
 	<NavItem external="https://svelte.dev">Svelte</NavItem>
 
