@@ -283,13 +283,13 @@ function generate_app(manifest_data: ManifestData, path_to_routes: string) {
 			setContext(CONTEXT_KEY, stores);
 		</script>
 
-		<Layout segment="{segments[0]}" {...level0.props}>
-			{#if error}
-				<Error {error} {status}/>
-			{:else}
+		{#if error}
+			<Error {error} {status}/>
+		{:else}
+			<Layout segment="{segments[0]}" {...level0.props}>
 				${pyramid.replace(/\n/g, '\n\t\t\t\t')}
-			{/if}
-		</Layout>
+			</Layout>
+		{/if}
 	`.replace(/^\t\t/gm, '').trim();
 }
 
