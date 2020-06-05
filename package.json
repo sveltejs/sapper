@@ -1,5 +1,5 @@
 {
-  "name": "sapper",
+  "name": "@s0kil/sapper",
   "version": "0.27.13",
   "description": "The next small thing in web development, powered by Svelte",
   "bin": {
@@ -68,8 +68,7 @@
     "pretest": "npm run build",
     "build": "rm -rf dist && rollup -c",
     "prepare": "npm run build",
-    "dev": "rollup -cw",
-    "prepublishOnly": "npm test"
+    "dev": "rollup -cw"
   },
   "repository": "https://github.com/sveltejs/sapper",
   "keywords": [
