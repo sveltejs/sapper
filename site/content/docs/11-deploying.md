@@ -51,7 +51,7 @@ vercel -e SAPPER_TIMESTAMP=$(date +%s%3N)
 
 [Vercel]: https://vercel.com/home
 
-## GitHub Action for Sapper
+### GitHub Action for Sapper
 
 Create a `.github/workflows/sapper_build.yml` file in your repository and use this GitHub action to build your static website with Sapper:
 
