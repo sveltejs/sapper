@@ -72,27 +72,6 @@ You should be good to test changes locally.
 npm run test
 ```
 
-## GitHub Action for Sapper
-
-Create a `.github/workflows/sapper_build.yml` file in your _Sapper-based_ website repository and use this GitHub action to build your static website with Sapper:
-
-- [actions/sapper-action](https://github.com/marketplace/actions/sapper-action)
-
-For example:
-
-```yml
-- name: Build Sapper
-  uses: truewebartisans/actions-sapper@master
-  with:
-    build_mode: "export"  # or "build"
-    args: "--entry about" # or nothing, by default "--legacy"
-```
-
-More complex examples:
-
-- [Build Sapper & Deploy to GitHub Pages](https://github.com/marketplace/actions/sapper-action#-deploy-to-github-pages)
-- [Build Sapper & Deploy to remote virtual server (VDS/VPS/Droplet) via SSH](https://github.com/marketplace/actions/sapper-action#-deploy-to-remote-virtual-server-vdsvpsdroplet-via-ssh)
-
 ## License
 
 [MIT](LICENSE)
