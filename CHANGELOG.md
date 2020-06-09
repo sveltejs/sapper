@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Prevent client-side app from re-rendering over a server-generated error ([#720](https://github.com/sveltejs/sapper/issues/720))
+* Better handle I/O backpressure when exporting sites ([#851](https://github.com/sveltejs/sapper/issues/851), [#893](https://github.com/sveltejs/sapper/issues/893))
 * In SSR, include `Authorization` header when including cookies ([#880](https://github.com/sveltejs/sapper/issues/880))
 * In SSR, default to `credentials: 'same-origin'` ([#881](https://github.com/sveltejs/sapper/issues/881))
 * Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
