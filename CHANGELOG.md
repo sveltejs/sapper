@@ -10,6 +10,7 @@
 * Avoid console error in dev mode when reloading page ([#981](https://github.com/sveltejs/sapper/issues/981))
 * Correctly handle `src` or `dest` being the current directory ([#1069](https://github.com/sveltejs/sapper/issues/1069))
 * Log details of Rollup errors instead of swallowing them ([#1221](https://github.com/sveltejs/sapper/issues/1221), [#1234](https://github.com/sveltejs/sapper/issues/1234))
+* Avoid corrupting binary files during build ([#1245](https://github.com/sveltejs/sapper/issues/1245))
 
 
 ## 0.27.13
