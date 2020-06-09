@@ -176,9 +176,15 @@ async function _export({
 				// parse link rel=preload headers and embed them in the HTML
 				let link = parseLinkHeader(r.headers.get('Link') || '');
 				link.refs.forEach((ref: Ref) => {
-					if (ref.rel === 'preload') {
-						body = body.replace('</head>',
-							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+					switch (ref.rel) {
+						case "preload":
+							body = body.replace('</head>',
+							`<link rel="${ref.rel}" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+						case "modulepreload":
+							body = body.replace('</head>',
+							`<link rel="${ref.rel}" href=${JSON.stringify(ref.uri)}></head>`)
+							break;
+						default: return;
 					}
 				});
 
