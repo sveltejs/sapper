@@ -22,7 +22,7 @@ We can mitigate that by *prefetching* the data. Adding a `rel=prefetch` attribut
 
 ### rel=external
 
-The sapper router listens for clicks on `<a>` elements and bypasses the normal browser navigation for relative (same origin) paths. We sometimes need links that are targeted at routes that are not part of the sapper app and hence should be reached by a normal browser navigation.
+By default, the Sapper runtime intercepts clicks on `<a>` elements and bypasses the normal browser navigation for relative (same-origin) URLs that match one of your page routes. We sometimes need to tell Sapper that certain links need to be be handled by normal browser navigation.
 
 Adding a `rel=external` attribute to a link...
 
