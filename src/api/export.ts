@@ -2,6 +2,7 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
+import { promisify } from 'util';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
 import { exportQueue, FetchOpts, FetchRet } from './utils/export_queue';
@@ -11,6 +12,8 @@ import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
+
+const writeFile = promisify(fs.writeFile)
 
 type Opts = {
 	build_dir?: string,
@@ -132,15 +135,7 @@ async function _export({
 		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
 
-		return new Promise((res, rej) => {
-			fs.writeFile(export_file, body, (err) => {
-				if (err) {
-					rej(err);
-				} else {
-					res();
-				}
-			});
-		});
+		return writeFile(export_file, body);
 	}
 
 	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
