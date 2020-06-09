@@ -1,6 +1,6 @@
 # sapper changelog
 
-## Unreleased
+## 0.27.14
 
 * Prevent client-side app from re-rendering over a server-generated error ([#720](https://github.com/sveltejs/sapper/issues/720))
 * Better handle I/O backpressure when exporting sites ([#851](https://github.com/sveltejs/sapper/issues/851), [#893](https://github.com/sveltejs/sapper/issues/893))
