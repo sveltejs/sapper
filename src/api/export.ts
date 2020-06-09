@@ -2,15 +2,18 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
+import { promisify } from 'util';
 import fetch from 'node-fetch';
-import * as yootils from 'yootils';
 import * as ports from 'port-authority';
+import { exportQueue, FetchOpts, FetchRet } from './utils/export_queue';
 import clean_html from './utils/clean_html';
 import minify_html from './utils/minify_html';
 import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
+
+const writeFile = promisify(fs.writeFile)
 
 type Opts = {
 	build_dir?: string,
@@ -32,6 +35,8 @@ type Ref = {
 	as: string
 };
 
+type URL = url.UrlWithStringQuery;
+
 function resolve(from: string, to: string) {
 	return url.parse(url.resolve(from, to));
 }
@@ -40,7 +45,10 @@ function cleanPath(path: string) {
 	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '')
 }
 
-type URL = url.UrlWithStringQuery;
+function get_href(attrs: string) {
+	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
+	return match && (match[1] || match[2] || match[3]);
+}
 
 export { _export as export };
 
@@ -100,10 +108,9 @@ async function _export({
 
 	const seen = new Set();
 	const saved = new Set();
-	const q = yootils.queue(concurrent);
 
 	function save(url: string, status: number, type: string, body: string) {
-		const { pathname } = resolve(origin, url);
+		let { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
@@ -127,81 +134,89 @@ async function _export({
 		const export_file = path.join(export_dir, file);
 		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
-		fs.writeFileSync(export_file, body);
+
+		return writeFile(export_file, body);
 	}
 
-	proc.on('message', message => {
-		if (!message.__sapper__ || message.event !== 'file') return;
-		save(message.url, message.status, message.type, message.body);
-	});
-
-	async function handle(url: URL) {
+	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(root.pathname, '') || '/'
+			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/'
 		}
 
 		if (seen.has(pathname)) return;
+
 		seen.add(pathname);
+		addCallback(url);
+	}
 
-		const r = await q.add(async () => {
-			const timeout_deferred = new Deferred();
-			const the_timeout = setTimeout(() => {
-				timeout_deferred.reject(new Error(`Timed out waiting for ${url.href}`));
-			}, timeout);
+	async function handleFetch(url: URL, { timeout, host, host_header }: FetchOpts) {
+		const href = url.href;
+		const timeout_deferred = new Deferred();
+		const the_timeout = setTimeout(() => {
+			timeout_deferred.reject(new Error(`Timed out waiting for ${href}`));
+		}, timeout);
 
-			const r = await Promise.race([
-				fetch(url.href, {
-					headers: { host: host_header || host },
-					redirect: 'manual'
-				}),
-				timeout_deferred.promise
-			]);
+		const r = await Promise.race([
+			fetch(href, {
+				headers: { host: host_header || host },
+				redirect: 'manual'
+			}),
+			timeout_deferred.promise
+		]);
 
-			clearTimeout(the_timeout); // prevent it hanging at the end
+		clearTimeout(the_timeout); // prevent it hanging at the end
 
-			return r;
-		}) as Response;
+		return {
+			response: r,
+			url,
+		};
+	}
 
-		let type = r.headers.get('Content-Type');
+	async function handleResponse(fetched: Promise<FetchRet>, fetchOpts: FetchOpts) {
+		const { response, url } = await fetched;
+		const { protocol, host, root } = fetchOpts;
+		let pathname = url.pathname;
 
-		let body = await r.text();
+		if (pathname !== '/service-worker-index.html') {
+			pathname = pathname.replace(root.pathname, '') || '/';
+		}
 
-		const range = ~~(r.status / 100);
+		let type = response.headers.get('Content-Type');
 
-		let tasks = [];
+		let body = await response.text();
 
-		if (range === 2) {
-			if (type === 'text/html') {
-				// parse link rel=preload headers and embed them in the HTML
-				let link = parseLinkHeader(r.headers.get('Link') || '');
-				link.refs.forEach((ref: Ref) => {
-					if (ref.rel === 'preload') {
-						body = body.replace('</head>',
-							`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
-					}
-				});
+		const range = ~~(response.status / 100);
 
-				if (pathname !== '/service-worker-index.html') {
-					const cleaned = clean_html(body);
+		if (range === 2 && type === 'text/html') {
+			// parse link rel=preload headers and embed them in the HTML
+			let link = parseLinkHeader(response.headers.get('Link') || '');
+			link.refs.forEach((ref: Ref) => {
+				if (ref.rel === 'preload') {
+					body = body.replace('</head>',
+						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+				}
+			});
 
-					const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-					const base_href = base_match && get_href(base_match[1]);
-					const base = resolve(url.href, base_href);
+			if (pathname !== '/service-worker-index.html') {
+				const cleaned = clean_html(body);
 
-					let match;
-					let pattern = /<a ([\s\S]+?)>/gm;
+				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
+				const base_href = base_match && get_href(base_match[1]);
+				const base = resolve(url.href, base_href);
 
-					while (match = pattern.exec(cleaned)) {
-						const attrs = match[1];
-						const href = get_href(attrs);
+				let match;
+				let pattern = /<a ([\s\S]+?)>/gm;
 
-						if (href) {
-							const url = resolve(base.href, href);
+				while (match = pattern.exec(cleaned)) {
+					const attrs = match[1];
+					const href = get_href(attrs);
 
-							if (url.protocol === protocol && url.host === host) {
-								tasks.push(handle(url));
-							}
+					if (href) {
+						const url = resolve(base.href, href);
+
+						if (url.protocol === protocol && url.host === host) {
+							handle(url, fetchOpts, queue.add)
 						}
 					}
 				}
@@ -209,40 +224,63 @@ async function _export({
 		}
 
 		if (range === 3) {
-			const location = r.headers.get('Location');
+			const location = response.headers.get('Location');
 
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
 
-			tasks.push(handle(resolve(root.href, location)));
+			handle(resolve(root.href, location), fetchOpts, queue.add);
 		}
 
-		save(pathname, r.status, type, body);
-
-		await Promise.all(tasks);
+		return save(pathname, response.status, type, body);
 	}
 
-	try {
-		await ports.wait(port);
+	const fetchOpts = {
+		timeout: timeout === false ? 0 : timeout,
+		host,
+		host_header,
+		protocol,
+		root,
+	};
 
-		for (const entryPoint of entryPoints) {
-			oninfo({
-				message: `Crawling ${entryPoint.href}`
-			});
-			await handle(entryPoint);
+	const queue = exportQueue({
+		concurrent,
+		seen,
+		saved,
+		fetchOpts,
+		handleFetch,
+		handleResponse,
+		callbacks: {
+			onDone: () => {},
+		},
+	});
+
+	proc.on('message', message => {
+		if (!message.__sapper__ || message.event !== 'file') return;
+		queue.addSave(save(message.url, message.status, message.type, message.body));
+	});
+
+	return new Promise(async (res, rej) => {
+		queue.setCallback('onDone', () => {
+			proc.kill();
+			res();
+		});
+
+		try {
+			await ports.wait(port);
+
+			for (const entryPoint of entryPoints) {
+				oninfo({
+					message: `Crawling ${entryPoint.href}`
+				});
+				handle(entryPoint, fetchOpts, queue.add);
+			}
+
+			const workerUrl = resolve(root.href, 'service-worker-index.html');
+			handle(workerUrl, fetchOpts, queue.add);
+		} catch (err) {
+			proc.kill();
+			rej(err);
 		}
-
-		await handle(resolve(root.href, 'service-worker-index.html'));
-		await q.close();
-
-		proc.kill()
-	} catch (err) {
-		proc.kill();
-		throw err;
-	}
-}
-
-function get_href(attrs: string) {
-	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
-	return match && (match[1] || match[2] || match[3]);
+	});
 }
