@@ -225,7 +225,7 @@ export default function extract_css(
 	});
 
 	fs.readdirSync(asset_dir).forEach(file => {
-		if (fs.statSync(`${asset_dir}/${file}`).isDirectory()) return;
+		if (!file.endsWith('.js') || fs.statSync(`${asset_dir}/${file}`).isDirectory()) return;
 
 		const source = fs.readFileSync(`${asset_dir}/${file}`, 'utf-8');
 
