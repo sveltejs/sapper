@@ -327,7 +327,8 @@ export function get_page_handler(
 				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
-				.replace('%sapper.styles%', () => styles);
+				.replace('%sapper.styles%', () => styles)
+				.replace('%sapper.client%', () => main);
 
 			res.statusCode = status;
 			res.end(body);
