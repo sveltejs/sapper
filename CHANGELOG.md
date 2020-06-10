@@ -1,14 +1,16 @@
 # sapper changelog
 
-## Unreleased
+## 0.27.14
 
-* Prevent client-side app from re-rendering over a server-generated error ([#720](https://github.com/sveltejs/sapper/issues/720))
+* Prevent client-side app from re-rendering over a server-generated error ([#710](https://github.com/sveltejs/sapper/issues/710))
+* Better handle I/O backpressure when exporting sites ([#851](https://github.com/sveltejs/sapper/issues/851), [#893](https://github.com/sveltejs/sapper/issues/893))
 * In SSR, include `Authorization` header when including cookies ([#880](https://github.com/sveltejs/sapper/issues/880))
 * In SSR, default to `credentials: 'same-origin'` ([#881](https://github.com/sveltejs/sapper/issues/881))
 * Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
 * Avoid console error in dev mode when reloading page ([#981](https://github.com/sveltejs/sapper/issues/981))
 * Correctly handle `src` or `dest` being the current directory ([#1069](https://github.com/sveltejs/sapper/issues/1069))
 * Log details of Rollup errors instead of swallowing them ([#1221](https://github.com/sveltejs/sapper/issues/1221), [#1234](https://github.com/sveltejs/sapper/issues/1234))
+* Avoid corrupting binary files during build ([#1245](https://github.com/sveltejs/sapper/issues/1245))
 
 
 ## 0.27.13
