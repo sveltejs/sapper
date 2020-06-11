@@ -57,7 +57,8 @@
     "svelte": "^3.6.9",
     "svelte-loader": "^2.13.6",
     "webpack": "^4.38.0",
-    "webpack-format-messages": "^2.0.5"
+    "webpack-format-messages": "^2.0.5",
+    "webpack-modules": "^1.0.0"
   },
   "peerDependencies": {
     "svelte": "^3.5.0"
