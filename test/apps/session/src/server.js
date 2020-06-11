@@ -11,7 +11,7 @@ const app = polka()
 	})
 	.use(
 		sapper.middleware({
-			session: (req, res) => ({
+			session: async (req, res) => await Promise.resolve({
 				title: `${req.hello} ${res.locals.name}`
 			})
 		})

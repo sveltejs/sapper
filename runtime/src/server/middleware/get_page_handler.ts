@@ -11,7 +11,7 @@ import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => any
+	session_getter: (req: Req, res: Res) => Promise<any>
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -88,7 +88,7 @@ export function get_page_handler(
 			res.setHeader('Link', link);
 		}
 
-		const session = session_getter(req, res);
+		const session = await session_getter(req, res);
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
