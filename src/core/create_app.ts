@@ -116,16 +116,16 @@ function generate_client_manifest(
 					pattern: ${page.pattern},
 					parts: [
 						${page.parts.map(part => {
-							if (part === null) return 'null';
+							if (part === null) return 'null, // no _layout.svelte';
 
 							if (part.params.length > 0) {
 								needs_decode = true;
 								const props = part.params.map(create_param_match);
-								return `{ i: ${component_indexes[part.component.name]}, params: match => ({ ${props.join(', ')} }) }`;
+								return `{ i: ${component_indexes[part.component.name]}, params: match => ({ ${props.join(', ')} }) },`;
 							}
 
-							return `{ i: ${component_indexes[part.component.name]} }`;
-						}).join(',\n\t\t\t\t\t\t')}
+							return `{ i: ${component_indexes[part.component.name]} },`;
+						}).join('\n\t\t\t\t\t\t')}
 					]
 				}`).join(',\n\n\t\t\t\t')}
 	]`.replace(/^\t/gm, '');
