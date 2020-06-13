@@ -31,6 +31,7 @@ export type BuildInfo = {
 	bundler: string;
 	shimport: string;
 	assets: Record<string, string>;
+	dependencies: Record<string, string[]>;
 	legacy_assets?: Record<string, string>;
 	css: {
 		main: string | null,

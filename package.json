@@ -50,6 +50,7 @@
     "puppeteer": "^5.0.0",
     "require-relative": "^0.8.7",
     "rollup": "^2.21.0",
+    "rollup-dependency-tree": "^0.0.1",
     "rollup-plugin-svelte": "^5.1.0",
     "sade": "^1.6.1",
     "sirv": "^1.0.0",

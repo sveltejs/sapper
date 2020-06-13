@@ -50,42 +50,54 @@ export function get_page_handler(
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
+			dependencies: Record<string, string[]>,
+			css: {
+				main: string | null,
+				chunks: Record<string, string[]>
+			},
 			legacy_assets?: Record<string, string>
-		 } = get_build_info();
+		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 
 		// preload main.js and current route
-		// TODO detect other stuff we can preload? images, CSS, fonts?
-		let preloaded_chunks = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
+		// TODO detect other stuff we can preload like fonts?
+		let preload_files = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
 		if (!error && !is_service_worker_index) {
 			page.parts.forEach(part => {
 				if (!part) return;
 
 				// using concat because it could be a string or an array. thanks webpack!
-				preloaded_chunks = preloaded_chunks.concat(build_info.assets[part.name]);
+				preload_files = preload_files.concat(build_info.assets[part.name]);
 			});
 		}
 
+		let es6_preload = false;
 		if (build_info.bundler === 'rollup') {
-			// TODO add dependencies and CSS
-			const link = preloaded_chunks
-				.filter(file => file && !file.match(/\.map$/))
-				.map(file => `<${req.baseUrl}/client/${file}>;rel="modulepreload"`)
-				.join(', ');
 
-			res.setHeader('Link', link);
-		} else {
-			const link = preloaded_chunks
-				.filter(file => file && !file.match(/\.map$/))
-				.map((file) => {
-					const as = /\.css$/.test(file) ? 'style' : 'script';
-					return `<${req.baseUrl}/client/${file}>;rel="preload";as="${as}"`;
-				})
-				.join(', ');
+			es6_preload = true;
 
-			res.setHeader('Link', link);
+			const route = page.parts[page.parts.length - 1].file;
+
+			// JS
+			preload_files = preload_files.concat(build_info.dependencies[route]);
+
+			// CSS
+			preload_files = preload_files.concat(build_info.css.main);
+			preload_files = preload_files.concat(build_info.css.chunks[route]);
 		}
+
+		const link = preload_files
+			.filter((v, i, a) => a.indexOf(v) === i)        // remove any duplicates
+			.filter(file => file && !file.match(/\.map$/))  // exclude source maps
+			.map((file) => {
+				const as = /\.css$/.test(file) ? 'style' : 'script';
+				const rel = es6_preload && as === 'script' ? 'modulepreload' : 'preload';
+				return `<${req.baseUrl}/client/${file}>;rel="${rel}";as="${as}"`;
+			})
+			.join(', ');
+
+		res.setHeader('Link', link);
 
 		let session;
 		try {
