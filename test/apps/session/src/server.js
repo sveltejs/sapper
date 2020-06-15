@@ -11,9 +11,12 @@ const app = polka()
 	})
 	.use(
 		sapper.middleware({
-			session: async (req, res) => await Promise.resolve({
-				title: `${req.hello} ${res.locals.name}`
-			})
+			session: async (req, res) => {
+				if (req.url === '/error') {
+					throw new Error('error');
+				}
+				return { title: `${req.hello} ${res.locals.name}` };
+			}
 		})
 	);
 
