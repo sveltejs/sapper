@@ -88,7 +88,12 @@ export function get_page_handler(
 			res.setHeader('Link', link);
 		}
 
-		const session = await session_getter(req, res);
+		let session;
+		try {
+			session = await session_getter(req, res);
+		} catch (err) {
+			return bail(req, res, err);
+		}
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
