@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Handle errors thrown from session seeding function ([#1273](https://github.com/sveltejs/sapper/issues/1273))
+
+
 ## 0.27.15
 
 * Allow `session` handler to return a Promise ([#740](https://github.com/sveltejs/sapper/issues/740))
