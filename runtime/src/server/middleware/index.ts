@@ -107,9 +107,7 @@ export function serve({ prefix, pathname, cache_control }: {
 
 	const cache: Map<string, Buffer> = new Map();
 
-	const read = dev
-		? (file: string) => fs.readFileSync(path.join(build_dir, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file)
+	const read = (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file)
 
 	return (req: Req, res: Res, next: () => void) => {
 		if (filter(req)) {
