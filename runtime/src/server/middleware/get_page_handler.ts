@@ -9,9 +9,29 @@ import { Manifest, Page, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
+/**
+ * A general purpose options-handling function based off Chart.js options handling
+ * @param {Array} inputs - An array of values, falling back to the last value.
+ * @param {object} [context] - If defined and the current value is a function, the value
+ * is called with `context` as first argument.
+ */
+function resolveOption(inputs: Array, context?: object) {
+	for (let i = 0; i < inputs.length; ++i) {
+		let value = inputs[i];
+		if (value === undefined) {
+			continue;
+		}
+		if (context !== undefined && typeof value === 'function') {
+			value = value(context);
+		}
+		return value;
+	}
+}
+
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => Promise<any>
+	session_getter: (req: Req, res: Res) => Promise<any>,
+	ssr_enabled?: boolean | ((ctx: {req: Req}) => boolean)
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -259,7 +279,8 @@ export function get_page_handler(
 				}
 			}
 
-			const { html, head, css } = App.render(props);
+			ssr_enabled = resolveOption([ssr_enabled, true], { req });
+			const { html, head, css } = ssr_enabled ? App.render(props) : { html: '', head: '', css: '' };
 
 			const serialized = {
 				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,

@@ -30,3 +30,15 @@ The way to get around this is to use a dynamic import for your component, from w
 
 <svelte:component this={MyComponent} foo="bar"/>
 ```
+
+### Disabling SSR
+
+You can disable SSR by initializing the Sapper middleware with `sapper.middleware({ ssrEnabled: false })`. Some users may find this option useful for testing, reducing server load, or improving time-to-interactive. You can also utilize a function for more advanced logic:
+
+```
+sapper.middleware({
+	ssrEnabled: function(ctx) {
+		return ctx.req.header('User-Agent').toLowerCase().contains('googlebot'));
+	}
+})
+```
