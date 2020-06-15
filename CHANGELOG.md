@@ -1,6 +1,6 @@
 # sapper changelog
 
-## Unreleased
+## 0.27.16
 
 * Handle errors thrown from session seeding function ([#1273](https://github.com/sveltejs/sapper/issues/1273))
 
