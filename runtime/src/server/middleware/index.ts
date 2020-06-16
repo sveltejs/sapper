@@ -58,7 +58,7 @@ export default function middleware(opts: {
 
 		serve({
 			prefix: '/client/',
-			cache_control: dev ? 'no-cache' : 'max-age=31536000, immutable'
+			cache_control: 'max-age=31536000, immutable'
 		}),
 
 		get_server_route_handler(manifest.server_routes),
