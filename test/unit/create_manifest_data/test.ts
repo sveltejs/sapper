@@ -1,6 +1,65 @@
 import * as path from 'path';
 import * as assert from 'assert';
-import create_manifest_data from '../../../src/core/create_manifest_data';
+import create_manifest_data, { string_has_preload } from '../../../src/core/create_manifest_data';
+
+describe('string_has_preload', () => {
+	it('should detect async preload', () => {
+		const source = `
+			<script context="module">
+				export async function preload() {
+					const client = getClient();
+					let response = await client.query({ query: GET_POSTS });
+					let posts = response.data.getPosts;
+					return { posts };
+				}
+			</script>
+		`;
+		assert.ok(string_has_preload(source));
+	});
+
+	it('should detect preload in composed function', () => {
+		const source = `
+			<script context="module">
+				export const preload = verifyUser(catchErrors(function () { console.log('test'); }));
+			</script>
+		`;
+		assert.ok(string_has_preload(source));
+	});
+
+	it('should detect reusable preload functions', () => {
+		const source = `
+			<script context="module">
+				export { preload } from './userData'
+			</script>
+		`;
+		assert.ok(string_has_preload(source));
+	});
+
+	it('should not detect preload functions in single line comment', () => {
+		const source = `
+			<script context="module">
+				//export { preload } from './userData'
+			</script>
+		`;
+		assert.ok(!string_has_preload(source));
+	});
+
+	it('should not detect preload functions in comment block', () => {
+		const source = `
+			<script context="module">
+				/*
+				export async function preload() {
+					const client = getClient();
+					let response = await client.query({ query: GET_POSTS });
+					let posts = response.data.getPosts;
+					return { posts };
+				}
+				*/
+			</script>
+		`;
+		assert.ok(!string_has_preload(source));
+	});
+});
 
 describe('manifest_data', () => {
 	it('creates routes', () => {

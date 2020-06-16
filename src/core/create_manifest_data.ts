@@ -1,7 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import stripComments from 'strip-comments';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
+
+export function string_has_preload(source: string) {
+	return /export\s+.*?preload/.test(stripComments(source));
+}
 
 export default function create_manifest_data(cwd: string, extensions: string = '.svelte .html'): ManifestData {
 
@@ -12,22 +17,24 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);
 	}
 
-	function has_preload(file: string) {
+	function file_has_preload(file: string) {
 		const source = fs.readFileSync(path.join(cwd, file), 'utf-8');
-		return /export\s+.*?preload/.test(source);
+		return string_has_preload(source);
 	}
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {
 		const ext = component_extensions.find((ext) => fs.existsSync(path.join(cwd, dir, `${file_name}${ext}`)));
 		const file = posixify(path.join(dir, `${file_name}${ext}`))
 
-		return ext
-			? {
+		if (!ext) {
+			return null;
+		}
+
+		return {
 				name: component_name,
 				file: file,
-				has_preload: has_preload(file)
-			}
-			: null;
+				has_preload: file_has_preload(file)
+			};
 	}
 
 	const components: PageComponent[] = [];
@@ -153,7 +160,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				const component = {
 					name: get_slug(item.file),
 					file: item.file,
-					has_preload: has_preload(item.file)
+					has_preload: file_has_preload(item.file)
 				};
 
 				components.push(component);
