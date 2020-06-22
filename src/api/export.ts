@@ -92,7 +92,7 @@ async function _export({
 
 	const entryPoints = entry.split(' ').map(entryPoint => {
 		const entry = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
-		if (!entry.href.endsWith('/')) entry.href += '/';
+		if (!entry.href.endsWith('/') && path.extname(entry.href) === '') entry.href += '/';
 
 		return entry;
 	});

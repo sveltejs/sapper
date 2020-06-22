@@ -8,7 +8,7 @@ describe('export', function() {
 
 	// hooks
 	before('build app', () => api.build({ cwd: __dirname }));
-	before('export app', () => api.export({ cwd: __dirname }));
+	before('export app', () => api.export({ cwd: __dirname, entry: '/ test.json' }));
 
 	// tests
 	it('crawls a site', () => {
@@ -41,10 +41,17 @@ describe('export', function() {
 			'index.html',
 			'service-worker-index.html',
 			'service-worker.js',
+			'test.json',
 			'test.pdf',
 			...boom
 		].sort());
 	});
+
+	it('produces expected json file', () => {
+		const expected = '{"test":"test value"}';
+		const output = readFileSync(`${__dirname}/__sapper__/export/test.json`, 'utf8')
+		assert.equal(expected, output)
+	})
 
 	it('does not corrupt binary file links (like pdf)', () => {
 		const input = readFileSync(`${__dirname}/static/test.pdf`)
