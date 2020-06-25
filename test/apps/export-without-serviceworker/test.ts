@@ -24,6 +24,4 @@ describe('export w/o serviceworker', function() {
 			'index.html',
 		].sort());
 	});
-
-	// TODO test timeout, basepath
 });
