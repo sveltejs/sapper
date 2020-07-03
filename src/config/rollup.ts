@@ -27,9 +27,7 @@ export default {
 
 	server: {
 		input: (): InputOption => {
-			return {
-				server: `${src}/server.js`
-			};
+			return `${src}/server.js`;
 		},
 
 		output: (): OutputOptions => {

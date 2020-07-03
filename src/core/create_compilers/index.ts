@@ -26,17 +26,21 @@ export default async function create_compilers(
 		const config = await RollupCompiler.load_config(cwd);
 		validate_config(config, 'rollup');
 
-		normalize_rollup_config(config.client);
-		normalize_rollup_config(config.server);
+		const client = get_config(config, 'client');
+		const server = get_config(config, 'server');
+		const serviceworker = get_config(config, 'serviceworker');
 
-		if (config.serviceworker) {
-			normalize_rollup_config(config.serviceworker);
+		normalize_rollup_config(client);
+		normalize_rollup_config(server);
+
+		if (serviceworker) {
+			normalize_rollup_config(serviceworker);
 		}
 
 		return {
-			client: new RollupCompiler(config.client),
-			server: new RollupCompiler(config.server),
-			serviceworker: config.serviceworker && new RollupCompiler(config.serviceworker)
+			client: new RollupCompiler(client),
+			server: new RollupCompiler(server),
+			serviceworker: serviceworker && new RollupCompiler(serviceworker)
 		};
 	}
 
@@ -55,9 +59,9 @@ export default async function create_compilers(
 	throw new Error(`Invalid bundler option '${bundler}'`);
 }
 
-function validate_config(config: any, bundler: 'rollup' | 'webpack') {
-	if (!config.client || !config.server) {
-		throw new Error(`${bundler}.config.js must export a { client, server, serviceworker? } object`);
+function validate_config(config, bundler: 'rollup' | 'webpack') {
+	if (!get_config(config, 'client') || !get_config(config, 'server')) {
+		throw new Error(`${bundler}.config.js must export client and server configuration`);
 	}
 }
 
@@ -69,4 +73,10 @@ function normalize_rollup_config(config: any) {
 			config.input[name] = path.normalize(config.input[name]);
 		}
 	}
+}
+
+function get_config(config: object, name: string) {
+	const filename = name === 'serviceworker' ? `service-worker` : `${name}`;
+	return config[name] || config.find(bundle =>
+		bundle.input.endsWith(`/${filename}.js`) || bundle.input.endsWith(`/${filename}.ts`));
 }
