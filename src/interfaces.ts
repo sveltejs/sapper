@@ -35,6 +35,7 @@ export type PageComponent = {
 
 export type Page = {
 	pattern: RegExp;
+	canonical_path?: string; // set on Pages with non-dynamic routes.
 	parts: Array<{
 		component: PageComponent;
 		params: string[];

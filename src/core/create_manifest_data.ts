@@ -173,6 +173,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 				pages.push({
 					pattern: get_pattern(segments, true),
+					canonical_path: get_canonical_path(segments, true),
 					parts
 				});
 			}
@@ -331,17 +332,39 @@ function get_slug(file: string) {
 	return name;
 }
 
+function get_canonical_path(segments: Part[][], add_trailing_slash: boolean) {
+	let path_parts = [];
+	for (var i = 0; i < segments.length; i++) {
+		let segment = segments[i];
+		let segment_parts = [];
+		for (var j = 0; j < segment.length; j++) {
+			let part = segment[j];
+			if (part.dynamic) {
+				return null;
+			}
+			segment_parts.push(encode_segment_content(part.content));
+		}
+		path_parts.push(segment_parts.join(""));
+	}
+	let canonical_path = path_parts.join("/");
+	return add_trailing_slash ? canonical_path + "/" : canonical_path;
+}
+
+function encode_segment_content(content: string) {
+  return encodeURI(content.normalize())
+    .replace(/\?/g, "%3F")
+    .replace(/#/g, "%23")
+    .replace(/%5B/g, "[")
+    .replace(/%5D/g, "]")
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
 	const path = segments.map(segment => {
 		return segment.map(part => {
 			return part.dynamic
 				? part.qualifier || (part.spread ? '(.+)' : '([^\\/]+?)')
-				: encodeURI(part.content.normalize())
-					.replace(/\?/g, '%3F')
-					.replace(/#/g, '%23')
-					.replace(/%5B/g, '[')
-					.replace(/%5D/g, ']')
-					.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				: encode_segment_content(part.content);
 		}).join('');
 	}).join('\\/');
 

@@ -12,6 +12,7 @@ import Deferred from './utils/Deferred';
 import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
+import { create_manifest_data } from '../core';
 
 const writeFile = promisify(fs.writeFile)
 
@@ -26,7 +27,10 @@ type Opts = {
 	concurrent?: number,
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
+	routes?: string;
 	entry?: string;
+	ext?: string;
+	crawlstaticroutes: boolean;
 };
 
 type Ref = {
@@ -63,7 +67,10 @@ async function _export({
 	concurrent = 8,
 	oninfo = noop,
 	onfile = noop,
-	entry = '/'
+	routes = 'src/routes',
+	entry = '/',
+	ext,
+	crawlstaticroutes,
 }: Opts = {}) {
 	basepath = basepath.replace(/^\//, '')
 
@@ -90,12 +97,24 @@ async function _export({
 	const root = resolve(origin, basepath);
 	if (!root.href.endsWith('/')) root.href += '/';
 
-	const entryPoints = entry.split(' ').map(entryPoint => {
+	let entryPoints = entry.split(' ').map(entryPoint => {
 		const entry = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
 		if (!entry.href.endsWith('/')) entry.href += '/';
 
 		return entry;
 	});
+	if (crawlstaticroutes) {
+		entryPoints.push(
+		...create_manifest_data(path.resolve(cwd, routes), ext)
+			.pages.filter((page) => page.canonical_path)
+			.map((page) => {
+			return resolve(
+				origin,
+				`${basepath}/${cleanPath(page.canonical_path)}`
+			);
+			})
+		);
+	}
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
 		cwd,
