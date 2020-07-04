@@ -3,9 +3,8 @@ import * as fs from 'fs';
 export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
 	if (!bundler) {
 		bundler = (
-			fs.existsSync('rollup.config.js') ? 'rollup' :
-			fs.existsSync('webpack.config.js') ? 'webpack' :
-			null
+			fs.existsSync('rollup.config.js') || fs.existsSync('rollup.config.ts') ? 'rollup' :
+			fs.existsSync('webpack.config.js') || fs.existsSync('webpack.config.ts') ? 'webpack' : null
 		);
 
 		if (!bundler) {
@@ -13,7 +12,7 @@ export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
 			deprecate_dir('rollup');
 			deprecate_dir('webpack');
 
-			throw new Error(`Could not find rollup.config.js or webpack.config.js`);
+			throw new Error(`Could not find a configuration file for rollup or webpack`);
 		}
 	}
 

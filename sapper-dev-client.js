@@ -37,4 +37,11 @@ export function connect(port) {
 			check();
 		}
 	};
+
+	// Close the event source before the window is unloaded to prevent an error
+	// ("The connection was interrupted while the page was loading.") in Firefox
+	// when the page is reloaded.
+	window.addEventListener('beforeunload', function() {
+		source.close();
+	});
 }
