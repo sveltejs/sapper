@@ -41,7 +41,7 @@ export default class RollupCompiler {
 			transform: (code: string, id: string) => {
 				if (/\.css$/.test(id)) {
 					this.css_files.push({ id, code });
-					return ``;
+					return {code: '', moduleSideEffects: 'no-treeshake'};
 				}
 			}
 		});
