@@ -23,7 +23,7 @@
     "shimport": "^1.0.1",
     "sourcemap-codec": "^1.4.6",
     "string-hash": "^1.1.3",
-    "strip-comments": "^2.0.1"
+    "tippex": "^3.0.0"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",

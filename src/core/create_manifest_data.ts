@@ -1,11 +1,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import stripComments from 'strip-comments';
+import * as tippex from 'tippex';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
-export function string_has_preload(source: string) {
-	return /export\s+.*?preload/.test(stripComments(source));
+export function template_has_preload(content: string) {
+	const regex = /<script.*?context="module".*?>([^]*?)<\/script>/g;
+	let m;
+	while ((m = regex.exec(content)) !== null) {
+		// This is necessary to avoid infinite loops with zero-width matches
+		if (m.index === regex.lastIndex) {
+			regex.lastIndex++;
+		}
+
+		const source_minus_comments = tippex.erase(m[1]);
+		if (/export\s+.*?preload/.test(source_minus_comments)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 export default function create_manifest_data(cwd: string, extensions: string = '.svelte .html'): ManifestData {
@@ -18,8 +31,8 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 	}
 
 	function file_has_preload(file: string) {
-		const source = fs.readFileSync(path.join(cwd, file), 'utf-8');
-		return string_has_preload(source);
+		const content = fs.readFileSync(path.join(cwd, file), 'utf-8');
+		return template_has_preload(content);
 	}
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {
