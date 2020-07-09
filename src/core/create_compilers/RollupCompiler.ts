@@ -39,12 +39,14 @@ export default class RollupCompiler {
 				this.chunks.push(chunk);
 			},
 			transform: (code: string, id: string) => {
-				if (/\.css$/.test(id) && !/styleInject/.test(code)) {
-					this.css_files.push({ id, code });
-					return ``;
-				} else if (/styleInject/.test(code)) {
+				if (!/\.css$/.test(id)) return;
+				
+				if (/styleInject/.test(code)) {
 					return code;
 				}
+				
+				this.css_files.push({ id, code });
+				return ``;
 			}
 		});
 
