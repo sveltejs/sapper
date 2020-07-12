@@ -2,7 +2,7 @@
 title: Routing
 ---
 
-As we've seen, there are two types of route in Sapper — pages, and server routes.
+As we've seen, there are two types of routes in Sapper — pages, and server routes.
 
 
 ### Pages
