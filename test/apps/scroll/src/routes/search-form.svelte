@@ -1,8 +1,12 @@
 <script>
   import { goto } from "@sapper/app";
 
-  function handleSearch() {
+  function preserveScroll() {
     goto("/a-third-tall-page", { noscroll: true });
+  }
+
+  function scroll() {
+    goto("/a-third-tall-page");
   }
 </script>
 
@@ -11,6 +15,7 @@
 <div style="height: 9999px" />
 
 <div id="search">
-  <button on:click={handleSearch}>Search</button>
+  <button id="scroll" on:click={scroll}>Don't preserve scroll</button>
+  <button id="preserve" on:click={preserveScroll}>Preserve scroll</button>
 </div>
 
