@@ -27,7 +27,7 @@ sapper.start({
 ### goto(href, options?)
 
 * `href` — the page to go to
-* `options` - not required
+* `options` — not required
   * `replaceState` (`boolean`, default `false`) — determines whether to use `history.pushState` (the default) or `history.replaceState`.
   * `noscroll` (`boolean`, default `false`) — prevent scroll to top after navigation.
 
