@@ -102,29 +102,29 @@ describe('scroll', function() {
   });
 
   it('scrolls to the top when navigating with goto', async () => {
-      await r.load(`/search-form#search`);
-      await r.sapper.start();
+	  await r.load(`/search-form#search`);
+	  await r.sapper.start();
 
-      let initialScrollY = await r.page.evaluate(() => window.scrollY);
-      assert.ok(initialScrollY > 0, String(initialScrollY));
+	  let initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(initialScrollY > 0, String(initialScrollY));
 
-      await r.page.click(`button#scroll`);
+	  await r.page.click(`button#scroll`);
 
-      let scrollY = await r.page.evaluate(() => window.scrollY);
-      assert.ok(scrollY === 0, String(scrollY));
+	  let scrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(scrollY === 0, String(scrollY));
   });
 
   it('preserves scroll when noscroll: true is passed to goto', async () => {
-      await r.load(`/search-form#search`);
-      await r.sapper.start();
+	  await r.load(`/search-form#search`);
+	  await r.sapper.start();
 
-      let initialScrollY = await r.page.evaluate(() => window.scrollY);
-      assert.ok(initialScrollY > 0, String(initialScrollY));
+	  let initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(initialScrollY > 0, String(initialScrollY));
 
-      await r.page.click(`button#preserve`);
+	  await r.page.click(`button#preserve`);
 
-      let scrollY = await r.page.evaluate(() => window.scrollY);
-      assert.ok(scrollY === initialScrollY, String(scrollY));
+	  let scrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(scrollY === initialScrollY, String(scrollY));
   });
 
 	it('survives the tests with no server errors', () => {
