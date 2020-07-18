@@ -126,8 +126,10 @@ export function serve({ prefix, pathname, cache_control }: {
 				if (err.code === 'ENOENT') {
 					next();
 				} else {
+					console.error(err);
+
 					res.statusCode = 500;
-					res.end('something wrong happened');
+					res.end('an error occurred while reading a static file from disk');
 				}
 			}
 		} else {
