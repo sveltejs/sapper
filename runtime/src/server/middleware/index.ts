@@ -123,7 +123,12 @@ export function serve({ prefix, pathname, cache_control }: {
 				res.setHeader('Cache-Control', cache_control);
 				res.end(data);
 			} catch (err) {
-				next();
+				if (err.code === 'ENOENT') {
+					next();
+				} else {
+					res.statusCode = 500;
+					res.end('something wrong happened');
+				}
 			}
 		} else {
 			next();
