@@ -148,7 +148,7 @@ export default class RollupCompiler {
 			}
 		});
 
-		const resp = await bundle.generate({ format: 'cjs' });
+		const resp = await bundle.generate({ format: 'cjs', exports: 'auto' });
 		const { code } = resp.output ? resp.output[0] : resp;
 
 		// temporarily override require
