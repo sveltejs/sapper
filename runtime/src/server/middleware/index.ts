@@ -6,12 +6,14 @@ import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
 type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
+type ServerPreloadConfigurator = (args: {context: object; req: Req; res: Res}) => void;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
-	ignore?: IgnoreValue
+	ignore?: IgnoreValue,
+	preloadConfigurator?: ServerPreloadConfigurator
 } = {}) {
-	const { session, ignore } = opts;
+	const { session, ignore, preloadConfigurator } = opts;
 
 	let emitted_basepath = false;
 
@@ -62,7 +64,7 @@ export default function middleware(opts: {
 
 		get_server_route_handler(manifest.server_routes),
 
-		get_page_handler(manifest, session || noop)
+		get_page_handler(manifest, session || noop, preloadConfigurator || (() => {}))
 	].filter(Boolean));
 }
 

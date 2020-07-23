@@ -20,6 +20,8 @@ import {
 import goto from './goto';
 import { page_store } from './stores';
 
+export type ClientPreloadConfigurator = (args: {context: object}) => void;
+
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
@@ -67,8 +69,10 @@ export function set_prefetching(href, promise) {
 }
 
 export let target: Element;
-export function set_target(element) {
-	target = element;
+let preload_configurator: ClientPreloadConfigurator;
+export function set_options(opts) {
+	target = opts.target;
+	preload_configurator = opts.preloadConfigurator || (() => {});
 }
 
 export let uid = 1;
@@ -294,6 +298,8 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 			props.status = status;
 		}
 	};
+
+	preload_configurator({context: preload_context, ...stores});
 
 	if (!root_preloaded) {
 		const root_preload = root_comp.preload || (() => {});

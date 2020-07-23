@@ -3,15 +3,55 @@ import fs from 'fs';
 import path from 'path';
 import cookie from 'cookie';
 import devalue from 'devalue';
-import fetch from 'node-fetch';
+import node_fetch from 'node-fetch';
 import URL from 'url';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
+export function server_fetch(req: Req, res: Res, url: string, opts?: any) {
+	const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+
+	opts = Object.assign({}, opts);
+
+	const include_credentials = (
+		opts.credentials === 'include' ||
+		opts.credentials !== 'omit' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+	);
+
+	if (include_credentials) {
+		opts.headers = Object.assign({}, opts.headers);
+
+		const cookies = Object.assign(
+			{},
+			cookie.parse(req.headers.cookie || ''),
+			cookie.parse(opts.headers.cookie || '')
+		);
+
+		const set_cookie = res.getHeader('Set-Cookie');
+		(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
+			const match = /([^=]+)=([^;]+)/.exec(<string>str);
+			if (match) cookies[match[1]] = match[2];
+		});
+
+		const str = Object.keys(cookies)
+			.map(key => `${key}=${cookies[key]}`)
+			.join('; ');
+
+		opts.headers.cookie = str;
+
+		if (!opts.headers.authorization && req.headers.authorization) {
+			opts.headers.authorization = req.headers.authorization;
+		}
+	}
+
+	return node_fetch(parsed.href, opts);
+}
+
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => Promise<any>
+	session_getter: (req: Req, res: Res) => Promise<any>,
+	preload_configurator: (args: {context: object; req: Req; res: Res;}) => void
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -120,45 +160,15 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const protocol = req.socket.encrypted ? 'https' : 'http';
-				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
-
-				opts = Object.assign({}, opts);
-
-				const include_credentials = (
-					opts.credentials === 'include' ||
-					opts.credentials !== 'omit' && parsed.origin === `${protocol}://127.0.0.1:${process.env.PORT}`
-				);
-
-				if (include_credentials) {
-					opts.headers = Object.assign({}, opts.headers);
-
-					const cookies = Object.assign(
-						{},
-						cookie.parse(req.headers.cookie || ''),
-						cookie.parse(opts.headers.cookie || '')
-					);
-
-					const set_cookie = res.getHeader('Set-Cookie');
-					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-						const match = /([^=]+)=([^;]+)/.exec(<string>str);
-						if (match) cookies[match[1]] = match[2];
-					});
-
-					const str = Object.keys(cookies)
-						.map(key => `${key}=${cookies[key]}`)
-						.join('; ');
-
-					opts.headers.cookie = str;
-
-					if (!opts.headers.authorization && req.headers.authorization) {
-						opts.headers.authorization = req.headers.authorization;
-					}
-				}
-
-				return fetch(parsed.href, opts);
+				return server_fetch(req, res, url, opts);
 			}
 		};
+
+		preload_configurator({
+			context: preload_context,
+			req,
+			res
+		});
 
 		let preloaded;
 		let match;
