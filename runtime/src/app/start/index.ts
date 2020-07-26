@@ -46,7 +46,7 @@ export default function start(opts: {
 	return Promise.resolve().then(() => {
 		const { hash, href } = location;
 
-		history.replaceState({ id: uid }, '', href);
+		history.replaceState({...history.state, id: uid }, '', href);
 
 		const url = new URL(location.href);
 
@@ -141,6 +141,6 @@ function handle_popstate(event: PopStateEvent) {
 		// hashchange
 		set_uid(uid + 1);
 		set_cid(uid);
-		history.replaceState({ id: cid }, '', location.href);
+		history.replaceState({...history.state, id: cid }, '', location.href);
 	}
 }

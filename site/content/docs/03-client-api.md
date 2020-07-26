@@ -24,9 +24,10 @@ sapper.start({
 ```
 
 
-### goto(href, options?)
+### goto(href, state?, options?)
 
 * `href` — the page to go to
+* `state` — history state object. Not required
 * `options` — can include a `replaceState` property, which determines whether to use `history.pushState` (the default) or `history.replaceState`. Not required
 
 Programmatically navigates to the given `href`. If the destination is a Sapper route, Sapper will handle the navigation, otherwise the page will be reloaded with the new `href`. In other words, the behaviour is as though the user clicked on a link with this `href`.
