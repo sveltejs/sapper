@@ -377,11 +377,17 @@ export function load_component(component: ComponentLoader): Promise<{
 	default: ComponentConstructor,
 	preload?: (input: any) => any
 }> {
-	// TODO this is temporary — once placeholders are
-	// always rewritten, scratch the ternary
-	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
-	promises.unshift(component.js());
-	return Promise.all(promises).then(values => values[0]);
+  // TODO this is temporary — once placeholders are
+  // always rewritten, scratch the ternary
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // This setTimeout assures that when component is already loaded by webpack, the call stack will be executed in the same order as if it is not.
+      // This fix situations where you want to do page transitions but at the simetime you have to execute code on popstate event before the transition begins
+      const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
+      promises.unshift(component.js());
+      resolve(Promise.all(promises).then((values) => values[0]));
+    });
+  });
 }
 
 function detach(node: Node) {
