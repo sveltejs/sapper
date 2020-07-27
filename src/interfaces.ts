@@ -30,7 +30,6 @@ export type PageComponent = {
 	type?: string;
 	name: string;
 	file: string;
-	has_preload: boolean;
 };
 
 export type Page = {

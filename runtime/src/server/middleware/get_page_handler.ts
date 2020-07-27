@@ -154,8 +154,9 @@ export function get_page_handler(
 		let params;
 
 		try {
-			const root_preloaded = manifest.root_preload
-				? manifest.root_preload.call(preload_context, {
+			const root_preload = manifest.root_comp.preload || (() => {});
+			const root_preloaded = root_preload
+				? root_preload.call(preload_context, {
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
@@ -174,8 +175,8 @@ export function get_page_handler(
 					// the deepest level is used below, to initialise the store
 					params = part.params ? part.params(match) : {};
 
-					return part.preload
-						? part.preload.call(preload_context, {
+					return part.component.preload
+						? part.component.preload.call(preload_context, {
 							host: req.headers.host,
 							path: req.path,
 							query: req.query,
@@ -257,7 +258,7 @@ export function get_page_handler(
 					if (!part) continue;
 
 					props[`level${l++}`] = {
-						component: part.component,
+						component: part.component.default,
 						props: preloaded[i + 1] || {},
 						segment: segments[i]
 					};

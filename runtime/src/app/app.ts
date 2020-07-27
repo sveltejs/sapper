@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
+import { root_comp, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
 	Target,
 	ScrollPosition,
@@ -297,6 +297,7 @@ export async function hydrate_target(target: Target): Promise<{
 	};
 
 	if (!root_preloaded) {
+		const root_preload = root_comp.preload || (() => {});
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,
