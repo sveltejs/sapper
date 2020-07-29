@@ -3,7 +3,7 @@ import { normalize_path } from '../../src/utils';
 
 describe('normalize_path', () => {
 	it('lowercases the first letter', () => {
-		assert.equal('c:\Users\simon\Source\my-app\src\routes\index.svelte',
-			normalize_path('C:\Users\simon\Source\my-app\src\routes\index.svelte'));
+		assert.equal(normalize_path('C:\Users\simon\Source\my-app\src\routes\index.svelte'),
+			'c:\Users\simon\Source\my-app\src\routes\index.svelte');
 	});
 });
