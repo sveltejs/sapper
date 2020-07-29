@@ -77,6 +77,17 @@ describe('basics', function() {
 		);
 	});
 
+	it('serves static route under client directory', async () => {
+		await r.load('/client/foo');
+		assert.equal(await r.text('h1'), 'foo');
+
+		await r.load('/client/bar');
+		assert.equal(await r.text('h1'), 'bar');
+
+		await r.load('/client/bar/b');
+		assert.equal(await r.text('h1'), 'b');
+	});
+
 	it('serves dynamic route', async () => {
 		await r.load('/test-slug');
 
