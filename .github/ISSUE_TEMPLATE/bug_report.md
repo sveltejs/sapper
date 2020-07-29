@@ -41,7 +41,7 @@ If you have a stack trace to include, we recommend putting inside a `<details>` 
 
 - Your browser
 
-- Your hosting environment (i.e. Local, GCP, AWS, Now, etc...)
+- Your hosting environment (i.e. Local, GCP/AWS/Azure, Vercel/Begin, etc...)
 
 - If it is an exported (`npm run export`) or dynamic application
 
