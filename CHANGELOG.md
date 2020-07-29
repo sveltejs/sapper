@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+* 🎉 TypeScript support! 🎉
+
+Also:
+
 * Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
+* Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
+
 
 
 ## 0.27.16
