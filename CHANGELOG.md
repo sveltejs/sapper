@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
+
+
 ## 0.27.16
 
 * Handle errors thrown from session seeding function ([#1273](https://github.com/sveltejs/sapper/issues/1273))
