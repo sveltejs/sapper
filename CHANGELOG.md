@@ -1,5 +1,41 @@
 # sapper changelog
 
+## Unreleased
+
+* 🎉 TypeScript support! 🎉
+
+Also:
+
+* Fix handling of routes beginning with /client/ ([#1142](https://github.com/sveltejs/sapper/issues/1142))
+* Fix path normalization of chunks on Windows ([#1256](https://github.com/sveltejs/sapper/issues/1256), [#1333](https://github.com/sveltejs/sapper/issues/1333))
+* Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
+* Set `publicPath` in webpack server config for benefit of `file-loader` ([#1342](https://github.com/sveltejs/sapper/pull/1342))
+* Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
+
+
+## 0.27.16
+
+* Handle errors thrown from session seeding function ([#1273](https://github.com/sveltejs/sapper/issues/1273))
+
+
+## 0.27.15
+
+* Allow `session` handler to return a Promise ([#740](https://github.com/sveltejs/sapper/issues/740))
+
+
+## 0.27.14
+
+* Prevent client-side app from re-rendering over a server-generated error ([#710](https://github.com/sveltejs/sapper/issues/710))
+* Better handle I/O backpressure when exporting sites ([#851](https://github.com/sveltejs/sapper/issues/851), [#893](https://github.com/sveltejs/sapper/issues/893))
+* In SSR, include `Authorization` header when including cookies ([#880](https://github.com/sveltejs/sapper/issues/880))
+* In SSR, default to `credentials: 'same-origin'` ([#881](https://github.com/sveltejs/sapper/issues/881))
+* Do not restart dev server while it is already restarting ([#920](https://github.com/sveltejs/sapper/issues/920))
+* Avoid console error in dev mode when reloading page ([#981](https://github.com/sveltejs/sapper/issues/981))
+* Correctly handle `src` or `dest` being the current directory ([#1069](https://github.com/sveltejs/sapper/issues/1069))
+* Log details of Rollup errors instead of swallowing them ([#1221](https://github.com/sveltejs/sapper/issues/1221), [#1234](https://github.com/sveltejs/sapper/issues/1234))
+* Avoid corrupting binary files during build ([#1245](https://github.com/sveltejs/sapper/issues/1245))
+
+
 ## 0.27.13
 
 * Fix multiple slugs in a single URL segment ([#547](https://github.com/sveltejs/sapper/issues/547))

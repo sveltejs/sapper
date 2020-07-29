@@ -6,10 +6,10 @@ describe('manifest_data', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/basic'));
 
-		const index = { name: 'index', file: 'index.html', has_preload: false };
-		const about = { name: 'about', file: 'about.html', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html', has_preload: false };
+		const index = { name: 'index', file: 'index.html' };
+		const about = { name: 'about', file: 'about.html' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html' };
 
 		assert.deepEqual(components, [
 			index,
@@ -79,7 +79,7 @@ describe('manifest_data', () => {
 		// had to remove ? and " because windows
 
 		// const quote = { name: '$34', file: '".html' };
-		const hash = { name: '$35', has_preload: false, file: '#.html' };
+		const hash = { name: '$35', file: '#.html' };
 		// const question_mark = { name: '$63', file: '?.html' };
 
 		assert.deepEqual(components, [
@@ -206,10 +206,10 @@ describe('manifest_data', () => {
 	it('works with custom extensions' , () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/custom-extension'), '.jazz .beebop .funk .html');
 
-		const index = { name: 'index', file: 'index.funk', has_preload: false };
-		const about = { name: 'about', file: 'about.jazz', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop', has_preload: false };
+		const index = { name: 'index', file: 'index.funk' };
+		const about = { name: 'about', file: 'about.jazz' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop' };
 
 		assert.deepEqual(components, [
 			index,
