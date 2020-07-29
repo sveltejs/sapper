@@ -6,6 +6,7 @@
 
 Also:
 
+* Fix handling of routes beginning with /client/ ([#1142](https://github.com/sveltejs/sapper/issues/1142))
 * Fix path normalization of chunks on Windows ([#1256](https://github.com/sveltejs/sapper/issues/1256), [#1333](https://github.com/sveltejs/sapper/issues/1333))
 * Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
 * Set `publicPath` in webpack server config for benefit of `file-loader` ([#1342](https://github.com/sveltejs/sapper/pull/1342))
