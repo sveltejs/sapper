@@ -4,11 +4,16 @@
 
 * 🎉 TypeScript support! 🎉
 
+And these breaking changes:
+
+* Sapper now requires at least Rollup 1
+
 Also:
 
 * Fix handling of routes beginning with /client/ ([#1142](https://github.com/sveltejs/sapper/issues/1142))
 * Fix path normalization of chunks on Windows ([#1256](https://github.com/sveltejs/sapper/issues/1256), [#1333](https://github.com/sveltejs/sapper/issues/1333))
 * Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
+* Explicitly set `output.exports` to avoid warning from Rollup ([#1326](https://github.com/sveltejs/sapper/pull/1326))
 * Set `publicPath` in webpack server config for benefit of `file-loader` ([#1342](https://github.com/sveltejs/sapper/pull/1342))
 * Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
 
