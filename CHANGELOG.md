@@ -401,7 +401,7 @@ Also:
 
 ## 0.15.0
 
-* Nested routes (consult [migration guide](https://sapper.svelte.technology/guide#0-14-to-0-15) and docs on [layouts](https://sapper.svelte.technology/guide#layouts)) ([#262](https://github.com/sveltejs/sapper/issues/262))
+* Nested routes (consult [migration guide](https://sapper.svelte.dev/migrating#0_14_to_0_15) and docs on [layouts](https://sapper.svelte.technology/guide#layouts)) ([#262](https://github.com/sveltejs/sapper/issues/262))
 
 ## 0.14.2
 
