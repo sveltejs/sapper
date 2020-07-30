@@ -148,8 +148,12 @@ export default class RollupCompiler {
 			}
 		});
 
-		const resp = await bundle.generate({ format: 'cjs' });
-		const { code } = resp.output ? resp.output[0] : resp;
+		const {
+			output: [{ code }]
+		} = await bundle.generate({
+			exports: 'named',
+			format: 'cjs'
+		});
 
 		// temporarily override require
 		const defaultLoader = require.extensions['.js'];
@@ -161,7 +165,7 @@ export default class RollupCompiler {
 			}
 		};
 
-		const config: any = require(input);
+		const config: any = require(input).default;
 		delete require.cache[input];
 
 		return config;
