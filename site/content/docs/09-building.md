@@ -16,7 +16,7 @@ node __sapper__/build
 
 ### Browser support
 
-Your site is built only for the latest versions of modern evergreen browsers by default. If you are using Rollup, you can use the `--legacy`[1] flag to build a second bundle for legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime[2].
+Your site is built only for the latest versions of modern evergreen browsers by default. If you are using Rollup, you can use the `--legacy`[1] flag to build a second bundle that can be used to support legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime[2].
 
 When using `--legacy`, Sapper will pass an environment variable `SAPPER_LEGACY_BUILD` to your Rollup config. Sapper will then build your client-side bundle twice: once with `SAPPER_LEGACY_BUILD` set to `true` and once with it set to `false`. [sapper-template-rollup](https://github.com/sveltejs/sapper-template-rollup) provides an example of utilizing this configuration.[3]
 
