@@ -13,3 +13,20 @@ The output is a Node app that you can run from the project root:
 ```bash
 node __sapper__/build
 ```
+
+### Browser support
+
+Your site is built only for the latest versions of modern evergreen browsers by default. If you are using Rollup, you can use the `--legacy`[1] flag to build a second bundle that can be used to support legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime[2].
+
+When using `--legacy`, Sapper will pass an environment variable `SAPPER_LEGACY_BUILD` to your Rollup config. Sapper will then build your client-side bundle twice: once with `SAPPER_LEGACY_BUILD` set to `true` and once with it set to `false`. [sapper-template-rollup](https://github.com/sveltejs/sapper-template-rollup) provides an example of utilizing this configuration.[3]
+
+You may wish to add this flag to a script in your `package.json`:
+```
+  "scripts": {
+    "build": "sapper build --legacy",
+  },
+```
+
+[1] This option is unrelated to Svelte's `legacy` option
+[2] Browsers which do not support `async/await` syntax will be served the legacy bundle
+[3] You will also need to polyfill APIs that are not present in older browsers.
