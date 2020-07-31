@@ -7,6 +7,7 @@
 And these breaking changes:
 
 * Sapper now requires at least Rollup 1
+* IE 9 support dropped for Webpack projects. `script` tag will now be loaded with `defer` attribute and IE9 may interleave script execution.
 
 Also:
 
@@ -16,7 +17,7 @@ Also:
 * Explicitly set `output.exports` to avoid warning from Rollup ([#1326](https://github.com/sveltejs/sapper/pull/1326))
 * Set `publicPath` in webpack server config for benefit of `file-loader` ([#1342](https://github.com/sveltejs/sapper/pull/1342))
 * Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
-
+* Load `script` tag with `defer` attribute in Webpack projects ([#1123](https://github.com/sveltejs/sapper/pull/1123))
 
 ## 0.27.16
 
