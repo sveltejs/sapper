@@ -295,7 +295,7 @@ export function get_page_handler(
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
-				script += `</script><script src="${main}">`;
+				script += `</script><script src="${main}" defer>`;
 			}
 
 			let styles: string;
