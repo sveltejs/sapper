@@ -52,7 +52,7 @@ The `--entry` option expects a string of space-separated values. Examples:
 sapper export --entry "some-page some-other-page"
 ```
 
-Additionally, any non-page routes should be requested in `preload`, *not* in `onMount` or elsewhere.
+Setting `--entry` overwrites any defaults. If you wish to add export entrypoints _in addition_ to `/` then make sure to add `/` as well or `sapper export` will not visit the index route.
 
 
 ### When not to export
