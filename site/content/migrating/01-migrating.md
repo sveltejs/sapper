@@ -6,6 +6,10 @@ title: Migrating
 Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects.
 
 
+### 0.27 to 0.28
+
+`%sapper.scripts%` can be moved to the `<head>` section for slightly better performance because it now uses deferred loading
+
 ### 0.25 to 0.26
 
 The most significant change yet: Sapper is now built on Svelte 3.
