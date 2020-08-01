@@ -52,12 +52,13 @@
     "rollup-plugin-sucrase": "^2.1.0",
     "rollup-plugin-svelte": "^5.1.0",
     "sade": "^1.6.1",
-    "sirv": "^0.4.2",
+    "sirv": "^1.0.0",
     "sucrase": "^3.10.1",
     "svelte": "^3.24.0",
     "svelte-loader": "^2.13.6",
     "webpack": "^4.38.0",
-    "webpack-format-messages": "^2.0.5"
+    "webpack-format-messages": "^2.0.5",
+    "webpack-modules": "^1.0.0"
   },
   "peerDependencies": {
     "svelte": "^3.5.0"
