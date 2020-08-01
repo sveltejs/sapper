@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
+import { root_comp, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
 	Target,
 	ScrollPosition,
@@ -13,6 +13,7 @@ import {
 	Page
 } from './types';
 import goto from './goto';
+import { page_store } from './stores';
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
@@ -25,7 +26,7 @@ let current_branch = [];
 let current_query = '{}';
 
 const stores = {
-	page: writable({}),
+	page: page_store({}),
 	preloading: writable(null),
 	session: writable(initial_data && initial_data.session)
 };
@@ -200,7 +201,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 			if (deep_linked) {
 				scroll = {
 					x: 0,
-					y: deep_linked.getBoundingClientRect().top
+					y: deep_linked.getBoundingClientRect().top + scrollY
 				};
 			}
 		}
@@ -227,6 +228,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 		props.level0 = {
 			props: await root_preloaded
 		};
+		props.notify = stores.page.notify;
 
 		// first load — remove SSR'd <head> contents
 		const start = document.querySelector('#sapper-head-start');
@@ -295,6 +297,7 @@ export async function hydrate_target(target: Target): Promise<{
 	};
 
 	if (!root_preloaded) {
+		const root_preload = root_comp.preload || (() => {});
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,

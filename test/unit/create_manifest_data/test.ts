@@ -6,10 +6,10 @@ describe('manifest_data', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/basic'));
 
-		const index = { name: 'index', file: 'index.html', has_preload: false };
-		const about = { name: 'about', file: 'about.html', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html', has_preload: false };
+		const index = { name: 'index', file: 'index.html' };
+		const about = { name: 'about', file: 'about.html' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html' };
 
 		assert.deepEqual(components, [
 			index,
@@ -59,14 +59,14 @@ describe('manifest_data', () => {
 
 			{
 				name: 'route_blog_json',
-				pattern: /^\/blog.json$/,
+				pattern: /^\/blog\.json$/,
 				file: 'blog/index.json.js',
 				params: []
 			},
 
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?).json$/,
+				pattern: /^\/blog\/([^\/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
@@ -79,7 +79,7 @@ describe('manifest_data', () => {
 		// had to remove ? and " because windows
 
 		// const quote = { name: '$34', file: '".html' };
-		const hash = { name: '$35', has_preload: false, file: '#.html' };
+		const hash = { name: '$35', file: '#.html' };
 		// const question_mark = { name: '$63', file: '?.html' };
 
 		assert.deepEqual(components, [
@@ -143,6 +143,32 @@ describe('manifest_data', () => {
 		]);
 	});
 
+	it('allows mutliple slugs', () => {
+		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/multiple-slugs'));
+
+		assert.deepEqual(server_routes, [
+			{
+				name: "route_$file$93_$91ext",
+				pattern: /^\/([^\/]+?)\.([^\/]+?)$/,
+				file: "[file].[ext].js",
+				params: ["file", "ext"]
+			}
+		]);
+	});
+
+	it('allows mutliple slugs with nested square brackets', () => {
+		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/nested-square-brackets'));
+
+		assert.deepEqual(server_routes, [
+			{
+				name: "route_$file_$91ext$40$91a$45z$93$43$41$93",
+				pattern: /^\/([a-z]+)\.([a-z]+)$/,
+				file: "[file([a-z]+)].[ext([a-z]+)].js",
+				params: ["file", "ext"]
+			}
+		]);
+	});
+
 	it('fails on clashes', () => {
 		assert.throws(() => {
 			const { pages } = create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
@@ -180,10 +206,10 @@ describe('manifest_data', () => {
 	it('works with custom extensions' , () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/custom-extension'), '.jazz .beebop .funk .html');
 
-		const index = { name: 'index', file: 'index.funk', has_preload: false };
-		const about = { name: 'about', file: 'about.jazz', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop', has_preload: false };
+		const index = { name: 'index', file: 'index.funk' };
+		const about = { name: 'about', file: 'about.jazz' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop' };
 
 		assert.deepEqual(components, [
 			index,
@@ -226,13 +252,13 @@ describe('manifest_data', () => {
 		assert.deepEqual(server_routes, [
 			{
 				name: 'route_blog_json',
-				pattern: /^\/blog.json$/,
+				pattern: /^\/blog\.json$/,
 				file: 'blog/index.json.js',
 				params: []
 			},
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?).json$/,
+				pattern: /^\/blog\/([^\/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}

@@ -40,6 +40,10 @@ describe('session', function() {
 		assert.equal(await r.text('h1'), 'changed');
 	});
 
+	it('survives exception from session getter', async () => {
+		await r.load('/error');
+	});
+
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});

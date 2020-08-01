@@ -246,7 +246,7 @@ class Watcher extends EventEmitter {
 					const restart = () => {
 						this.crashed = false;
 
-						ports.wait(this.port)
+						return ports.wait(this.port)
 							.then((() => {
 								this.emit('ready', <ReadyEvent>{
 									port: this.port,
@@ -310,11 +310,14 @@ class Watcher extends EventEmitter {
 					};
 
 					if (this.proc) {
+						if (this.restarting) return;
+						this.restarting = true;
 						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
-						this.proc.on('exit', () => {
+						this.proc.on('exit', async () => {
 							start_server();
-							restart();
+							await restart();
+							this.restarting = false;
 						});
 					} else {
 						start_server();

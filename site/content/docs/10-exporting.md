@@ -44,7 +44,15 @@ You can also add a script to your package.json...
 
 When you run `sapper export`, Sapper first builds a production version of your app, as though you had run `sapper build`, and copies the contents of your `static` folder to the destination. It then starts the server, and navigates to the root of your app. From there, it follows any `<a>` elements it finds, and captures any data served by the app.
 
-Because of this, any pages you want to be included in the exported site must either be reachable by `<a>` elements or added to the `--entry` option of the `sapper export` command. Additionally, any non-page routes should be requested in `preload`, *not* in `onMount` or elsewhere.
+Because of this, any pages you want to be included in the exported site must either be reachable by `<a>` elements or added to the `--entry` option of the `sapper export` command.
+
+The `--entry` option expects a string of space-separated values. Examples:
+
+```bash
+sapper export --entry "some-page some-other-page"
+```
+
+Setting `--entry` overwrites any defaults. If you wish to add export entrypoints _in addition_ to `/` then make sure to add `/` as well or `sapper export` will not visit the index route.
 
 
 ### When not to export

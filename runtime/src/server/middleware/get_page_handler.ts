@@ -11,7 +11,7 @@ import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => any
+	session_getter: (req: Req, res: Res) => Promise<any>
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -88,7 +88,12 @@ export function get_page_handler(
 			res.setHeader('Link', link);
 		}
 
-		const session = session_getter(req, res);
+		let session;
+		try {
+			session = await session_getter(req, res);
+		} catch (err) {
+			return bail(req, res, err);
+		}
 
 		let redirect: { statusCode: number, location: string };
 		let preload_error: { statusCode: number, message: Error | string };
@@ -107,34 +112,36 @@ export function get_page_handler(
 			fetch: (url: string, opts?: any) => {
 				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
-				if (opts) {
-					opts = Object.assign({}, opts);
+				opts = Object.assign({}, opts);
 
-					const include_cookies = (
-						opts.credentials === 'include' ||
-						opts.credentials === 'same-origin' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+				const include_credentials = (
+					opts.credentials === 'include' ||
+					opts.credentials !== 'omit' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+				);
+
+				if (include_credentials) {
+					opts.headers = Object.assign({}, opts.headers);
+
+					const cookies = Object.assign(
+						{},
+						cookie.parse(req.headers.cookie || ''),
+						cookie.parse(opts.headers.cookie || '')
 					);
 
-					if (include_cookies) {
-						opts.headers = Object.assign({}, opts.headers);
+					const set_cookie = res.getHeader('Set-Cookie');
+					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
+						const match = /([^=]+)=([^;]+)/.exec(<string>str);
+						if (match) cookies[match[1]] = match[2];
+					});
 
-						const cookies = Object.assign(
-							{},
-							cookie.parse(req.headers.cookie || ''),
-							cookie.parse(opts.headers.cookie || '')
-						);
+					const str = Object.keys(cookies)
+						.map(key => `${key}=${cookies[key]}`)
+						.join('; ');
 
-						const set_cookie = res.getHeader('Set-Cookie');
-						(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-							const match = /([^=]+)=([^;]+)/.exec(<string>str);
-							if (match) cookies[match[1]] = match[2];
-						});
+					opts.headers.cookie = str;
 
-						const str = Object.keys(cookies)
-							.map(key => `${key}=${cookies[key]}`)
-							.join('; ');
-
-						opts.headers.cookie = str;
+					if (!opts.headers.authorization && req.headers.authorization) {
+						opts.headers.authorization = req.headers.authorization;
 					}
 				}
 
@@ -147,14 +154,13 @@ export function get_page_handler(
 		let params;
 
 		try {
-			const root_preloaded = manifest.root_preload
-				? manifest.root_preload.call(preload_context, {
+			const root_preload = manifest.root_comp.preload || (() => {});
+			const root_preloaded = root_preload.call(preload_context, {
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
 					params: {}
-				}, session)
-				: {};
+				}, session);
 
 			match = error ? null : page.pattern.exec(req.path);
 
@@ -167,8 +173,8 @@ export function get_page_handler(
 					// the deepest level is used below, to initialise the store
 					params = part.params ? part.params(match) : {};
 
-					return part.preload
-						? part.preload.call(preload_context, {
+					return part.component.preload
+						? part.component.preload.call(preload_context, {
 							host: req.headers.host,
 							path: req.path,
 							query: req.query,
@@ -250,7 +256,7 @@ export function get_page_handler(
 					if (!part) continue;
 
 					props[`level${l++}`] = {
-						component: part.component,
+						component: part.component.default,
 						props: preloaded[i + 1] || {},
 						segment: segments[i]
 					};
@@ -264,7 +270,7 @@ export function get_page_handler(
 				session: session && try_serialize(session, err => {
 					throw new Error(`Failed to serialize session data: ${err.message}`);
 				}),
-				error: error && try_serialize(props.error)
+				error: error && serialize_error(props.error)
 			};
 
 			let script = `__SAPPER__={${[
@@ -289,7 +295,7 @@ export function get_page_handler(
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
-				script += `</script><script src="${main}">`;
+				script += `</script><script src="${main}" defer>`;
 			}
 
 			let styles: string;
@@ -367,6 +373,20 @@ function try_serialize(data: any, fail?: (err) => void) {
 		if (fail) fail(err);
 		return null;
 	}
+}
+
+// Ensure we return something truthy so the client will not re-render the page over the error
+function serialize_error(error: Error | { message: string }) {
+	if (!error) return null;
+	let serialized = try_serialize(error);
+	if (!serialized) {
+		const { name, message, stack } = error as Error;
+		serialized = try_serialize({ name, message, stack });
+	}
+	if (!serialized) {
+		serialized = '{}';
+	}
+	return serialized;
 }
 
 function escape_html(html: string) {

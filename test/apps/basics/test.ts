@@ -77,6 +77,17 @@ describe('basics', function() {
 		);
 	});
 
+	it('serves static route under client directory', async () => {
+		await r.load('/client/foo');
+		assert.equal(await r.text('h1'), 'foo');
+
+		await r.load('/client/bar');
+		assert.equal(await r.text('h1'), 'bar');
+
+		await r.load('/client/bar/b');
+		assert.equal(await r.text('h1'), 'b');
+	});
+
 	it('serves dynamic route', async () => {
 		await r.load('/test-slug');
 
@@ -367,6 +378,20 @@ describe('basics', function() {
 			await r.text('h1'),
 			'y:1'
 		);
+	});
+
+	it('page store functions as expected', async () => {
+		await r.load('/store');
+		await r.sapper.start();
+
+		assert.equal(await r.text('h1'), 'Test');
+		assert.equal(await r.text('h2'), 'Called 1 time');
+
+		await r.page.click('a[href="store/result"]');
+		await r.wait();
+
+		assert.equal(await r.text('h1'), 'Result');
+		assert.equal(await r.text('h2'), 'Called 1 time');
 	});
 
 	it('survives the tests with no server errors', () => {

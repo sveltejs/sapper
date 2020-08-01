@@ -1,0 +1,26 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  Tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [10, 12, 14]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+    - run: git config --global core.autocrlf false
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install
+    - run: npm test
+      env:
+        CI: true
+ # Uncomment with https://github.com/sveltejs/sapper/pull/1198
+#  Lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: actions/setup-node@v1
+#    - run: 'npm i && npm run lint'

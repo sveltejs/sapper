@@ -1,14 +1,16 @@
 import fs from 'fs';
 import path from 'path';
+import mime from 'mime/lite';
 import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
-import { lookup } from './mime';
+
+type IgnoreValue = Array | RegExp | function | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
-	ignore?: any
+	ignore?: IgnoreValue
 } = {}) {
 	const { session, ignore } = opts;
 
@@ -65,7 +67,7 @@ export default function middleware(opts: {
 	].filter(Boolean));
 }
 
-export function compose_handlers(ignore: any, handlers: Handler[]): Handler {
+export function compose_handlers(ignore: IgnoreValue, handlers: Handler[]): Handler {
 	const total = handlers.length;
 
 	function nth_handler(n: number, req: Req, res: Res, next: () => void) {
@@ -87,7 +89,7 @@ export function compose_handlers(ignore: any, handlers: Handler[]): Handler {
 		};
 }
 
-export function should_ignore(uri: string, val: any) {
+export function should_ignore(uri: string, val: IgnoreValue) {
 	if (Array.isArray(val)) return val.some(x => should_ignore(uri, x));
 	if (val instanceof RegExp) return val.test(uri);
 	if (typeof val === 'function') return val(uri);
@@ -106,23 +108,29 @@ export function serve({ prefix, pathname, cache_control }: {
 	const cache: Map<string, Buffer> = new Map();
 
 	const read = dev
-		? (file: string) => fs.readFileSync(path.resolve(build_dir, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.resolve(build_dir, file)))).get(file)
+		? (file: string) => fs.readFileSync(path.join(build_dir, file))
+		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file)
 
 	return (req: Req, res: Res, next: () => void) => {
 		if (filter(req)) {
-			const type = lookup(req.path);
+			const type = mime.getType(req.path);
 
 			try {
-				const file = decodeURIComponent(req.path.slice(1));
+				const file = path.posix.normalize(decodeURIComponent(req.path));
 				const data = read(file);
 
 				res.setHeader('Content-Type', type);
 				res.setHeader('Cache-Control', cache_control);
 				res.end(data);
 			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
+				if (err.code === 'ENOENT') {
+					next();
+				} else {
+					console.error(err);
+
+					res.statusCode = 500;
+					res.end('an error occurred while reading a static file from disk');
+				}
 			}
 		} else {
 			next();
