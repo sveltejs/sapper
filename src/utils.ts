@@ -30,12 +30,12 @@ export function walk(cwd: string, dir = cwd, files: string[] = []) {
 		const resolved = path.resolve(dir, file);
 		if (fs.statSync(resolved).isDirectory()) {
 			walk(cwd, resolved, files);
-		} else {
+		} else if (file !== '.DS_Store') {
 			files.push(posixify(path.relative(cwd, resolved)));
 		}
 	});
 
-	return files.filter(v => !v.includes('.DS_Store'));
+	return files;
 }
 
 export function posixify(str: string) {
