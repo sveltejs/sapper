@@ -35,7 +35,7 @@ export function walk(cwd: string, dir = cwd, files: string[] = []) {
 		}
 	});
 
-	return files.filter(v=>!v.includes('.DS_Store'));
+	return files.filter(v => !v.includes('.DS_Store'));
 }
 
 export function posixify(str: string) {
