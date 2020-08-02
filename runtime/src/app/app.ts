@@ -230,16 +230,6 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 		};
 		props.notify = stores.page.notify;
 
-		// first load — remove SSR'd <head> contents
-		const start = document.querySelector('#sapper-head-start');
-		const end = document.querySelector('#sapper-head-end');
-
-		if (start && end) {
-			while (start.nextSibling !== end) detach(start.nextSibling);
-			detach(start);
-			detach(end);
-		}
-
 		root_component = new App({
 			target,
 			props,
