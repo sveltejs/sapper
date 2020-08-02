@@ -61,7 +61,7 @@
     "yootils": "0.0.16"
   },
   "peerDependencies": {
-    "svelte": "^3.5.0"
+    "svelte": "^3.17.3"
   },
   "scripts": {
     "test": "mocha --opts mocha.opts",
