@@ -137,17 +137,12 @@ describe('basics', function() {
 	});
 
 	// TODO equivalent test for a webpack app
-	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', async () => {
+	it('sets Content-Type, Link...modulepreload', async () => {
 		const { headers } = await get(r.base);
 
 		assert.equal(
 			headers['content-type'],
 			'text/html'
-		);
-
-		assert.equal(
-			headers['cache-control'],
-			'max-age=600'
 		);
 
 		// TODO preload more than just the entry point
