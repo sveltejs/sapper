@@ -1,4 +1,5 @@
 import { ClientRequest, ServerResponse } from 'http';
+import { Socket as NetSocket } from "net";
 
 export type ServerRoute = {
 	pattern: RegExp;
@@ -38,6 +39,10 @@ export type Props = {
 	[key: string]: any;
 };
 
+export interface Socket extends NetSocket {
+	encrypted?: boolean;
+}
+
 export interface Req extends ClientRequest {
 	url: string;
 	baseUrl: string;
@@ -47,6 +52,7 @@ export interface Req extends ClientRequest {
 	params: Record<string, string>;
 	query: Record<string, string>;
 	headers: Record<string, string>;
+	socket: Socket;
 }
 
 export interface Res extends ServerResponse {
