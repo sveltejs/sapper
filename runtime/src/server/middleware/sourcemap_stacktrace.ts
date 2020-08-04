@@ -20,14 +20,13 @@ function get_file_contents(path: string) {
 	if (file_cache.has(path)) {
 		return file_cache.get(path);
 	}
-	if (fs.existsSync(path)) {
-		try {
-			const data = fs.readFileSync(path, 'utf8');
-			file_cache.set(path, data);
-			return data;
-		} catch {
-			return undefined;
-		}
+
+	try {
+		const data = fs.readFileSync(path, 'utf8');
+		file_cache.set(path, data);
+		return data;
+	} catch {
+		return undefined;
 	}
 }
 
@@ -81,10 +80,10 @@ export function sourcemap_stacktrace(stack: string) {
 				if (!pos.source) return input;
 
 				const abs_source_path = path.resolve(dir, pos.source);
-				const urlPart = `${abs_source_path}:${pos.line || 0}:${pos.column || 0}`;
+				const url_part = `${abs_source_path}:${pos.line || 0}:${pos.column || 0}`;
 
-				if (!var_name) return `    at ${urlPart}`;
-				return `    at ${var_name} (${urlPart})`;
+				if (!var_name) return `    at ${url_part}`;
+				return `    at ${var_name} (${url_part})`;
 			}
 		);
 
