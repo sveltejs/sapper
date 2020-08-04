@@ -71,6 +71,12 @@ describe('errors', function() {
 		);
 	});
 
+	it('display correct stack traces on server error', async () => {
+		await r.load('/throw');
+
+		assert.ok((await r.text('span')).includes('throw.svelte:3:12'));
+	});
+
 	it('handles error on client', async () => {
 		await r.load('/');
 		await r.sapper.start();

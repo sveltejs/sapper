@@ -2,94 +2,96 @@ import fs from 'fs';
 import path from 'path';
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
 
-function retrieveSourceMapURL(contents: string) {
-    const reversed = contents
-        .split('\n')
-        .reverse()
-        .join('\n');
+function get_sourcemap_url(contents: string) {
+	const reversed = contents
+		.split('\n')
+		.reverse()
+		.join('\n');
 
-    const match = /\/[/*]#[ \t]+sourceMappingURL=([^\s'"]+?)(?:[ \t]+|$)/gm.exec(reversed);
-    if (match) return match[1];
+	const match = /\/[/*]#[ \t]+sourceMappingURL=([^\s'"]+?)(?:[ \t]+|$)/gm.exec(reversed);
+	if (match) return match[1];
 
-    return undefined;
+	return undefined;
 }
 
-const fileCache = new Map<string, string>();
+const file_cache = new Map<string, string>();
 
-function getFileContents(path: string) {
-    if (fileCache.has(path)) {
-        return fileCache.get(path);
-    }
-    if (fs.existsSync(path)) {
-        try {
-            const data = fs.readFileSync(path, 'utf8');
-            fileCache.set(path, data);
-            return data;
-        } catch {
-            return undefined;
-        }
-    }
+function get_file_contents(path: string) {
+	if (file_cache.has(path)) {
+		return file_cache.get(path);
+	}
+	if (fs.existsSync(path)) {
+		try {
+			const data = fs.readFileSync(path, 'utf8');
+			file_cache.set(path, data);
+			return data;
+		} catch {
+			return undefined;
+		}
+	}
 }
 
-function sourcemapStacktrace(stack: string) {
-    const replaceFn = (line: string) =>
-        line.replace(
-            /^ {4}at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?)\)?/,
-            (input, varName, filePath, line, column) => {
-                if (!filePath) return input;
+export function sourcemap_stacktrace(stack: string) {
+	const replace = (line: string) =>
+		line.replace(
+			/^ {4}at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?)\)?/,
+			(input, var_name, file_path, line, column) => {
+				if (!file_path) return input;
 
-                const contents = getFileContents(filePath);
-                if (!contents) return input;
+				const contents = get_file_contents(file_path);
+				if (!contents) return input;
 
-                const srcMapPathOrBase64 = retrieveSourceMapURL(contents);
-                if (!srcMapPathOrBase64) return input;
+				const sourcemap_path_or_base64 = get_sourcemap_url(contents);
+				if (!sourcemap_path_or_base64) return input;
 
-                let dir = path.dirname(filePath);
-                let srcMapData: string;
+				let dir = path.dirname(file_path);
+				let sourcemap_data: string;
 
-                if (/^data:application\/json[^,]+base64,/.test(srcMapPathOrBase64)) {
-                    const rawData = srcMapPathOrBase64.slice(srcMapPathOrBase64.indexOf(',') + 1);
-                    try {
-                        srcMapData = Buffer.from(rawData, 'base64').toString();
-                    } catch {
-                        return input;
-                    }
-                } else {
-                    const absSrcMapPath = path.resolve(dir, srcMapPathOrBase64);
-                    const data = getFileContents(absSrcMapPath);
-                    if (!data) return input;
+				if (/^data:application\/json[^,]+base64,/.test(sourcemap_path_or_base64)) {
+					const raw_data = sourcemap_path_or_base64.slice(sourcemap_path_or_base64.indexOf(',') + 1);
+					try {
+						sourcemap_data = Buffer.from(raw_data, 'base64').toString();
+					} catch {
+						return input;
+					}
+				} else {
+					const abs_sourcemap_path = path.resolve(dir, sourcemap_path_or_base64);
+					const data = get_file_contents(abs_sourcemap_path);
 
-                    srcMapData = data;
-                    dir = path.dirname(absSrcMapPath);
-                }
+					if (!data) return input;
 
-                let rawSourceMap: RawSourceMap;
-                try {
-                    rawSourceMap = JSON.parse(srcMapData);
-                } catch {
-                    return input;
-                }
+					sourcemap_data = data;
+					dir = path.dirname(abs_sourcemap_path);
+				}
 
-                const consumer = new SourceMapConsumer(rawSourceMap);
-                const pos = consumer.originalPositionFor({
-                    line: Number(line),
-                    column: Number(column)
-                });
-                if (!pos.source) return input;
+				let raw_source_map: RawSourceMap;
+				try {
+					raw_source_map = JSON.parse(sourcemap_data);
+				} catch {
+					return input;
+				}
 
-                const absSrcPath = path.resolve(dir, pos.source);
-                const urlPart = `${absSrcPath}:${pos.line || 0}:${pos.column || 0}`;
+				const consumer = new SourceMapConsumer(raw_source_map);
+				const pos = consumer.originalPositionFor({
+					line: Number(line),
+					column: Number(column),
+					bias: SourceMapConsumer.LEAST_UPPER_BOUND
+				});
 
-                if (!varName) return `    at ${urlPart}`;
-                return `    at ${varName} (${urlPart})`;
-            }
-        );
+				if (!pos.source) return input;
 
-    fileCache.clear();
-    return stack
-        .split('\n')
-        .map(replaceFn)
-        .join('\n');
+				const abs_source_path = path.resolve(dir, pos.source);
+				const urlPart = `${abs_source_path}:${pos.line || 0}:${pos.column || 0}`;
+
+				if (!var_name) return `    at ${urlPart}`;
+				return `    at ${var_name} (${urlPart})`;
+			}
+		);
+
+	file_cache.clear();
+
+	return stack
+		.split('\n')
+		.map(replace)
+		.join('\n');
 }
-
-export { sourcemapStacktrace };

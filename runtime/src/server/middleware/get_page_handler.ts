@@ -6,7 +6,7 @@ import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
 import { Manifest, Page, Req, Res } from './types';
-import { sourcemapStacktrace } from './sourcemap_stacktrace';
+import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
@@ -235,7 +235,7 @@ export function get_page_handler(
 			});
 
 			if (error instanceof Error && error.stack) {
-				error.stack = sourcemapStacktrace(error.stack);
+				error.stack = sourcemap_stacktrace(error.stack);
 			}
 
 			const props = {
