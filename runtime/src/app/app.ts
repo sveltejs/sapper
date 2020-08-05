@@ -108,6 +108,10 @@ export function select_target(url: URL): Target {
 
 	let path = extract_path(url);
 
+	if (path === '') {
+		path = '/';
+	}
+
 	// avoid accidental clashes between server routes and page routes
 	if (ignore.some(pattern => pattern.test(path))) return;
 
