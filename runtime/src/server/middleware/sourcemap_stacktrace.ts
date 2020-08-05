@@ -40,37 +40,37 @@ export function sourcemap_stacktrace(stack: string) {
 				const contents = get_file_contents(file_path);
 				if (!contents) return input;
 
-				const sourcemap_path_or_base64 = get_sourcemap_url(contents);
-				if (!sourcemap_path_or_base64) return input;
+				const sourcemap_url = get_sourcemap_url(contents);
+				if (!sourcemap_url) return input;
 
 				let dir = path.dirname(file_path);
 				let sourcemap_data: string;
 
-				if (/^data:application\/json[^,]+base64,/.test(sourcemap_path_or_base64)) {
-					const raw_data = sourcemap_path_or_base64.slice(sourcemap_path_or_base64.indexOf(',') + 1);
+				if (/^data:application\/json[^,]+base64,/.test(sourcemap_url)) {
+					const raw_data = sourcemap_url.slice(sourcemap_url.indexOf(',') + 1);
 					try {
 						sourcemap_data = Buffer.from(raw_data, 'base64').toString();
 					} catch {
 						return input;
 					}
 				} else {
-					const abs_sourcemap_path = path.resolve(dir, sourcemap_path_or_base64);
-					const data = get_file_contents(abs_sourcemap_path);
+					const sourcemap_path = path.resolve(dir, sourcemap_url);
+					const data = get_file_contents(sourcemap_path);
 
 					if (!data) return input;
 
 					sourcemap_data = data;
-					dir = path.dirname(abs_sourcemap_path);
+					dir = path.dirname(sourcemap_path);
 				}
 
-				let raw_source_map: RawSourceMap;
+				let raw_sourcemap: RawSourceMap;
 				try {
-					raw_source_map = JSON.parse(sourcemap_data);
+					raw_sourcemap = JSON.parse(sourcemap_data);
 				} catch {
 					return input;
 				}
 
-				const consumer = new SourceMapConsumer(raw_source_map);
+				const consumer = new SourceMapConsumer(raw_sourcemap);
 				const pos = consumer.originalPositionFor({
 					line: Number(line),
 					column: Number(column),
@@ -79,11 +79,11 @@ export function sourcemap_stacktrace(stack: string) {
 
 				if (!pos.source) return input;
 
-				const abs_source_path = path.resolve(dir, pos.source);
-				const url_part = `${abs_source_path}:${pos.line || 0}:${pos.column || 0}`;
+				const source_path = path.resolve(dir, pos.source);
+				const source = `${source_path}:${pos.line || 0}:${pos.column || 0}`;
 
-				if (!var_name) return `    at ${url_part}`;
-				return `    at ${var_name} (${url_part})`;
+				if (!var_name) return `    at ${source}`;
+				return `    at ${var_name} (${source})`;
 			}
 		);
 
