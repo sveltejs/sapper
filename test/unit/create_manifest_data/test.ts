@@ -148,7 +148,7 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(server_routes, [
 			{
-				name: "route_$file$93_$91ext",
+				name: "route_$file_$ext",
 				pattern: /^\/([^\/]+?)\.([^\/]+?)$/,
 				file: "[file].[ext].js",
 				params: ["file", "ext"]
@@ -161,7 +161,7 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(server_routes, [
 			{
-				name: "route_$file_$91ext$40$91a$45z$93$43$41$93",
+				name: "route_$file$_c5f051_$ext$_c5f051",
 				pattern: /^\/([a-z]+)\.([a-z]+)$/,
 				file: "[file([a-z]+)].[ext([a-z]+)].js",
 				params: ["file", "ext"]

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import crypto from 'crypto';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
@@ -304,13 +305,31 @@ function get_slug(file: string) {
 		.replace(/[\\\/]index/, '')
 		.replace(/[\/\\]/g, '_')
 		.replace(/\.\w+$/, '')
-		.replace(/\[([^([]+)(?:\([^(]+\))?\]/g, '$$$1')
+		.replace(/\[(\.\.\.)?(?:(.+?)(\(.+?\))?)]/g, (
+			match,
+			spread,
+			content,
+			qualifier
+		) => {
+			return `${spread ? '$$' : ''}$${content}${hash(qualifier)}`
+		})
 		.replace(/[^a-zA-Z0-9_$]/g, c => {
 			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
 		});
 
 	if (reserved_words.has(name)) name += '_';
 	return name;
+}
+
+function hash(data: string) {
+	if (!data) {
+		return '';
+	}
+
+	return '$_' + crypto.createHash('md5')
+		.update(data)
+		.digest("hex")
+		.slice(0, 6);
 }
 
 function get_pattern(segments: Part[][], add_trailing_slash: boolean) {
