@@ -373,7 +373,7 @@ function get_route_factory(
 		return `() => "${prefix}/${template}"`;
 	}
 
-	const slot_pattern = /\[(\.{3})?(\w+)(\(.+\))?\]/g;
+	const slot_pattern = /\[(\.{3})?(\w+)(\(.+?\))?\]/g;
 	const merge = `.join('/')`;
 	const slot_replace: (substring: string, ...args: any[]) => string
 		= (
