@@ -1,0 +1,5 @@
+recursive: true
+require:
+  - 'source-map-support/register'
+  - 'sucrase/register'
+spec: 'test/**/*test.ts'
