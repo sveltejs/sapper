@@ -123,8 +123,14 @@ export function serve({ prefix, pathname, cache_control }: {
 				res.setHeader('Cache-Control', cache_control);
 				res.end(data);
 			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
+				if (err.code === 'ENOENT') {
+					next();
+				} else {
+					console.error(err);
+
+					res.statusCode = 500;
+					res.end('an error occurred while reading a static file from disk');
+				}
 			}
 		} else {
 			next();

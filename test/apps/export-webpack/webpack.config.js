@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const WebpackModules = require('webpack-modules');
 const config = require('../../../config/webpack.js');
 
 const mode = process.env.NODE_ENV;
@@ -61,7 +62,10 @@ module.exports = {
 				}
 			]
 		},
-		mode: process.env.NODE_ENV
+		mode: process.env.NODE_ENV,
+		plugins: [
+			new WebpackModules()
+		]
 	},
 
 	serviceworker: {

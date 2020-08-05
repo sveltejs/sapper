@@ -10,17 +10,18 @@ export type Page = {
 	pattern: RegExp;
 	parts: Array<{
 		name: string;
-		component: Component;
+		component: {
+			default: Component;
+			preload?: (data: any) => any | Promise<any>;
+		},
 		params?: (match: RegExpMatchArray) => Record<string, string>;
-		preload?: (data: any) => any | Promise<any>;
 	}>
 };
 
 export type Manifest = {
 	server_routes: ServerRoute[];
 	pages: Page[];
-	root: Component;
-	root_preload?: (data: any) => any | Promise<any>;
+	root_comp: Component;
 	error: Component;
 }
 

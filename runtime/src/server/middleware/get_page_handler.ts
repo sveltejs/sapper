@@ -65,7 +65,6 @@ export function get_page_handler(
 		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
-		res.setHeader('Cache-Control', dev ? 'no-cache' : 'max-age=600');
 
 		// preload main.js and current route
 		// TODO detect other stuff we can preload? images, CSS, fonts?
@@ -165,14 +164,13 @@ export function get_page_handler(
 		let params;
 
 		try {
-			const root_preloaded = manifest.root_preload
-				? manifest.root_preload.call(preload_context, {
+			const root_preload = manifest.root_comp.preload || (() => {});
+			const root_preloaded = root_preload.call(preload_context, {
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
 					params: {}
-				}, session)
-				: {};
+				}, session);
 
 			match = error ? null : page.pattern.exec(req.path);
 
@@ -185,8 +183,8 @@ export function get_page_handler(
 					// the deepest level is used below, to initialise the store
 					params = part.params ? part.params(match) : {};
 
-					return part.preload
-						? part.preload.call(preload_context, {
+					return part.component.preload
+						? part.component.preload.call(preload_context, {
 							host: req.headers.host,
 							path: req.path,
 							query: req.query,
@@ -268,7 +266,7 @@ export function get_page_handler(
 					if (!part) continue;
 
 					props[`level${l++}`] = {
-						component: part.component,
+						component: part.component.default,
 						props: preloaded[i + 1] || {},
 						segment: segments[i]
 					};
@@ -307,7 +305,7 @@ export function get_page_handler(
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
-				script += `</script><script src="${main}">`;
+				script += `</script><script src="${main}" defer>`;
 			}
 
 			let styles: string;
@@ -342,7 +340,7 @@ export function get_page_handler(
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
 				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
-				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
+				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles);
 
 			res.statusCode = status;

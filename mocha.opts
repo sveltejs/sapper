@@ -1,5 +1,4 @@
 --require source-map-support/register
 --require sucrase/register
 --recursive
-test/unit/*/test.ts
-test/apps/*/test.ts
+test/**/*test.ts

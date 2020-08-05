@@ -3,7 +3,7 @@ import colors from 'kleur';
 import pb from 'pretty-bytes';
 import RollupCompiler from './RollupCompiler';
 import extract_css from './extract_css';
-import { left_pad } from '../../utils';
+import { left_pad, normalize_path } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 import { ManifestData, Dirs } from '../../interfaces';
 
@@ -31,7 +31,7 @@ export default class RollupResult implements CompileResult {
 		this.chunks = compiler.chunks.map(chunk => ({
 			file: chunk.fileName,
 			imports: chunk.imports.filter(Boolean),
-			modules: Object.keys(chunk.modules)
+			modules: Object.keys(chunk.modules).map(m => normalize_path(m))
 		}));
 
 		this.css_files = compiler.css_files;
