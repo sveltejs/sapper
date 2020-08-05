@@ -127,7 +127,7 @@ export function select_target(url: URL): Target {
 		}
 	}
 
-	if (!initial_data.ssr) {
+	if (initial_data.hashbang) {
 		const query: Query = extract_query(url.search);
 		const page = { host: location.host, path, query, params: {} };
 
