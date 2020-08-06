@@ -154,7 +154,7 @@ export class AppRunner {
 	async intercept_requests(interceptor: (request: puppeteer.Request) => void, fn: () => any): Promise<void> {
 		const unique_interceptor = request => interceptor(request);
 
-		this.page.prependListener('request', unique_interceptor);
+		this.page.on('request', unique_interceptor);
 		await this.page.setRequestInterception(true);
 
 		const result = await Promise.resolve(fn());
