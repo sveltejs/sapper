@@ -9,6 +9,7 @@ And these breaking changes:
 * Sapper now requires at least Rollup 1
 * IE 9 support dropped for Webpack projects. `script` tag will now be loaded with `defer` attribute and IE9 may interleave script execution.
 * You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244))
 
 Also:
 
