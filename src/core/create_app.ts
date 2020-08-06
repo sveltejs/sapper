@@ -116,8 +116,8 @@ function generate_client_manifest(
 					pattern: ${page.pattern},
 					parts: [
 						${page.parts.map(part => {
-							const has_layout = !!part;
-							if (!has_layout) return 'null';
+							const missing_layout = !part;
+							if (missing_layout) return 'null';
 
 							if (part.params.length > 0) {
 								needs_decode = true;
