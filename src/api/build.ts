@@ -63,7 +63,7 @@ export async function build({
 
 	// remove this in a future version
 	if (template.indexOf('%sapper.base%') === -1) {
-		const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
+		const error: NodeJS.ErrnoException = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
 		error.code = `missing-sapper-base`;
 		throw error;
 	}

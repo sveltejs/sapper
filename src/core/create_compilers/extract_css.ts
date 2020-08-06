@@ -48,16 +48,11 @@ type SourceMap = {
 
 function get_css_from_modules(modules: string[], css_map: Map<string, string>, asset_dir: string) {
 	const parts: string[] = [];
-	const mappings: number[][][] = [];
+	const mappings: codec.SourceMapMappings = [];
 
-	const combined_map: SourceMap = {
-		version: 3,
-		file: null,
-		sources: [],
-		sourcesContent: [],
-		names: [],
-		mappings: null
-	};
+	const sources = <string[]>[]
+	const sourcesContent = <string[]>[]
+	const names = <string[]>[]
 
 	modules.forEach(module => {
 		if (!/\.css$/.test(module)) return;
@@ -71,34 +66,37 @@ function get_css_from_modules(modules: string[], css_map: Map<string, string>, a
 		if (map) {
 			const lines = codec.decode(map.mappings);
 
-			if (combined_map.sources.length > 0 || combined_map.names.length > 0) {
+			if (sources.length > 0 || names.length > 0) {
 				lines.forEach(line => {
 					line.forEach(segment => {
 						// adjust source index
-						segment[1] += combined_map.sources.length;
+						segment[1] += sources.length;
 
 						// adjust name index
-						if (segment[4]) segment[4] += combined_map.names.length;
+						if (segment[4]) segment[4] += names.length;
 					});
 				});
 			}
 
-			combined_map.sources.push(...map.sources);
-			combined_map.sourcesContent.push(...map.sourcesContent);
-			combined_map.names.push(...map.names);
+			sources.push(...map.sources);
+			sourcesContent.push(...map.sourcesContent);
+			names.push(...map.names);
 
 			mappings.push(...lines);
 		}
 	});
 
 	if (parts.length > 0) {
-		combined_map.mappings = codec.encode(mappings);
-
-		combined_map.sources = combined_map.sources.map(source => path.relative(asset_dir, source).replace(/\\/g, '/'));
-
 		return {
 			code: parts.join('\n'),
-			map: combined_map
+			map: {
+				version: 3,
+				file: null,
+				sources: sources.map(source => path.relative(asset_dir, source).replace(/\\/g, '/')),
+				sourcesContent,
+				names,
+				mappings: codec.encode(mappings)
+			},
 		};
 	}
 
