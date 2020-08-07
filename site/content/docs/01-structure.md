@@ -106,6 +106,7 @@ This is a place to put any files that your app uses — fonts, images and so on.
 
 Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#src_service-worker_js)).
 
+> Note that the default behaviour of the service worker is to cache all assets from the static directory, so if you have a large number (&gt; 50mb) of files here, you should customise what it caches, otherwise some browsers won't be able to load the service worker.
 
 ### rollup.config.js / webpack.config.js
 
