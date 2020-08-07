@@ -11,6 +11,7 @@ And these breaking changes:
 * IE 9 support dropped for Webpack projects. `script` tag will now be loaded with `defer` attribute and IE9 may interleave script execution.
 * You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
 * The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244))
+* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
 
 Also:
 
@@ -22,6 +23,7 @@ Also:
 * Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
 * Load `script` tag with `defer` attribute in Webpack projects ([#1123](https://github.com/sveltejs/sapper/pull/1123))
 * Show a warning for unserializable server-preloaded data ([#1304](https://github.com/sveltejs/sapper/pull/1304))
+* Added a `noscroll` option to `goto` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
 
 ## 0.27.16
 
