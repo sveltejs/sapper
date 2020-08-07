@@ -277,7 +277,10 @@ export function get_page_handler(
 			const { html, head, css } = App.render(props);
 
 			const serialized = {
-				preloaded: `[${preloaded.map(data => try_serialize(data)).join(',')}]`,
+				preloaded: `[${preloaded.map(data => try_serialize(data, err => {
+					console.error(`Failed to serialize preloaded data to transmit to the client at the /${segments.join('/')} route: ${err.message}`);
+					console.warn('The client will re-render over the server-rendered page fresh instead of continuing where it left off. See https://sapper.svelte.dev/docs#Return_value for more information');
+				})).join(',')}]`,
 				session: session && try_serialize(session, err => {
 					throw new Error(`Failed to serialize session data: ${err.message}`);
 				}),
