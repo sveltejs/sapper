@@ -56,12 +56,12 @@ describe('scroll', function() {
 		);
 	});
 
-	it('preserves scroll when a link with sapper-noscroll is clicked', async () => {
+	it('preserves scroll when a link with sapper:noscroll is clicked', async () => {
 		await r.load('/tall-page#foo');
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click('[href="another-tall-page"][sapper-noscroll]');
+		await r.page.click('[href="another-tall-page"][sapper\\:noscroll]');
 		await r.wait();
 
 		const scrollY = await r.page.evaluate(() => window.scrollY);
