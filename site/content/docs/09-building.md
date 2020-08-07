@@ -14,6 +14,8 @@ The output is a Node app that you can run from the project root:
 node __sapper__/build
 ```
 
+If you're deploying your app outside your machine, make sure to satisfy your `server.js` by installing all your dependencies from `package.json` and to also include your `static` folder.
+
 ### Browser support
 
 Your site is built only for the latest versions of modern evergreen browsers by default. If you are using Rollup, you can use the `--legacy`<sup>1</sup> flag to build a second bundle that can be used to support legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime<sup>2</sup>.
