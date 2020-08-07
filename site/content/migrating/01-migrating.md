@@ -13,8 +13,9 @@ Until we reach version 1.0, there may be occasional changes to the project struc
 	* IE 9 support wasdropped since IE9 may interleave deferred script execution.
 	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
 * You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
-* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244)).
 * The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
+* Rollup users should update the `onwarn` filter in `rollup.config.js` ((sapper-template#246)[https://github.com/sveltejs/sapper-template/pull/246])
 
 ### 0.25 to 0.26
 
