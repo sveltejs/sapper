@@ -8,7 +8,13 @@ Until we reach version 1.0, there may be occasional changes to the project struc
 
 ### 0.27 to 0.28
 
-`%sapper.scripts%` can be moved to the `<head>` section for slightly better performance because it now uses deferred loading
+* Sapper now requires at least Rollup 1
+* `script` tag will now be loaded with `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)) which means:
+	* IE 9 support wasdropped since IE9 may interleave deferred script execution.
+	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
+* You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244))
+* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
 
 ### 0.25 to 0.26
 

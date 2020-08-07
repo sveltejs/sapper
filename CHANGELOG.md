@@ -5,13 +5,7 @@
 * 🎉 TypeScript support! 🎉
 * 🎉 Asset `preload` headers for Rollup projects 🎉
 
-And these breaking changes:
-
-* Sapper now requires at least Rollup 1
-* IE 9 support dropped for Webpack projects. `script` tag will now be loaded with `defer` attribute and IE9 may interleave script execution.
-* You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
-* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244))
-* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
+Please see the ([migration guide](https://sapper.svelte.dev/migrating#0_27_to_0_28)) for details on a number of small breaking changes that were made in this release.
 
 Also:
 
