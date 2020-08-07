@@ -1,6 +1,6 @@
 # sapper changelog
 
-## Unreleased
+## 0.28.0
 
 * 🎉 TypeScript support! 🎉
 * 🎉 Asset `preload` headers for Rollup projects 🎉
