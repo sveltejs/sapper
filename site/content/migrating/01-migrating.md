@@ -9,7 +9,7 @@ Until we reach version 1.0, there may be occasional changes to the project struc
 ### 0.27 to 0.28
 
 * Sapper dropped support for Rollup 0.x.x. <br>Any version greater than 1.x is supported but the latest (currently 2.x) is strongly recommended.
-* `script` tags will now be loaded with the `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)) which means:
+* `<script>` tags will now be loaded with the `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)), which means:
 	* IE 9 support was dropped since IE9 may interleave deferred script execution.
 	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
 * You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
