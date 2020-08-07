@@ -14,7 +14,13 @@ The output is a Node app that you can run from the project root:
 node __sapper__/build
 ```
 
-If you're deploying your app outside your machine, make sure to satisfy your `server.js` by installing all your dependencies from `package.json` and to also include your `static` folder.
+If you're deploying your app to a different machine than the one you're building on, make sure that you install your production dependencies (required by `server.js`) by installing all dependencies from `package.json` using `--only=prod` (or `--only=production`):
+
+```bash
+npm install --only=prod
+```
+
+as well as including `__sapper__/build` and `static` directory with its contents in the same folder as `package.json`.
 
 ### Browser support
 
