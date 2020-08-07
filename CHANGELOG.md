@@ -3,6 +3,7 @@
 ## Unreleased
 
 * 🎉 TypeScript support! 🎉
+* 🎉 Asset `preload` headers for Rollup projects 🎉
 
 And these breaking changes:
 
