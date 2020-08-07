@@ -8,7 +8,7 @@ Until we reach version 1.0, there may be occasional changes to the project struc
 
 ### 0.27 to 0.28
 
-* Sapper now requires at least Rollup 1
+* Sapper dropped support for Rollup 0.x.x. <br>Any version greater than 1.x is supported but the latest (currently 2.x) is strongly recommended.
 * `script` tag will now be loaded with `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)) which means:
 	* IE 9 support wasdropped since IE9 may interleave deferred script execution.
 	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
