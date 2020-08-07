@@ -5,7 +5,7 @@
 * 🎉 TypeScript support! 🎉
 * 🎉 Asset `preload` headers for Rollup projects 🎉
 
-Please see the ([migration guide](https://sapper.svelte.dev/migrating#0_27_to_0_28)) for details on migrating from Sapper 0.27 to Sapper 0.28.
+Please see the [migration guide](https://sapper.svelte.dev/migrating#0_27_to_0_28) for details on migrating from Sapper 0.27 to Sapper 0.28.
 
 Also:
 
