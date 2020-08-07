@@ -4,6 +4,16 @@ title: Deployment
 
 Sapper apps run anywhere that supports Node 8 or higher.
 
+### Deploying from sapper build
+
+If you're deploying your app to a different machine than the one you're building on, you will need to copy your `package.json` over and install your production dependencies (required by `server.js`) using `--only=prod` (or `--only=production`):
+
+```bash
+npm install --only=prod
+```
+
+Other than `__sapper__/build` directory and `package.json`, you will also need to include your `static` directory and its contents.
+
 ### Deploying to Vercel
 
 We can use a third-party library like [the `vercel-sapper` builder](https://www.npmjs.com/package/vercel-sapper) to deploy our projects to [Vercel] ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel)). See [that project's readme](https://github.com/thgh/vercel-sapper#readme) for more details regarding [Vercel] deployments.
