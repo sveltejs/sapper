@@ -37,4 +37,6 @@ express() // or Polka, or a similar framework
 	.listen(process.env.PORT);
 ```
 
-> Session data must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)) — no functions or custom classes, just built-in JavaScript data types
+The `session` option is a function which returns data, or a `Promise` of data, which must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)), meaning that it must not contain functions or custom classes, just built-in JavaScript data types.
+
+> Note that if you return a `Promise` from this function (or use an `async` function), it will be re-awaited for **every** server-rendered page route.
