@@ -301,6 +301,9 @@ export function get_page_handler(
 			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
 			const main = `${req.baseUrl}/client/${file}`;
 
+			// users can set a CSP nonce using res.locals.nonce
+			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
+
 			if (build_info.bundler === 'rollup') {
 				if (build_info.legacy_assets) {
 					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
@@ -309,7 +312,7 @@ export function get_page_handler(
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
-				script += `</script><script src="${main}" defer>`;
+				script += `</script><script ${nonce_attr} src="${main}" defer>`;
 			}
 
 			let styles: string;
@@ -331,18 +334,15 @@ export function get_page_handler(
 				});
 
 				styles = Array.from(css_chunks)
-					.map(href => `<link rel="stylesheet" href="client/${href}">`)
+					.map(href => `<link ${nonce_attr} rel="stylesheet" href="client/${href}">`)
 					.join('')
 			} else {
-				styles = (css && css.code ? `<style>${css.code}</style>` : '');
+				styles = (css && css.code ? `<style ${nonce_attr}>${css.code}</style>` : '');
 			}
-
-			// users can set a CSP nonce using res.locals.nonce
-			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
+				.replace('%sapper.scripts%', () => `<script ${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles);
