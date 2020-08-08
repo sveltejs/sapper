@@ -77,7 +77,7 @@ function handle_click(event: MouseEvent) {
 	// Adapted from https://github.com/visionmedia/page.js
 	// MIT license https://github.com/visionmedia/page.js#license
 	if (which(event) !== 1) return;
-	if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+	if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 	if (event.defaultPrevented) return;
 
 	const a: HTMLAnchorElement | SVGAElement = <HTMLAnchorElement | SVGAElement>find_anchor(<Node>event.target);
