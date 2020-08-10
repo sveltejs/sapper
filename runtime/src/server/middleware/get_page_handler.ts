@@ -121,13 +121,14 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const parsed = new URL.URL(url, `http://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
+				const protocol = req.socket.encrypted ? 'https' : 'http';
+				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
 				opts = Object.assign({}, opts);
 
 				const include_credentials = (
 					opts.credentials === 'include' ||
-					opts.credentials !== 'omit' && parsed.origin === `http://127.0.0.1:${process.env.PORT}`
+					opts.credentials !== 'omit' && parsed.origin === `${protocol}://127.0.0.1:${process.env.PORT}`
 				);
 
 				if (include_credentials) {
