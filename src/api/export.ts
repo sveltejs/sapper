@@ -168,7 +168,7 @@ async function _export({
 		return writeFile(export_file, buffer);
 	}
 
-	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
+	function handle(url: URL, fetchOpts: FetchOpts, addCallback: (url: URL) => void) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
 			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';

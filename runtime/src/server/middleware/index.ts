@@ -6,7 +6,7 @@ import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
-type IgnoreValue = any[] | RegExp | function | string;
+type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,

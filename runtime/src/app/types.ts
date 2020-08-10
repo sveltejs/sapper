@@ -1,5 +1,5 @@
 export type Params = Record<string, string>;
-export type Query = Record<string, string | true>;
+export type Query = Record<string, string | string[]>;
 export type RouteData = { params: Params, query: Query, path: string };
 
 type Child = {
@@ -8,20 +8,10 @@ type Child = {
 	component?: Component;
 };
 
-export interface ComponentConstructor {
-	new (options: { target: Node, props: any, hydrate: boolean }): Component;
-	preload: (props: { params: Params, query: Query }) => Promise<any>;
-}
-
 export interface Component {
 	$set: (data: any) => void;
 	$destroy: () => void;
 }
-
-export type ComponentLoader = {
-	js: () => Promise<{ default: ComponentConstructor }>,
-	css: string[]
-};
 
 export type Route = {
 	pattern: RegExp;
@@ -29,13 +19,6 @@ export type Route = {
 		i: number;
 		params?: (match: RegExpExecArray) => Record<string, string>;
 	}>;
-};
-
-export type Manifest = {
-	ignore: RegExp[];
-	root: ComponentConstructor;
-	error: () => Promise<{ default: ComponentConstructor }>;
-	pages: Route[]
 };
 
 export type ScrollPosition = {

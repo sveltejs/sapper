@@ -5,9 +5,9 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
-import { Manifest, Page, Req, Res } from './types';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
-import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
+import { Page, Props, Req, Res } from './types';
+import { Manifest, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
@@ -40,7 +40,7 @@ export function get_page_handler(
 		handle_page({
 			pattern: null,
 			parts: [
-				{ name: null, component: error_route }
+				{ name: null, component: { default: error_route } }
 			]
 		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
@@ -260,9 +260,15 @@ export function get_page_handler(
 				level0: {
 					props: preloaded[0]
 				},
-				level1: {
-					segment: segments[0],
-					props: {}
+				level1: error ? {
+					component: manifest.error,
+					props: {
+						error,
+						status
+					}
+				} : {
+					component: page.parts[0]?.component.default,
+					props: preloaded[1] || {}
 				}
 			};
 

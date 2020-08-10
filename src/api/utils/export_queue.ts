@@ -20,12 +20,11 @@ type QueueOpts = {
 	seen: Set<any>;
 	saved: Set<any>;
 	fetchOpts: FetchOpts;
-	handleFetch: Function;
-	handleResponse: Function;
+	handleFetch: (url: URL, opts: FetchOpts) => Promise<any>;
+	handleResponse: (fetched: Promise<FetchRet>, opts: FetchOpts) => Promise<any>;
 	callbacks?: {
 		onDone?: () => void;
-		[key: string]: Function;
-	};
+	}
 };
 
 // determines current state of a promise
@@ -109,7 +108,7 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 			addToQueue(p, saving);
 			return processQueue();
 		},
-		setCallback: (event: string, fn: Function) => {
+		setCallback: (event: string, fn: () => void) => {
 			callbacks[event] = fn;
 		}
 	};

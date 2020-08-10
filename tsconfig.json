@@ -1,10 +1,12 @@
 {
     "compilerOptions": {
-        "diagnostics": true,
         "noImplicitThis": true,
-        "noImplicitAny": true,
         "noEmitOnError": true,
         "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
         "lib": ["es5", "es6", "dom"],
         "importHelpers": true,
         "target": "ES5"

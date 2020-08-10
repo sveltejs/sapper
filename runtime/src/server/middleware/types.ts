@@ -10,6 +10,7 @@ export type Page = {
 	pattern: RegExp;
 	parts: Array<{
 		name: string;
+		file?: string;
 		component: {
 			default: Component;
 			preload?: (data: any) => any | Promise<any>;
@@ -17,13 +18,6 @@ export type Page = {
 		params?: (match: RegExpMatchArray) => Record<string, string>;
 	}>
 };
-
-export type Manifest = {
-	server_routes: ServerRoute[];
-	pages: Page[];
-	root_comp: Component;
-	error: Component;
-}
 
 export type Handler = (req: Req, res: Res, next: () => void) => void;
 
@@ -52,6 +46,10 @@ export interface Req extends ClientRequest {
 
 export interface Res extends ServerResponse {
 	write: (data: any) => void;
+	locals?: {
+		nonce?: string;
+		name?: string;
+	};
 }
 
 export { ServerResponse };
