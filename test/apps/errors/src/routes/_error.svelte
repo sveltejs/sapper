@@ -15,3 +15,5 @@
 <h2>{mounted}</h2>
 
 <p>{error.message}</p>
+
+<span>{error.stack}</span>

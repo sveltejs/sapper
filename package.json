@@ -21,6 +21,7 @@
     "html-minifier": "^4.0.0",
     "http-link-header": "^1.0.2",
     "shimport": "^1.0.1",
+    "source-map": "^0.6.1",
     "sourcemap-codec": "^1.4.6",
     "string-hash": "^1.1.3"
   },
