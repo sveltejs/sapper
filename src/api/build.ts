@@ -61,13 +61,6 @@ export async function build({
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
 	const template = read_template(src);
 
-	// remove this in a future version
-	if (template.indexOf('%sapper.base%') === -1) {
-		const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
-		error.code = `missing-sapper-base`;
-		throw error;
-	}
-
 	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
 	const manifest_data = create_manifest_data(routes, ext);

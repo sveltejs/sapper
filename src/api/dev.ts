@@ -11,7 +11,6 @@ import Deferred from './utils/Deferred';
 import validate_bundler from './utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
-import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
@@ -116,14 +115,6 @@ class Watcher extends EventEmitter {
 			unique_errors: new Set(),
 			unique_warnings: new Set()
 		};
-
-		// remove this in a future version
-		const template = read_template(src);
-		if (template.indexOf('%sapper.base%') === -1) {
-			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
-			error.code = `missing-sapper-base`;
-			throw error;
-		}
 
 		process.env.NODE_ENV = 'development';
 

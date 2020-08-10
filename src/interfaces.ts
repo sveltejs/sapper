@@ -68,11 +68,19 @@ export type ReadyEvent = {
 
 export type ErrorEvent = {
 	type: string;
-	error: Error;
+	error: Error & {
+		frame?: unknown;
+		loc?: {
+			file?: string;
+			line: number;
+			column: number;
+		};
+	};
 };
 
 export type FatalEvent = {
 	message: string;
+	log?: unknown;
 };
 
 export type InvalidEvent = {

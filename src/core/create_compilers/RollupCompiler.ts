@@ -1,7 +1,7 @@
 import * as path from 'path';
 import color from 'kleur';
 import relative from 'require-relative';
-import { RollupError } from 'rollup/types';
+import { InputOption, RollupError } from 'rollup';
 import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
@@ -13,7 +13,7 @@ export default class RollupCompiler {
 	_: Promise<any>;
 	_oninvalid: (filename: string) => void;
 	_start: number;
-	input: string;
+	input: InputOption;
 	warnings: any[];
 	errors: any[];
 	chunks: any[];
