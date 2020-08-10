@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358) and [#1379](https://github.com/sveltejs/sapper/pull/1379))
+
 ## 0.28.0
 
 * 🎉 TypeScript support! 🎉
