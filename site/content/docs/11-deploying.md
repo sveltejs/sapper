@@ -2,7 +2,7 @@
 title: Deployment
 ---
 
-Sapper apps run anywhere that supports Node 8 or higher.
+Sapper apps run anywhere that supports Node 10 or higher.
 
 ### Deploying from sapper build
 
