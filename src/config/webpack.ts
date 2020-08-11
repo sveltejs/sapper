@@ -50,7 +50,7 @@ export default {
 				path: dest,
 				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js'
-			}
+			};
 		}
 	}
 };

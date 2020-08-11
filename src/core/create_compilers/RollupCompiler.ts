@@ -17,7 +17,7 @@ export default class RollupCompiler {
 	warnings: any[];
 	errors: any[];
 	chunks: any[];
-	css_files: Array<{ id: string, code: string }>;
+	css_files: Array<{ id: string; code: string }>;
 
 	constructor(config: any) {
 		this._ = this.get_config(config);
@@ -191,7 +191,7 @@ export function handleError(err: RollupError, recover = false) {
 	}
 
 	if (err.loc) {
-		stderr(`${(err.loc.file || err.id)!} (${err.loc.line}:${err.loc.column})`);
+		stderr(`${err.loc.file || err.id} (${err.loc.line}:${err.loc.column})`);
 	} else if (err.id) {
 		stderr(err.id);
 	}

@@ -16,19 +16,19 @@ import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
-	cwd?: string,
-	src?: string,
-	dest?: string,
-	routes?: string,
-	output?: string,
-	static?: string,
-	'dev-port'?: number,
-	live?: boolean,
-	hot?: boolean,
-	'devtools-port'?: number,
-	bundler?: 'rollup' | 'webpack',
-	port?: number,
-	ext: string
+	cwd?: string;
+	src?: string;
+	dest?: string;
+	routes?: string;
+	output?: string;
+	static?: string;
+	'dev-port'?: number;
+	live?: boolean;
+	hot?: boolean;
+	'devtools-port'?: number;
+	bundler?: 'rollup' | 'webpack';
+	port?: number;
+	ext: string;
 };
 
 export function dev(opts: Opts) {
@@ -128,9 +128,9 @@ class Watcher extends EventEmitter {
 	async init() {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
-				this.emit('fatal', <FatalEvent>{
+				this.emit('fatal', {
 					message: `Port ${this.port} is unavailable`
-				});
+				} as FatalEvent);
 				return;
 			}
 		} else {
@@ -164,9 +164,9 @@ class Watcher extends EventEmitter {
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
-			this.emit('fatal', <FatalEvent>{
+			this.emit('fatal', {
 				message: err.message
-			});
+			} as FatalEvent);
 			return;
 		}
 
@@ -192,10 +192,10 @@ class Watcher extends EventEmitter {
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
-						this.emit('error', <ErrorEvent>{
+						this.emit('error', {
 							type: 'manifest',
 							error
-						});
+						} as ErrorEvent);
 					}
 				}
 			)
@@ -217,9 +217,9 @@ class Watcher extends EventEmitter {
 		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
 
 		const emitFatal = () => {
-			this.emit('fatal', <FatalEvent>{
+			this.emit('fatal', {
 				message: `Server crashed`
-			});
+			} as FatalEvent);
 
 			this.crashed = true;
 			this.proc = null;
@@ -239,10 +239,10 @@ class Watcher extends EventEmitter {
 
 						return ports.wait(this.port)
 							.then((() => {
-								this.emit('ready', <ReadyEvent>{
+								this.emit('ready', {
 									port: this.port,
 									process: this.proc
-								});
+								} as ReadyEvent);
 
 								if (this.hot && this.bundler === 'webpack') {
 									this.dev_server.send({
@@ -257,9 +257,9 @@ class Watcher extends EventEmitter {
 							.catch(err => {
 								if (this.crashed) return;
 
-								this.emit('fatal', <FatalEvent>{
+								this.emit('fatal', {
 									message: `Server is not listening on port ${this.port}`
-								});
+								} as FatalEvent);
 							});
 					};
 
@@ -393,14 +393,14 @@ class Watcher extends EventEmitter {
 			};
 
 			process.nextTick(() => {
-				this.emit('invalid', <InvalidEvent>{
+				this.emit('invalid', {
 					changed: Array.from(this.current_build.changed),
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
 						client: this.current_build.rebuilding.has('client'),
 						serviceworker: this.current_build.rebuilding.has('serviceworker'),
 					}
-				});
+				} as InvalidEvent);
 
 				this.restarting = false;
 			});
@@ -408,7 +408,7 @@ class Watcher extends EventEmitter {
 	}
 
 	watch(compiler: Compiler, { name, invalid = noop, handle_result = noop }: {
-		name: string,
+		name: string;
 		invalid?: (filename: string) => void;
 		handle_result?: (result: CompileResult) => void;
 	}) {
@@ -416,10 +416,10 @@ class Watcher extends EventEmitter {
 
 		compiler.watch((error?: Error, result?: CompileResult) => {
 			if (error) {
-				this.emit('error', <ErrorEvent>{
+				this.emit('error', {
 					type: name,
 					error
-				});
+				} as ErrorEvent);
 			} else {
 				this.emit('build', {
 					type: name,
@@ -489,7 +489,7 @@ class DevServer {
 
 function watch_dir(
 	dir: string,
-	filter: ({ path, stats }: { path: string, stats: fs.Stats }) => boolean,
+	filter: ({ path, stats }: { path: string; stats: fs.Stats }) => boolean,
 	callback: () => void
 ) {
 	let watch: any;

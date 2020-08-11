@@ -13,26 +13,26 @@ import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
 
-const writeFile = promisify(fs.writeFile)
+const writeFile = promisify(fs.writeFile);
 
 type Opts = {
-	build_dir?: string,
-	export_dir?: string,
-	cwd?: string,
-	static?: string,
-	basepath?: string,
-	host_header?: string,
-	timeout?: number | false,
-	concurrent?: number,
+	build_dir?: string;
+	export_dir?: string;
+	cwd?: string;
+	static?: string;
+	basepath?: string;
+	host_header?: string;
+	timeout?: number | false;
+	concurrent?: number;
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 	entry?: string;
 };
 
 type Ref = {
-	uri: string,
-	rel: string,
-	as: string
+	uri: string;
+	rel: string;
+	as: string;
 };
 
 type URL = url.UrlWithStringQuery;
@@ -42,7 +42,7 @@ function resolve(from: string, to: string) {
 }
 
 function cleanPath(path: string) {
-	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '')
+	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '');
 }
 
 function get_href(attrs: string) {
@@ -110,7 +110,7 @@ async function _export({
 	const saved = new Set();
 
 	function save(url: string, status: number, type: string, body: string) {
-		let { pathname } = resolve(origin, url);
+		const { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
@@ -141,7 +141,7 @@ async function _export({
 	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/'
+			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';
 		}
 
 		if (seen.has(pathname)) return;
@@ -190,11 +190,11 @@ async function _export({
 
 		if (range === 2 && type === 'text/html') {
 			// parse link rel=preload headers and embed them in the HTML
-			let link = parseLinkHeader(response.headers.get('Link') || '');
+			const link = parseLinkHeader(response.headers.get('Link') || '');
 			link.refs.forEach((ref: Ref) => {
 				if (ref.rel === 'preload') {
 					body = body.replace('</head>',
-						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`);
 				}
 			});
 
@@ -206,7 +206,7 @@ async function _export({
 				const base = resolve(url.href, base_href);
 
 				let match;
-				let pattern = /<a ([\s\S]+?)>/gm;
+				const pattern = /<a ([\s\S]+?)>/gm;
 
 				while (match = pattern.exec(cleaned)) {
 					const attrs = match[1];
@@ -216,7 +216,7 @@ async function _export({
 						const url = resolve(base.href, href);
 
 						if (url.protocol === protocol && url.host === host) {
-							handle(url, fetchOpts, queue.add)
+							handle(url, fetchOpts, queue.add);
 						}
 					}
 				}

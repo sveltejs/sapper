@@ -25,7 +25,7 @@ export interface CompileResult {
 	css_files: CssFile[];
 	print: () => void;
 
-	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
+	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo;
 }
 
 export type BuildInfo = {
@@ -35,7 +35,7 @@ export type BuildInfo = {
 	dependencies?: Record<string, string[]>;
 	legacy_assets?: Record<string, string>;
 	css: {
-		main: string | null,
-		chunks: Record<string, string[]>
-	}
+		main: string | null;
+		chunks: Record<string, string[]>;
+	};
 }

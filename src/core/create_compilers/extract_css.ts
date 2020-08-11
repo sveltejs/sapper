@@ -4,7 +4,7 @@ import hash from 'string-hash';
 import * as codec from 'sourcemap-codec';
 import { PageComponent, Dirs } from '../../interfaces';
 import { CompileResult, Chunk } from './interfaces';
-import { normalize_path, posixify } from '../../utils'
+import { normalize_path, posixify } from '../../utils';
 
 const inline_sourcemap_header = 'data:application/json;charset=utf-8;base64,';
 
@@ -111,7 +111,7 @@ export default function extract_css(
 ) {
 	const result: {
 		main: string | null;
-		chunks: Record<string, string[]>
+		chunks: Record<string, string[]>;
 	} = {
 		main: null,
 		chunks: {}
@@ -155,7 +155,7 @@ export default function extract_css(
 		}
 
 		if (sourcemap === 'inline') {
-			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64')
+			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64');
 			code += `\n/*# sourceMappingURL=${inline_sourcemap_header}${base64} */`;
 		}
 
@@ -270,7 +270,7 @@ export default function extract_css(
 		}
 
 		if (sourcemap === 'inline') {
-			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64')
+			const base64 = Buffer.from(JSON.stringify(map), 'utf8').toString('base64');
 			code += `\n/*# sourceMappingURL=${inline_sourcemap_header}${base64} */`;
 		}
 
