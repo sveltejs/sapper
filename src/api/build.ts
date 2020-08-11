@@ -20,7 +20,7 @@ type Opts = {
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
-	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
+	oncompile?: ({ type, result }: { type: string; result: CompileResult }) => void;
 };
 
 export async function build({

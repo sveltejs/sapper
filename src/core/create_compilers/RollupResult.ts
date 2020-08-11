@@ -17,15 +17,15 @@ export default class RollupResult implements CompileResult {
 	dependencies: Record<string, string[]>;
 	css_files: CssFile[];
 	css: {
-		main: string,
-		chunks: Record<string, string[]>
+		main: string;
+		chunks: Record<string, string[]>;
 	};
 	sourcemap: boolean | 'inline';
 	summary: string;
 
 	constructor(duration: number, compiler: RollupCompiler, sourcemap: boolean | 'inline') {
 		this.duration = duration;
-		this.sourcemap = sourcemap
+		this.sourcemap = sourcemap;
 
 		this.errors = compiler.errors.map(munge_warning_or_error);
 		this.warnings = compiler.warnings.map(munge_warning_or_error);
