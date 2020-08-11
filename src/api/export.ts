@@ -88,7 +88,7 @@ async function _export({
 	onfile = noop,
 	entry = '/'
 }: Opts = {}) {
-	basepath = basepath.replace(/^\//, '')
+	basepath = basepath.replace(/^\//, '');
 
 	cwd = path.resolve(cwd);
 	static_files = path.resolve(cwd, static_files);
@@ -199,7 +199,7 @@ async function _export({
 
 		return {
 			response: r,
-			url,
+			url
 		};
 	}
 
@@ -251,7 +251,7 @@ async function _export({
 						if (element === 'img') {
 							hrefs.push(get_src(attrs));
 						}
-						hrefs.push.apply(hrefs, get_srcset_urls(attrs));
+						hrefs.push(...get_srcset_urls(attrs));
 					}
 
 					hrefs = hrefs.filter(Boolean);
@@ -284,7 +284,7 @@ async function _export({
 		host,
 		host_header,
 		protocol,
-		root,
+		root
 	};
 
 	const queue = exportQueue({
@@ -295,8 +295,8 @@ async function _export({
 		handleFetch,
 		handleResponse,
 		callbacks: {
-			onDone: () => {},
-		},
+			onDone: () => {}
+		}
 	});
 
 	proc.on('message', message => {
@@ -304,27 +304,30 @@ async function _export({
 		queue.addSave(save(message.url, message.status, message.type, message.body));
 	});
 
-	return new Promise(async (res, rej) => {
+	return new Promise((res, rej) => {
 		queue.setCallback('onDone', () => {
 			proc.kill();
 			res();
 		});
 
-		try {
-			await ports.wait(port);
+		ports.wait(port).then(() => {
+			try {
+				for (const entryPoint of entryPoints) {
+					oninfo({
+						message: `Crawling ${entryPoint.href}`
+					});
+					handle(entryPoint, fetchOpts, queue.add);
+				}
 
-			for (const entryPoint of entryPoints) {
-				oninfo({
-					message: `Crawling ${entryPoint.href}`
-				});
-				handle(entryPoint, fetchOpts, queue.add);
+				const workerUrl = resolve(root.href, 'service-worker-index.html');
+				handle(workerUrl, fetchOpts, queue.add);
+			} catch (err) {
+				proc.kill();
+				rej(err);
 			}
-
-			const workerUrl = resolve(root.href, 'service-worker-index.html');
-			handle(workerUrl, fetchOpts, queue.add);
-		} catch (err) {
+		}).catch(err => {
 			proc.kill();
 			rej(err);
-		}
+		});
 	});
 }

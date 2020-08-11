@@ -17,10 +17,9 @@ jobs:
     - run: npm test
       env:
         CI: true
- # Uncomment with https://github.com/sveltejs/sapper/pull/1198
-#  Lint:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - uses: actions/setup-node@v1
-#    - run: 'npm i && npm run lint'
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - run: 'npm i && npm run lint'

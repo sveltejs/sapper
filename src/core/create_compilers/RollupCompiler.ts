@@ -165,7 +165,7 @@ export default class RollupCompiler {
 			}
 		};
 
-		const config: any = require(input).default;
+		const config: any = require(input).default; // eslint-disable-line
 		delete require.cache[input];
 
 		return config;

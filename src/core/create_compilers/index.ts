@@ -41,7 +41,7 @@ export default async function create_compilers(
 	}
 
 	if (bundler === 'webpack') {
-		const config = require(path.resolve(cwd, 'webpack.config.js'));
+		const config = require(path.resolve(cwd, 'webpack.config.js')); // eslint-disable-line
 		validate_config(config, 'webpack');
 
 		return {
