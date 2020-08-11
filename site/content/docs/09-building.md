@@ -14,14 +14,6 @@ The output is a Node app that you can run from the project root:
 node __sapper__/build
 ```
 
-If you're deploying your app to a different machine than the one you're building on, make sure that you install your production dependencies (required by `server.js`) by installing all dependencies from `package.json` using `--only=prod` (or `--only=production`):
-
-```bash
-npm install --only=prod
-```
-
-as well as including `__sapper__/build` and `static` directory with its contents in the same folder as `package.json`.
-
 ### Browser support
 
 Your site is built only for the latest versions of modern evergreen browsers by default. If you are using Rollup, you can use the `--legacy`<sup>1</sup> flag to build a second bundle that can be used to support legacy browsers like Internet Explorer. Sapper will then serve up the correct bundle at runtime<sup>2</sup>.
