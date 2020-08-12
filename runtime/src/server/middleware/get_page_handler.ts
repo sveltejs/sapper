@@ -318,7 +318,7 @@ export function get_page_handler(
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {
-				script += `</script><script ${nonce_attr} src="${main}" defer>`;
+				script += `</script><script${nonce_attr} src="${main}" defer>`;
 			}
 
 			let styles: string;
@@ -340,15 +340,15 @@ export function get_page_handler(
 				});
 
 				styles = Array.from(css_chunks)
-					.map(href => `<link ${nonce_attr} rel="stylesheet" href="client/${href}">`)
+					.map(href => `<link${nonce_attr} rel="stylesheet" href="client/${href}">`)
 					.join('')
 			} else {
-				styles = (css && css.code ? `<style ${nonce_attr}>${css.code}</style>` : '');
+				styles = (css && css.code ? `<style${nonce_attr}>${css.code}</style>` : '');
 			}
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script ${nonce_attr}>${script}</script>`)
+				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles);
