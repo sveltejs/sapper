@@ -50,9 +50,9 @@ function get_css_from_modules(modules: string[], css_map: Map<string, string>, a
 	const parts: string[] = [];
 	const mappings: codec.SourceMapMappings = [];
 
-	const sources = <string[]>[]
-	const sourcesContent = <string[]>[]
-	const names = <string[]>[]
+	const sources = <string[]>[];
+	const sourcesContent = <string[]>[];
+	const names = <string[]>[];
 
 	modules.forEach(module => {
 		if (!/\.css$/.test(module)) return;
@@ -96,7 +96,7 @@ function get_css_from_modules(modules: string[], css_map: Map<string, string>, a
 				sourcesContent,
 				names,
 				mappings: codec.encode(mappings)
-			},
+			}
 		};
 	}
 

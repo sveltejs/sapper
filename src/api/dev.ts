@@ -398,7 +398,7 @@ class Watcher extends EventEmitter {
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
 						client: this.current_build.rebuilding.has('client'),
-						serviceworker: this.current_build.rebuilding.has('serviceworker'),
+						serviceworker: this.current_build.rebuilding.has('serviceworker')
 					}
 				} as InvalidEvent);
 
@@ -454,7 +454,7 @@ class DevServer {
 				'Access-Control-Allow-Headers': 'Cache-Control',
 				'Content-Type': 'text/event-stream;charset=utf-8',
 				'Cache-Control': 'no-cache, no-transform',
-				'Connection': 'keep-alive',
+				Connection: 'keep-alive',
 				// While behind nginx, event stream should not be buffered:
 				// http://nginx.org/docs/http/ngx_http_proxy_module.html#proxy_buffering
 				'X-Accel-Buffering': 'no'

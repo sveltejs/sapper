@@ -7,6 +7,7 @@ import extract_css from './extract_css';
 import { left_pad, normalize_path } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 import { ManifestData, Dirs } from '../../interfaces';
+import { version as shimport_version} from 'shimport/package.json';
 
 export default class RollupResult implements CompileResult {
 	duration: number;
@@ -98,7 +99,7 @@ export default class RollupResult implements CompileResult {
 
 		return {
 			bundler: 'rollup',
-			shimport: require('shimport/package.json').version,
+			shimport: shimport_version,
 			assets: this.assets,
 			dependencies,
 

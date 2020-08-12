@@ -14,7 +14,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {
 		const ext = component_extensions.find((ext) => fs.existsSync(path.join(cwd, dir, `${file_name}${ext}`)));
-		const file = posixify(path.join(dir, `${file_name}${ext}`))
+		const file = posixify(path.join(dir, `${file_name}${ext}`));
 
 		return ext
 			? {
@@ -77,7 +77,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
-					if (part.qualifier && /[\(\)\?\:]/.test(part.qualifier.slice(1, -1))) {
+					if (part.qualifier && /[()?:]/.test(part.qualifier.slice(1, -1))) {
 						throw new Error(`Invalid route ${file} — cannot use (, ), ? or : in route qualifiers`);
 					}
 				});
@@ -164,7 +164,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 					name: `route_${get_slug(item.file)}`,
 					pattern: get_pattern(segments, !item.route_suffix),
 					file: item.file,
-					params: params
+					params
 				});
 			}
 		});
@@ -219,7 +219,7 @@ type Part = {
 
 function is_spread(path: string) {
 	const spread_pattern = /\[\.{3}/g;
-	return spread_pattern.test(path)
+	return spread_pattern.test(path);
 }
 
 function comparator(

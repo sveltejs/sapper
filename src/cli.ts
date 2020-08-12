@@ -251,13 +251,13 @@ prog.command('export [dest]')
 
 				onfile: event => {
 					const size_color = event.size > 150000 ? colors.bold().red : event.size > 50000 ? colors.bold().yellow : colors.bold().gray;
-						const size_label = size_color(left_pad(pb(event.size), 10));
+					const size_label = size_color(left_pad(pb(event.size), 10));
 
-						const file_label = event.status === 200
-							? event.file
-							: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+					const file_label = event.status === 200
+						? event.file
+						: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
 
-						console.log(`${size_label}   ${file_label}`);
+					console.log(`${size_label}   ${file_label}`);
 				}
 			});
 

@@ -115,7 +115,7 @@ export const reserved_words = new Set([
 	'void',
 	'while',
 	'with',
-	'yield',
+	'yield'
 ]);
 
 export function normalize_path(user_path) {
