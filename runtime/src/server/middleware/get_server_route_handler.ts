@@ -37,7 +37,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 						method: req.method,
 						status: res.statusCode,
 						type: headers['content-type'],
-						body: Buffer.concat(chunks).toString()
+						body: Buffer.concat(chunks)
 					});
 				};
 			}

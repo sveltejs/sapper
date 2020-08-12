@@ -42,15 +42,32 @@ describe('export', function() {
 			'service-worker-index.html',
 			'service-worker.js',
 			'test.pdf',
+			'img/example-192.png',
+			'img/example-512.png',
+			'pdfs/test.pdf',
 			...boom
 		].sort());
 	});
 
 	it('does not corrupt binary file links (like pdf)', () => {
-		const input = readFileSync(`${__dirname}/static/test.pdf`)
-		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`)
-		assert.ok(input.equals(output))
-	})
+		const input = readFileSync(`${__dirname}/static/test.pdf`);
+		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`);
+		assert.ok(input.equals(output));
+	});
+
+	it('does not corrupt image files from server routes', () => {
+		for(const file of ['example-192.png', 'example-512.png']) {
+			const input = readFileSync(`${__dirname}/content/${file}`);
+			const output = readFileSync(`${__dirname}/__sapper__/export/img/${file}`);
+			assert.ok(input.equals(output));
+		}
+	});
+
+	it('does not corrupt pdf files from server routes', () => {
+		const input = readFileSync(`${__dirname}/content/test.pdf`);
+		const output = readFileSync(`${__dirname}/__sapper__/export/pdfs/test.pdf`);
+		assert.ok(input.equals(output));
+	});
 
 	// TODO test timeout, basepath
 });
