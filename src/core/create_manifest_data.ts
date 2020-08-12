@@ -19,7 +19,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 		return ext
 			? {
 				name: component_name,
-				file: file
+				file
 			}
 			: null;
 	}
@@ -47,8 +47,8 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 		parent_segments: Part[][],
 		parent_params: string[],
 		stack: Array<{
-			component: PageComponent,
-			params: string[]
+			component: PageComponent;
+			params: string[];
 		}>
 	) {
 		const items = fs.readdirSync(dir)
@@ -151,7 +151,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 				const parts = (item.is_index && stack[stack.length - 1] === null)
 					? stack.slice(0, -1).concat({ component, params })
-					: stack.concat({ component, params })
+					: stack.concat({ component, params });
 
 				pages.push({
 					pattern: get_pattern(segments, true),
@@ -223,8 +223,8 @@ function is_spread(path: string) {
 }
 
 function comparator(
-	a: { basename: string, parts: Part[], file: string, is_index: boolean },
-	b: { basename: string, parts: Part[], file: string, is_index: boolean }
+	a: { basename: string; parts: Part[]; file: string; is_index: boolean; },
+	b: { basename: string; parts: Part[]; file: string; is_index: boolean; }
 ) {
 	if (a.is_index !== b.is_index) {
 		if (a.is_index) return is_spread(a.file) ? 1 : -1;
@@ -243,7 +243,7 @@ function comparator(
 
 		// if spread && index, order later
 		if (a_sub_part.spread && b_sub_part.spread) {
-			return a.is_index ? 1 : -1
+			return a.is_index ? 1 : -1;
 		}
 
 		// If one is ...spread order it later
@@ -287,7 +287,7 @@ function get_parts(part: string): Part[] {
 
 			const [, content, qualifier] = dynamic
 				? /([^(]+)(\(.+\))?$/.exec(str)
-				: [, str, null];
+				: [null, str, null];
 
 			return {
 				content,
@@ -301,12 +301,12 @@ function get_parts(part: string): Part[] {
 
 function get_slug(file: string) {
 	let name = file
-		.replace(/[\\\/]index/, '')
-		.replace(/[\/\\]/g, '_')
+		.replace(/[\\/]index/, '')
+		.replace(/[/\\]/g, '_')
 		.replace(/\.\w+$/, '')
 		.replace(/\[([^(]+)(?:\([^(]+\))?\]/, '$$$1')
 		.replace(/[^a-zA-Z0-9_$]/g, c => {
-			return c === '.' ? '_' : `$${c.charCodeAt(0)}`
+			return c === '.' ? '_' : `$${c.charCodeAt(0)}`;
 		});
 
 	if (reserved_words.has(name)) name += '_';

@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
+* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358) and [#1379](https://github.com/sveltejs/sapper/pull/1379))
+
 ## 0.28.0
 
 * 🎉 TypeScript support! 🎉

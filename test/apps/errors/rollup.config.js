@@ -27,7 +27,7 @@ export default {
 
 	server: {
 		input: config.server.input(),
-		output: config.server.output(),
+		output: Object.assign({}, config.server.output(), { sourcemap: true }),
 		plugins: [
 			replace({
 				'process.browser': false,

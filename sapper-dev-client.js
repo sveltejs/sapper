@@ -13,7 +13,7 @@ function check() {
 export function connect(port) {
 	if (source || !window.EventSource) return;
 
-	source = new EventSource(`http://${window.location.hostname}:${port}/__sapper__`);
+	source = new EventSource(`${window.location.protocol}://${window.location.hostname}:${port}/__sapper__`);
 
 	window.source = source;
 

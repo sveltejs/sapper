@@ -8,7 +8,7 @@ export default {
 
 	client: {
 		input: (): InputOption => {
-			return `${src}/client.js`
+			return `${src}/client.js`;
 		},
 
 		output: (): OutputOptions => {
@@ -51,7 +51,7 @@ export default {
 				file: `${dest}/service-worker.js`,
 				format: 'iife',
 				sourcemap
-			}
+			};
 		}
 	}
 };
