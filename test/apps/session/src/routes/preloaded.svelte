@@ -1,7 +1,7 @@
 <script context="module">
 	export function preload(page, { title }) {
 		return { title };
-	};
+	}
 </script>
 
 <script>

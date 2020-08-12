@@ -194,13 +194,13 @@ export function get_page_handler(
 							params
 						}, session)
 						: {};
-				}))
+				}));
 			}
 
 			preloaded = await Promise.all(toPreload);
 		} catch (err) {
 			if (error) {
-				return bail(req, res, err)
+				return bail(req, res, err);
 			}
 
 			preload_error = { statusCode: 500, message: err };
@@ -338,7 +338,7 @@ export function get_page_handler(
 
 				styles = Array.from(css_chunks)
 					.map(href => `<link rel="stylesheet" href="client/${href}">`)
-					.join('')
+					.join('');
 			} else {
 				styles = (css && css.code ? `<style>${css.code}</style>` : '');
 			}
@@ -355,9 +355,9 @@ export function get_page_handler(
 
 			res.statusCode = status;
 			res.end(body);
-		} catch(err) {
+		} catch (err) {
 			if (error) {
-				bail(req, res, err)
+				bail(req, res, err);
 			} else {
 				handle_error(req, res, 500, err);
 			}

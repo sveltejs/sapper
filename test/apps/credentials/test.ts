@@ -79,7 +79,7 @@ describe('credentials', function() {
 	// TODO: write a test for not sending authorization to different origin with credentials: "same-origin"
 
 	it('delegates to fetch on the client', async () => {
-		await r.load('/')
+		await r.load('/');
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 

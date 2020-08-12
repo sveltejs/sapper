@@ -32,8 +32,8 @@ describe('scroll', function() {
 		assert.ok(scrollY > 0, String(scrollY));
 
 		scrollY = await r.page.evaluate(() => {
-			window.scrollTo(0, 0)
-			return window.scrollY
+			window.scrollTo(0, 0);
+			return window.scrollY;
 		});
 		assert.ok(scrollY === 0, String(scrollY));
 
@@ -105,12 +105,12 @@ describe('scroll', function() {
 	  await r.load(`/search-form#search`);
 	  await r.sapper.start();
 
-	  let initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
 	  assert.ok(initialScrollY > 0, String(initialScrollY));
 
 	  await r.page.click(`button#scroll`);
 
-	  let scrollY = await r.page.evaluate(() => window.scrollY);
+	  const scrollY = await r.page.evaluate(() => window.scrollY);
 	  assert.ok(scrollY === 0, String(scrollY));
   });
 
@@ -118,12 +118,12 @@ describe('scroll', function() {
 	  await r.load(`/search-form#search`);
 	  await r.sapper.start();
 
-	  let initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
 	  assert.ok(initialScrollY > 0, String(initialScrollY));
 
 	  await r.page.click(`button#preserve`);
 
-	  let scrollY = await r.page.evaluate(() => window.scrollY);
+	  const scrollY = await r.page.evaluate(() => window.scrollY);
 	  assert.ok(scrollY === initialScrollY, String(scrollY));
   });
 

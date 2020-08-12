@@ -130,7 +130,7 @@ describe('errors', function() {
 			await r.text('h2'),
 			'success'
 		);
-	})
+	});
 
 	it('does not serve error page for async non-page error', async () => {
 		await r.load('/async-throw.json');

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
-import { readFileSync } from 'fs'
+import { readFileSync } from 'fs';
 
 describe('export', function() {
 	this.timeout(10000);
@@ -56,7 +56,7 @@ describe('export', function() {
 	});
 
 	it('does not corrupt image files from server routes', () => {
-		for(const file of ['example-192.png', 'example-512.png']) {
+		for (const file of ['example-192.png', 'example-512.png']) {
 			const input = readFileSync(`${__dirname}/content/${file}`);
 			const output = readFileSync(`${__dirname}/__sapper__/export/img/${file}`);
 			assert.ok(input.equals(output));

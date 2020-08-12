@@ -18,17 +18,17 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 				// intercept data so that it can be exported
 				res.write = function(chunk: any) {
 					chunks.push(Buffer.from(chunk));
-					write.apply(res, arguments);
+					write.apply(res, [chunk]);
 				};
 
 				res.setHeader = function(name: string, value: string) {
 					headers[name.toLowerCase()] = value;
-					setHeader.apply(res, arguments);
+					setHeader.apply(res, [name, value]);
 				};
 
 				res.end = function(chunk?: any) {
 					if (chunk) chunks.push(Buffer.from(chunk));
-					end.apply(res, arguments);
+					end.apply(res, [chunk]);
 
 					process.send({
 						__sapper__: true,
