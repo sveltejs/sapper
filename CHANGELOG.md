@@ -2,8 +2,10 @@
 
 ## Unreleased
 
+* Fix exporting server routes which return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
+* Follow `<img src>`, `<source src>`, and `<source srcset>` when crawling site during export ([#1104](https://github.com/sveltejs/sapper/issues/1104))
 * Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
-* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358) and [#1379](https://github.com/sveltejs/sapper/pull/1379))
+* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
 
 ## 0.28.0
 
