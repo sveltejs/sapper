@@ -85,7 +85,7 @@ export function extract_query(search: string) {
 	const query = Object.create(null);
 	if (search.length > 0) {
 		search.slice(1).split('&').forEach(searchParam => {
-			let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
+			const [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
 			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
 			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 			else query[key] = value;
@@ -129,7 +129,7 @@ export function handle_error(url: URL) {
 	const { session, preloaded, status, error } = initial_data;
 
 	if (!root_preloaded) {
-		root_preloaded = preloaded && preloaded[0]
+		root_preloaded = preloaded && preloaded[0];
 	}
 
 	const props = {
@@ -148,7 +148,7 @@ export function handle_error(url: URL) {
 		},
 		segments: preloaded
 
-	}
+	};
 	const query = extract_query(search);
 	render(null, [], props, { host, path: pathname, query, params: {} });
 }

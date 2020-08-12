@@ -135,7 +135,7 @@ function handle_popstate(event: PopStateEvent) {
 		if (target) {
 			navigate(target, event.state.id);
 		} else {
-			location.href = location.href;
+			location = location.href;
 		}
 	} else {
 		// hashchange

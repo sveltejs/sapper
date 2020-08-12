@@ -7,7 +7,7 @@
 
 	onMount(() => {
 		mounted = 'success';
-	})
+	});
 </script>
 
 <h1>{status}</h1>

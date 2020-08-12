@@ -237,7 +237,7 @@ describe('basics', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click('a[href="echo-query?p=one&p=two"]')
+		await r.page.click('a[href="echo-query?p=one&p=two"]');
 
 		assert.equal(
 			await r.text('h1'),
@@ -350,7 +350,7 @@ describe('basics', function() {
 	it('runs server route handlers before page handlers, if they match', async () => {
 		const json = await get(`${r.base}/middleware`, {
 			headers: {
-				'Accept': 'application/json'
+				Accept: 'application/json'
 			}
 		});
 

@@ -11,7 +11,7 @@ type Child = {
 export interface ComponentConstructor {
 	new (options: { target: Node, props: any, hydrate: boolean }): Component;
 	preload: (props: { params: Params, query: Query }) => Promise<any>;
-};
+}
 
 export interface Component {
 	$set: (data: any) => void;

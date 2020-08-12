@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer';
 import { fork, ChildProcess } from 'child_process';
 import { AddressInfo } from 'net';
 
-import { wait } from '../utils'
+import { wait } from '../utils';
 
 const DEFAULT_ENTRY = '__sapper__/build/server/server.js';
 const DELAY = parseInt(process.env.SAPPER_TEST_DELAY) || 50;
@@ -127,7 +127,7 @@ export class AppRunner {
 
 			function handle_requestfailed(request: puppeteer.Request) {
 				cleanup();
-				reject(new Error(`failed to fetch ${request.url()}`))
+				reject(new Error(`failed to fetch ${request.url()}`));
 			}
 
 			const cleanup = () => {

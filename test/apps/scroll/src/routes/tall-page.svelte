@@ -4,7 +4,7 @@
 	export let barLink = false;
 
 	onMount(() => {
-		barLink = true
+		barLink = true;
 	});
 </script>
 

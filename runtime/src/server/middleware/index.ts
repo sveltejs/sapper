@@ -6,7 +6,7 @@ import { Handler, Req, Res } from './types';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
-type IgnoreValue = Array | RegExp | function | string;
+type IgnoreValue = any[] | RegExp | function | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
@@ -109,7 +109,7 @@ export function serve({ prefix, pathname, cache_control }: {
 
 	const read = dev
 		? (file: string) => fs.readFileSync(path.join(build_dir, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file)
+		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file);
 
 	return (req: Req, res: Res, next: () => void) => {
 		if (filter(req)) {
@@ -138,4 +138,4 @@ export function serve({ prefix, pathname, cache_control }: {
 	};
 }
 
-function noop(){}
+function noop() {}
