@@ -50,6 +50,29 @@ function get_href(attrs: string) {
 	return match && (match[1] || match[2] || match[3]);
 }
 
+function get_src(attrs: string) {
+	const match = /src\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
+	return match && (match[1] || match[2] || match[3]);
+}
+
+export function get_srcset_urls(attrs: string) {
+	const results: string[] = [];
+	// Note that the srcset allows any ASCII whitespace, including newlines.
+	const match = /srcset\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/s.exec(attrs);
+	if (match) {
+		const attr_content = match[1] || match[2] || match[3];
+		// Parse the content of the srcset attribute.
+		// The regexp is modelled after the srcset specs (https://html.spec.whatwg.org/multipage/images.html#srcset-attribute)
+		// and should cover most reasonable cases.
+		const regex = /\s*([^\s,]\S+[^\s,])\s*((?:\d+w)|(?:-?\d+(?:\.\d+)?(?:[eE]-?\d+)?x))?/gm;
+		let sub_matches;
+		while (sub_matches = regex.exec(attr_content)) {
+			results.push(sub_matches[1]);
+		}
+	}
+	return results;
+}
+
 export { _export as export };
 
 async function _export({
@@ -109,7 +132,7 @@ async function _export({
 	const seen = new Set();
 	const saved = new Set();
 
-	function save(url: string, status: number, type: string, body: string) {
+	function save(url: string, status: number, type: string, body: string | ArrayBuffer) {
 		const { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
@@ -122,12 +145,19 @@ async function _export({
 			if (!file.endsWith('.html')) {
 				file = file === '' ? 'index.html' : `${file}/index.html`;
 			}
-			body = minify_html(body);
+
+			if (typeof body === 'string') {
+				body = minify_html(body);
+			} else {
+				oninfo({ message: `Content of {url} has content-type text/html but the content was received as a binary buffer. The HTML will not be minified.` });
+			}
 		}
+
+		const buffer = Buffer.from(body);
 
 		onfile({
 			file,
-			size: body.length,
+			size: buffer.byteLength,
 			status
 		});
 
@@ -135,7 +165,7 @@ async function _export({
 		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
 
-		return writeFile(export_file, body);
+		return writeFile(export_file, buffer);
 	}
 
 	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
@@ -184,7 +214,9 @@ async function _export({
 
 		let type = response.headers.get('Content-Type');
 
-		let body = await response.text();
+		let body = type.startsWith('text/')
+			? await response.text()
+			: await response.arrayBuffer();
 
 		const range = ~~(response.status / 100);
 
@@ -193,26 +225,38 @@ async function _export({
 			const link = parseLinkHeader(response.headers.get('Link') || '');
 			link.refs.forEach((ref: Ref) => {
 				if (ref.rel === 'preload') {
-					body = body.replace('</head>',
+					body = (body as string).replace('</head>',
 						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`);
 				}
 			});
 
 			if (pathname !== '/service-worker-index.html') {
-				const cleaned = clean_html(body);
+				const cleaned = clean_html(body as string);
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 				const base_href = base_match && get_href(base_match[1]);
 				const base = resolve(url.href, base_href);
 
 				let match;
-				const pattern = /<a ([\s\S]+?)>/gm;
+				const pattern = /<(a|img|source)\s+([\s\S]+?)>/gm;
 
 				while (match = pattern.exec(cleaned)) {
-					const attrs = match[1];
-					const href = get_href(attrs);
+					let hrefs: string[] = [];
+					const element = match[1];
+					const attrs = match[2];
 
-					if (href) {
+					if (element === 'a') {
+						hrefs.push(get_href(attrs));
+					} else {
+						if (element === 'img') {
+							hrefs.push(get_src(attrs));
+						}
+						hrefs.push.apply(hrefs, get_srcset_urls(attrs));
+					}
+
+					hrefs = hrefs.filter(Boolean);
+
+					for (const href of hrefs) {
 						const url = resolve(base.href, href);
 
 						if (url.protocol === protocol && url.host === host) {
