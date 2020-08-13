@@ -2,8 +2,8 @@ import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
 import { Query } from '@sapper/internal/shared';
 import {
-	DOMComponentConstructor,
 	DOMComponentLoader,
+	DOMComponentModule,
 	ErrorComponent,
 	ignore,
 	components,
@@ -373,10 +373,7 @@ function load_css(chunk: string) {
 	});
 }
 
-export function load_component(component: DOMComponentLoader): Promise<{
-	default: DOMComponentConstructor,
-	preload?: (input: any) => any
-}> {
+export function load_component(component: DOMComponentLoader): Promise<DOMComponentModule> {
 	// TODO this is temporary — once placeholders are
 	// always rewritten, scratch the ternary
 	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
