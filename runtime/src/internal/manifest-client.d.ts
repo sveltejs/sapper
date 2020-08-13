@@ -14,11 +14,11 @@ export interface DOMComponent {
 	$destroy: () => void;
 }
 
-export interface ComponentConstructor {
+export interface DOMComponentConstructor {
   new(options: { target: Element, props: unknown, hydrate: boolean }): DOMComponent;
 }
 
-export interface ComponentLoader {
+export interface DOMComponentLoader {
   js: () => Promise<DOMComponentModule>,
   css: string[]
 }
@@ -31,8 +31,8 @@ export interface Route {
   }>;
 }
 
-export const ErrorComponent: ComponentConstructor;
-export const components: ComponentLoader[];
+export const ErrorComponent: DOMComponentConstructor;
+export const components: DOMComponentLoader[];
 export const ignore: RegExp[];
 export const root_comp: { preload: Preload };
 export const routes: Route[];

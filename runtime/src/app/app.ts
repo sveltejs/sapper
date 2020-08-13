@@ -2,8 +2,8 @@ import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
 import { Query } from '@sapper/internal/shared';
 import {
-	ComponentConstructor,
-	ComponentLoader,
+	DOMComponentConstructor,
+	DOMComponentLoader,
 	ErrorComponent,
 	ignore,
 	components,
@@ -373,8 +373,8 @@ function load_css(chunk: string) {
 	});
 }
 
-export function load_component(component: ComponentLoader): Promise<{
-	default: ComponentConstructor,
+export function load_component(component: DOMComponentLoader): Promise<{
+	default: DOMComponentConstructor,
 	preload?: (input: any) => any
 }> {
 	// TODO this is temporary — once placeholders are

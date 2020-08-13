@@ -1,11 +1,10 @@
-import { Route } from '@sapper/internal/manifest-client';
-import { ComponentConstructor } from '@sapper/internal/shared';
+import { DOMComponentConstructor, Route } from '@sapper/internal/manifest-client';
 
 export interface HydratedTarget {
 	redirect?: Redirect;
 	preload_error?: any;
 	props: any;
-	branch: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
+	branch: Array<{ Component: DOMComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
 }
 
 export interface ScrollPosition {
