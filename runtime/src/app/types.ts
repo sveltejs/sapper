@@ -1,46 +1,33 @@
-export type Params = Record<string, string>;
-export type Query = Record<string, string | string[]>;
-export type RouteData = { params: Params, query: Query, path: string };
+import { Route } from '@sapper/internal/manifest-client';
+import { ComponentConstructor } from '@sapper/internal/shared';
 
-type Child = {
-	segment?: string;
-	props?: any;
-	component?: Component;
-};
-
-export interface Component {
-	$set: (data: any) => void;
-	$destroy: () => void;
+export interface HydratedTarget {
+	redirect?: Redirect;
+	preload_error?: any;
+	props: any;
+	branch: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
 }
 
-export type Route = {
-	pattern: RegExp;
-	parts: Array<{
-		i: number;
-		params?: (match: RegExpExecArray) => Record<string, string>;
-	}>;
-};
-
-export type ScrollPosition = {
+export interface ScrollPosition {
 	x: number;
 	y: number;
-};
+}
 
-export type Target = {
+export interface Target {
 	href: string;
 	route: Route;
 	match: RegExpExecArray;
 	page: Page;
-};
+}
 
-export type Redirect = {
+export interface Redirect {
 	statusCode: number;
 	location: string;
-};
+}
 
-export type Page = {
+export interface Page {
 	host: string;
 	path: string;
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;
-};
+}

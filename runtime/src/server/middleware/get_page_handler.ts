@@ -6,8 +6,7 @@ import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
-import { Page, Props, Req, Res } from './types';
-import { Manifest, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
+import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
@@ -39,13 +38,14 @@ export function get_page_handler(
 	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
 		handle_page({
 			pattern: null,
+			resources: [],
 			parts: [
 				{ name: null, component: { default: error_route } }
 			]
 		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
 	}
 
-	async function handle_page(page: Page, req: Req, res: Res, status = 200, error: Error | string = null) {
+	async function handle_page(page: ManifestPage, req: Req, res: Res, status = 200, error: Error | string = null) {
 		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',

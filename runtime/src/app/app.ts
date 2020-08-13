@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { ComponentConstructor } from '@sapper/internal/shared';
+import { ComponentConstructor, Query } from '@sapper/internal/shared';
 import {
 	ComponentLoader,
 	ErrorComponent,
@@ -10,23 +10,14 @@ import {
 	routes
 } from '@sapper/internal/manifest-client';
 import {
+	HydratedTarget,
 	Target,
 	ScrollPosition,
-	Component,
 	Redirect,
-	Route,
-	Query,
 	Page
 } from './types';
 import goto from './goto';
 import { page_store } from './stores';
-
-type HydratedTarget = {
-	redirect?: Redirect;
-	preload_error?: any;
-	props: any;
-	branch: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
-}
 
 declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
