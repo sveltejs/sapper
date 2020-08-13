@@ -31,7 +31,7 @@
     "@rollup/plugin-node-resolve": "^8.0.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-sucrase": "^3.0.2",
-    "@sveltejs/eslint-config": "github:sveltejs/eslint-config#v0.0.1",
+    "@sveltejs/eslint-config": "github:sveltejs/eslint-config#v5.0.0",
     "@types/mocha": "^8.0.0",
     "@types/node": "=8",
     "@typescript-eslint/eslint-plugin": "^3.0.2",
