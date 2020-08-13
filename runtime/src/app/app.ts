@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { ComponentConstructor, Query } from '@sapper/internal/shared';
+import { Query } from '@sapper/internal/shared';
 import {
+	ComponentConstructor,
 	ComponentLoader,
 	ErrorComponent,
 	ignore,

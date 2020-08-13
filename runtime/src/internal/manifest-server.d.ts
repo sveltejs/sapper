@@ -1,7 +1,7 @@
 import { ClientRequest, ServerResponse } from 'http';
 import { TLSSocket } from 'tls';
 import {
-  ComponentModule,
+  SSRComponentModule,
   SSRComponent
 } from './shared';
 
@@ -10,10 +10,23 @@ export const build_dir: string;
 export const dev: boolean;
 export const manifest: Manifest;
 
+export interface SSRComponentModule {
+  default: SSRComponent;
+  preload?: Preload;
+}
+
+export interface SSRComponent {
+  render(props: unknown): {
+    html: string
+    head: string
+    css: { code: string, map: unknown };
+  }
+}
+
 export interface Manifest {
   server_routes: ServerRoute[];
   ignore: RegExp[];
-  root_comp: ComponentModule
+  root_comp: SSRComponentModule
   error: SSRComponent
   pages: ManifestPage[]
 }
@@ -26,7 +39,7 @@ export interface ManifestPage {
 export interface ManifestPagePart {
   name: string | null;
   file?: string;
-  component: ComponentModule;
+  component: SSRComponentModule;
   params?: (match: RegExpMatchArray | null) => Record<string, string>;
 }
 

@@ -1,11 +1,25 @@
 import {
   ComponentConstructor,
-  ComponentModule,
+  DOMComponentModule,
   Preload
 } from './shared';
 
+export interface DOMComponentModule {
+  default: ComponentConstructor;
+  preload?: Preload;
+}
+
+export interface DOMComponent {
+	$set: (data: any) => void;
+	$destroy: () => void;
+}
+
+export interface ComponentConstructor {
+  new(options: { target: Element, props: unknown, hydrate: boolean }): DOMComponent;
+}
+
 export interface ComponentLoader {
-  js: () => Promise<ComponentModule>,
+  js: () => Promise<DOMComponentModule>,
   css: string[]
 }
 
