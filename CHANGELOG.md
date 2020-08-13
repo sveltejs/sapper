@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Provide TypeScript declarations ([#1402](https://github.com/sveltejs/sapper/pull/1402))
 * Fix exporting server routes which return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
 * Follow `<img src>`, `<source src>`, and `<source srcset>` when crawling site during export ([#1104](https://github.com/sveltejs/sapper/issues/1104))
 * Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
