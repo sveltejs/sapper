@@ -17,8 +17,8 @@ export interface Route {
   }>;
 }
 
-export const ErrorComponent: ComponentConstructor
-export const components: ComponentLoader[]
-export const ignore: RegExp[]
-export const root_comp: { preload: Preload }
-export const routes: Route[]
+export const ErrorComponent: ComponentConstructor;
+export const components: ComponentLoader[];
+export const ignore: RegExp[];
+export const root_comp: { preload: Preload };
+export const routes: Route[];

@@ -5,10 +5,10 @@ import {
   SSRComponent
 } from './shared';
 
-export const src_dir: string
-export const build_dir: string
-export const dev: boolean
-export const manifest: Manifest
+export const src_dir: string;
+export const build_dir: string;
+export const dev: boolean;
+export const manifest: Manifest;
 
 export interface Manifest {
   server_routes: ServerRoute[];

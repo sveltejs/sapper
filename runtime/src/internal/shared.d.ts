@@ -1,4 +1,4 @@
-export const CONTEXT_KEY: unknown
+export const CONTEXT_KEY: unknown;
 
 export type Params = Record<string, string>;
 export type Query = Record<string, string | string[]>;

@@ -65,7 +65,7 @@ export function set_prefetching(href, promise) {
 	prefetching = { href, promise };
 }
 
-export let target: Node;
+export let target: Element;
 export function set_target(element) {
 	target = element;
 }

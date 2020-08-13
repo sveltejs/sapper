@@ -40,6 +40,7 @@
     "cross-env": "^7.0.2",
     "devalue": "^2.0.0",
     "eslint": "^7.1.0",
+    "eslint-import-resolver-typescript": "^2.2.0",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-svelte3": "^2.7.3",
     "kleur": "^4.0.0",
