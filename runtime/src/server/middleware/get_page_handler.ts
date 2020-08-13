@@ -23,8 +23,7 @@ export function get_page_handler(
 
 	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
 
-	const { server_routes, pages } = manifest;
-	const error_route = manifest.error;
+	const { pages, error: error_route } = manifest;
 
 	function bail(req: Req, res: Res, err: Error) {
 		console.error(err);
@@ -38,7 +37,6 @@ export function get_page_handler(
 	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
 		handle_page({
 			pattern: null,
-			resources: [],
 			parts: [
 				{ name: null, component: { default: error_route } }
 			]
@@ -260,15 +258,9 @@ export function get_page_handler(
 				level0: {
 					props: preloaded[0]
 				},
-				level1: error ? {
-					component: manifest.error,
-					props: {
-						error,
-						status
-					}
-				} : {
-					component: page.parts[0]?.component.default,
-					props: preloaded[1] || {}
+				level1: {
+					segment: segments[0],
+					props: {}
 				}
 			};
 
@@ -336,8 +328,8 @@ export function get_page_handler(
 					const css_chunks_for_part = build_info.css.chunks[part.file];
 
 					if (css_chunks_for_part) {
-						css_chunks_for_part.forEach(file => {
-							css_chunks.add(file);
+						css_chunks_for_part.forEach(chunk => {
+							css_chunks.add(chunk);
 						});
 					}
 				});

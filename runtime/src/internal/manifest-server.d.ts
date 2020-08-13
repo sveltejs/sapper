@@ -20,7 +20,6 @@ export interface Manifest {
 
 export interface ManifestPage {
   pattern: RegExp | null;
-  resources: ManifestResource[]; // list of assets needed for transitive dependencies
   parts: ManifestPagePart[];
 }
 
@@ -29,11 +28,6 @@ export interface ManifestPagePart {
   file?: string;
   component: ComponentModule;
   params?: (match: RegExpMatchArray | null) => Record<string, string>;
-}
-
-export interface ManifestResource {
-  type: 'style' | 'script' | 'module'
-  file: string
 }
 
 export type Handler = (req: Req, res: Res, next: () => void) => void;
