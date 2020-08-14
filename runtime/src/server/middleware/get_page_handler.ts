@@ -377,8 +377,11 @@ export function get_page_handler(
 				return;
 			}
 		}
-
-		handle_error(req, res, 404, 'Not found');
+		
+ 		// Pass the 404 error to the user.
+		// Useful if using a non `express` framework such as fastify.
+		next();
+		return;
 	};
 }
 
