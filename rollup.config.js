@@ -1,7 +1,7 @@
-import sucrase from '@rollup/plugin-sucrase';
+import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
+import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import { builtinModules } from 'module';
 
@@ -11,6 +11,13 @@ const external = [].concat(
 	'sapper/core.js',
 	'svelte/compiler'
 );
+
+const tsOptions = {
+	check: !!process.env.TS_CHECK_ENABLED,
+	tsconfigOverride: {
+		compilerOptions: { module: 'esnext' }
+	}
+};
 
 function template(kind, external) {
 	return {
@@ -26,9 +33,7 @@ function template(kind, external) {
 				extensions: ['.mjs', '.js', '.ts', '.json']
 			}),
 			commonjs(),
-			sucrase({
-				transforms: ['typescript']
-			})
+			typescript(tsOptions)
 		]
 	};
 }
@@ -58,9 +63,7 @@ export default [
 				extensions: ['.mjs', '.js', '.ts']
 			}),
 			commonjs(),
-			sucrase({
-				transforms: ['typescript']
-			})
+			typescript(tsOptions)
 		]
 	}
 ];

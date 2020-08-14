@@ -135,7 +135,7 @@ function handle_popstate(event: PopStateEvent) {
 		if (target) {
 			navigate(target, event.state.id);
 		} else {
-			location = location.href;
+			location.href = location.href; // eslint-disable-line
 		}
 	} else {
 		// hashchange

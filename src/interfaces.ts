@@ -99,14 +99,3 @@ export type BuildEvent = {
 	duration: number;
 	result: CompileResult;
 };
-
-export type FileEvent = {
-	file: string;
-	size: number;
-};
-
-export type FailureEvent = {
-
-};
-
-export type DoneEvent = {};

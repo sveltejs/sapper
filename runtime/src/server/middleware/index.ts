@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime/lite';
-import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
-import { Handler, Req, Res } from './types';
+import { Handler, Req, Res, build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
-type IgnoreValue = any[] | RegExp | function | string;
+type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,

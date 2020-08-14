@@ -1,5 +1,5 @@
 import * as path from 'path';
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import { fork, ChildProcess } from 'child_process';
 import { AddressInfo } from 'net';
 
