@@ -92,7 +92,7 @@ function generate_client_manifest(
 	dev: boolean,
 	dev_port?: number,
 	ssr?: boolean,
-	hashbang?: boolean,
+	hashbang?: boolean
 ) {
 	const page_ids = new Set(manifest_data.pages.map(page =>
 		page.pattern.toString()));
@@ -119,13 +119,13 @@ function generate_client_manifest(
 	}).join(',\n\t\t\t\t')}
 	]`.replace(/^\t/gm, '');
 
-	let route_list = manifest_data.pages.map(page => {
+	const route_list = manifest_data.pages.map(page => {
 		const part = page.parts[page.parts.length - 1];
 		const component = part.component;
 
 		const name = (`route_${component.name}`).toUpperCase();
 
-		let route = get_route_factory(component.file, part.params.length > 0, hashbang);
+		const route = get_route_factory(component.file, part.params.length > 0, hashbang);
 
 		return `
 		// ${component.file}
@@ -191,7 +191,7 @@ function generate_server_manifest(
 	dest: string,
 	dev: boolean,
 	ssr: boolean,
-	template: string,
+	template: string
 ) {
 	const build_dir = posixify(path.normalize(path.relative(cwd, dest)));
 	const src_dir = posixify(path.normalize(path.relative(cwd, src)));
@@ -272,7 +272,7 @@ function generate_server_manifest(
 		const props = [
 			`name: "${part.component.name}"`,
 			`file: ${stringify(part.component.file)}`,
-			`component: component_${component_lookup[part.component.name]}`,
+			`component: component_${component_lookup[part.component.name]}`
 		].filter(Boolean);
 
 		if (part.params.length > 0) {

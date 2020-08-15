@@ -7,7 +7,7 @@ export function hash_is_route(hash: string) {
 export function extract_hash(hash: string) {
 	if (initial_data.hashbang) {
 		if (hash_is_route(hash) && hash.includes('#', 3)) {
-			return hash.slice(hash.indexOf('#', 3))
+			return hash.slice(hash.indexOf('#', 3));
 		} else {
 			return '';
 		}

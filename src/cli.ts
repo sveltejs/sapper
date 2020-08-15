@@ -74,7 +74,7 @@ prog.command('dev')
 				ext: opts.ext,
 				ssr: opts.ssr,
 				hashbang: opts.hashbang,
-				template_file: opts.template,
+				template_file: opts.template
 			});
 
 			let first = true;
@@ -310,7 +310,7 @@ async function _build(
 	ssr: boolean,
 	hashbang: boolean,
 	basepath: string,
-	template_file: string,
+	template_file: string
 ) {
 	const { build } = await import('./api/build');
 

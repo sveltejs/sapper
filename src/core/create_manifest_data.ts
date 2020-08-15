@@ -311,7 +311,7 @@ function get_slug(file: string) {
 			content,
 			qualifier
 		) => {
-			return `${spread ? '$$' : ''}$${content}${hash(qualifier)}`
+			return `${spread ? '$$' : ''}$${content}${hash(qualifier)}`;
 		})
 		.replace(/[^a-zA-Z0-9_$]/g, c => {
 			return c === '.' ? '_' : `$${c.charCodeAt(0)}`;

@@ -140,7 +140,7 @@ export async function build({
 			output,
 			client_files,
 			static_files,
-			ssr,
+			ssr
 		});
 
 		serviceworker_stats = await serviceworker.compile();
@@ -162,7 +162,7 @@ export async function build({
 			dest,
 			ssr,
 			hashbang,
-			template_file,
+			template_file
 		});
 	}
 }

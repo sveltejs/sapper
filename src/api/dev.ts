@@ -89,7 +89,7 @@ class Watcher extends EventEmitter {
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
 		'dev-host': dev_host,
-		'basepath': basepath = '',
+		basepath: basepath = '',
 		live,
 		hot,
 		'devtools-port': devtools_port,
@@ -98,11 +98,11 @@ class Watcher extends EventEmitter {
 		ext,
 		ssr = true,
 		hashbang = false,
-		template_file = 'template.html',
+		template_file = 'template.html'
 	}: Opts) {
 		super();
 
-		basepath = basepath.replace(/^\//, '')
+		basepath = basepath.replace(/^\//, '');
 
 		cwd = path.resolve(cwd);
 
@@ -114,7 +114,7 @@ class Watcher extends EventEmitter {
 			routes: path.resolve(cwd, routes),
 			output: path.resolve(cwd, output),
 			static: path.resolve(cwd, static_files),
-			basepath: basepath
+			basepath
 		};
 		this.ext = ext;
 		this.port = port;
@@ -390,7 +390,7 @@ class Watcher extends EventEmitter {
 						dest,
 						ssr: this.ssr,
 						hashbang: this.hashbang,
-						template_file: this.template_file,
+						template_file: this.template_file
 					});
 
 					if (this.hot && this.bundler === 'webpack') {

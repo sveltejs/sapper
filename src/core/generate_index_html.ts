@@ -13,7 +13,7 @@ export function create_index_html({
 		dest,
 		ssr,
 		hashbang,
-		template_file = 'template.html',
+		template_file = 'template.html'
 	}: {
 		basepath: string,
 		build_info: BuildInfo;
@@ -41,7 +41,7 @@ export function create_index_html({
 		`hashbang:${hashbang ? 'true' : 'false'}`,
 		`baseUrl:'${basepath || ''}'`,
 		'preloaded:[]',
-		'session:{user:null}',
+		'session:{user:null}'
 	].join(',')}};`;
 
 	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
@@ -71,7 +71,7 @@ export function create_index_html({
 
 		styles = Array.from(css_chunks)
 			.map(href => `<link rel="stylesheet" href="client/${href}">`)
-			.join('')
+			.join('');
 	} else {
 		styles = '';
 	}
