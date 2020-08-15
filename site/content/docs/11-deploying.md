@@ -6,13 +6,7 @@ Sapper apps run anywhere that supports Node 10 or higher.
 
 ### Deploying from sapper build
 
-We will need to have `server.js` dependencies available on the production machine. You can either install the dependencies locally or have the `package.json` and `package-lock.json` available on the production machine and install the dependencies there. Production dependencies can be installed with:
-
-```bash
-npm ci --prod
-```
-
-Make sure to run `npm run build` and have `__sapper__/build` directory generated before proceeding. We will also need to include the `static` directory in the production machine, you can then start your app with:
+You will need your Node production dependencies (`node_modules`), `static` directory, and `__sapper__/build` itself to run your app on any machine you'd like. Node production dependencies can be generated with `npm ci --prod`, you can then start your app with:
 
 ```bash
 node __sapper__/build
