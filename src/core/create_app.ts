@@ -374,20 +374,24 @@ function get_route_factory(
 	}
 
 	const slot_pattern = /\[(\.{3})?(\w+)(\(.+?\))?\]/g;
-	const merge = `.join('/')`;
+	const params: string[] = [];
 	const slot_replace: (substring: string, ...args: any[]) => string
 		= (
 		match,
 		spread,
 		slot,
 		qualifier
-	) => `"+o.${slot}${spread ? merge : ''}+"`;
+	) => {
+		params.push(slot);
+		return spread
+			? `\${Array.isArray(${slot}) ? ${slot}.join('/') : ''}`
+			: `\${${slot}||''}`;
+	};
 
 	template = posixify(template)
 		.split(/\//)
 		.map(part => part.replace(slot_pattern, slot_replace))
 		.join('/');
 
-	return `(o) => "${prefix}/${template}"`
-		.replace(/\+""$/, '');
+	return `({${params.join(', ')}}) => \`${prefix}/${template}\``;
 }
