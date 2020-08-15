@@ -41,7 +41,7 @@ describe('manifest_data', () => {
 			},
 
 			{
-				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				pattern: /^\/blog\/([^/]+?)\/?$/,
 				parts: [
 					null,
 					{ component: blog_$slug, params: ['slug'] }
@@ -66,7 +66,7 @@ describe('manifest_data', () => {
 
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?)\.json$/,
+				pattern: /^\/blog\/([^/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
@@ -101,7 +101,7 @@ describe('manifest_data', () => {
 		assert.deepEqual(pages.map(p => p.pattern), [
 			/^\/([0-9-a-z]{3,})\/?$/,
 			/^\/([a-z]{2})\/?$/,
-			/^\/([^\/]+?)\/?$/
+			/^\/([^/]+?)\/?$/
 		]);
 	});
 
@@ -143,13 +143,13 @@ describe('manifest_data', () => {
 		]);
 	});
 
-	it('allows mutliple slugs', () => {
+	it('allows multiple slugs', () => {
 		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/multiple-slugs'));
 
 		assert.deepEqual(server_routes, [
 			{
 				name: "route_$file$93_$91ext",
-				pattern: /^\/([^\/]+?)\.([^\/]+?)$/,
+				pattern: /^\/([^/]+?)\.([^/]+?)$/,
 				file: "[file].[ext].js",
 				params: ["file", "ext"]
 			}
@@ -189,7 +189,7 @@ describe('manifest_data', () => {
 	it('errors when trying to use reserved characters in route regexp', () => {
 		assert.throws(() => {
 			create_manifest_data(path.join(__dirname, 'samples/invalid-qualifier'));
-		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
+		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or : in route qualifiers/);
 	});
 
 	it('ignores things that look like lockfiles' , () => {
@@ -241,7 +241,7 @@ describe('manifest_data', () => {
 			},
 
 			{
-				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				pattern: /^\/blog\/([^/]+?)\/?$/,
 				parts: [
 					null,
 					{ component: blog_$slug, params: ['slug'] }
@@ -258,7 +258,7 @@ describe('manifest_data', () => {
 			},
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?)\.json$/,
+				pattern: /^\/blog\/([^/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
