@@ -162,7 +162,8 @@ export async function build({
 			dest,
 			ssr,
 			hashbang,
-			template_file
+			template_file,
+			service_worker: !!serviceworker
 		});
 	}
 }

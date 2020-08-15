@@ -390,7 +390,8 @@ class Watcher extends EventEmitter {
 						dest,
 						ssr: this.ssr,
 						hashbang: this.hashbang,
-						template_file: this.template_file
+						template_file: this.template_file,
+						service_worker: !!compilers.serviceworker
 					});
 
 					if (this.hot && this.bundler === 'webpack') {

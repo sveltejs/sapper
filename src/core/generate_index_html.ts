@@ -13,7 +13,8 @@ export function create_index_html({
 		dest,
 		ssr,
 		hashbang,
-		template_file = 'template.html'
+		template_file = 'template.html',
+		service_worker
 	}: {
 		basepath: string,
 		build_info: BuildInfo;
@@ -25,6 +26,7 @@ export function create_index_html({
 		ssr: boolean,
 		hashbang: boolean,
 		template_file?: string,
+		service_worker?: boolean
 	}
 ) {
 
@@ -44,8 +46,7 @@ export function create_index_html({
 		'session:{user:null}'
 	].join(',')}};`;
 
-	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
-	if (has_service_worker) {
+	if (service_worker) {
 		script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${basepath}/service-worker.js');`;
 	}
 
