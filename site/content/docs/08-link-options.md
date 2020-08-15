@@ -31,3 +31,15 @@ Adding a `rel=external` attribute to a link...
 ```
 
 ...will trigger a browser navigation when the link is clicked.
+
+### sapper:noscroll
+
+When navigating to internal links, Sapper will change the scroll position to 0,0 so that the user is at the very top left of the page. When a hash is defined, it will scroll to the element with a matching ID.
+
+In certain cases, you may wish to disable this behaviour. Adding a `sapper:noscroll` attribute to a link...
+
+```html
+<a href='path' sapper:noscroll>Path</a>
+```
+
+...will prevent scrolling after the link is clicked.

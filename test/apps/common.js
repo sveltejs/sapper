@@ -29,7 +29,7 @@ function send_error(error) {
 		__sapper__: true,
 		event: 'error',
 		error: properties.reduce((object, key) => ({...object, [key]: error[key]}), {})
-	})
+	});
 }
 
 process.on('unhandledRejection', (reason, p) => {

@@ -32,8 +32,8 @@ describe('scroll', function() {
 		assert.ok(scrollY > 0, String(scrollY));
 
 		scrollY = await r.page.evaluate(() => {
-			window.scrollTo(0, 0)
-			return window.scrollY
+			window.scrollTo(0, 0);
+			return window.scrollY;
 		});
 		assert.ok(scrollY === 0, String(scrollY));
 
@@ -56,12 +56,12 @@ describe('scroll', function() {
 		);
 	});
 
-	it('preserves scroll when a link with sapper-noscroll is clicked', async () => {
+	it('preserves scroll when a link with sapper:noscroll is clicked', async () => {
 		await r.load('/tall-page#foo');
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click('[href="another-tall-page"][sapper-noscroll]');
+		await r.page.click('[href="another-tall-page"][sapper\\:noscroll]');
 		await r.wait();
 
 		const scrollY = await r.page.evaluate(() => window.scrollY);
@@ -99,7 +99,33 @@ describe('scroll', function() {
 		const secondScrollY = await r.page.evaluate(() => window.scrollY);
 
 		assert.equal(firstScrollY, secondScrollY);
-	});
+  });
+
+  it('scrolls to the top when navigating with goto', async () => {
+	  await r.load(`/search-form#search`);
+	  await r.sapper.start();
+
+	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(initialScrollY > 0, String(initialScrollY));
+
+	  await r.page.click(`button#scroll`);
+
+	  const scrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(scrollY === 0, String(scrollY));
+  });
+
+  it('preserves scroll when noscroll: true is passed to goto', async () => {
+	  await r.load(`/search-form#search`);
+	  await r.sapper.start();
+
+	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(initialScrollY > 0, String(initialScrollY));
+
+	  await r.page.click(`button#preserve`);
+
+	  const scrollY = await r.page.evaluate(() => window.scrollY);
+	  assert.ok(scrollY === initialScrollY, String(scrollY));
+  });
 
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);

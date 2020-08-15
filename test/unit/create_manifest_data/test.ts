@@ -84,13 +84,13 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(components, [
 			// quote,
-			hash,
+			hash
 			// question_mark
 		]);
 
 		assert.deepEqual(pages.map(p => p.pattern), [
 			// /^\/%22\/?$/,
-			/^\/%23\/?$/,
+			/^\/%23\/?$/
 			// /^\/%3F\/?$/
 		]);
 	});

@@ -8,7 +8,15 @@ Until we reach version 1.0, there may be occasional changes to the project struc
 
 ### 0.27 to 0.28
 
-`%sapper.scripts%` can be moved to the `<head>` section for slightly better performance because it now uses deferred loading
+* Rollup 0.x.x is no longer supported. ([#1326](https://github.com/sveltejs/sapper/pull/1326)). Any version greater than 1.x is supported, but the latest (currently 2.x) is strongly recommended.
+* Versions of Svelte before 3.17.3 are no longer supported. ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* `<script>` tags will now be loaded with the `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)), which means:
+	* IE9 support was dropped since IE9 may interleave deferred script execution.
+	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
+* You must set `hydratable: true` in your server build as well in order to properly hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244)). If you are using the `service-worker.js` from the default template, no changes will be necessary. If you have modified your service worker, please check to ensure compatibility.
+* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
+* Rollup users should update the `onwarn` filter in `rollup.config.js` to match [the change made in `sapper-template`](https://github.com/sveltejs/sapper-template/pull/246/files). 
 
 ### 0.25 to 0.26
 

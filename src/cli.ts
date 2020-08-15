@@ -37,23 +37,23 @@ prog.command('dev')
 	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
 	.option('--template', 'Template file', 'template.html')
 	.action(async (opts: {
-		port: number,
-		open: boolean,
-		'dev-port': number,
-		'dev-host': string,
-		live: boolean,
-		hot: boolean,
-		bundler?: 'rollup' | 'webpack',
-		cwd: string,
-		src: string,
-		routes: string,
-		static: string,
-		output: string,
-		'build-dir': string,
-		ext: string,
-		ssr: boolean,
-		hashbang: boolean,
-		template: string,
+		port: number;
+		open: boolean;
+		'dev-port': number;
+		'dev-host': string;
+		live: boolean;
+		hot: boolean;
+		bundler?: 'rollup' | 'webpack';
+		cwd: string;
+		src: string;
+		routes: string;
+		static: string;
+		output: string;
+		'build-dir': string;
+		ext: string;
+		ssr: boolean;
+		hashbang: boolean;
+		template: string;
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -173,18 +173,18 @@ prog.command('build [dest]')
 	.option('--template', 'Template file', 'template.html')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
-		port: string,
-		legacy: boolean,
-		bundler?: 'rollup' | 'webpack',
-		cwd: string,
-		src: string,
-		routes: string,
-		output: string,
-		ext: string
-		basepath?: string,
-		ssr: boolean,
-		hashbang: boolean,
-		template: string,
+		port: string;
+		legacy: boolean;
+		bundler?: 'rollup' | 'webpack';
+		cwd: string;
+		src: string;
+		routes: string;
+		output: string;
+		ext: string;
+		basepath?: string;
+		ssr: boolean;
+		hashbang: boolean;
+		template: string;
 	}) => {
 		console.log(`> Building...`);
 
@@ -231,24 +231,24 @@ prog.command('export [dest]')
 	.option('--hashbang', 'Use hash-based routing instead of pathname routing', false)
 	.option('--template', 'Template file', 'template.html')
 	.action(async (dest = '__sapper__/export', opts: {
-		build: boolean,
-		legacy: boolean,
-		bundler?: 'rollup' | 'webpack',
-		basepath?: string,
-		host?: string,
-		concurrent: number,
-		timeout: number | false,
-		cwd: string,
-		src: string,
-		routes: string,
-		static: string,
-		output: string,
-		'build-dir': string,
-		ext: string
-		entry: string
-		ssr: boolean,
-		hashbang: boolean,
-		template: string,
+		build: boolean;
+		legacy: boolean;
+		bundler?: 'rollup' | 'webpack';
+		basepath?: string;
+		host?: string;
+		concurrent: number;
+		timeout: number | false;
+		cwd: string;
+		src: string;
+		routes: string;
+		static: string;
+		output: string;
+		'build-dir': string;
+		ext: string;
+		entry: string;
+		ssr: boolean;
+		hashbang: boolean;
+		template: string;
 	}) => {
 		try {
 			if (opts.build) {

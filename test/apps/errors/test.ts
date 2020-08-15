@@ -71,6 +71,15 @@ describe('errors', function() {
 		);
 	});
 
+	it('display correct stack trace sequences on server error referring to source file', async () => {
+		await r.load('/trace');
+
+		const stack = (await r.text('span')).split('\n');
+
+		assert.ok(stack[1] && stack[1].includes('_trace.js:2:11'));
+		assert.ok(stack[2] && stack[2].includes('trace.svelte:5:6'));
+	});
+
 	it('handles error on client', async () => {
 		await r.load('/');
 		await r.sapper.start();
@@ -121,7 +130,7 @@ describe('errors', function() {
 			await r.text('h2'),
 			'success'
 		);
-	})
+	});
 
 	it('does not serve error page for async non-page error', async () => {
 		await r.load('/async-throw.json');

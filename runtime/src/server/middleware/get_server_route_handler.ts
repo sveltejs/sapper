@@ -1,4 +1,4 @@
-import { Req, Res, ServerRoute } from './types';
+import { Req, Res, ServerRoute } from '@sapper/internal/manifest-server';
 
 export function get_server_route_handler(routes: ServerRoute[]) {
 	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
@@ -18,17 +18,17 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 				// intercept data so that it can be exported
 				res.write = function(chunk: any) {
 					chunks.push(Buffer.from(chunk));
-					write.apply(res, arguments);
+					return write.apply(res, [chunk]);
 				};
 
 				res.setHeader = function(name: string, value: string) {
 					headers[name.toLowerCase()] = value;
-					setHeader.apply(res, arguments);
+					setHeader.apply(res, [name, value]);
 				};
 
 				res.end = function(chunk?: any) {
 					if (chunk) chunks.push(Buffer.from(chunk));
-					end.apply(res, arguments);
+					end.apply(res, [chunk]);
 
 					process.send({
 						__sapper__: true,
@@ -37,7 +37,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 						method: req.method,
 						status: res.statusCode,
 						type: headers['content-type'],
-						body: Buffer.concat(chunks).toString()
+						body: Buffer.concat(chunks)
 					});
 				};
 			}

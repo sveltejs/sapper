@@ -1,11 +1,13 @@
 import * as path from 'path';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
+import transitiveDeps from 'rollup-dependency-tree';
 import RollupCompiler from './RollupCompiler';
 import extract_css from './extract_css';
 import { left_pad, normalize_path } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 import { ManifestData, Dirs } from '../../interfaces';
+import { version as shimport_version} from 'shimport/package.json';
 
 export default class RollupResult implements CompileResult {
 	duration: number;
@@ -13,17 +15,18 @@ export default class RollupResult implements CompileResult {
 	warnings: CompileError[];
 	chunks: Chunk[];
 	assets: Record<string, string>;
+	dependencies: Record<string, string[]>;
 	css_files: CssFile[];
 	css: {
-		main: string,
-		chunks: Record<string, string[]>
+		main: string;
+		chunks: Record<string, string[]>;
 	};
 	sourcemap: boolean | 'inline';
 	summary: string;
 
 	constructor(duration: number, compiler: RollupCompiler, sourcemap: boolean | 'inline') {
 		this.duration = duration;
-		this.sourcemap = sourcemap
+		this.sourcemap = sourcemap;
 
 		this.errors = compiler.errors.map(munge_warning_or_error);
 		this.warnings = compiler.warnings.map(munge_warning_or_error);
@@ -36,8 +39,6 @@ export default class RollupResult implements CompileResult {
 
 		this.css_files = compiler.css_files;
 
-		// TODO populate this properly. We don't have named chunks, as in
-		// webpack, but we can have a route -> [chunk] map or something
 		this.assets = {};
 
 		if (typeof compiler.input === 'string') {
@@ -53,6 +54,8 @@ export default class RollupResult implements CompileResult {
 				if (chunk) this.assets[name] = chunk.fileName;
 			}
 		}
+
+		this.dependencies = transitiveDeps(compiler.chunks);
 
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold().red : chunk.code.length > 50000 ? colors.bold().yellow : colors.bold().white;
@@ -89,12 +92,18 @@ export default class RollupResult implements CompileResult {
 	}
 
 	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
-		// TODO extract_css has side-effects that don't belong
-		// in a method called to_json
+		const dependencies = {};
+		Object.entries(this.dependencies).forEach(([key, value]) => {
+			dependencies[path.relative(dirs.routes, key)] = value;
+		});
+
 		return {
 			bundler: 'rollup',
-			shimport: require('shimport/package.json').version,
+			shimport: shimport_version,
 			assets: this.assets,
+			dependencies,
+
+			// TODO extract_css has side-effects that don't belong in a method called to_json
 			css: extract_css(this, manifest_data.components, dirs, this.sourcemap)
 		};
 	}

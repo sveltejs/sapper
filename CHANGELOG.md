@@ -2,23 +2,35 @@
 
 ## Unreleased
 
+* Fix exporting server routes which return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
+* Follow `<img src>`, `<source src>`, and `<source srcset>` when crawling site during export ([#1104](https://github.com/sveltejs/sapper/issues/1104))
+* Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
+* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
+* Improved script `preload` support for Rollup by upgrading `rollup-dependency-tree` ([#1389](https://github.com/sveltejs/sapper/pull/1389))
+* Added CSP nonce support for Webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
+
+## 0.28.0
+
 * 🎉 TypeScript support! 🎉
+* 🎉 Asset `preload` headers for Rollup projects 🎉
 
-And these breaking changes:
-
-* Sapper now requires at least Rollup 1
-* IE 9 support dropped for Webpack projects. `script` tag will now be loaded with `defer` attribute and IE9 may interleave script execution.
-* You must set `hydratable: true` to hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+Please see the [migration guide](https://sapper.svelte.dev/migrating#0_27_to_0_28) for details on migrating from Sapper 0.27 to Sapper 0.28.
 
 Also:
 
+* Explicitly set `output.exports` to avoid warning from Rollup ([#1326](https://github.com/sveltejs/sapper/pull/1326))
+* `<script>` tags will now be loaded with the `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123))
+* The `<head>` element hydration workaround was removed ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244)).
+* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
 * Fix handling of routes beginning with /client/ ([#1142](https://github.com/sveltejs/sapper/issues/1142))
 * Fix path normalization of chunks on Windows ([#1256](https://github.com/sveltejs/sapper/issues/1256), [#1333](https://github.com/sveltejs/sapper/issues/1333))
 * Fix CSS splitting when using Rollup 2 ([#1306](https://github.com/sveltejs/sapper/pull/1306))
-* Explicitly set `output.exports` to avoid warning from Rollup ([#1326](https://github.com/sveltejs/sapper/pull/1326))
 * Set `publicPath` in webpack server config for benefit of `file-loader` ([#1342](https://github.com/sveltejs/sapper/pull/1342))
 * Detect presence of `preload` at runtime, so we don't need to worry about preprocessors and compiling components when doing so ([#1344](https://github.com/sveltejs/sapper/pull/1344))
 * Load `script` tag with `defer` attribute in Webpack projects ([#1123](https://github.com/sveltejs/sapper/pull/1123))
+* Show a warning for unserializable server-preloaded data ([#1304](https://github.com/sveltejs/sapper/pull/1304))
+* Added a `noscroll` option to `goto` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
 
 ## 0.27.16
 

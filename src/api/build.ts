@@ -22,7 +22,7 @@ type Opts = {
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
-	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
+	oncompile?: ({ type, result }: { type: string; result: CompileResult }) => void;
 	ssr?: boolean;
 	hashbang?: boolean,
 	template_file?: string;
@@ -69,13 +69,6 @@ export async function build({
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
 	const template = read_template(src, template_file);
-
-	// remove this in a future version
-	if (template.indexOf('%sapper.base%') === -1) {
-		const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
-		error.code = `missing-sapper-base`;
-		throw error;
-	}
 
 	fs.writeFileSync(`${dest}/${template_file}`, minify_html(template));
 

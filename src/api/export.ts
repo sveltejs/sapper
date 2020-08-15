@@ -13,17 +13,17 @@ import { noop } from './utils/noop';
 import { parse as parseLinkHeader } from 'http-link-header';
 import { rimraf, copy, mkdirp } from './utils/fs_utils';
 
-const writeFile = promisify(fs.writeFile)
+const writeFile = promisify(fs.writeFile);
 
 type Opts = {
-	build_dir?: string,
-	export_dir?: string,
-	cwd?: string,
-	static?: string,
-	basepath?: string,
-	host_header?: string,
-	timeout?: number | false,
-	concurrent?: number,
+	build_dir?: string;
+	export_dir?: string;
+	cwd?: string;
+	static?: string;
+	basepath?: string;
+	host_header?: string;
+	timeout?: number | false;
+	concurrent?: number;
 	oninfo?: ({ message }: { message: string }) => void;
 	onfile?: ({ file, size, status }: { file: string, size: number, status: number }) => void;
 	entry?: string;
@@ -32,9 +32,9 @@ type Opts = {
 };
 
 type Ref = {
-	uri: string,
-	rel: string,
-	as: string
+	uri: string;
+	rel: string;
+	as: string;
 };
 
 type URL = url.UrlWithStringQuery;
@@ -44,12 +44,35 @@ function resolve(from: string, to: string) {
 }
 
 function cleanPath(path: string) {
-	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '')
+	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '');
 }
 
 function get_href(attrs: string) {
 	const match = /href\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
 	return match && (match[1] || match[2] || match[3]);
+}
+
+function get_src(attrs: string) {
+	const match = /src\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/.exec(attrs);
+	return match && (match[1] || match[2] || match[3]);
+}
+
+export function get_srcset_urls(attrs: string) {
+	const results: string[] = [];
+	// Note that the srcset allows any ASCII whitespace, including newlines.
+	const match = /srcset\s*=\s*(?:"(.*?)"|'(.*?)'|([^\s>]*))/s.exec(attrs);
+	if (match) {
+		const attr_content = match[1] || match[2] || match[3];
+		// Parse the content of the srcset attribute.
+		// The regexp is modelled after the srcset specs (https://html.spec.whatwg.org/multipage/images.html#srcset-attribute)
+		// and should cover most reasonable cases.
+		const regex = /\s*([^\s,]\S+[^\s,])\s*((?:\d+w)|(?:-?\d+(?:\.\d+)?(?:[eE]-?\d+)?x))?/gm;
+		let sub_matches;
+		while (sub_matches = regex.exec(attr_content)) {
+			results.push(sub_matches[1]);
+		}
+	}
+	return results;
 }
 
 export { _export as export };
@@ -69,7 +92,7 @@ async function _export({
 	hashbang = false,
 	entry = '/'
 }: Opts = {}) {
-	basepath = basepath.replace(/^\//, '')
+	basepath = basepath.replace(/^\//, '');
 
 	cwd = path.resolve(cwd);
 	static_files = path.resolve(cwd, static_files);
@@ -118,8 +141,8 @@ async function _export({
 	const seen = new Set();
 	const saved = new Set();
 
-	function save(url: string, status: number, type: string, body: string) {
-		let { pathname } = resolve(origin, url);
+	function save(url: string, status: number, type: string, body: string | ArrayBuffer) {
+		const { pathname } = resolve(origin, url);
 		let file = decodeURIComponent(pathname.slice(1));
 
 		if (saved.has(file)) return;
@@ -131,12 +154,19 @@ async function _export({
 			if (!file.endsWith('.html')) {
 				file = file === '' ? 'index.html' : `${file}/index.html`;
 			}
-			body = minify_html(body);
+
+			if (typeof body === 'string') {
+				body = minify_html(body);
+			} else {
+				oninfo({ message: `Content of {url} has content-type text/html but the content was received as a binary buffer. The HTML will not be minified.` });
+			}
 		}
+
+		const buffer = Buffer.from(body);
 
 		onfile({
 			file,
-			size: body.length,
+			size: buffer.byteLength,
 			status
 		});
 
@@ -144,13 +174,13 @@ async function _export({
 		if (fs.existsSync(export_file)) return;
 		mkdirp(path.dirname(export_file));
 
-		return writeFile(export_file, body);
+		return writeFile(export_file, buffer);
 	}
 
-	function handle(url: URL, fetchOpts: FetchOpts, addCallback: Function) {
+	function handle(url: URL, fetchOpts: FetchOpts, addCallback: (url: URL) => void) {
 		let pathname = url.pathname;
 		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/'
+			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';
 		}
 
 		if (seen.has(pathname)) return;
@@ -178,7 +208,7 @@ async function _export({
 
 		return {
 			response: r,
-			url,
+			url
 		};
 	}
 
@@ -193,39 +223,53 @@ async function _export({
 
 		let type = response.headers.get('Content-Type');
 
-		let body = await response.text();
+		let body = type.startsWith('text/')
+			? await response.text()
+			: await response.arrayBuffer();
 
 		const range = ~~(response.status / 100);
 
 		if (range === 2 && type === 'text/html') {
 			// parse link rel=preload headers and embed them in the HTML
-			let link = parseLinkHeader(response.headers.get('Link') || '');
+			const link = parseLinkHeader(response.headers.get('Link') || '');
 			link.refs.forEach((ref: Ref) => {
 				if (ref.rel === 'preload') {
-					body = body.replace('</head>',
-						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`)
+					body = (body as string).replace('</head>',
+						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`);
 				}
 			});
 
 			if (pathname !== '/service-worker-index.html') {
-				const cleaned = clean_html(body);
+				const cleaned = clean_html(body as string);
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
 				const base_href = base_match && get_href(base_match[1]);
 				const base = resolve(url.href, base_href);
 
 				let match;
-				let pattern = /<a ([\s\S]+?)>/gm;
+				const pattern = /<(a|img|source)\s+([\s\S]+?)>/gm;
 
 				while (match = pattern.exec(cleaned)) {
-					const attrs = match[1];
-					const href = get_href(attrs);
+					let hrefs: string[] = [];
+					const element = match[1];
+					const attrs = match[2];
 
-					if (href) {
+					if (element === 'a') {
+						hrefs.push(get_href(attrs));
+					} else {
+						if (element === 'img') {
+							hrefs.push(get_src(attrs));
+						}
+						hrefs.push(...get_srcset_urls(attrs));
+					}
+
+					hrefs = hrefs.filter(Boolean);
+
+					for (const href of hrefs) {
 						const url = resolve(base.href, href);
 
 						if (url.protocol === protocol && url.host === host) {
-							handle(url, fetchOpts, queue.add)
+							handle(url, fetchOpts, queue.add);
 						}
 					}
 				}
@@ -249,7 +293,7 @@ async function _export({
 		host,
 		host_header,
 		protocol,
-		root,
+		root
 	};
 
 	const queue = exportQueue({
@@ -260,8 +304,8 @@ async function _export({
 		handleFetch,
 		handleResponse,
 		callbacks: {
-			onDone: () => {},
-		},
+			onDone: () => {}
+		}
 	});
 
 	proc.on('message', message => {
@@ -269,27 +313,30 @@ async function _export({
 		queue.addSave(save(message.url, message.status, message.type, message.body));
 	});
 
-	return new Promise(async (res, rej) => {
+	return new Promise((res, rej) => {
 		queue.setCallback('onDone', () => {
 			proc.kill();
 			res();
 		});
 
-		try {
-			await ports.wait(port);
+		ports.wait(port).then(() => {
+			try {
+				for (const entryPoint of entryPoints) {
+					oninfo({
+						message: `Crawling ${entryPoint.href}`
+					});
+					handle(entryPoint, fetchOpts, queue.add);
+				}
 
-			for (const entryPoint of entryPoints) {
-				oninfo({
-					message: `Crawling ${entryPoint.href}`
-				});
-				handle(entryPoint, fetchOpts, queue.add);
+				const workerUrl = resolve(root.href, 'service-worker-index.html');
+				handle(workerUrl, fetchOpts, queue.add);
+			} catch (err) {
+				proc.kill();
+				rej(err);
 			}
-
-			const workerUrl = resolve(root.href, 'service-worker-index.html');
-			handle(workerUrl, fetchOpts, queue.add);
-		} catch (err) {
+		}).catch(err => {
 			proc.kill();
 			rej(err);
-		}
+		});
 	});
 }
