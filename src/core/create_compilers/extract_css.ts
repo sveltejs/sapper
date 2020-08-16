@@ -122,8 +122,7 @@ export default function extract_css(
 	let asset_dir = `${dirs.dest}/client`;
 	if (process.env.SAPPER_LEGACY_BUILD) asset_dir += '/legacy';
 
-	const unclaimed = new Set(client_result.css_files.map(x => x.id));
-
+	const unclaimed = new Set<string>(client_result.css_files.map(x => x.id));
 	const lookup = new Map();
 	client_result.chunks.forEach(chunk => {
 		lookup.set(chunk.file, chunk);
@@ -168,7 +167,6 @@ export default function extract_css(
 	const entry_chunk = client_result.chunks.find(chunk => chunk.modules.indexOf(entry) !== -1);
 
 	const entry_chunk_dependencies: Set<Chunk> = new Set([entry_chunk]);
-	const entry_css_modules: string[] = [];
 
 	// recursively find the chunks this component depends on
 	entry_chunk_dependencies.forEach(chunk => {
@@ -181,9 +179,6 @@ export default function extract_css(
 		if (chunks_with_css.has(chunk)) {
 			chunk.modules.forEach(file => {
 				unclaimed.delete(file);
-				if (css_map.has(file)) {
-					entry_css_modules.push(file);
-				}
 			});
 		}
 	});
@@ -250,11 +245,7 @@ export default function extract_css(
 		fs.writeFileSync(`${asset_dir}/${file}`, replaced);
 	});
 
-	unclaimed.forEach(file => {
-		entry_css_modules.push(file);
-	});
-
-	const leftover = get_css_from_modules(entry_css_modules, css_map, asset_dir);
+	const leftover = get_css_from_modules(Array.from(unclaimed), css_map, asset_dir);
 	if (leftover) {
 		let { code, map } = leftover;
 
