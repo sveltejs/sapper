@@ -4,7 +4,7 @@ import hash from 'string-hash';
 import * as codec from 'sourcemap-codec';
 import { PageComponent, Dirs } from '../../interfaces';
 import { CompileResult, Chunk } from './interfaces';
-import { normalize_path, posixify } from '../../utils';
+import { normalize_path } from '../../utils';
 
 const inline_sourcemap_header = 'data:application/json;charset=utf-8;base64,';
 
@@ -134,7 +134,7 @@ export default function extract_css(
 		css_map.set(css_module.id, css_module.code);
 	});
 
-	const chunks_with_css = new Set();
+	const chunks_with_css = new Set<Chunk>();
 
 	// concatenate and emit CSS
 	client_result.chunks.forEach(chunk => {
@@ -191,14 +191,14 @@ export default function extract_css(
 	// figure out which (css-having) chunks each component depends on
 	components.forEach(component => {
 		const resolved = normalize_path(path.resolve(dirs.routes, component.file));
-		const chunk: Chunk = client_result.chunks.find(chunk => chunk.modules.indexOf(resolved) !== -1);
+		const matchingChunk: Chunk = client_result.chunks.find(chunk => chunk.modules.indexOf(resolved) !== -1);
 
-		if (!chunk) {
+		if (!matchingChunk) {
 			// this should never happen!
 			throw new Error(`Could not find chunk that owns ${component.file}`);
 		}
 
-		const chunk_dependencies: Set<Chunk> = new Set([chunk]);
+		const chunk_dependencies: Set<Chunk> = new Set([matchingChunk]);
 		const css_dependencies: string[] = [];
 
 		// recursively find the chunks this component depends on
