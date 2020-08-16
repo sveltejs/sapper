@@ -1,6 +1,9 @@
 import { history, select_target, navigate, cid } from '../app';
 
-export default function goto(href: string, opts: { noscroll?: boolean, replaceState?: boolean } = { noscroll: false, replaceState: false }) {
+export default function goto(
+		href: string,
+		opts: { noscroll?: boolean, replaceState?: boolean } = { noscroll: false, replaceState: false }): Promise<void> {
+
 	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {

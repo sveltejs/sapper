@@ -3,42 +3,35 @@ declare module "@sapper/server"
 declare module "@sapper/service-worker"
 
 declare module "@sapper/app" {
-	interface Redirect {
+	export interface Redirect {
 		statusCode: number
 		location: string
 	}
 
-	function goto(href: string, opts: { noscroll?: boolean, replaceState?: boolean }): Promise<unknown>
-	function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>
-	function prefetchRoutes(pathnames: string[]): Promise<unknown>
-	function start(opts: { target: Node }): Promise<unknown>
-	const stores: () => unknown;
-
-	export {
-		goto, prefetch, prefetchRoutes, start, stores
-	};
+	export function goto(href: string, opts: { noscroll?: boolean, replaceState?: boolean }): Promise<void>;
+	export function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>;
+	export function prefetchRoutes(pathnames: string[]): Promise<void>;
+	export function start(opts: { target: Node }): Promise<void>;
+	export const stores: () => unknown;
 }
 
 declare module "@sapper/server" {
 	import { Handler, Req, Res } from '@sapper/internal/manifest-server';
 
-	interface MiddlewareOptions {
-		session?: (req: Req, res: Resp) => unknown
-		ignore?: unknown
+	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
+
+	export interface MiddlewareOptions {
+		session?: (req: Req, res: Res) => unknown
+		ignore?: Ignore
 	}
 
-	function middleware(opts: MiddlewareOptions): Handler
-
-	export { middleware };
+	export function middleware(opts: MiddlewareOptions): Handler;
 }
 
 declare module "@sapper/service-worker" {
-	const timestamp: number;
-	const files: string[];
-	const shell: string[];
-	const routes: Array<{ pattern: RegExp }>;
-
-	export {
-		timestamp, files, files as assets, shell, routes
-	};
+	export const timestamp: number;
+	export const files: string[];
+	export const assets: string[];
+	export const shell: string[];
+	export const routes: Array<{ pattern: RegExp }>;
 }

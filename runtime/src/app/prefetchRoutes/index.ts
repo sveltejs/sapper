@@ -1,7 +1,7 @@
 import { components, routes } from '@sapper/internal/manifest-client';
 import { load_component } from '../app';
 
-export default function prefetchRoutes(pathnames: string[]) {
+export default function prefetchRoutes(pathnames: string[]): Promise<void> {
 	return routes
 		.filter(pathnames
 			? route => pathnames.some(pathname => route.pattern.test(pathname))
