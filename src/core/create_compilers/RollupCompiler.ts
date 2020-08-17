@@ -1,7 +1,7 @@
 import * as path from 'path';
 import color from 'kleur';
 import relative from 'require-relative';
-import { RollupError } from 'rollup/types';
+import { InputOption, RollupError } from 'rollup';
 import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
@@ -13,11 +13,11 @@ export default class RollupCompiler {
 	_: Promise<any>;
 	_oninvalid: (filename: string) => void;
 	_start: number;
-	input: string;
+	input: InputOption;
 	warnings: any[];
 	errors: any[];
 	chunks: any[];
-	css_files: Array<{ id: string, code: string }>;
+	css_files: Array<{ id: string; code: string }>;
 
 	constructor(config: any) {
 		this._ = this.get_config(config);
@@ -41,7 +41,7 @@ export default class RollupCompiler {
 			transform: (code: string, id: string) => {
 				if (/\.css$/.test(id)) {
 					this.css_files.push({ id, code });
-					return ``;
+					return {code: '', moduleSideEffects: 'no-treeshake'};
 				}
 			}
 		});
@@ -148,8 +148,12 @@ export default class RollupCompiler {
 			}
 		});
 
-		const resp = await bundle.generate({ format: 'cjs' });
-		const { code } = resp.output ? resp.output[0] : resp;
+		const {
+			output: [{ code }]
+		} = await bundle.generate({
+			exports: 'named',
+			format: 'cjs'
+		});
 
 		// temporarily override require
 		const defaultLoader = require.extensions['.js'];
@@ -161,7 +165,7 @@ export default class RollupCompiler {
 			}
 		};
 
-		const config: any = require(input);
+		const config: any = require(input).default; // eslint-disable-line
 		delete require.cache[input];
 
 		return config;
@@ -187,7 +191,7 @@ export function handleError(err: RollupError, recover = false) {
 	}
 
 	if (err.loc) {
-		stderr(`${(err.loc.file || err.id)!} (${err.loc.line}:${err.loc.column})`);
+		stderr(`${err.loc.file || err.id} (${err.loc.line}:${err.loc.column})`);
 	} else if (err.id) {
 		stderr(err.id);
 	}

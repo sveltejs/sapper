@@ -11,3 +11,14 @@
 </script>
 
 <h1>{post.title}</h1>
+
+{#if post.src}
+	<picture>
+		<source srcset={post.srcset}/>
+		<img src={post.src}/>
+	</picture>
+{/if}
+
+{#if post.pdf}
+	<a href={post.pdf}>{post.pdf}</a>
+{/if}

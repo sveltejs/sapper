@@ -104,8 +104,9 @@ This is the meat of your app — the pages and server routes. See the section on
 
 This is a place to put any files that your app uses — fonts, images and so on. For example `static/favicon.png` will be served as `/favicon.png`.
 
-Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#templates-service-worker-js)).
+Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#src_service-worker_js)).
 
+> Note that the default behaviour of the service worker is to cache all assets from the static directory, so if you have more than 50mb of files here, you will start to exceed the cache limit for service-workers in some browsers, which can cause the service worker to stop loading. In this instance, it is advisable to customise what files are cached by editing the service-worker yourself.
 
 ### rollup.config.js / webpack.config.js
 

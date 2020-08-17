@@ -14,6 +14,8 @@ A clear and concise description of what the bug is.
 Please include browser console and server logs around the time this bug occurred.
 
 **To Reproduce**
+Please make sure you've tested with the latest versions of Svelte and Sapper.
+
 To help us help you, if you've found a bug please consider the following:
 
 * If possible, we recommend creating a small repo that illustrates the problem.
@@ -34,19 +36,14 @@ If you have a stack trace to include, we recommend putting inside a `<details>` 
 </details>
 
 **Information about your Sapper Installation:**
-- Your browser and the version: (e.x. Chrome 52.1, Firefox 48.0, IE 10)
 
-- Your operating system: (e.x. OS X 10, Ubuntu Linux 19.10, Windows XP, etc)
+- The output of `npx envinfo --system --npmPackages svelte,sapper,rollup,webpack --binaries --browsers`
 
-- Your hosting environment: (i.e. Local, GCP, AWS, Now, etc...)
+- Your browser
 
-- Sapper version (Please check you can reproduce the issue with the latest release!)
+- Your hosting environment (i.e. Local, GCP/AWS/Azure, Vercel/Begin, etc...)
 
-- Svelte version (Please check you can reproduce the issue with the latest release!)
-
-- If it is an exported (npm run export) or dynamic application.
-
-- Whether your application uses Webpack or Rollup
+- If it is an exported (`npm run export`) or dynamic application
 
 **Severity**
 How severe an issue is this bug to you? Is this annoying, blocking some users, blocking an upgrade or blocking your usage of Sapper entirely?

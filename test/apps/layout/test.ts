@@ -20,47 +20,47 @@ describe('layout', function() {
 		await r.load('/foo/bar/baz');
 
 		const text1 = await r.text('#sapper');
-		assert.deepEqual(text1.split('\n').map(str => str.trim()).filter(Boolean), [
+		assert.equal(text1.split('\n').map(str => str.trim()).filter(Boolean).join(' '), [
 			'y: bar 1',
 			'z: baz 1',
 			'goto foo/bar/qux',
 			'goto foo/abc/def',
 			'child segment: baz'
-		]);
+		].join(' '));
 
 		await r.sapper.start();
 		const text2 = await r.text('#sapper');
-		assert.deepEqual(text2.split('\n').map(str => str.trim()).filter(Boolean), [
+		assert.equal(text2.split('\n').map(str => str.trim()).filter(Boolean).join(' '), [
 			'y: bar 1',
 			'z: baz 1',
 			'goto foo/bar/qux',
 			'goto foo/abc/def',
 			'child segment: baz'
-		]);
+		].join(' '));
 
 		await r.page.click('[href="foo/bar/qux"]');
 		await r.wait();
 
 		const text3 = await r.text('#sapper');
-		assert.deepEqual(text3.split('\n').map(str => str.trim()).filter(Boolean), [
+		assert.equal(text3.split('\n').map(str => str.trim()).filter(Boolean).join(' '), [
 			'y: bar 1',
 			'z: qux 2',
 			'goto foo/bar/qux',
 			'goto foo/abc/def',
 			'child segment: qux'
-		]);
+		].join(' '));
 
 		await r.page.click('[href="foo/abc/def"]');
 		await r.wait();
 
 		const text4 = await r.text('#sapper');
-		assert.deepEqual(text4.split('\n').map(str => str.trim()).filter(Boolean), [
+		assert.equal(text4.split('\n').map(str => str.trim()).filter(Boolean).join(' '), [
 			'y: abc 2',
 			'z: def 3',
 			'goto foo/bar/qux',
 			'goto foo/abc/def',
 			'child segment: def'
-		]);
+		].join(' '));
 	});
 
 	it('survives the tests with no server errors', () => {

@@ -4,7 +4,7 @@
 	export let barLink = false;
 
 	onMount(() => {
-		barLink = true
+		barLink = true;
 	});
 </script>
 
@@ -15,7 +15,7 @@
 
 <div id="foo">
 	<a href="another-tall-page">link</a>
-	<a href="another-tall-page" sapper-noscroll>link</a>
+	<a href="another-tall-page" sapper:noscroll>link</a>
 	{#if barLink}
 		<a href="another-tall-page#bar">link</a>
 	{/if}

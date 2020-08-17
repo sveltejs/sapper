@@ -1,15 +1,20 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
+import { Query } from '@sapper/internal/shared';
 import {
+	DOMComponentLoader,
+	DOMComponentModule,
+	ErrorComponent,
+	ignore,
+	components,
+	root_comp,
+	routes
+} from '@sapper/internal/manifest-client';
+import {
+	HydratedTarget,
 	Target,
 	ScrollPosition,
-	Component,
 	Redirect,
-	ComponentLoader,
-	ComponentConstructor,
-	Route,
-	Query,
 	Page
 } from './types';
 import goto from './goto';
@@ -19,7 +24,7 @@ declare const __SAPPER__;
 export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
 let ready = false;
-let root_component: Component;
+let root_component: InstanceType<typeof App>;
 let current_token: {};
 let root_preloaded: Promise<any>;
 let current_branch = [];
@@ -46,18 +51,22 @@ stores.session.subscribe(async value => {
 	const { redirect, props, branch } = await hydrate_target(target);
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
-	await render(redirect, branch, props, target.page);
+	if (redirect) {
+		await goto(redirect.location, { replaceState: true });
+	} else {
+		await render(branch, props, target.page);
+	}
 });
 
 export let prefetching: {
 	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any }>;
+	promise: Promise<HydratedTarget>;
 } = null;
 export function set_prefetching(href, promise) {
 	prefetching = { href, promise };
 }
 
-export let target: Node;
+export let target: Element;
 export function set_target(element) {
 	target = element;
 }
@@ -85,7 +94,7 @@ export function extract_query(search: string) {
 	const query = Object.create(null);
 	if (search.length > 0) {
 		search.slice(1).split('&').forEach(searchParam => {
-			let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
+			const [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
 			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
 			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 			else query[key] = value;
@@ -129,7 +138,7 @@ export function handle_error(url: URL) {
 	const { session, preloaded, status, error } = initial_data;
 
 	if (!root_preloaded) {
-		root_preloaded = preloaded && preloaded[0]
+		root_preloaded = preloaded && preloaded[0];
 	}
 
 	const props = {
@@ -148,9 +157,9 @@ export function handle_error(url: URL) {
 		},
 		segments: preloaded
 
-	}
+	};
 	const query = extract_query(search);
-	render(null, [], props, { host, path: pathname, query, params: {} });
+	render([], props, { host, path: pathname, query, params: {} });
 }
 
 export function scroll_state() {
@@ -185,11 +194,17 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 	prefetching = null;
 
 	const token = current_token = {};
-	const { redirect, props, branch } = await loaded;
+	const loaded_result = await loaded;
+	const { redirect } = loaded_result;
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
-	await render(redirect, branch, props, target.page);
-	if (document.activeElement) document.activeElement.blur();
+	if (redirect) {
+		await goto(redirect.location, { replaceState: true });
+	} else {
+		const { props, branch } = loaded_result;
+		await render(branch, props, target.page);
+	}
+	if (document.activeElement && (document.activeElement instanceof HTMLElement)) document.activeElement.blur();
 
 	if (!noscroll) {
 		let scroll = scroll_history[id];
@@ -211,9 +226,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 	}
 }
 
-async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
-	if (redirect) return goto(redirect.location, { replaceState: true });
-
+async function render(branch: any[], props: any, page: Page) {
 	stores.page.set(page);
 	stores.preloading.set(false);
 
@@ -229,16 +242,6 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 			props: await root_preloaded
 		};
 		props.notify = stores.page.notify;
-
-		// first load — remove SSR'd <head> contents
-		const start = document.querySelector('#sapper-head-start');
-		const end = document.querySelector('#sapper-head-end');
-
-		if (start && end) {
-			while (start.nextSibling !== end) detach(start.nextSibling);
-			detach(start);
-			detach(end);
-		}
 
 		root_component = new App({
 			target,
@@ -270,11 +273,7 @@ function part_changed(i, segment, match, stringified_query) {
 	}
 }
 
-export async function hydrate_target(target: Target): Promise<{
-	redirect?: Redirect;
-	props?: any;
-	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
-}> {
+export async function hydrate_target(target: Target): Promise<HydratedTarget> {
 	const { route, page } = target;
 	const segments = page.path.split('/').filter(Boolean);
 
@@ -297,6 +296,7 @@ export async function hydrate_target(target: Target): Promise<{
 	};
 
 	if (!root_preloaded) {
+		const root_preload = root_comp.preload || (() => {});
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,
@@ -373,10 +373,7 @@ function load_css(chunk: string) {
 	});
 }
 
-export function load_component(component: ComponentLoader): Promise<{
-	default: ComponentConstructor,
-	preload?: (input: any) => any
-}> {
+export function load_component(component: DOMComponentLoader): Promise<DOMComponentModule> {
 	// TODO this is temporary — once placeholders are
 	// always rewritten, scratch the ternary
 	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));

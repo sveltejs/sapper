@@ -33,19 +33,19 @@ prog.command('dev')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.action(async (opts: {
-		port: number,
-		open: boolean,
-		'dev-port': number,
-		live: boolean,
-		hot: boolean,
-		bundler?: 'rollup' | 'webpack',
-		cwd: string,
-		src: string,
-		routes: string,
-		static: string,
-		output: string,
-		'build-dir': string,
-		ext: string
+		port: number;
+		open: boolean;
+		'dev-port': number;
+		live: boolean;
+		hot: boolean;
+		bundler?: 'rollup' | 'webpack';
+		cwd: string;
+		src: string;
+		routes: string;
+		static: string;
+		output: string;
+		'build-dir': string;
+		ext: string;
 	}) => {
 		const { dev } = await import('./api/dev');
 
@@ -157,14 +157,14 @@ prog.command('build [dest]')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.example(`build custom-dir -p 4567`)
 	.action(async (dest = '__sapper__/build', opts: {
-		port: string,
-		legacy: boolean,
-		bundler?: 'rollup' | 'webpack',
-		cwd: string,
-		src: string,
-		routes: string,
-		output: string,
-		ext: string
+		port: string;
+		legacy: boolean;
+		bundler?: 'rollup' | 'webpack';
+		cwd: string;
+		src: string;
+		routes: string;
+		output: string;
+		ext: string;
 	}) => {
 		console.log(`> Building...`);
 
@@ -208,21 +208,21 @@ prog.command('export [dest]')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
 	.option('--entry', 'Custom entry points (space separated)', '/')
 	.action(async (dest = '__sapper__/export', opts: {
-		build: boolean,
-		legacy: boolean,
-		bundler?: 'rollup' | 'webpack',
-		basepath?: string,
-		host?: string,
-		concurrent: number,
-		timeout: number | false,
-		cwd: string,
-		src: string,
-		routes: string,
-		static: string,
-		output: string,
-		'build-dir': string,
-		ext: string
-		entry: string
+		build: boolean;
+		legacy: boolean;
+		bundler?: 'rollup' | 'webpack';
+		basepath?: string;
+		host?: string;
+		concurrent: number;
+		timeout: number | false;
+		cwd: string;
+		src: string;
+		routes: string;
+		static: string;
+		output: string;
+		'build-dir': string;
+		ext: string;
+		entry: string;
 	}) => {
 		try {
 			if (opts.build) {
@@ -251,13 +251,13 @@ prog.command('export [dest]')
 
 				onfile: event => {
 					const size_color = event.size > 150000 ? colors.bold().red : event.size > 50000 ? colors.bold().yellow : colors.bold().gray;
-						const size_label = size_color(left_pad(pb(event.size), 10));
+					const size_label = size_color(left_pad(pb(event.size), 10));
 
-						const file_label = event.status === 200
-							? event.file
-							: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
+					const file_label = event.status === 200
+						? event.file
+						: colors.bold()[event.status >= 400 ? 'red' : 'yellow'](`(${event.status}) ${event.file}`);
 
-						console.log(`${size_label}   ${file_label}`);
+					console.log(`${size_label}   ${file_label}`);
 				}
 			});
 

@@ -1,18 +1,28 @@
 {
-    "compilerOptions": {
-        "diagnostics": true,
-        "noImplicitThis": true,
-        "noImplicitAny": true,
-        "noEmitOnError": true,
-        "allowJs": true,
-        "lib": ["es5", "es6", "dom"],
-        "importHelpers": true,
-        "target": "ES5"
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+	"compilerOptions": {
+		"noImplicitThis": true,
+		"noEmitOnError": true,
+		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"lib": ["es5", "es6", "dom"],
+		"importHelpers": true,
+		"target": "ES5",
+		"baseUrl": ".",
+		"paths": {
+			"@sapper/*": ["runtime/src/*"]
+		}
+	},
+	"include": [
+		"src",
+		"runtime"
+	],
+	"exclude": [
+		"node_modules"
+	],
+	"types": [
+		"@sapper"
+	]
 }

@@ -110,7 +110,7 @@ function handle_click(event: MouseEvent) {
 
 	const target = select_target(url);
 	if (target) {
-		const noscroll = a.hasAttribute('sapper-noscroll');
+		const noscroll = a.hasAttribute('sapper:noscroll');
 		navigate(target, null, noscroll, url.hash);
 		event.preventDefault();
 		history.pushState({ id: cid }, '', url.href);
@@ -135,7 +135,7 @@ function handle_popstate(event: PopStateEvent) {
 		if (target) {
 			navigate(target, event.state.id);
 		} else {
-			location.href = location.href;
+			location.href = location.href; // eslint-disable-line
 		}
 	} else {
 		// hashchange

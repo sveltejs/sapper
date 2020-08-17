@@ -32,6 +32,7 @@ export default {
 				path: `${dest}/server`,
 				filename: '[name].js',
 				chunkFilename: '[hash]/[name].[id].js',
+				publicPath: `client/`,
 				libraryTarget: 'commonjs2'
 			};
 		}
@@ -49,7 +50,7 @@ export default {
 				path: dest,
 				filename: '[name].js',
 				chunkFilename: '[name].[id].[hash].js'
-			}
+			};
 		}
 	}
 };
