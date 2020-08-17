@@ -100,8 +100,12 @@ async function _export({
 
 	copy(static_files, export_dir);
 	copy(path.join(build_dir, 'client'), path.join(export_dir, 'client'));
-	copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
-	copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
+
+	const has_serviceworker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
+	if (has_serviceworker) {
+		copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
+		copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
+	}
 
 	const defaultPort = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 	const port = await ports.find(defaultPort);
@@ -319,8 +323,10 @@ async function _export({
 					handle(entryPoint, fetchOpts, queue.add);
 				}
 
-				const workerUrl = resolve(root.href, 'service-worker-index.html');
-				handle(workerUrl, fetchOpts, queue.add);
+				if (has_serviceworker) {
+					const workerUrl = resolve(root.href, 'service-worker-index.html');
+					handle(workerUrl, fetchOpts, queue.add);
+				}
 			} catch (err) {
 				proc.kill();
 				rej(err);
