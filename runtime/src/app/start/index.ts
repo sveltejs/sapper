@@ -16,7 +16,7 @@ import prefetch from '../prefetch/index';
 
 export default function start(opts: {
 	target: Node
-}) {
+}): Promise<void> {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
