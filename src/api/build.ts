@@ -4,6 +4,7 @@ import minify_html from './utils/minify_html';
 import { create_compilers, create_app, create_manifest_data, create_serviceworker_manifest } from '../core';
 import { copy_shimport } from './utils/copy_shimport';
 import read_template from '../core/read_template';
+import inject_resources from '../core/create_compilers/inject';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import { noop } from './utils/noop';
 import validate_bundler from './utils/validate_bundler';
@@ -104,8 +105,14 @@ export async function build({
 	}
 
 	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+	if (bundler === 'rollup') {
+		inject_resources(path.join(dest, 'build.json'), path.join(dest, 'client'));
+	}
 
 	const server_stats = await server.compile();
+	if (bundler === 'rollup') {
+		inject_resources(path.join(dest, 'build.json'), path.join(dest, 'server'));
+	}
 	oncompile({
 		type: 'server',
 		result: server_stats

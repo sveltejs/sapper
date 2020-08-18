@@ -64,21 +64,7 @@ export default class WebpackResult implements CompileResult {
 		return {
 			bundler: 'webpack',
 			shimport: null, // webpack has its own loader
-			assets: this.assets,
-			css: {
-				main: extract_css(this.assets.main),
-				chunks: manifest_data.components
-					.reduce((chunks: Record<string, string[]>, component: PageComponent) => {
-						const css_dependencies = [];
-						const css = extract_css(this.assets[component.name]);
-
-						if (css) css_dependencies.push(css);
-
-						chunks[component.file] = css_dependencies;
-
-						return chunks;
-					}, {})
-			}
+			assets: this.assets
 		};
 	}
 

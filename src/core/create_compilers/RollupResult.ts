@@ -1,9 +1,7 @@
 import * as path from 'path';
 import colors from 'kleur';
 import pb from 'pretty-bytes';
-import transitiveDeps from 'rollup-dependency-tree';
 import RollupCompiler from './RollupCompiler';
-import extract_css from './extract_css';
 import { left_pad, normalize_path } from '../../utils';
 import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
 import { ManifestData, Dirs } from '../../interfaces';
@@ -17,10 +15,6 @@ export default class RollupResult implements CompileResult {
 	assets: Record<string, string>;
 	dependencies: Record<string, string[]>;
 	css_files: CssFile[];
-	css: {
-		main: string;
-		chunks: Record<string, string[]>;
-	};
 	sourcemap: boolean | 'inline';
 	summary: string;
 
@@ -38,6 +32,7 @@ export default class RollupResult implements CompileResult {
 		}));
 
 		this.css_files = compiler.css_files;
+		this.dependencies = compiler.dependencies;
 
 		this.assets = {};
 
@@ -54,8 +49,6 @@ export default class RollupResult implements CompileResult {
 				if (chunk) this.assets[name] = chunk.fileName;
 			}
 		}
-
-		this.dependencies = transitiveDeps(compiler.chunks);
 
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold().red : chunk.code.length > 50000 ? colors.bold().yellow : colors.bold().white;
@@ -91,20 +84,21 @@ export default class RollupResult implements CompileResult {
 		}).join('\n');
 	}
 
-	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
+	relative_dependencies(routes_dir: string) {
 		const dependencies = {};
 		Object.entries(this.dependencies).forEach(([key, value]) => {
-			dependencies[path.relative(dirs.routes, key)] = value;
+			dependencies[normalize_path(path.relative(routes_dir, key)).replace(/\\/g, '/')] = value;
 		});
+		return dependencies;
+	}
 
+	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
+		const dependencies = (this.relative_dependencies(dirs.routes));
 		return {
 			bundler: 'rollup',
 			shimport: shimport_version,
 			assets: this.assets,
-			dependencies,
-
-			// TODO extract_css has side-effects that don't belong in a method called to_json
-			css: extract_css(this, manifest_data.components, dirs, this.sourcemap)
+			dependencies
 		};
 	}
 

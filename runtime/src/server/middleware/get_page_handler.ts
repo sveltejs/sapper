@@ -50,10 +50,6 @@ export function get_page_handler(
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
 			dependencies: Record<string, string[]>,
-			css: {
-				main: string | null,
-				chunks: Record<string, string[]>
-			},
 			legacy_assets?: Record<string, string>
 		} = get_build_info();
 
@@ -73,17 +69,9 @@ export function get_page_handler(
 
 		let es6_preload = false;
 		if (build_info.bundler === 'rollup') {
-
 			es6_preload = true;
-
 			const route = page.parts[page.parts.length - 1].file;
-
-			// JS
 			preload_files = preload_files.concat(build_info.dependencies[route]);
-
-			// CSS
-			preload_files = preload_files.concat(build_info.css.main);
-			preload_files = preload_files.concat(build_info.css.chunks[route]);
 		}
 
 		const link = preload_files
@@ -323,16 +311,17 @@ export function get_page_handler(
 
 			// TODO make this consistent across apps
 			// TODO embed build_info in placeholder.ts
-			if (build_info.css && build_info.css.main) {
+			if (build_info.dependencies) {
 				const css_chunks = new Set();
-				if (build_info.css.main) css_chunks.add(build_info.css.main);
 				page.parts.forEach(part => {
 					if (!part) return;
-					const css_chunks_for_part = build_info.css.chunks[part.file];
+					const css_chunks_for_part = build_info.dependencies[part.file];
 
 					if (css_chunks_for_part) {
 						css_chunks_for_part.forEach(chunk => {
-							css_chunks.add(chunk);
+							if (chunk.endsWith('.css')) {
+								css_chunks.add(chunk);
+							}
 						});
 					}
 				});
