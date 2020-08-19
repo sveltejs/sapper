@@ -54,7 +54,11 @@ export default [
 			dir: 'dist',
 			format: 'cjs',
 			sourcemap: true,
-			chunkFileNames: '[name].js'
+			chunkFileNames: '[name].js',
+			interop(id) {
+				if (id === 'events') {return 'esModule';}
+				return 'auto';
+			}
 		},
 		external,
 		plugins: [
