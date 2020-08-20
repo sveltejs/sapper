@@ -4,13 +4,12 @@
 		"noEmitOnError": true,
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
-		"downlevelIteration": true,
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"lib": ["es5", "es6", "dom"],
 		"importHelpers": true,
-		"target": "ES5",
+		"target": "ES6",
 		"baseUrl": ".",
 		"paths": {
 			"@sapper/*": ["runtime/src/*"]

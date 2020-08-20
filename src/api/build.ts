@@ -32,9 +32,9 @@ export async function build({
 	static: static_files = 'static',
 	dest = '__sapper__/build',
 
-	bundler,
+	bundler = undefined,
 	legacy = false,
-	ext,
+	ext = undefined,
 	oncompile = noop
 }: Opts = {}) {
 	bundler = validate_bundler(bundler);
