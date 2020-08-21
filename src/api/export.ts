@@ -1,7 +1,7 @@
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as url from 'url';
+import * as urllib from 'url';
 import { promisify } from 'util';
 import fetch from 'node-fetch';
 import * as ports from 'port-authority';
@@ -35,14 +35,14 @@ type Ref = {
 	as: string;
 };
 
-type URL = url.UrlWithStringQuery;
+type URL = urllib.UrlWithStringQuery;
 
 function resolve(from: string, to: string) {
-	return url.parse(url.resolve(from, to));
+	return urllib.parse(urllib.resolve(from, to));
 }
 
-function cleanPath(path: string) {
-	return path.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '');
+function cleanPath(p: string) {
+	return p.replace(/^\/|\/$|\/*index(.html)*$|.html$/g, '');
 }
 
 function get_href(attrs: string) {
@@ -118,10 +118,10 @@ async function _export({
 	if (!root.href.endsWith('/')) root.href += '/';
 
 	const entryPoints = entry.split(' ').map(entryPoint => {
-		const entry = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
-		if (!entry.href.endsWith('/')) entry.href += '/';
+		const resolved = resolve(origin, `${basepath}/${cleanPath(entryPoint)}`);
+		if (!resolved.href.endsWith('/')) resolved.href += '/';
 
-		return entry;
+		return resolved;
 	});
 
 	const proc = child_process.fork(path.resolve(`${build_dir}/server/server.js`), [], {
@@ -184,16 +184,16 @@ async function _export({
 		addCallback(url);
 	}
 
-	async function handleFetch(url: URL, { timeout, host, host_header }: FetchOpts) {
+	async function handleFetch(url: URL, opts: FetchOpts) {
 		const href = url.href;
 		const timeout_deferred = new Deferred();
 		const the_timeout = setTimeout(() => {
 			timeout_deferred.reject(new Error(`Timed out waiting for ${href}`));
-		}, timeout);
+		}, opts.timeout);
 
 		const r = await Promise.race([
 			fetch(href, {
-				headers: { host: host_header || host },
+				headers: { host: opts.host_header || opts.host },
 				redirect: 'manual'
 			}),
 			timeout_deferred.promise
@@ -209,11 +209,10 @@ async function _export({
 
 	async function handleResponse(fetched: Promise<FetchRet>, fetchOpts: FetchOpts) {
 		const { response, url } = await fetched;
-		const { protocol, host, root } = fetchOpts;
 		let pathname = url.pathname;
 
 		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(root.pathname, '') || '/';
+			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';
 		}
 
 		let type = response.headers.get('Content-Type');
@@ -261,10 +260,9 @@ async function _export({
 					hrefs = hrefs.filter(Boolean);
 
 					for (const href of hrefs) {
-						const url = resolve(base.href, href);
-
-						if (url.protocol === protocol && url.host === host) {
-							handle(url, fetchOpts, queue.add);
+						const dest = resolve(base.href, href);
+						if (dest.protocol === fetchOpts.protocol && dest.host === fetchOpts.host) {
+							handle(dest, fetchOpts, queue.add);
 						}
 					}
 				}
@@ -277,13 +275,13 @@ async function _export({
 			type = 'text/html';
 			body = `<script>window.location.href = "${location.replace(origin, '')}"</script>`;
 
-			handle(resolve(root.href, location), fetchOpts, queue.add);
+			handle(resolve(fetchOpts.root.href, location), fetchOpts, queue.add);
 		}
 
 		return save(pathname, response.status, type, body);
 	}
 
-	const fetchOpts = {
+	const queueFetchOpts = {
 		timeout: timeout === false ? 0 : timeout,
 		host,
 		host_header,
@@ -295,7 +293,7 @@ async function _export({
 		concurrent,
 		seen,
 		saved,
-		fetchOpts,
+		fetchOpts: queueFetchOpts,
 		handleFetch,
 		handleResponse,
 		callbacks: {
@@ -320,12 +318,12 @@ async function _export({
 					oninfo({
 						message: `Crawling ${entryPoint.href}`
 					});
-					handle(entryPoint, fetchOpts, queue.add);
+					handle(entryPoint, queueFetchOpts, queue.add);
 				}
 
 				if (has_serviceworker) {
 					const workerUrl = resolve(root.href, 'service-worker-index.html');
-					handle(workerUrl, fetchOpts, queue.add);
+					handle(workerUrl, queueFetchOpts, queue.add);
 				}
 			} catch (err) {
 				proc.kill();

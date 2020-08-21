@@ -51,8 +51,8 @@ export default class RollupCompiler {
 		});
 
 		mod.onwarn = (warning: any) => {
-			onwarn(warning, (warning: any) => {
-				this.warnings.push(warning);
+			onwarn(warning, (warn: any) => {
+				this.warnings.push(warn);
 			});
 		};
 

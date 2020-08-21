@@ -45,16 +45,16 @@ stores.session.subscribe(async value => {
 	if (!ready) return;
 	session_dirty = true;
 
-	const target = select_target(new URL(location.href));
+	const dest = select_target(new URL(location.href));
 
 	const token = current_token = {};
-	const { redirect, props, branch } = await hydrate_target(target);
+	const { redirect, props, branch } = await hydrate_target(dest);
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
 	} else {
-		await render(branch, props, target.page);
+		await render(branch, props, dest.page);
 	}
 });
 
@@ -169,7 +169,7 @@ export function scroll_state() {
 	};
 }
 
-export async function navigate(target: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
+export async function navigate(dest: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
 	if (id) {
 		// popstate or initial navigation
 		cid = id;
@@ -187,9 +187,9 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 
 	if (root_component) stores.preloading.set(true);
 
-	const loaded = prefetching && prefetching.href === target.href ?
+	const loaded = prefetching && prefetching.href === dest.href ?
 		prefetching.promise :
-		hydrate_target(target);
+		hydrate_target(dest);
 
 	prefetching = null;
 
@@ -202,7 +202,7 @@ export async function navigate(target: Target, id: number, noscroll?: boolean, h
 		await goto(redirect.location, { replaceState: true });
 	} else {
 		const { props, branch } = loaded_result;
-		await render(branch, props, target.page);
+		await render(branch, props, dest.page);
 	}
 	if (document.activeElement && (document.activeElement instanceof HTMLElement)) document.activeElement.blur();
 
@@ -273,8 +273,8 @@ function part_changed(i, segment, match, stringified_query) {
 	}
 }
 
-export async function hydrate_target(target: Target): Promise<HydratedTarget> {
-	const { route, page } = target;
+export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
+	const { route, page } = dest;
 	const segments = page.path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
@@ -339,7 +339,7 @@ export async function hydrate_target(target: Target): Promise<HydratedTarget> {
 						host: page.host,
 						path: page.path,
 						query: page.query,
-						params: part.params ? part.params(target.match) : {}
+						params: part.params ? part.params(dest.match) : {}
 					}, $session)
 					: {};
 			} else {
