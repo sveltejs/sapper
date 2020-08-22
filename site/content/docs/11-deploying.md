@@ -6,7 +6,7 @@ Sapper apps run anywhere that supports Node 10 or higher.
 
 ### Deploying from sapper build
 
-You will need your Node production dependencies (`node_modules`), `static` directory, and `__sapper__/build` itself to run your app on any machine you'd like. Node production dependencies can be generated with `npm ci --prod`, you can then start your app with:
+You will need the `__sapper__/build` and `static` directories as well as the production dependencies in `node_modules` to run the application. Node production dependencies can be generated with `npm ci --prod`, you can then start your app with:
 
 ```bash
 node __sapper__/build
