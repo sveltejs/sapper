@@ -20,7 +20,7 @@ export default function start(opts: {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
-	
+
 	// Adopted from Nuxt.js
 	// Reset scrollRestoration to auto when leaving page, allowing page reload
 	// and back-navigation from other pages to use the browser to restore the
@@ -68,7 +68,7 @@ function handle_mousemove(event: MouseEvent) {
 
 function trigger_prefetch(event: MouseEvent | TouchEvent) {
 	const a: HTMLAnchorElement = <HTMLAnchorElement>find_anchor(<Node>event.target);
-	if (!a || a.rel !== 'prefetch') return;
+	if (!(a && a.hasAttribute('sapper:prefetch'))) return;
 
 	prefetch(a.href);
 }
@@ -97,8 +97,8 @@ function handle_click(event: MouseEvent) {
 
 	// Ignore if tag has
 	// 1. 'download' attribute
-	// 2. rel='external' attribute
-	if (a.hasAttribute('download') || a.getAttribute('rel') === 'external') return;
+	// 2. 'sapper:external' attribute
+	if (a.hasAttribute('download') || a.hasAttribute('sapper:external')) return;
 
 	// Ignore if <a> has a target
 	if (svg ? (<SVGAElement>a).target.baseVal : a.target) return;

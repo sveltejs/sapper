@@ -2,5 +2,5 @@
 
 <a href="slow-preload">slow preload</a>
 <a href="foo">foo</a>
-<a href="prefetch/qwe" rel=prefetch>prefetch qwe</a>
-<a href="prefetch/xyz" rel=prefetch>prefetch xyz</a>
+<a href="prefetch/qwe" sapper:prefetch>prefetch qwe</a>
+<a href="prefetch/xyz" sapper:prefetch>prefetch xyz</a>
