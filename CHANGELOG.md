@@ -10,6 +10,7 @@
 * Improved script `preload` support for Rollup by upgrading `rollup-dependency-tree` ([#1389](https://github.com/sveltejs/sapper/pull/1389))
 * Added CSP nonce support for Webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
 * Export `service-worker-index.html` only when `service-worker.js` exists ([#1291](https://github.com/sveltejs/sapper/pull/1291))
+* Add support for vanilla HTTP server ([#923](https://github.com/sveltejs/sapper/issues/923))
 
 ## 0.28.0
 
