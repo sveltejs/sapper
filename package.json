@@ -12,6 +12,7 @@
     "sapper",
     "dist/*.js",
     "runtime/*.mjs",
+    "runtime/index.d.ts",
     "runtime/internal"
   ],
   "directories": {
