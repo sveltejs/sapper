@@ -18,7 +18,6 @@ export default function middleware(opts: {
 		(req: Req, res: Res, next: () => void) => {
 			if (req.baseUrl === undefined) {
 				let originalUrl = req.originalUrl || req.url;
-				let { originalUrl } = req;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
 					originalUrl += '/';
 				}
