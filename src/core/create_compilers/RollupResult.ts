@@ -50,7 +50,7 @@ export default class RollupResult implements CompileResult {
 		} else {
 			for (const name in compiler.input) {
 				const file = compiler.input[name];
-				const chunk = compiler.chunks.find(chunk => file in chunk.modules);
+				const chunk = compiler.chunks.find(chnk => file in chnk.modules);
 				if (chunk) this.assets[name] = chunk.fileName;
 			}
 		}

@@ -89,17 +89,17 @@ export async function build({
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(bundler, cwd, src, dest, false);
+		const { client: legacy_client } = await create_compilers(bundler, cwd, src, dest, false);
 
-		const client_result = await client.compile();
+		const legacy_client_result = await legacy_client.compile();
 
 		oncompile({
 			type: 'client (legacy)',
-			result: client_result
+			result: legacy_client_result
 		});
 
-		client_result.to_json(manifest_data, { src, routes, dest });
-		build_info.legacy_assets = client_result.assets;
+		legacy_client_result.to_json(manifest_data, { src, routes, dest });
+		build_info.legacy_assets = legacy_client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
