@@ -1,4 +1,5 @@
-import { select_target, prefetching, set_prefetching, hydrate_target } from '../app';
+import { prefetching, set_prefetching, hydrate_target } from '../app';
+import { select_target } from '../router';
 
 export default function prefetch(href: string) {
 	const target = select_target(new URL(href, document.baseURI));

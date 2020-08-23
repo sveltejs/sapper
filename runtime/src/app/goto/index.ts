@@ -1,4 +1,4 @@
-import { history, select_target, navigate, cid } from '../app';
+import { cid, history, navigate, select_target } from '../router';
 
 export default function goto(
 		href: string,
