@@ -4,6 +4,7 @@
 		"noEmitOnError": true,
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
+		"downlevelIteration": true,
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"skipLibCheck": true,

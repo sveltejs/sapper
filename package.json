@@ -55,7 +55,6 @@
     "puppeteer": "^5.0.0",
     "require-relative": "^0.8.7",
     "rollup": "^2.21.0",
-    "rollup-dependency-tree": "^0.0.2",
     "rollup-plugin-svelte": "^5.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "sade": "^1.6.1",
