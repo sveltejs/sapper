@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "The next small thing in web development, powered by Svelte",
   "bin": {
     "sapper": "./sapper"
