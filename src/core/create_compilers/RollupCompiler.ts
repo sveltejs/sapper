@@ -3,10 +3,12 @@ import color from 'kleur';
 import relative from 'require-relative';
 import {
 	InputOption,
+	InputOptions,
 	PluginContext,
 	TransformResult,
 	NormalizedInputOptions,
 	NormalizedOutputOptions,
+	RenderedChunk,
 	RollupError,
 	OutputBundle,
 	OutputChunk
@@ -73,7 +75,7 @@ export default class RollupCompiler {
 		// TODO this is hacky, and doesn't need to apply to all three compilers
 		(mod.plugins || (mod.plugins = [])).push({
 			name: 'sapper-internal',
-			options(opts: any) {
+			options(opts: InputOptions) {
 				that.input = opts.input;
 			},
 			buildStart(this: PluginContext, options: NormalizedInputOptions): void {
@@ -93,7 +95,7 @@ export default class RollupCompiler {
 					entry_point = inputs[0].file;
 				}
 			},
-			renderChunk(code: string, chunk: any) {	
+			renderChunk(code: string, chunk: RenderedChunk) {	
 				that.chunks.push(chunk);
 			},
 			transform(code: string, id: string): TransformResult {
