@@ -241,14 +241,14 @@ async function _export({
 				const base = resolve(url.href, base_href);
 
 				let match;
-				const pattern = /<(a|img|source)\s+([\s\S]+?)>/gm;
+				const pattern = /<(a|img|link|source)\s+([\s\S]+?)>/gm;
 
 				while (match = pattern.exec(cleaned)) {
 					let hrefs: string[] = [];
 					const element = match[1];
 					const attrs = match[2];
 
-					if (element === 'a') {
+					if (element === 'a' || element === 'link') {
 						hrefs.push(get_href(attrs));
 					} else {
 						if (element === 'img') {

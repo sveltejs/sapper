@@ -1,3 +1,7 @@
+<svelte:head>
+	<link rel='manifest' href='manifest.json'>
+</svelte:head>
+
 <h1>Great success!</h1>
 
 <a href="blog">blog</a>
