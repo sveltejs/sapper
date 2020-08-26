@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix updating styles upon dev mode reloads ([#1439](https://github.com/sveltejs/sapper/pull/1439))
+* Follow `<link href>` when crawling site during export ([#1444](https://github.com/sveltejs/sapper/pull/1444))
+
 ## 0.28.1
 
 * Apply source map to stack traces ([#117](https://github.com/sveltejs/sapper/issues/117))
