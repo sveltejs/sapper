@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Fix updating styles upon dev mode reloads ([#1439](https://github.com/sveltejs/sapper/pull/1439))
+* Fix race condition with Rollup in dev mode ([#1440](https://github.com/sveltejs/sapper/issues/1440))
 * Follow `<link href>` when crawling site during export ([#1444](https://github.com/sveltejs/sapper/pull/1444))
 
 ## 0.28.1
