@@ -233,10 +233,11 @@ class Watcher extends EventEmitter {
 				this.restart(filename, 'server');
 			},
 
+			// Note that we don't inject the CSS path into the server in dev mode, which means
+			// that styles might not work if you have JavaScript disabled. We skip it because if
+			// the server completes before the client it will fail to find build.json. This is not
+			// an issue for production builds because we don't have two simultaneous watchers then.
 			handle_result: (result: CompileResult) => {
-				if (this.bundler === 'rollup') {
-					inject_resources(path.join(this.dirs.dest, 'build.json'), path.join(this.dirs.dest, 'server'));
-				}
 				deferred.promise.then(() => {
 					const restart = () => {
 						this.crashed = false;
