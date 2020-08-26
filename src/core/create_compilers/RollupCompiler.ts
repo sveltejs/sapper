@@ -53,7 +53,7 @@ export default class RollupCompiler {
 	warnings: any[];
 	errors: any[];
 	chunks: any[];
-	css_files: Array<{ id: string; code: string }>;
+	css_files: Record<string, string>;
 	dependencies: Record<string, string[]>;
 
 	constructor(config: any) {
@@ -62,7 +62,7 @@ export default class RollupCompiler {
 		this.warnings = [];
 		this.errors = [];
 		this.chunks = [];
-		this.css_files = [];
+		this.css_files = {};
 		this.dependencies = {};
 	}
 
@@ -81,7 +81,7 @@ export default class RollupCompiler {
 			buildStart(this: PluginContext, options: NormalizedInputOptions): void {
 				const input = options.input;
 				const inputs: Array<{alias: string, file: string}> = [];
-		
+
 				if (typeof input === 'string') {
 					inputs.push({alias: 'main', file: input});
 				} else if (Array.isArray(input)) {
@@ -99,9 +99,10 @@ export default class RollupCompiler {
 				that.chunks.push(chunk);
 			},
 			transform(code: string, id: string): TransformResult {
-				// TODO: see if we can remove after release of https://github.com/sveltejs/rollup-plugin-svelte/pull/72
+				// rollup-plugin-svelte adds an import statement to the js file which references the css file
+				// that won't be able to be compiled as js, so we remove it here and store a copy to use later
 				if (/\.css$/.test(id)) {
-					that.css_files.push({ id, code });
+					that.css_files[id] = code;
 					return {code: '', moduleSideEffects: 'no-treeshake'};
 				}
 			},
@@ -137,8 +138,8 @@ export default class RollupCompiler {
 							output: chunk_content_from_modules(
 								css_modules,
 								css_module => {
-									const f = that.css_files.find(file => file.id === css_module);
-									return f && extract_sourcemap(f.code, css_module);
+									const code = that.css_files[css_module];
+									return code && extract_sourcemap(code, css_module);
 								}
 							),
 							sourcemap_url_prefix: '',

@@ -14,7 +14,6 @@ export default class RollupResult implements CompileResult {
 	chunks: Chunk[];
 	assets: Record<string, string>;
 	dependencies: Record<string, string[]>;
-	css_files: CssFile[];
 	sourcemap: boolean | 'inline';
 	summary: string;
 
@@ -31,7 +30,6 @@ export default class RollupResult implements CompileResult {
 			modules: Object.keys(chunk.modules).map(m => normalize_path(m))
 		}));
 
-		this.css_files = compiler.css_files;
 		this.dependencies = compiler.dependencies;
 
 		this.assets = {};
