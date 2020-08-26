@@ -45,6 +45,7 @@ describe('export', function() {
 			'img/example-192.png',
 			'img/example-512.png',
 			'pdfs/test.pdf',
+			'manifest.json',
 			...boom
 		].sort());
 	});
