@@ -50,28 +50,33 @@ export function get_page_handler(
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
 			dependencies: Record<string, string[]>,
+			css?: { main: string[] },
 			legacy_assets?: Record<string, string>
 		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 
-		// preload main.js and current route
+		// preload main js and css
 		// TODO detect other stuff we can preload like fonts?
 		let preload_files = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
-		if (!error && !is_service_worker_index) {
-			page.parts.forEach(part => {
-				if (!part) return;
-
-				// using concat because it could be a string or an array. thanks webpack!
-				preload_files = preload_files.concat(build_info.assets[part.name]);
-			});
+		if (build_info?.css?.main) {
+			preload_files = preload_files.concat(build_info?.css?.main);
 		}
 
 		let es6_preload = false;
 		if (build_info.bundler === 'rollup') {
 			es6_preload = true;
 			const route = page.parts[page.parts.length - 1].file;
-			preload_files = preload_files.concat(build_info.dependencies[route]);
+			const deps = build_info.dependencies[route];
+			if (deps) {
+				preload_files = preload_files.concat(deps);
+			}
+		} else if (!error && !is_service_worker_index) {
+			page.parts.forEach(part => {
+				if (!part) return;
+				// using concat because it could be a string or an array. thanks webpack!
+				preload_files = preload_files.concat(build_info.assets[part.name]);
+			});
 		}
 
 		const link = preload_files
@@ -311,17 +316,15 @@ export function get_page_handler(
 
 			// TODO make this consistent across apps
 			// TODO embed build_info in placeholder.ts
-			if (build_info.dependencies) {
-				const css_chunks = new Set();
+			if (build_info.css) {
+				const css_chunks = build_info.css.main ? new Set(build_info.css.main) : new Set();
 				page.parts.forEach(part => {
 					if (!part) return;
-					const css_chunks_for_part = build_info.dependencies[part.file];
+					const deps_for_part = build_info.dependencies[part.file];
 
-					if (css_chunks_for_part) {
-						css_chunks_for_part.forEach(chunk => {
-							if (chunk.endsWith('.css')) {
-								css_chunks.add(chunk);
-							}
+					if (deps_for_part) {
+						deps_for_part.filter(d => d.endsWith('.css')).forEach(chunk => {
+							css_chunks.add(chunk);
 						});
 					}
 				});

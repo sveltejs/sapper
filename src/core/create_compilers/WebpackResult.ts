@@ -1,6 +1,6 @@
 import format_messages from 'webpack-format-messages';
-import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
-import { ManifestData, Dirs, PageComponent } from '../../interfaces';
+import { CompileResult, BuildInfo, CompileError, Chunk } from './interfaces';
+import { ManifestData, Dirs } from '../../interfaces';
 
 const locPattern = /\((\d+):(\d+)\)$/;
 
@@ -14,14 +14,9 @@ function munge_warning_or_error(message: string) {
 		.replace('[27m', '')
 		.replace('./', '');
 
-	let line = null;
-	let column = null;
-
 	const match = locPattern.exec(lines[0]);
 	if (match) {
 		lines[0] = lines[0].replace(locPattern, '');
-		line = +match[1];
-		column = +match[2];
 	}
 
 	return {
@@ -36,7 +31,6 @@ export default class WebpackResult implements CompileResult {
 	warnings: CompileError[];
 	chunks: Chunk[];
 	assets: Record<string, string>;
-	css_files: CssFile[];
 	stats: any;
 
 	constructor(stats: any) {
@@ -56,11 +50,6 @@ export default class WebpackResult implements CompileResult {
 	}
 
 	to_json(manifest_data: ManifestData, dirs: Dirs): BuildInfo {
-		const extract_css = (assets: string[] | string) => {
-			assets = Array.isArray(assets) ? assets : [assets];
-			return assets.find(asset => /\.css$/.test(asset));
-		};
-
 		return {
 			bundler: 'webpack',
 			shimport: null, // webpack has its own loader

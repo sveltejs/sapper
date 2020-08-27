@@ -3,7 +3,7 @@ import colors from 'kleur';
 import pb from 'pretty-bytes';
 import RollupCompiler from './RollupCompiler';
 import { left_pad, normalize_path } from '../../utils';
-import { CompileResult, BuildInfo, CompileError, Chunk, CssFile } from './interfaces';
+import { CompileResult, BuildInfo, CompileError, Chunk } from './interfaces';
 import { ManifestData, Dirs } from '../../interfaces';
 import { version as shimport_version} from 'shimport/package.json';
 
@@ -13,6 +13,9 @@ export default class RollupResult implements CompileResult {
 	warnings: CompileError[];
 	chunks: Chunk[];
 	assets: Record<string, string>;
+	css: {	
+		main: string[];
+	};
 	dependencies: Record<string, string[]>;
 	sourcemap: boolean | 'inline';
 	summary: string;
@@ -32,21 +35,12 @@ export default class RollupResult implements CompileResult {
 
 		this.dependencies = compiler.dependencies;
 
-		this.assets = {};
-
-		if (typeof compiler.input === 'string') {
-			compiler.chunks.forEach(chunk => {
-				if (compiler.input in chunk.modules) {
-					this.assets.main = chunk.fileName;
-				}
-			});
-		} else {
-			for (const name in compiler.input) {
-				const file = compiler.input[name];
-				const chunk = compiler.chunks.find(chnk => file in chnk.modules);
-				if (chunk) this.assets[name] = chunk.fileName;
-			}
-		}
+		this.assets = {
+			main: compiler.js_main
+		};
+		this.css = {
+			main: compiler.css_main
+		};
 
 		this.summary = compiler.chunks.map(chunk => {
 			const size_color = chunk.code.length > 150000 ? colors.bold().red : chunk.code.length > 50000 ? colors.bold().yellow : colors.bold().white;
@@ -96,6 +90,7 @@ export default class RollupResult implements CompileResult {
 			bundler: 'rollup',
 			shimport: shimport_version,
 			assets: this.assets,
+			css: this.css,
 			dependencies
 		};
 	}

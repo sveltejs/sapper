@@ -19,11 +19,10 @@ export default function inject_resources(
 		const source = fs.readFileSync(file_path, 'utf-8');
 
 		const replaced = source.replace(/(\\?["'])__SAPPER_CSS_PLACEHOLDER:([^"']+?)__\1/g, (m, quotes, route) => {
-			let replacement = JSON.stringify(
-				process.env.SAPPER_LEGACY_BUILD && deps[route] ?
-					deps[route].map(_ => `legacy/${_}`) :
-					deps[route]
-			);
+			const route_deps = process.env.SAPPER_LEGACY_BUILD && deps[route] ?
+				deps[route].map(_ => `legacy/${_}`) :
+				deps[route];
+			let replacement = JSON.stringify(route_deps || []);
 
 			// If the quotation marks are escaped, then
 			// the source code is in a string literal
