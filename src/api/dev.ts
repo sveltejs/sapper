@@ -366,9 +366,11 @@ class Watcher extends EventEmitter {
 			},
 
 			handle_result: (result: CompileResult) => {
+				const build_info: BuildInfo = result.to_json(manifest_data, this.dirs);
+
 				fs.writeFileSync(
 					path.join(dest, 'build.json'),
-					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
+					JSON.stringify(build_info, null, '  ')
 				);
 
 				if (this.bundler === 'rollup') {
