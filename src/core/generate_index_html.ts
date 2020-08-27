@@ -64,13 +64,17 @@ export function create_index_html({
 		script += `</script><script src="${main}">`;
 	}
 
+	let head: string = '';
+	if (process.env.SAPPER_CONTENT_SECURITY_POLICY) {
+		head += `<meta http-equiv="Content-Security-Policy" content="${process.env.SAPPER_CONTENT_SECURITY_POLICY}">`;
+	}
 
 	const body = template()
 		.replace('%sapper.base%', () => `<base href="${basepath}/">`)
 		.replace('%sapper.scripts%', () => `<script>${script}</script>`)
 		.replace('%sapper.TIMESTAMP%', () => process.env.TIMESTAMP || Date.now().toString())
 		.replace('%sapper.html%', () => '')
-		.replace('%sapper.head%', () => '')
+		.replace('%sapper.head%', () => head)
 		.replace('%sapper.styles%', () => '');
 
 
