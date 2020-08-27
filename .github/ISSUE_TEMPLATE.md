@@ -9,19 +9,17 @@ their descriptions. Please DO NOT add `+1` or :+1: comments.
 
 ### Feature requests and proposals
 We're excited to hear how we can make Sapper better. Please add as much detail
-as you can on your use case.
+as you can on your use case. To propose an implementation of a large feature or
+change, please create an [RFC](https://github.com/sveltejs/rfcs).
 
 ### Bugs
 If you're filing an issue about a bug please include as much information
 as you can, including the following.
 
-- Your browser and the version: (e.x. Chrome 52.1, Firefox 48.0, IE 10)
-- Your operating system: (e.x. OS X 10, Windows XP, etc)
-- Sapper version (Please check you can reproduce the issue with the latest release!)
-- Svelte version (Please check you can reproduce the issue with the latest release!)
-- If it is an exported (npm run export) or dynamic application.
-- Whether your application uses Webpack or Rollup
-- Hosting environment (if pertinent): (i.e. Locally, Now, GCP, AWS etc)
+- The output of `npx envinfo --system --npmPackages svelte,sapper,rollup,webpack --binaries --browsers`
+- Your browser
+- Your hosting environment (i.e. Local, GCP/AWS/Azure, Vercel/Begin, etc...)
+- If it is an exported (`npm run export`) or dynamic application
 
 - *Repeatable steps to reproduce the issue*
 

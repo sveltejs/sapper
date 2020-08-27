@@ -2,7 +2,15 @@
 title: Deployment
 ---
 
-Sapper apps run anywhere that supports Node 8 or higher.
+Sapper apps run anywhere that supports Node 10 or higher.
+
+### Deploying from sapper build
+
+You will need the `__sapper__/build` and `static` directories as well as the production dependencies in `node_modules` to run the application. Node production dependencies can be generated with `npm ci --prod`, you can then start your app with:
+
+```bash
+node __sapper__/build
+```
 
 ### Deploying to Vercel
 

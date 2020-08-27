@@ -36,9 +36,9 @@ export function page_store<T>(value: T): PageStore<T> {
 
 	function subscribe(run: Subscriber<T>): Unsubscriber {
 		let old_value;
-		return store.subscribe((value) => {
-			if (old_value === undefined || (ready && value !== old_value)) {
-				run(old_value = value);
+		return store.subscribe((new_value) => {
+			if (old_value === undefined || (ready && new_value !== old_value)) {
+				run(old_value = new_value);
 			}
 		});
 	}

@@ -1,6 +1,6 @@
 {
   "name": "sapper",
-  "version": "0.28.0",
+  "version": "0.28.2",
   "description": "The next small thing in web development, powered by Svelte",
   "bin": {
     "sapper": "./sapper"
@@ -12,6 +12,7 @@
     "sapper",
     "dist/*.js",
     "runtime/*.mjs",
+    "runtime/index.d.ts",
     "runtime/internal"
   ],
   "directories": {
@@ -54,7 +55,6 @@
     "puppeteer": "^5.0.0",
     "require-relative": "^0.8.7",
     "rollup": "^2.21.0",
-    "rollup-dependency-tree": "^0.0.2",
     "rollup-plugin-svelte": "^5.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "sade": "^1.6.1",

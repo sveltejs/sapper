@@ -18,7 +18,7 @@ export default function middleware(opts: {
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
 			if (req.baseUrl === undefined) {
-				let { originalUrl } = req;
+				let originalUrl = req.originalUrl || req.url;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
 					originalUrl += '/';
 				}

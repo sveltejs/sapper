@@ -20,7 +20,7 @@ import goto from "../goto";
 
 export default function start(opts: {
 	target: Node
-}) {
+}): Promise<void> {
 	if ('scrollRestoration' in history) {
 		history.scrollRestoration = 'manual';
 	}
@@ -163,7 +163,8 @@ function handle_popstate(event: PopStateEvent) {
 		if (target) {
 			navigate(target, event.state.id);
 		} else {
-			location.href = location.href; // eslint-disable-line
+			// eslint-disable-next-line
+			location.href = location.href; // nosonar
 		}
 	} else {
 		// hashchange

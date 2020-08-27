@@ -1,13 +1,24 @@
 # sapper changelog
 
-## Unreleased
+## 0.28.2
 
-* Fix exporting server routes which return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
+* Fix updating styles upon dev mode reloads ([#1439](https://github.com/sveltejs/sapper/pull/1439))
+* Fix race condition with Rollup in dev mode ([#1440](https://github.com/sveltejs/sapper/issues/1440))
+* Follow `<link href>` when crawling site during export ([#1444](https://github.com/sveltejs/sapper/pull/1444))
+
+## 0.28.1
+
+* Apply source map to stack traces ([#117](https://github.com/sveltejs/sapper/issues/117))
+* Add support for vanilla Node `http` server ([#923](https://github.com/sveltejs/sapper/issues/923))
+* Fix exporting server routes that return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
 * Follow `<img src>`, `<source src>`, and `<source srcset>` when crawling site during export ([#1104](https://github.com/sveltejs/sapper/issues/1104))
-* Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
-* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
-* Improved script `preload` support for Rollup by upgrading `rollup-dependency-tree` ([#1389](https://github.com/sveltejs/sapper/pull/1389))
-* Added CSP nonce support for Webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
+* Export `service-worker-index.html` only when `service-worker.js` exists ([#1291](https://github.com/sveltejs/sapper/pull/1291))
+* Improved HTTPS support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
+* Provide TypeScript declarations ([#1381](https://github.com/sveltejs/sapper/issues/1381))
+* Fix creation of CSS files with duplicate content when using Rollup ([#1397](https://github.com/sveltejs/sapper/issues/1397))
+* Improved script `preload` support for Rollup ([#1415](https://github.com/sveltejs/sapper/pull/1415))
+* Fix hash in CSS filenames with Rollup ([#1388](https://github.com/sveltejs/sapper/issues/1388))
+* Added CSP nonce support for webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
 
 ## 0.28.0
 
