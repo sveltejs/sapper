@@ -81,7 +81,7 @@ async function _export({
 	build_dir = '__sapper__/build',
 	export_dir = '__sapper__/export',
 	basepath = '',
-	host_header,
+	host_header = undefined,
 	timeout = 5000,
 	concurrent = 8,
 	oninfo = noop,
