@@ -7,7 +7,7 @@ export default function goto(
 	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {
-		history[opts.replaceState ? 'replaceState' : 'pushState']({...state, id: cid }, '', href);
+		history[opts.replaceState ? 'replaceState' : 'pushState']({...(opts.state || {}), id: cid }, '', href);
 		return navigate(target, null, opts.noscroll).then(() => {});
 	}
 
