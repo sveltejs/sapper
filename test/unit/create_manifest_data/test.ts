@@ -6,10 +6,10 @@ describe('manifest_data', () => {
 	it('creates routes', () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/basic'));
 
-		const index = { name: 'index', file: 'index.html', has_preload: false };
-		const about = { name: 'about', file: 'about.html', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html', has_preload: false };
+		const index = { name: 'index', file: 'index.html' };
+		const about = { name: 'about', file: 'about.html' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].html' };
 
 		assert.deepEqual(components, [
 			index,
@@ -41,7 +41,7 @@ describe('manifest_data', () => {
 			},
 
 			{
-				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				pattern: /^\/blog\/([^/]+?)\/?$/,
 				parts: [
 					null,
 					{ component: blog_$slug, params: ['slug'] }
@@ -66,7 +66,7 @@ describe('manifest_data', () => {
 
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?)\.json$/,
+				pattern: /^\/blog\/([^/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}
@@ -79,18 +79,18 @@ describe('manifest_data', () => {
 		// had to remove ? and " because windows
 
 		// const quote = { name: '$34', file: '".html' };
-		const hash = { name: '$35', has_preload: false, file: '#.html' };
+		const hash = { name: '$35', file: '#.html' };
 		// const question_mark = { name: '$63', file: '?.html' };
 
 		assert.deepEqual(components, [
 			// quote,
-			hash,
+			hash
 			// question_mark
 		]);
 
 		assert.deepEqual(pages.map(p => p.pattern), [
 			// /^\/%22\/?$/,
-			/^\/%23\/?$/,
+			/^\/%23\/?$/
 			// /^\/%3F\/?$/
 		]);
 	});
@@ -101,7 +101,7 @@ describe('manifest_data', () => {
 		assert.deepEqual(pages.map(p => p.pattern), [
 			/^\/([0-9-a-z]{3,})\/?$/,
 			/^\/([a-z]{2})\/?$/,
-			/^\/([^\/]+?)\/?$/
+			/^\/([^/]+?)\/?$/
 		]);
 	});
 
@@ -143,13 +143,13 @@ describe('manifest_data', () => {
 		]);
 	});
 
-	it('allows mutliple slugs', () => {
+	it('allows multiple slugs', () => {
 		const { server_routes } = create_manifest_data(path.join(__dirname, 'samples/multiple-slugs'));
 
 		assert.deepEqual(server_routes, [
 			{
 				name: "route_$file$93_$91ext",
-				pattern: /^\/([^\/]+?)\.([^\/]+?)$/,
+				pattern: /^\/([^/]+?)\.([^/]+?)$/,
 				file: "[file].[ext].js",
 				params: ["file", "ext"]
 			}
@@ -189,7 +189,7 @@ describe('manifest_data', () => {
 	it('errors when trying to use reserved characters in route regexp', () => {
 		assert.throws(() => {
 			create_manifest_data(path.join(__dirname, 'samples/invalid-qualifier'));
-		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or \: in route qualifiers/);
+		}, /Invalid route \[foo\(\[a-z\]\(\[0-9\]\)\)\].js — cannot use \(, \), \? or : in route qualifiers/);
 	});
 
 	it('ignores things that look like lockfiles' , () => {
@@ -206,10 +206,10 @@ describe('manifest_data', () => {
 	it('works with custom extensions' , () => {
 		const { components, pages, server_routes } = create_manifest_data(path.join(__dirname, 'samples/custom-extension'), '.jazz .beebop .funk .html');
 
-		const index = { name: 'index', file: 'index.funk', has_preload: false };
-		const about = { name: 'about', file: 'about.jazz', has_preload: false };
-		const blog = { name: 'blog', file: 'blog/index.html', has_preload: false };
-		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop', has_preload: false };
+		const index = { name: 'index', file: 'index.funk' };
+		const about = { name: 'about', file: 'about.jazz' };
+		const blog = { name: 'blog', file: 'blog/index.html' };
+		const blog_$slug = { name: 'blog_$slug', file: 'blog/[slug].beebop' };
 
 		assert.deepEqual(components, [
 			index,
@@ -241,7 +241,7 @@ describe('manifest_data', () => {
 			},
 
 			{
-				pattern: /^\/blog\/([^\/]+?)\/?$/,
+				pattern: /^\/blog\/([^/]+?)\/?$/,
 				parts: [
 					null,
 					{ component: blog_$slug, params: ['slug'] }
@@ -258,7 +258,7 @@ describe('manifest_data', () => {
 			},
 			{
 				name: 'route_blog_$slug_json',
-				pattern: /^\/blog\/([^\/]+?)\.json$/,
+				pattern: /^\/blog\/([^/]+?)\.json$/,
 				file: 'blog/[slug].json.js',
 				params: ['slug']
 			}

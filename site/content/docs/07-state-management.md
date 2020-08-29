@@ -14,7 +14,7 @@ Inside a component, get references to the stores like so:
 ```
 
 * `preloading` contains a readonly boolean value, indicating whether or not a navigation is pending
-* `page` contains a readonly `{ host, path, params, query }` object, identical to that passed to `preload` functions
+* `page` contains a readonly `{ host, path, params, query, error }` object. `error` is only set on error pages. This is the same value that is passed to `preload` functions.
 * `session` contains whatever data was seeded on the server. It is a [writable store](https://svelte.dev/tutorial/writable-stores), meaning you can update it with new data (for example, after the user logs in) and your app will be refreshed
 
 
@@ -37,4 +37,6 @@ express() // or Polka, or a similar framework
 	.listen(process.env.PORT);
 ```
 
-> Session data must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)) — no functions or custom classes, just built-in JavaScript data types
+The `session` option is a function which returns data, or a `Promise` of data, which must be serializable (using [devalue](https://github.com/Rich-Harris/devalue)), meaning that it must not contain functions or custom classes, just built-in JavaScript data types.
+
+> Note that if you return a `Promise` from this function (or use an `async` function), it will be re-awaited for **every** server-rendered page route.

@@ -12,7 +12,7 @@ export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
 			deprecate_dir('rollup');
 			deprecate_dir('webpack');
 
-			throw new Error(`Could not find a configuration file for rollup or webpack`);
+			throw new Error('Could not find a configuration file for rollup or webpack');
 		}
 	}
 

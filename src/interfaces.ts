@@ -3,10 +3,10 @@ import { CompileResult } from './core/create_compilers/interfaces';
 
 export type Route = {
 	id: string;
-	handlers: {
+	handlers: Array<{
 		type: 'page' | 'route';
 		file: string;
-	}[];
+	}>;
 	pattern: RegExp;
 	test: (url: string) => boolean;
 	exec: (url: string) => Record<string, string>;
@@ -30,7 +30,6 @@ export type PageComponent = {
 	type?: string;
 	name: string;
 	file: string;
-	has_preload: boolean;
 };
 
 export type Page = {
@@ -38,7 +37,7 @@ export type Page = {
 	parts: Array<{
 		component: PageComponent;
 		params: string[];
-	}>
+	}>;
 };
 
 export type ServerRoute = {
@@ -49,9 +48,9 @@ export type ServerRoute = {
 };
 
 export type Dirs = {
-	dest: string,
-	src: string,
-	routes: string
+	dest: string;
+	src: string;
+	routes: string;
 };
 
 export type ManifestData = {
@@ -69,11 +68,19 @@ export type ReadyEvent = {
 
 export type ErrorEvent = {
 	type: string;
-	error: Error;
+	error: Error & {
+		frame?: unknown;
+		loc?: {
+			file?: string;
+			line: number;
+			column: number;
+		};
+	};
 };
 
 export type FatalEvent = {
 	message: string;
+	log?: unknown;
 };
 
 export type InvalidEvent = {
@@ -82,24 +89,13 @@ export type InvalidEvent = {
 		client: boolean;
 		server: boolean;
 		serviceworker: boolean;
-	}
+	};
 };
 
 export type BuildEvent = {
 	type: string;
-	errors: Array<{ file: string, message: string, duplicate: boolean }>;
-	warnings: Array<{ file: string, message: string, duplicate: boolean }>;
+	errors: Array<{ file: string; message: string; duplicate: boolean }>;
+	warnings: Array<{ file: string; message: string; duplicate: boolean }>;
 	duration: number;
 	result: CompileResult;
 };
-
-export type FileEvent = {
-	file: string;
-	size: number;
-};
-
-export type FailureEvent = {
-
-};
-
-export type DoneEvent = {};

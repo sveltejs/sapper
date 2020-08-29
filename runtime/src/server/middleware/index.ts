@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime/lite';
-import { build_dir, dev, manifest } from '@sapper/internal/manifest-server';
-import { Handler, Req, Res } from './types';
+import { Handler, Req, Res, build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
 
-type IgnoreValue = Array | RegExp | function | string;
+type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
@@ -19,7 +18,7 @@ export default function middleware(opts: {
 	return compose_handlers(ignore, [
 		(req: Req, res: Res, next: () => void) => {
 			if (req.baseUrl === undefined) {
-				let { originalUrl } = req;
+				let originalUrl = req.originalUrl || req.url;
 				if (req.url === '/' && originalUrl[originalUrl.length - 1] !== '/') {
 					originalUrl += '/';
 				}
@@ -109,7 +108,7 @@ export function serve({ prefix, pathname, cache_control }: {
 
 	const read = dev
 		? (file: string) => fs.readFileSync(path.join(build_dir, file))
-		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file)
+		: (file: string) => (cache.has(file) ? cache : cache.set(file, fs.readFileSync(path.join(build_dir, file)))).get(file);
 
 	return (req: Req, res: Res, next: () => void) => {
 		if (filter(req)) {
@@ -123,8 +122,14 @@ export function serve({ prefix, pathname, cache_control }: {
 				res.setHeader('Cache-Control', cache_control);
 				res.end(data);
 			} catch (err) {
-				res.statusCode = 404;
-				res.end('not found');
+				if (err.code === 'ENOENT') {
+					next();
+				} else {
+					console.error(err);
+
+					res.statusCode = 500;
+					res.end('an error occurred while reading a static file from disk');
+				}
 			}
 		} else {
 			next();
@@ -132,4 +137,4 @@ export function serve({ prefix, pathname, cache_control }: {
 	};
 }
 
-function noop(){}
+function noop() {}

@@ -20,7 +20,7 @@ type Opts = {
 	legacy?: boolean;
 	bundler?: 'rollup' | 'webpack';
 	ext?: string;
-	oncompile?: ({ type, result }: { type: string, result: CompileResult }) => void;
+	oncompile?: ({ type, result }: { type: string; result: CompileResult }) => void;
 };
 
 export async function build({
@@ -31,9 +31,9 @@ export async function build({
 	static: static_files = 'static',
 	dest = '__sapper__/build',
 
-	bundler,
+	bundler = undefined,
 	legacy = false,
-	ext,
+	ext = undefined,
 	oncompile = noop
 }: Opts = {}) {
 	bundler = validate_bundler(bundler);
@@ -46,7 +46,7 @@ export async function build({
 	static_files = path.resolve(cwd, static_files);
 
 	if (legacy && bundler === 'webpack') {
-		throw new Error(`Legacy builds are not supported for projects using webpack`);
+		throw new Error('Legacy builds are not supported for projects using webpack');
 	}
 
 	rimraf(output);
@@ -60,13 +60,6 @@ export async function build({
 	// minify src/template.html
 	// TODO compile this to a function? could be quicker than str.replace(...).replace(...).replace(...)
 	const template = read_template(src);
-
-	// remove this in a future version
-	if (template.indexOf('%sapper.base%') === -1) {
-		const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
-		error.code = `missing-sapper-base`;
-		throw error;
-	}
 
 	fs.writeFileSync(`${dest}/template.html`, minify_html(template));
 
@@ -84,7 +77,7 @@ export async function build({
 		dev: false
 	});
 
-	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, dest, false);
+	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, routes, dest, false);
 
 	const client_result = await client.compile();
 	oncompile({
@@ -96,21 +89,20 @@ export async function build({
 
 	if (legacy) {
 		process.env.SAPPER_LEGACY_BUILD = 'true';
-		const { client } = await create_compilers(bundler, cwd, src, dest, false);
+		const { client: legacy_client } = await create_compilers(bundler, cwd, src, routes, dest, false);
 
-		const client_result = await client.compile();
+		const legacy_client_result = await legacy_client.compile();
 
 		oncompile({
 			type: 'client (legacy)',
-			result: client_result
+			result: legacy_client_result
 		});
 
-		client_result.to_json(manifest_data, { src, routes, dest });
-		build_info.legacy_assets = client_result.assets;
+		legacy_client_result.to_json(manifest_data, { src, routes, dest });
+		build_info.legacy_assets = legacy_client_result.assets;
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
-
-	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info, null, '  '));
 
 	const server_stats = await server.compile();
 	oncompile({

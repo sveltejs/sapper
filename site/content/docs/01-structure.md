@@ -93,6 +93,7 @@ This file is a template for responses from the server. Sapper will inject conten
 * `%sapper.head%` — HTML representing page-specific `<head>` contents, like `<title>`
 * `%sapper.html%` — HTML representing the body of the page being rendered
 * `%sapper.scripts%` — script tags for the client-side app
+* `%sapper.cspnonce%` — CSP nonce taken from `res.locals.nonce` (see [Content Security Policy (CSP)](docs#Content_Security_Policy_CSP))
 
 
 ### src/routes
@@ -106,6 +107,7 @@ This is a place to put any files that your app uses — fonts, images and so on.
 
 Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#src_service-worker_js)).
 
+> Note that the default behaviour of the service worker is to cache all assets from the static directory, so if you have more than 50mb of files here, you will start to exceed the cache limit for service-workers in some browsers, which can cause the service worker to stop loading. In this instance, it is advisable to customise what files are cached by editing the service-worker yourself.
 
 ### rollup.config.js / webpack.config.js
 

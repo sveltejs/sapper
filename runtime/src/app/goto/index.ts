@@ -1,12 +1,14 @@
-import { history, select_target, navigate, cid } from '../app';
+import { cid, history, navigate, select_target } from '../router';
 
-export default function goto(href: string, opts = { replaceState: false, state: {} }) {
+export default function goto(
+		href: string,
+		opts: { noscroll?: boolean, replaceState?: boolean } = { noscroll: false, replaceState: false }): Promise<void> {
+
 	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {
-		const state = opts.state || {};
-		history[opts.replaceState ? 'replaceState' : 'pushState']({...state, id: cid }, '', href);
-		return navigate(target, null).then(() => {});
+		history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
+		return navigate(target, null, opts.noscroll).then(() => {});
 	}
 
 	location.href = href;

@@ -19,7 +19,25 @@ describe('css', function() {
 	it('includes critical CSS with server render', async () => {
 		await r.load('/');
 
-		assert.equal(
+		assert.strictEqual(
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
+			'rgb(255, 0, 0)'
+		);
+	});
+
+	it('includes CSS on error page', async () => {
+		await r.load('/doesnotexist');
+
+		assert.strictEqual(
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
+			'rgb(128, 0, 128)'
+		);
+	});
+
+	// note that we're specifically testing another route here and not just a component
+	it('includes CSS from imported route', async () => {
+		await r.load('/index2');
+		assert.strictEqual(
 			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(255, 0, 0)'
 		);
@@ -34,7 +52,7 @@ describe('css', function() {
 		await r.page.click(`[href="foo"]`);
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(0, 0, 255)'
 		);
@@ -49,13 +67,13 @@ describe('css', function() {
 		await r.page.click(`[href="bar"]`);
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.page.$eval('h1', node => getComputedStyle(node).color),
 			'rgb(0, 128, 0)'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

@@ -77,6 +77,17 @@ describe('basics', function() {
 		);
 	});
 
+	it('serves static route under client directory', async () => {
+		await r.load('/client/foo');
+		assert.equal(await r.text('h1'), 'foo');
+
+		await r.load('/client/bar');
+		assert.equal(await r.text('h1'), 'bar');
+
+		await r.load('/client/bar/b');
+		assert.equal(await r.text('h1'), 'b');
+	});
+
 	it('serves dynamic route', async () => {
 		await r.load('/test-slug');
 
@@ -126,17 +137,12 @@ describe('basics', function() {
 	});
 
 	// TODO equivalent test for a webpack app
-	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', async () => {
+	it('sets Content-Type, Link...modulepreload', async () => {
 		const { headers } = await get(r.base);
 
 		assert.equal(
 			headers['content-type'],
 			'text/html'
-		);
-
-		assert.equal(
-			headers['cache-control'],
-			'max-age=600'
 		);
 
 		// TODO preload more than just the entry point
@@ -231,7 +237,7 @@ describe('basics', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click('a[href="echo-query?p=one&p=two"]')
+		await r.page.click('a[href="echo-query?p=one&p=two"]');
 
 		assert.equal(
 			await r.text('h1'),
@@ -318,11 +324,11 @@ describe('basics', function() {
 		await r.load('/dirs/bar/xyz');
 		await r.sapper.start();
 
-		assert.equal(await r.text('h1'), 'A page');
+		assert.strictEqual(await r.text('h1'), 'A page');
 
 		await r.page.click('[href="dirs/foo/xyz"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), 'B page');
+		assert.strictEqual(await r.text('h1'), 'B page');
 	});
 
 	it('find regexp routes', async () => {
@@ -344,7 +350,7 @@ describe('basics', function() {
 	it('runs server route handlers before page handlers, if they match', async () => {
 		const json = await get(`${r.base}/middleware`, {
 			headers: {
-				'Accept': 'application/json'
+				Accept: 'application/json'
 			}
 		});
 

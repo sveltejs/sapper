@@ -21,19 +21,19 @@ describe('preloading', function() {
 	it('serializes Set objects returned from preload', async () => {
 		await r.load('/preload-values/set');
 
-		assert.equal(await r.text('h1'), 'true');
+		assert.strictEqual(await r.text('h1'), 'true');
 
 		await r.sapper.start();
-		assert.equal(await r.text('h1'), 'true');
+		assert.strictEqual(await r.text('h1'), 'true');
 	});
 
 	it('retrieves host from preload', async () => {
 		await r.load('/preload-values/host');
 
-		assert.equal(await r.text('h1'), 'localhost');
+		assert.strictEqual(await r.text('h1'), 'localhost');
 
 		await r.sapper.start();
-		assert.equal(await r.text('h1'), 'localhost');
+		assert.strictEqual(await r.text('h1'), 'localhost');
 	});
 
 	it('prevent crash if preload return nothing', async () => {
@@ -41,16 +41,16 @@ describe('preloading', function() {
 
 		await r.sapper.start();
 
-		assert.equal(await r.text('h1'), 'Page loaded');
+		assert.strictEqual(await r.text('h1'), 'Page loaded');
 	});
 
 	it('bails on custom classes returned from preload', async () => {
 		await r.load('/preload-values/custom-class');
 
-		assert.equal(await r.text('h1'), '42');
+		assert.strictEqual(await r.text('h1'), '42');
 
 		await r.sapper.start();
-		assert.equal(await r.text('h1'), '42');
+		assert.strictEqual(await r.text('h1'), '42');
 	});
 
 	it('sets preloading true when appropriate', async () => {
@@ -68,7 +68,7 @@ describe('preloading', function() {
 
 	it('runs preload in root component', async () => {
 		await r.load('/preload-root');
-		assert.equal(await r.text('h1'), 'root preload function ran: true');
+		assert.strictEqual(await r.text('h1'), 'root preload function ran: true');
 	});
 
 	it('cancels navigation if subsequent navigation occurs during preload', async () => {
@@ -80,13 +80,13 @@ describe('preloading', function() {
 		await r.wait();
 		await r.page.click('a[href="foo"]');
 
-		assert.equal(r.page.url(), `${r.base}/foo`);
-		assert.equal(await r.text('h1'), 'foo');
+		assert.strictEqual(r.page.url(), `${r.base}/foo`);
+		assert.strictEqual(await r.text('h1'), 'foo');
 
 		await r.page.evaluate(() => fulfil());
 		await r.wait();
-		assert.equal(r.page.url(), `${r.base}/foo`);
-		assert.equal(await r.text('h1'), 'foo');
+		assert.strictEqual(r.page.url(), `${r.base}/foo`);
+		assert.strictEqual(await r.text('h1'), 'foo');
 	});
 
 	it('navigates to prefetched urls', async () => {
@@ -102,21 +102,21 @@ describe('preloading', function() {
 		await r.page.click('a[href="prefetch/qwe"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'qwe'
 		);
 
 		await r.load('/prefetch');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'prefetch'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 
 	it('re-runs preload when page.query changes', async () => {
@@ -124,7 +124,7 @@ describe('preloading', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('pre'),
 			`{"foo":"1"}`
 		);
@@ -132,7 +132,7 @@ describe('preloading', function() {
 		await r.page.click('a[href="echo?foo=2"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('pre'),
 			`{"foo":"2"}`
 		);

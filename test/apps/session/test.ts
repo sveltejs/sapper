@@ -19,25 +19,25 @@ describe('session', function() {
 	it('renders session props', async () => {
 		await r.load('/session');
 
-		assert.equal(await r.text('h1'), 'hello world');
+		assert.strictEqual(await r.text('h1'), 'hello world');
 
 		await r.sapper.start();
-		assert.equal(await r.text('h1'), 'hello world');
+		assert.strictEqual(await r.text('h1'), 'hello world');
 
 		await r.page.click('button');
-		assert.equal(await r.text('h1'), 'changed');
+		assert.strictEqual(await r.text('h1'), 'changed');
 	});
 
 	it('preloads session props', async () => {
 		await r.load('/preloaded');
 
-		assert.equal(await r.text('h1'), 'hello world');
+		assert.strictEqual(await r.text('h1'), 'hello world');
 
 		await r.sapper.start();
-		assert.equal(await r.text('h1'), 'hello world');
+		assert.strictEqual(await r.text('h1'), 'hello world');
 
 		await r.page.click('button');
-		assert.equal(await r.text('h1'), 'changed');
+		assert.strictEqual(await r.text('h1'), 'changed');
 	});
 
 	it('survives exception from session getter', async () => {
@@ -45,6 +45,6 @@ describe('session', function() {
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
-import { readFileSync } from 'fs'
+import { readFileSync } from 'fs';
 
 describe('export', function() {
-	this.timeout(10000);
+	this.timeout(20000);
 
 	// hooks
 	before('build app', () => api.build({ cwd: __dirname }));
@@ -28,7 +28,7 @@ describe('export', function() {
 			}
 		}
 
-		assert.deepEqual(non_client_assets.sort(), [
+		assert.deepStrictEqual(non_client_assets.sort(), [
 			'blog.json',
 			'blog/bar.json',
 			'blog/bar/index.html',
@@ -42,15 +42,33 @@ describe('export', function() {
 			'service-worker-index.html',
 			'service-worker.js',
 			'test.pdf',
+			'img/example-192.png',
+			'img/example-512.png',
+			'pdfs/test.pdf',
+			'manifest.json',
 			...boom
 		].sort());
 	});
 
 	it('does not corrupt binary file links (like pdf)', () => {
-		const input = readFileSync(`${__dirname}/static/test.pdf`)
-		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`)
-		assert.ok(input.equals(output))
-	})
+		const input = readFileSync(`${__dirname}/static/test.pdf`);
+		const output = readFileSync(`${__dirname}/__sapper__/export/test.pdf`);
+		assert.ok(input.equals(output));
+	});
+
+	it('does not corrupt image files from server routes', () => {
+		for (const file of ['example-192.png', 'example-512.png']) {
+			const input = readFileSync(`${__dirname}/content/${file}`);
+			const output = readFileSync(`${__dirname}/__sapper__/export/img/${file}`);
+			assert.ok(input.equals(output));
+		}
+	});
+
+	it('does not corrupt pdf files from server routes', () => {
+		const input = readFileSync(`${__dirname}/content/test.pdf`);
+		const output = readFileSync(`${__dirname}/__sapper__/export/pdfs/test.pdf`);
+		assert.ok(input.equals(output));
+	});
 
 	// TODO test timeout, basepath
 });

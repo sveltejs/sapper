@@ -8,12 +8,12 @@ export default {
 
 	client: {
 		input: (): InputOption => {
-			return `${src}/client.js`
+			return `${src}/client.js`;
 		},
 
 		output: (): OutputOptions => {
 			let dir = `${dest}/client`;
-			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
+			if (process.env.SAPPER_LEGACY_BUILD) dir += '/legacy';
 
 			return {
 				dir,
@@ -51,7 +51,7 @@ export default {
 				file: `${dest}/service-worker.js`,
 				format: 'iife',
 				sourcemap
-			}
+			};
 		}
 	}
 };

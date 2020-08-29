@@ -130,7 +130,7 @@ There are three simple rules for naming the files that define your routes:
 
 In addition to regular pages, there is a 'special' page that Sapper expects to find — `src/routes/_error.svelte`. This will be shown when an error occurs while rendering a page.
 
-The `error` object is made available to the template along with the HTTP `status` code.
+The `error` object is made available to the template along with the HTTP `status` code. `error` is also available in the [`page` store](docs#Stores).
 
 
 
