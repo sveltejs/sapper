@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Allow default link behavior when Alt is pressed ([#1372](https://github.com/sveltejs/sapper/pull/1372))
+
 ## 0.28.2
 
 * Fix updating styles upon dev mode reloads ([#1439](https://github.com/sveltejs/sapper/pull/1439))
