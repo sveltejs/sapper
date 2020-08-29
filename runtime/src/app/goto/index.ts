@@ -1,13 +1,13 @@
-import { cid, history, navigate, select_target } from '../router';
+import { cid, history, navigate, select_target, navigate, cid } from '../app';
 
 export default function goto(
 		href: string,
-		opts: { noscroll?: boolean, replaceState?: boolean } = { noscroll: false, replaceState: false }): Promise<void> {
+		opts: { noscroll?: boolean, replaceState?: boolean, state?: any } = { noscroll: false, replaceState: false, state: {} }): Promise<void> {
 
 	const target = select_target(new URL(href, document.baseURI));
 
 	if (target) {
-		history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
+		history[opts.replaceState ? 'replaceState' : 'pushState']({...state, id: cid }, '', href);
 		return navigate(target, null, opts.noscroll).then(() => {});
 	}
 
