@@ -35,7 +35,9 @@ export default {
 		output: (): OutputOptions => {
 			return {
 				dir: `${dest}/server`,
-				format: 'cjs',
+				format: 'esm',
+				entryFileNames: '[name].mjs',
+				chunkFileNames: '[name].mjs',
 				sourcemap
 			};
 		}

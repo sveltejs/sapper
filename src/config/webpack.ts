@@ -30,10 +30,10 @@ export default {
 		output: () => {
 			return {
 				path: `${dest}/server`,
-				filename: '[name].js',
-				chunkFilename: '[hash]/[name].[id].js',
+				filename: '[name].mjs',
+				chunkFilename: '[hash]/[name].[id].mjs',
 				publicPath: `client/`,
-				libraryTarget: 'commonjs2'
+				module: true
 			};
 		}
 	},
