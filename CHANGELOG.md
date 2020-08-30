@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Allow default link behavior when Alt is pressed ([#1372](https://github.com/sveltejs/sapper/pull/1372))
+* Fix various bugs with asset handling ([#1446](https://github.com/sveltejs/sapper/pull/1446), [#1447](https://github.com/sveltejs/sapper/pull/1447), [#1448](https://github.com/sveltejs/sapper/pull/1448))
 
 ## 0.28.2
 
