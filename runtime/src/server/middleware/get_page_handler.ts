@@ -316,10 +316,10 @@ export function get_page_handler(
 
 			// TODO make this consistent across apps
 			// TODO embed build_info in placeholder.ts
-			if (build_info.css) {
-				const css_chunks = build_info.css.main ? new Set(build_info.css.main) : new Set();
+			if (build_info.css && build_info.css.main) {
+				const css_chunks = new Set(build_info.css.main);
 				page.parts.forEach(part => {
-					if (!part) return;
+					if (!part || !build_info.dependencies) return;
 					const deps_for_part = build_info.dependencies[part.file];
 
 					if (deps_for_part) {
