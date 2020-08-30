@@ -15,6 +15,7 @@ export default async function create_compilers(
 	bundler: 'rollup' | 'webpack',
 	cwd: string,
 	src: string,
+	routes: string,
 	dest: string,
 	dev: boolean
 ): Promise<Compilers> {
@@ -34,9 +35,9 @@ export default async function create_compilers(
 		}
 
 		return {
-			client: new RollupCompiler(config.client),
-			server: new RollupCompiler(config.server),
-			serviceworker: config.serviceworker && new RollupCompiler(config.serviceworker)
+			client: new RollupCompiler(config.client, routes),
+			server: new RollupCompiler(config.server, routes),
+			serviceworker: config.serviceworker && new RollupCompiler(config.serviceworker, routes)
 		};
 	}
 
