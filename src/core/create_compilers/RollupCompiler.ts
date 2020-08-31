@@ -185,6 +185,7 @@ export default class RollupCompiler {
 
 				function get_route_entry_chunks(main_entry_chunk: RenderedChunk) {
 					return js_deps(main_entry_chunk, { filter: ctx => ctx.dynamicImport
+						&& ctx.chunk.facadeModuleId
 						&& ctx.chunk.facadeModuleId.includes(that.routes)
 						&& !ctx.chunk.facadeModuleId.includes(path.sep + '_') });
 				}
