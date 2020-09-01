@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Protect against undefined value in Rollup CSS handling ([#1467](https://github.com/sveltejs/sapper/pull/1467))
+
 ## 0.28.3
 
 * Allow default link behavior when Alt is pressed ([#1372](https://github.com/sveltejs/sapper/pull/1372))
