@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Protect against undefined value in Rollup CSS handling ([#1467](https://github.com/sveltejs/sapper/pull/1467))
+* Fix webpack CSS support ([#1461](https://github.com/sveltejs/sapper/pull/1461))
 
 ## 0.28.3
 
