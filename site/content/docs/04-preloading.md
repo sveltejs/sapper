@@ -132,3 +132,23 @@ You can abort rendering and redirect to a different location with `this.redirect
 	}
 </script>
 ```
+
+#### Typing the function
+
+If you use TypeScript, you need to type the `this` context. You can type the function like this:
+
+```html
+<script context="module">
+	import { PreloadContext, PreloadPage } from "@sapper/common";
+
+	export async function preload(this: PreloadContext, page: PreloadPage, session: any) {
+		const { user } = session;
+
+		if (!user) {
+			return this.redirect(302, 'login'); // TypeScript will know the type of `this` now
+		}
+
+		return { user };
+	}
+</script>
+```
