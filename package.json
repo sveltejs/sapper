@@ -35,6 +35,7 @@
     "@sveltejs/eslint-config": "github:sveltejs/eslint-config#v5.0.0",
     "@types/mocha": "^8.0.0",
     "@types/node": "^10.0.0",
+    "@types/puppeteer": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^3.0.2",
     "@typescript-eslint/parser": "^3.0.2",
     "cheap-watch": "^1.0.2",
