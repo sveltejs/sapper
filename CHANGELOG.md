@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Fix inclusion of CSS on error page for Rollup apps ([#1474](https://github.com/sveltejs/sapper/pull/1474))
 * Protect against undefined value in Rollup CSS handling ([#1467](https://github.com/sveltejs/sapper/pull/1467))
 * Fix webpack CSS support ([#1461](https://github.com/sveltejs/sapper/pull/1461))
 
