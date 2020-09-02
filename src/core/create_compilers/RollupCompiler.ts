@@ -207,14 +207,10 @@ export default class RollupCompiler {
 				// put everything in the entry point chunk (client.hash.js)
 				// In that case we can't look it up by route, but still want to include it
 				that.js_main = entry_chunk.fileName;
-				const entry_deps = js_deps(entry_chunk,
-					{ walk: ctx => !ctx.dynamicImport, filter: ctx => ctx.chunk.fileName !== entry_chunk.fileName }
-					).map(c => c.fileName);
-				dependencies[entry_chunk.facadeModuleId] = entry_deps;
 
 				// We consider the dependencies of the entry chunk as well when finding the CSS in
 				// case preserveEntrySignatures is true and there are multiple chunks
-				that.css_main = css_deps(entry_deps);
+				that.css_main = css_deps(js_deps(entry_chunk, { walk: ctx => !ctx.dynamicImport }).map(c => c.fileName));
 
 				// Routes dependencies
 				for (const chunk of route_entry_chunks) {
