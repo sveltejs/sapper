@@ -4,7 +4,6 @@ import relative from 'require-relative';
 import { dependenciesForTree, DependencyTreeOptions } from 'rollup-dependency-tree';
 import {
 	PluginContext,
-	TransformResult,
 	NormalizedInputOptions,
 	NormalizedOutputOptions,
 	RenderedChunk,
@@ -12,7 +11,6 @@ import {
 	OutputBundle,
 	OutputChunk
 } from 'rollup';
-import { chunk_content_from_modules, extract_sourcemap, emit_code_and_sourcemap } from './code';
 import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
@@ -72,7 +70,6 @@ export default class RollupCompiler {
 		let entry_point: string | undefined;
 
 		const that = this;
-		const sourcemap = mod.output.sourcemap;
 
 		// TODO this is hacky, and doesn't need to apply to all three compilers
 		(mod.plugins || (mod.plugins = [])).push({
@@ -97,84 +94,10 @@ export default class RollupCompiler {
 			renderChunk(code: string, chunk: RenderedChunk) {	
 				that.chunks.push(chunk);
 			},
-			transform(code: string, id: string): TransformResult {
-				// rollup-plugin-svelte adds an import statement to the js file which references the css file
-				// that won't be able to be compiled as js, so we remove it here and store a copy to use later
-				if (/\.css$/.test(id)) {
-					that.css_files[id] = code;
-					return {code: '', moduleSideEffects: 'no-treeshake'};
-				}
-			},
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
-				const create_chunk_from_modules = (entry_chunk_name: string, css_modules: Iterable<string>) => {
-					const name = entry_chunk_name + '.css';
-					const file_name = emit_code_and_sourcemap({
-						sourcemap,
-						output: chunk_content_from_modules(
-							css_modules,
-							css_module => {
-								const code = that.css_files[css_module];
-								return code && extract_sourcemap(code, css_module);
-							}
-						),
-						sourcemap_url_prefix: '',
-						output_file_name: name,
-						emit: (filename: string, source: string | Uint8Array) => {
-							const moduleid = this.emitFile({ name: filename, type: 'asset', source });
-							const file = this.getFileName(moduleid);
-							return file;
-						}
-					});
-					return file_name;
-				};
 
 				function js_deps(chunk: RenderedChunk, opts?: DependencyTreeOptions) {
 					return Array.from(dependenciesForTree(chunk, that.chunks, opts));
-				}
-
-				function css_deps(transitive_deps: string[]) {
-					const result: Set<string> = new Set();
-					for (const dep of transitive_deps) {
-						const css_chunk = css_for_chunk[dep];
-						if (css_chunk) {
-							result.add(css_chunk);
-						}
-					}
-					return Array.from(result);
-				}
-
-				const css_for_chunk = {};
-				const global_chunks: Set<RenderedChunk> = new Set();
-
-				/**
-				 * Creates a single CSS chunk for the given JS chunks
-				 */
-				function handle_chunks(tree_entry_chunk: RenderedChunk, chunks: Iterable<RenderedChunk>, subtree?: boolean) {
-					const css_modules: Set<string> = new Set();
-					for (const chunk of chunks) {
-						if (!subtree) {
-							global_chunks.add(chunk);
-						}
-						Object.keys(chunk.modules).filter(k => k.endsWith('.css')).forEach(m => css_modules.add(m));
-					}
-					if (css_modules.size) {
-						css_for_chunk[tree_entry_chunk.fileName] = create_chunk_from_modules(tree_entry_chunk.name, css_modules);
-					}
-				}
-
-				/**
-				 * Creates CSS chunks for the given JS chunk and its dependencies
-				 */
-				function handle_chunk_tree(tree_entry_chunk: RenderedChunk, subtree?: boolean) {
-					// We need to avoid the entry chunk both here and below so that we don't walk everything
-					// We should remove the ciricular dependency in Sapper so that this isn't a concern
-					const transitive_deps = js_deps(tree_entry_chunk, {
-						walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName });
-					for (const chunk of transitive_deps) {
-						if (!global_chunks.has(chunk)) {
-							handle_chunks(chunk, [chunk], subtree);
-						}
-					}
 				}
 
 				function is_route(file_path: string) {
@@ -186,29 +109,6 @@ export default class RollupCompiler {
 						&& ctx.chunk.facadeModuleId && is_route(ctx.chunk.facadeModuleId) });
 				}
 
-
-				// Create the CSS chunks
-
-				// Handle the imports of the entry chunk
-				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
-				handle_chunk_tree(entry_chunk);
-
-				// Put all the dynamically imported CSS into the entry chunk
-				const dynamic_imports = js_deps(entry_chunk, { filter: ctx => ctx.dynamicImport
-					&& (!ctx.chunk.facadeModuleId || !is_route(ctx.chunk.facadeModuleId)) });
-				const entry_chunks = new Set<RenderedChunk>([entry_chunk]);
-				for (const dynamic_import of dynamic_imports) {
-					js_deps(dynamic_import, { walk: ctx => ctx.chunk.fileName !== entry_chunk.fileName })
-						.forEach(c => entry_chunks.add(c));
-				}
-				handle_chunks(entry_chunk, entry_chunks);
-
-				// Handle the routes
-				const route_entry_chunks = get_route_entry_chunks(entry_chunk);
-				for (const route_entry_chunk of route_entry_chunks) {
-					handle_chunk_tree(route_entry_chunk, true);
-				}
-
 				// Store the build dependencies so that we can create build.json
 				const dependencies = {};
 
@@ -216,17 +116,14 @@ export default class RollupCompiler {
 				// If there's a single page and preserveEntrySignatures is false then Rollup will
 				// put everything in the entry point chunk (client.hash.js)
 				// In that case we can't look it up by route, but still want to include it
+				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
+				const route_entry_chunks = get_route_entry_chunks(entry_chunk);
 				that.js_main = entry_chunk.fileName;
-
-				// We consider the dependencies of the entry chunk as well when finding the CSS in
-				// case preserveEntrySignatures is true and there are multiple chunks
-				that.css_main = css_deps(js_deps(entry_chunk, { walk: ctx => !ctx.dynamicImport }).map(c => c.fileName));
 
 				// Routes dependencies
 				for (const chunk of route_entry_chunks) {
 					const js_dependencies = js_deps(chunk, { walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
-					const css_dependencies = css_deps(js_dependencies);
-					dependencies[chunk.facadeModuleId] = [...js_dependencies, ...css_dependencies];
+					dependencies[chunk.facadeModuleId] = [...js_dependencies];
 				}
 				that.dependencies = dependencies;
 			}

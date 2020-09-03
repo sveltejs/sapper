@@ -1,3 +1,4 @@
+import postcss from 'rollup-plugin-postcss'
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import svelte from 'rollup-plugin-svelte';
@@ -19,8 +20,10 @@ export default {
 			svelte({
 				dev,
 				hydratable: true,
-				emitCss: true
+				emitCss: false,
+				css: true
 			}),
+			postcss(),
 			resolve()
 		],
 		preserveEntrySignatures: false

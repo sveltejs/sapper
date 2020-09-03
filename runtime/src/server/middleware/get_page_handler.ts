@@ -50,18 +50,14 @@ export function get_page_handler(
 			shimport: string | null,
 			assets: Record<string, string | string[]>,
 			dependencies: Record<string, string[]>,
-			css?: { main: string[] },
 			legacy_assets?: Record<string, string>
 		} = get_build_info();
 
 		res.setHeader('Content-Type', 'text/html');
 
-		// preload main js and css
+		// preload main js
 		// TODO detect other stuff we can preload like fonts?
 		let preload_files = Array.isArray(build_info.assets.main) ? build_info.assets.main : [build_info.assets.main];
-		if (build_info?.css?.main) {
-			preload_files = preload_files.concat(build_info?.css?.main);
-		}
 
 		let es6_preload = false;
 		if (build_info.bundler === 'rollup') {
@@ -83,8 +79,8 @@ export function get_page_handler(
 			.filter((v, i, a) => a.indexOf(v) === i)        // remove any duplicates
 			.filter(file => file && !file.match(/\.map$/))  // exclude source maps
 			.map((file) => {
-				const as = /\.css$/.test(file) ? 'style' : 'script';
-				const rel = es6_preload && as === 'script' ? 'modulepreload' : 'preload';
+				const as = 'script';
+				const rel = es6_preload ? 'modulepreload' : 'preload';
 				return `<${req.baseUrl}/client/${file}>;rel="${rel}";as="${as}"`;
 			})
 			.join(', ');
@@ -312,29 +308,7 @@ export function get_page_handler(
 				script += `</script><script${nonce_attr} src="${main}" defer>`;
 			}
 
-			let styles: string;
-
-			// TODO make this consistent across apps
-			// TODO embed build_info in placeholder.ts
-			if (build_info.css && build_info.css.main) {
-				const css_chunks = new Set(build_info.css.main);
-				page.parts.forEach(part => {
-					if (!part || !build_info.dependencies) return;
-					const deps_for_part = build_info.dependencies[part.file];
-
-					if (deps_for_part) {
-						deps_for_part.filter(d => d.endsWith('.css')).forEach(chunk => {
-							css_chunks.add(chunk);
-						});
-					}
-				});
-
-				styles = Array.from(css_chunks)
-					.map(href => `<link rel="stylesheet" href="client/${href}">`)
-					.join('');
-			} else {
-				styles = (css && css.code ? `<style>${css.code}</style>` : '');
-			}
+			const styles: string = (css && css.code ? `<style>${css.code}</style>` : '');
 
 			const body = template()
 				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
