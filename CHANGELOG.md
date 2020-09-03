@@ -1,11 +1,11 @@
 # sapper changelog
 
-## Unreleased
+## 0.28.4
 
-* Set scroll position to 0,0 after a redirect ([#1471](https://github.com/sveltejs/sapper/pull/1471))
-* Fix inclusion of CSS on error page for Rollup apps ([#1474](https://github.com/sveltejs/sapper/pull/1474))
-* Protect against undefined value in Rollup CSS handling ([#1467](https://github.com/sveltejs/sapper/pull/1467))
-* Fix webpack CSS support ([#1461](https://github.com/sveltejs/sapper/pull/1461))
+* Fix webpack CSS support ([#1454](https://github.com/sveltejs/sapper/issues/1454))
+* Protect against undefined value in Rollup CSS handling ([#1466](https://github.com/sveltejs/sapper/issues/1466))
+* Reset scroll position to top after `this.redirect()` in `preload()` ([#1470](https://github.com/sveltejs/sapper/issues/1470))
+* Fix inclusion of CSS on error page for Rollup apps ([#1472](https://github.com/sveltejs/sapper/issues/1472))
 
 ## 0.28.3
 
