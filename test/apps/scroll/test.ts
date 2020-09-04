@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
+import { wait } from '../../utils';
 
 describe('scroll', function() {
 	this.timeout(10000);
@@ -99,33 +100,45 @@ describe('scroll', function() {
 		const secondScrollY = await r.page.evaluate(() => window.scrollY);
 
 		assert.equal(firstScrollY, secondScrollY);
-  });
+	});
 
-  it('scrolls to the top when navigating with goto', async () => {
-	  await r.load(`/search-form#search`);
-	  await r.sapper.start();
+	it('scrolls to the top when navigating with goto', async () => {
+		await r.load(`/search-form#search`);
+		await r.sapper.start();
 
-	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
-	  assert.ok(initialScrollY > 0, String(initialScrollY));
+		const initialScrollY = await r.page.evaluate(() => window.scrollY);
+		assert.ok(initialScrollY > 0, String(initialScrollY));
 
-	  await r.page.click(`button#scroll`);
+		await r.page.click(`button#scroll`);
 
-	  const scrollY = await r.page.evaluate(() => window.scrollY);
-	  assert.ok(scrollY === 0, String(scrollY));
-  });
+		const scrollY = await r.page.evaluate(() => window.scrollY);
+		assert.ok(scrollY === 0, String(scrollY));
+	});
 
-  it('preserves scroll when noscroll: true is passed to goto', async () => {
-	  await r.load(`/search-form#search`);
-	  await r.sapper.start();
+	it('preserves scroll when noscroll: true is passed to goto', async () => {
+		await r.load(`/search-form#search`);
+		await r.sapper.start();
 
-	  const initialScrollY = await r.page.evaluate(() => window.scrollY);
-	  assert.ok(initialScrollY > 0, String(initialScrollY));
+		const initialScrollY = await r.page.evaluate(() => window.scrollY);
+		assert.ok(initialScrollY > 0, String(initialScrollY));
 
-	  await r.page.click(`button#preserve`);
+		await r.page.click(`button#preserve`);
 
-	  const scrollY = await r.page.evaluate(() => window.scrollY);
-	  assert.ok(scrollY === initialScrollY, String(scrollY));
-  });
+		const scrollY = await r.page.evaluate(() => window.scrollY);
+		assert.ok(scrollY === initialScrollY, String(scrollY));
+	});
+
+	it('scrolls to the top after redirecting', async () => {
+		await r.load(`/tall-page#foo`);
+		await r.sapper.start();
+
+		await r.page.click('[href="redirect"]');
+		await r.wait();
+
+		const scrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(scrollY === 0);
+	});
 
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);

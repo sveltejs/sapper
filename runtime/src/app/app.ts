@@ -222,7 +222,9 @@ export async function navigate(dest: Target, id: number, noscroll?: boolean, has
 		}
 
 		scroll_history[cid] = scroll;
-		if (scroll) scrollTo(scroll.x, scroll.y);
+		if (scroll) {
+			redirect ? scrollTo(0, 0) : scrollTo(scroll.x, scroll.y);
+		}
 	}
 }
 

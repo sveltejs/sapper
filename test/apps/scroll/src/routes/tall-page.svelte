@@ -19,4 +19,5 @@
 	{#if barLink}
 		<a href="another-tall-page#bar">link</a>
 	{/if}
+	<a href="redirect">redirected link</a>
 </div>
