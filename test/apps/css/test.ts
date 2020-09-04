@@ -25,6 +25,15 @@ describe('css', function() {
 		);
 	});
 
+	it('includes CSS on error page', async () => {
+		await r.load('/doesnotexist');
+
+		assert.equal(
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
+			'rgb(128, 0, 128)'
+		);
+	});
+
 	it('loads CSS when navigating client-side', async () => {
 		await r.load('/');
 
