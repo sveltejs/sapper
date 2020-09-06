@@ -168,7 +168,7 @@ export default class RollupCompiler {
 					// We should remove the ciricular dependency in Sapper so that this isn't a concern
 					const transitive_deps = js_deps(tree_entry_chunk, {
 						filter: ctx => ctx.chunk.fileName !== tree_entry_chunk.fileName,
-						walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName != entry_chunk.fileName });
+						walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName });
 					for (const chunk of transitive_deps) {
 						if (!processed_chunks.has(chunk)) {
 							handle_chunks(chunk, [chunk]);
@@ -178,7 +178,7 @@ export default class RollupCompiler {
 					// Put everything that's leftover into the entry chunk in order to include css
 					// that is in a dynamically imported chunk
 					const chunks_for_tree = js_deps(tree_entry_chunk,
-						{ walk: ctx => !subtree || ctx.chunk.fileName != entry_chunk.fileName });
+						{ walk: ctx => !subtree || ctx.chunk.fileName !== entry_chunk.fileName });
 					const unused = new Set(chunks_for_tree.filter(x => !processed_chunks.has(x)));
 					handle_chunks(tree_entry_chunk, unused);
 				}
@@ -214,7 +214,7 @@ export default class RollupCompiler {
 
 				// Routes dependencies
 				for (const chunk of route_entry_chunks) {
-					const js_dependencies = js_deps(chunk, { walk: ctx => !ctx.dynamicImport }).map(c => c.fileName);
+					const js_dependencies = js_deps(chunk, { walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
 					const css_dependencies = css_deps(js_dependencies);
 					dependencies[chunk.facadeModuleId] = [...js_dependencies, ...css_dependencies];
 				}
