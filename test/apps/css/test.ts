@@ -34,6 +34,15 @@ describe('css', function() {
 		);
 	});
 
+	// note that we're specifically testing another route here and not just a component
+	it('includes CSS from imported route', async () => {
+		await r.load('/index2');
+		assert.equal(
+			await r.page.$eval('h1', node => getComputedStyle(node).color),
+			'rgb(255, 0, 0)'
+		);
+	});
+
 	it('loads CSS when navigating client-side', async () => {
 		await r.load('/');
 
