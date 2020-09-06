@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix CSS handling with Rollup when one route imports another ([#1486](https://github.com/sveltejs/sapper/issues/1486))
+
 ## 0.28.4
 
 * Fix webpack CSS support ([#1454](https://github.com/sveltejs/sapper/issues/1454))
