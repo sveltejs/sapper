@@ -144,15 +144,17 @@ export default class RollupCompiler {
 				}
 
 				const css_for_chunk = {};
-				const processed_chunks: Set<RenderedChunk> = new Set();
+				const global_chunks: Set<RenderedChunk> = new Set();
 
 				/**
 				 * Creates a single CSS chunk for the given JS chunks
 				 */
-				function handle_chunks(tree_entry_chunk: RenderedChunk, chunks: Iterable<RenderedChunk>) {
+				function handle_chunks(tree_entry_chunk: RenderedChunk, chunks: Iterable<RenderedChunk>, subtree?: boolean) {
 					const css_modules: Set<string> = new Set();
 					for (const chunk of chunks) {
-						processed_chunks.add(chunk);
+						if (!subtree) {
+							global_chunks.add(chunk);
+						}
 						Object.keys(chunk.modules).filter(k => k.endsWith('.css')).forEach(m => css_modules.add(m));
 					}
 					if (css_modules.size) {
@@ -167,37 +169,45 @@ export default class RollupCompiler {
 					// We need to avoid the entry chunk both here and below so that we don't walk everything
 					// We should remove the ciricular dependency in Sapper so that this isn't a concern
 					const transitive_deps = js_deps(tree_entry_chunk, {
-						filter: ctx => ctx.chunk.fileName !== tree_entry_chunk.fileName,
 						walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName });
 					for (const chunk of transitive_deps) {
-						if (!processed_chunks.has(chunk)) {
-							handle_chunks(chunk, [chunk]);
+						if (!global_chunks.has(chunk)) {
+							handle_chunks(chunk, [chunk], subtree);
 						}
 					}
+				}
 
-					// Put everything that's leftover into the entry chunk in order to include css
-					// that is in a dynamically imported chunk
-					const chunks_for_tree = js_deps(tree_entry_chunk,
-						{ walk: ctx => !subtree || ctx.chunk.fileName !== entry_chunk.fileName });
-					const unused = new Set(chunks_for_tree.filter(x => !processed_chunks.has(x)));
-					handle_chunks(tree_entry_chunk, unused);
+				function is_route(file_path: string) {
+					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_');
 				}
 
 				function get_route_entry_chunks(main_entry_chunk: RenderedChunk) {
 					return js_deps(main_entry_chunk, { filter: ctx => ctx.dynamicImport
-						&& ctx.chunk.facadeModuleId
-						&& ctx.chunk.facadeModuleId.includes(that.routes)
-						&& !ctx.chunk.facadeModuleId.includes(path.sep + '_') });
+						&& ctx.chunk.facadeModuleId && is_route(ctx.chunk.facadeModuleId) });
 				}
 
-				// Create the CSS chunks. Start with the routes. Put the leftover in the entry
-				// chunk to handle dynamic imports in the layout
+
+				// Create the CSS chunks
+
+				// Handle the imports of the entry chunk
 				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
+				handle_chunk_tree(entry_chunk);
+
+				// Put all the dynamically imported CSS into the entry chunk
+				const dynamic_imports = js_deps(entry_chunk, { filter: ctx => ctx.dynamicImport
+					&& (!ctx.chunk.facadeModuleId || !is_route(ctx.chunk.facadeModuleId)) });
+				const entry_chunks = new Set<RenderedChunk>([entry_chunk]);
+				for (const dynamic_import of dynamic_imports) {
+					js_deps(dynamic_import, { walk: ctx => ctx.chunk.fileName !== entry_chunk.fileName })
+						.forEach(c => entry_chunks.add(c));
+				}
+				handle_chunks(entry_chunk, entry_chunks);
+
+				// Handle the routes
 				const route_entry_chunks = get_route_entry_chunks(entry_chunk);
 				for (const route_entry_chunk of route_entry_chunks) {
 					handle_chunk_tree(route_entry_chunk, true);
 				}
-				handle_chunk_tree(entry_chunk);
 
 				// Store the build dependencies so that we can create build.json
 				const dependencies = {};
