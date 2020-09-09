@@ -237,7 +237,8 @@ export function get_page_handler(
 							host: req.headers.host,
 							path: req.path,
 							query: req.query,
-							params
+							params,
+							error
 						}).subscribe
 					},
 					preloading: {

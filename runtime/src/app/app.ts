@@ -57,7 +57,7 @@ stores.session.subscribe(async value => {
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
 	} else {
-		await render(branch, props, dest.page);
+		await render(branch, props, Object.assign({error: props.error}, dest.page));
 	}
 });
 
@@ -110,7 +110,7 @@ function handle_error(url: URL) {
 
 	};
 	const query = extract_query(search);
-	render([], props, { host, path: pathname, query, params: {} });
+	render([], props, { host, path: pathname, query, params: {}, error });
 }
 
 async function handle_target(dest: Target): Promise<void> {
@@ -127,7 +127,7 @@ async function handle_target(dest: Target): Promise<void> {
 		await goto(redirect.location, { replaceState: true });
 	} else {
 		const { props, branch } = hydrated_target;
-		await render(branch, props, dest.page);
+		await render(branch, props, Object.assign({error: props.error}, dest.page));
 	}
 }
 

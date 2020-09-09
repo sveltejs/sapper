@@ -29,4 +29,6 @@ export interface Page {
 	path: string;
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;
+	/** `error` is only set when the error page is being rendered. */
+	error?: Error;
 }

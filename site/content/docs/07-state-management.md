@@ -14,7 +14,7 @@ Inside a component, get references to the stores like so:
 ```
 
 * `preloading` contains a readonly boolean value, indicating whether or not a navigation is pending
-* `page` contains a readonly `{ host, path, params, query }` object, identical to that passed to `preload` functions
+* `page` contains a readonly `{ host, path, params, query, error }` object, identical to that passed to `preload` functions. `error` is only set on error pages.
 * `session` contains whatever data was seeded on the server. It is a [writable store](https://svelte.dev/tutorial/writable-stores), meaning you can update it with new data (for example, after the user logs in) and your app will be refreshed
 
 
