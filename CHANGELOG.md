@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.28.6
+
+* Fix CSS handling with Rollup when dynamically imported styles are also statically imported elsewhere ([#1493](https://github.com/sveltejs/sapper/issues/1493))
+
 ## 0.28.5
 
 * Fix CSS handling with Rollup when one route imports another ([#1486](https://github.com/sveltejs/sapper/issues/1486))
