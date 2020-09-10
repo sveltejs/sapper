@@ -45,16 +45,6 @@ export default function middleware(opts: {
 			next();
 		},
 
-		fs.existsSync(path.join(build_dir, 'service-worker.js')) && serve({
-			pathname: '/service-worker.js',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
-		fs.existsSync(path.join(build_dir, 'service-worker.js.map')) && serve({
-			pathname: '/service-worker.js.map',
-			cache_control: 'no-cache, no-store, must-revalidate'
-		}),
-
 		serve({
 			prefix: '/client/',
 			cache_control: dev ? 'no-cache' : 'max-age=31536000, immutable'

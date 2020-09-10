@@ -36,21 +36,5 @@ export default {
 				libraryTarget: 'commonjs2'
 			};
 		}
-	},
-
-	serviceworker: {
-		entry: () => {
-			return {
-				'service-worker': `${src}/service-worker`
-			};
-		},
-
-		output: () => {
-			return {
-				path: dest,
-				filename: '[name].js',
-				chunkFilename: '[name].[id].[hash].js'
-			};
-		}
 	}
 };

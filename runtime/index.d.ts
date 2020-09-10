@@ -27,11 +27,3 @@ declare module "@sapper/server" {
 
 	export function middleware(opts: MiddlewareOptions): Handler;
 }
-
-declare module "@sapper/service-worker" {
-	export const timestamp: number;
-	export const files: string[];
-	export const assets: string[];
-	export const shell: string[];
-	export const routes: Array<{ pattern: RegExp }>;
-}

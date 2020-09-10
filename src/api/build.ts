@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import minify_html from './utils/minify_html';
-import { create_compilers, create_app, create_manifest_data, create_serviceworker_manifest } from '../core';
+import { create_compilers, create_app, create_manifest_data } from '../core';
 import { copy_shimport } from './utils/copy_shimport';
 import read_template from '../core/read_template';
 import inject_resources from '../core/create_compilers/inject';
@@ -78,7 +78,7 @@ export async function build({
 		dev: false
 	});
 
-	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, routes, dest, false);
+	const { client, server } = await create_compilers(bundler, cwd, src, routes, dest, false);
 
 	const client_result = await client.compile();
 	oncompile({
@@ -117,27 +117,4 @@ export async function build({
 		type: 'server',
 		result: server_stats
 	});
-
-	let serviceworker_stats;
-
-	if (serviceworker) {
-
-		const client_files = client_result.chunks
-			.filter(chunk => !chunk.file.endsWith('.map')) // SW does not need to cache sourcemap files
-			.map(chunk => `client/${chunk.file}`);
-
-		create_serviceworker_manifest({
-			manifest_data,
-			output,
-			client_files,
-			static_files
-		});
-
-		serviceworker_stats = await serviceworker.compile();
-
-		oncompile({
-			type: 'serviceworker',
-			result: serviceworker_stats
-		});
-	}
 }

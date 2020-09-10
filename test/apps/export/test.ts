@@ -39,8 +39,6 @@ describe('export', function() {
 			'blog/index.html',
 			'global.css',
 			'index.html',
-			'service-worker-index.html',
-			'service-worker.js',
 			'test.pdf',
 			'img/example-192.png',
 			'img/example-512.png',

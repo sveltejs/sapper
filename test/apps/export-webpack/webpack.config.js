@@ -66,12 +66,5 @@ module.exports = {
 		plugins: [
 			new WebpackModules()
 		]
-	},
-
-	serviceworker: {
-		entry: config.serviceworker.entry(),
-		output: config.serviceworker.output(),
-		mode: process.env.NODE_ENV,
-		devtool: 'sourcemap'
 	}
 };

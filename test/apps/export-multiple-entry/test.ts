@@ -39,8 +39,6 @@ describe('export multiple entrypoints', function () {
 			'index.html',
 			'about/index.html',
 			'contact/index.html',
-			'service-worker-index.html',
-			'service-worker.js',
 			...boom
 		].sort());
 	});

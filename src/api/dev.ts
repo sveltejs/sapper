@@ -4,7 +4,7 @@ import * as http from 'http';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
-import { create_manifest_data, create_app, create_compilers, create_serviceworker_manifest } from '../core';
+import { create_manifest_data, create_app, create_compilers } from '../core';
 import { Compiler, Compilers } from '../core/create_compilers';
 import inject_resources from '../core/create_compilers/inject';
 import { CompileResult } from '../core/create_compilers/interfaces';
@@ -345,32 +345,9 @@ class Watcher extends EventEmitter {
 					inject_resources(path.join(this.dirs.dest, 'build.json'), path.join(this.dirs.dest, 'client'));
 				}
 
-				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
-
-				create_serviceworker_manifest({
-					manifest_data,
-					output,
-					client_files,
-					static_files
-				});
-
 				deferred.fulfil();
-
-				// we need to wait a beat before watching the service
-				// worker, because of some webpack nonsense
-				setTimeout(watch_serviceworker, 100);
 			}
 		});
-
-		let watch_serviceworker = compilers.serviceworker
-			? () => {
-				watch_serviceworker = noop;
-
-				this.watch(compilers.serviceworker, {
-					name: 'service worker'
-				});
-			}
-			: noop;
 	}
 
 	close() {
@@ -404,8 +381,7 @@ class Watcher extends EventEmitter {
 					changed: Array.from(this.current_build.changed),
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
-						client: this.current_build.rebuilding.has('client'),
-						serviceworker: this.current_build.rebuilding.has('serviceworker')
+						client: this.current_build.rebuilding.has('client')
 					}
 				} as InvalidEvent);
 

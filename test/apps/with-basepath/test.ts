@@ -49,9 +49,7 @@ describe('with-basepath', function() {
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
 			'custom-basepath/redirect-from/index.html',
-			'custom-basepath/redirect-to/index.html',
-			'custom-basepath/service-worker-index.html',
-			'custom-basepath/service-worker.js'
+			'custom-basepath/redirect-to/index.html'
 		]);
 	});
 

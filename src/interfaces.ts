@@ -88,7 +88,6 @@ export type InvalidEvent = {
 	invalid: {
 		client: boolean;
 		server: boolean;
-		serviceworker: boolean;
 	};
 };
 

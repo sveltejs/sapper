@@ -21,8 +21,6 @@ export function get_page_handler(
 		? () => read_template(src_dir)
 		: (str => () => str)(read_template(build_dir));
 
-	const has_service_worker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
-
 	const { pages, error: error_route } = manifest;
 
 	function bail(req: Req, res: Res, err: Error) {
@@ -44,7 +42,6 @@ export function get_page_handler(
 	}
 
 	async function handle_page(page: ManifestPage, req: Req, res: Res, status = 200, error: Error | string = null) {
-		const is_service_worker_index = req.path === '/service-worker-index.html';
 		const build_info: {
 			bundler: 'rollup' | 'webpack',
 			shimport: string | null,
@@ -71,7 +68,7 @@ export function get_page_handler(
 			if (deps) {
 				preload_files = preload_files.concat(deps);
 			}
-		} else if (!error && !is_service_worker_index) {
+		} else if (!error) {
 			page.parts.forEach(part => {
 				if (!part) return;
 				// using concat because it could be a string or an array. thanks webpack!
@@ -133,9 +130,9 @@ export function get_page_handler(
 					);
 
 					const set_cookie = res.getHeader('Set-Cookie');
-					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-						const match = /([^=]+)=([^;]+)/.exec(<string>str);
-						if (match) cookies[match[1]] = match[2];
+					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(s => {
+						const regex_match = /([^=]+)=([^;]+)/.exec(<string>s);
+						if (regex_match) cookies[regex_match[1]] = regex_match[2];
 					});
 
 					const str = Object.keys(cookies)
@@ -170,23 +167,21 @@ export function get_page_handler(
 
 
 			let toPreload = [root_preloaded];
-			if (!is_service_worker_index) {
-				toPreload = toPreload.concat(page.parts.map(part => {
-					if (!part) return null;
+			toPreload = toPreload.concat(page.parts.map(part => {
+				if (!part) return null;
 
-					// the deepest level is used below, to initialise the store
-					params = part.params ? part.params(match) : {};
+				// the deepest level is used below, to initialise the store
+				params = part.params ? part.params(match) : {};
 
-					return part.component.preload
-						? part.component.preload.call(preload_context, {
-							host: req.headers.host,
-							path: req.path,
-							query: req.query,
-							params
-						}, session)
-						: {};
-				}));
-			}
+				return part.component.preload
+					? part.component.preload.call(preload_context, {
+						host: req.headers.host,
+						path: req.path,
+						query: req.query,
+						params
+					}, session)
+					: {};
+			}));
 
 			preloaded = await Promise.all(toPreload);
 		} catch (err) {
@@ -257,18 +252,16 @@ export function get_page_handler(
 				}
 			};
 
-			if (!is_service_worker_index) {
-				let l = 1;
-				for (let i = 0; i < page.parts.length; i += 1) {
-					const part = page.parts[i];
-					if (!part) continue;
+			let level = 1;
+			for (let i = 0; i < page.parts.length; i += 1) {
+				const part = page.parts[i];
+				if (!part) continue;
 
-					props[`level${l++}`] = {
-						component: part.component.default,
-						props: preloaded[i + 1] || {},
-						segment: segments[i]
-					};
-				}
+				props[`level${level++}`] = {
+					component: part.component.default,
+					props: preloaded[i + 1] || {},
+					segment: segments[i]
+				};
 			}
 
 			const { html, head, css } = App.render(props);
@@ -291,11 +284,7 @@ export function get_page_handler(
 				serialized.session && `session:${serialized.session}`
 			].filter(Boolean).join(',')}};`;
 
-			if (has_service_worker) {
-				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
-			}
-
-			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
+			const file = [].concat(build_info.assets.main).filter(f => f && /\.js$/.test(f))[0];
 			const main = `${req.baseUrl}/client/${file}`;
 
 			// users can set a CSP nonce using res.locals.nonce
@@ -355,12 +344,6 @@ export function get_page_handler(
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		if (req.path === '/service-worker-index.html') {
-			const homePage = pages.find(page => page.pattern.test('/'));
-			handle_page(homePage, req, res);
-			return;
-		}
-
 		for (const page of pages) {
 			if (page.pattern.test(req.path)) {
 				handle_page(page, req, res);

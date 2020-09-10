@@ -101,12 +101,6 @@ async function _export({
 	copy(static_files, export_dir);
 	copy(path.join(build_dir, 'client'), path.join(export_dir, 'client'));
 
-	const has_serviceworker = fs.existsSync(path.join(build_dir, 'service-worker.js'));
-	if (has_serviceworker) {
-		copy(path.join(build_dir, 'service-worker.js'), path.join(export_dir, 'service-worker.js'));
-		copy(path.join(build_dir, 'service-worker.js.map'), path.join(export_dir, 'service-worker.js.map'));
-	}
-
 	const defaultPort = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 	const port = await ports.find(defaultPort);
 
@@ -173,10 +167,7 @@ async function _export({
 	}
 
 	function handle(url: URL, fetchOpts: FetchOpts, addCallback: (url: URL) => void) {
-		let pathname = url.pathname;
-		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';
-		}
+		const pathname = url.pathname.replace(fetchOpts.root.pathname, '') || '/';
 
 		if (seen.has(pathname)) return;
 
@@ -209,11 +200,7 @@ async function _export({
 
 	async function handleResponse(fetched: Promise<FetchRet>, fetchOpts: FetchOpts) {
 		const { response, url } = await fetched;
-		let pathname = url.pathname;
-
-		if (pathname !== '/service-worker-index.html') {
-			pathname = pathname.replace(fetchOpts.root.pathname, '') || '/';
-		}
+		const pathname = url.pathname.replace(fetchOpts.root.pathname, '') || '/';
 
 		let type = response.headers.get('Content-Type');
 
@@ -233,37 +220,35 @@ async function _export({
 				}
 			});
 
-			if (pathname !== '/service-worker-index.html') {
-				const cleaned = clean_html(body as string);
+			const cleaned = clean_html(body as string);
 
-				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-				const base_href = base_match && get_href(base_match[1]);
-				const base = resolve(url.href, base_href);
+			const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
+			const base_href = base_match && get_href(base_match[1]);
+			const base = resolve(url.href, base_href);
 
-				let match;
-				const pattern = /<(a|img|link|source)\s+([\s\S]+?)>/gm;
+			let match;
+			const pattern = /<(a|img|link|source)\s+([\s\S]+?)>/gm;
 
-				while (match = pattern.exec(cleaned)) {
-					let hrefs: string[] = [];
-					const element = match[1];
-					const attrs = match[2];
+			while (match = pattern.exec(cleaned)) {
+				let hrefs: string[] = [];
+				const element = match[1];
+				const attrs = match[2];
 
-					if (element === 'a' || element === 'link') {
-						hrefs.push(get_href(attrs));
-					} else {
-						if (element === 'img') {
-							hrefs.push(get_src(attrs));
-						}
-						hrefs.push(...get_srcset_urls(attrs));
+				if (element === 'a' || element === 'link') {
+					hrefs.push(get_href(attrs));
+				} else {
+					if (element === 'img') {
+						hrefs.push(get_src(attrs));
 					}
+					hrefs.push(...get_srcset_urls(attrs));
+				}
 
-					hrefs = hrefs.filter(Boolean);
+				hrefs = hrefs.filter(Boolean);
 
-					for (const href of hrefs) {
-						const dest = resolve(base.href, href);
-						if (dest.protocol === fetchOpts.protocol && dest.host === fetchOpts.host) {
-							handle(dest, fetchOpts, queue.add);
-						}
+				for (const href of hrefs) {
+					const dest = resolve(base.href, href);
+					if (dest.protocol === fetchOpts.protocol && dest.host === fetchOpts.host) {
+						handle(dest, fetchOpts, queue.add);
 					}
 				}
 			}
@@ -319,11 +304,6 @@ async function _export({
 						message: `Crawling ${entryPoint.href}`
 					});
 					handle(entryPoint, queueFetchOpts, queue.add);
-				}
-
-				if (has_serviceworker) {
-					const workerUrl = resolve(root.href, 'service-worker-index.html');
-					handle(workerUrl, queueFetchOpts, queue.add);
 				}
 			} catch (err) {
 				proc.kill();

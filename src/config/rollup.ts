@@ -39,19 +39,5 @@ export default {
 				sourcemap
 			};
 		}
-	},
-
-	serviceworker: {
-		input: (): InputOption => {
-			return `${src}/service-worker.js`;
-		},
-
-		output: (): OutputOptions => {
-			return {
-				file: `${dest}/service-worker.js`,
-				format: 'iife',
-				sourcemap
-			};
-		}
 	}
 };

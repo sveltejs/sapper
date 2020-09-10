@@ -8,7 +8,6 @@ export type Compiler = RollupCompiler | WebpackCompiler;
 export type Compilers = {
 	client: Compiler;
 	server: Compiler;
-	serviceworker?: Compiler;
 }
 
 export default async function create_compilers(
@@ -30,14 +29,9 @@ export default async function create_compilers(
 		normalize_rollup_config(config.client);
 		normalize_rollup_config(config.server);
 
-		if (config.serviceworker) {
-			normalize_rollup_config(config.serviceworker);
-		}
-
 		return {
 			client: new RollupCompiler(config.client, routes),
-			server: new RollupCompiler(config.server, routes),
-			serviceworker: config.serviceworker && new RollupCompiler(config.serviceworker, routes)
+			server: new RollupCompiler(config.server, routes)
 		};
 	}
 
@@ -47,8 +41,7 @@ export default async function create_compilers(
 
 		return {
 			client: new WebpackCompiler(config.client),
-			server: new WebpackCompiler(config.server),
-			serviceworker: config.serviceworker && new WebpackCompiler(config.serviceworker)
+			server: new WebpackCompiler(config.server)
 		};
 	}
 
@@ -58,7 +51,7 @@ export default async function create_compilers(
 
 function validate_config(config: any, bundler: 'rollup' | 'webpack') {
 	if (!config.client || !config.server) {
-		throw new Error(`${bundler}.config.js must export a { client, server, serviceworker? } object`);
+		throw new Error(`${bundler}.config.js must export a { client, server } object`);
 	}
 }
 
