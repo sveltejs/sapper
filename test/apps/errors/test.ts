@@ -21,9 +21,15 @@ describe('errors', function() {
 			statusCode + ''
 		);
 
-		const didLayoutGetError = await r.page.$eval('.error-layout', (el) => !!el);
+		assert.ok(
+			await r.page.$eval(".error-layout", (el) => !!el),
+			"Layout did not get error in page store"
+		);
 
-		assert.ok(didLayoutGetError);
+		assert.ok(
+			await r.page.$eval(".status-" + statusCode, (el) => !!el),
+			"Layout did not get status " + statusCode
+		);
 	}
 
 	// tests

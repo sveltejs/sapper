@@ -18,7 +18,9 @@ import {
 	HydratedTarget,
 	Target,
 	Redirect,
-	Page
+	Page,
+	PageContext,
+	Branch
 } from './types';
 import goto from './goto';
 import { page_store } from './stores';
@@ -57,7 +59,7 @@ stores.session.subscribe(async value => {
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
 	} else {
-		await render(branch, props, Object.assign({error: props.error}, dest.page));
+		await render(branch, props, buildPageContext(props, dest.page));
 	}
 });
 
@@ -110,7 +112,14 @@ function handle_error(url: URL) {
 
 	};
 	const query = extract_query(search);
-	render([], props, { host, path: pathname, query, params: {}, error });
+	render([], props, { host, path: pathname, query, params: {}, error, status });
+}
+
+
+function buildPageContext(props: any, page: Page): PageContext {
+  const { error, status } = props;
+
+  return Object.assign({ error, status }, page);
 }
 
 async function handle_target(dest: Target): Promise<void> {
@@ -127,11 +136,11 @@ async function handle_target(dest: Target): Promise<void> {
 		await goto(redirect.location, { replaceState: true });
 	} else {
 		const { props, branch } = hydrated_target;
-		await render(branch, props, Object.assign({error: props.error}, dest.page));
+		await render(branch, props, buildPageContext(props, dest.page));
 	}
 }
 
-async function render(branch: any[], props: any, page: Page) {
+async function render(branch: Branch, props: any, page: PageContext) {
 	stores.page.set(page);
 	stores.preloading.set(false);
 
@@ -210,7 +219,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 		}, $session);
 	}
 
-	let branch;
+	let branch: Branch;
 	let l = 1;
 
 	try {

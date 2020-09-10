@@ -3,10 +3,6 @@
 	const { page } = stores();
 </script>
 
-{#if $page.error}
-  <div class="error-layout">
-    <slot></slot>
-  </div>
-{:else}
+<div class:error-layout="{!!$page.error}" class="status-{$page.status}">
   <slot></slot>
-{/if}
+</div>
