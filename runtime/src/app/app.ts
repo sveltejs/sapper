@@ -18,9 +18,9 @@ import {
 	HydratedTarget,
 	Target,
 	Redirect,
+	Branch,
 	Page,
-	PageContext,
-	Branch
+	PageContext
 } from './types';
 import goto from './goto';
 import { page_store } from './stores';
