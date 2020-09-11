@@ -232,13 +232,17 @@ export function get_page_handler(
 			}
 
 			const pageContext: PageContext = {
-				host: req.headers.host,
-				path: req.path,
-				query: req.query,
-				params,
-				error: error ? error instanceof Error ? error : { message: error } : null,
-				status: error ? status : 200
-			};
+        host: req.headers.host,
+        path: req.path,
+        query: req.query,
+        params,
+        error: error
+          ? error instanceof Error
+            ? error
+            : { message: error, name: "PreloadError" }
+          : null,
+        status: error ? status : 200
+      };
 
 			const props = {
 				stores: {

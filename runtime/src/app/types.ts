@@ -42,6 +42,6 @@ export interface Page {
  */
 export interface PageContext extends Page {
 	/** `error` is only set when the error page is being rendered. */
-	error?: Error | { message: string; };
+	error?: Error;
 	status: number;
 }
