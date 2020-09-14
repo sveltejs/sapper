@@ -14,7 +14,7 @@ function onError({ req, customizeResponse, statusCode, error }) {
 		// replace normal error response with JSON response
 		customizeResponse((res) => {
 			res.writeHead(statusCode, {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/json'
 			});
 
 			res.end(JSON.stringify({ error: error.message, custom: true }));
@@ -27,7 +27,7 @@ function onError({ req, customizeResponse, statusCode, error }) {
 
 const app = polka().use(
 	sapper.middleware({
-		onError,
+		onError
 	})
 );
 
