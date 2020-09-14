@@ -1,6 +1,7 @@
 import { Req, Res, ServerRoute } from '@sapper/internal/manifest-server';
+import { OnError, sendErrorResponse, RouteType } from './on_error';
 
-export function get_server_route_handler(routes: ServerRoute[]) {
+export function get_server_route_handler(routes: ServerRoute[], onError?: OnError) {
 	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
@@ -42,10 +43,21 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 				};
 			}
 
+			const handle_error = (error: Error) => { 
+				sendErrorResponse({
+					defaultResponse: () => {
+						res.statusCode = 500;
+						res.end(error.message);	
+					},
+					routeType: RouteType.ServerRoute,
+					statusCode: 500,
+					req, res, error, onError
+				});
+			};
+
 			const handle_next = (err?: Error) => {
 				if (err) {
-					res.statusCode = 500;
-					res.end(err.message);
+					handle_error(err);
 				} else {
 					process.nextTick(next);
 				}

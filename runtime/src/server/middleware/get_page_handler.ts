@@ -9,10 +9,12 @@ import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import { PreloadResult } from '@sapper/internal/shared';
 import App from '@sapper/internal/App.svelte';
+import { OnError, sendErrorResponse, RouteType } from './on_error';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => Promise<any>
+	session_getter: (req: Req, res: Res) => Promise<any>, 
+	onError?: OnError
 ) {
 	const get_build_info = dev
 		? () => JSON.parse(fs.readFileSync(path.join(build_dir, 'build.json'), 'utf-8'))
@@ -26,22 +28,39 @@ export function get_page_handler(
 
 	const { pages, error: error_route } = manifest;
 
-	function bail(req: Req, res: Res, err: Error) {
-		console.error(err);
+	function bail(req: Req, res: Res, error: Error) {
+		console.error(error);
 
-		const message = dev ? escape_html(err.message) : 'Internal server error';
-
-		res.statusCode = 500;
-		res.end(`<pre>${message}</pre>`);
+		sendErrorResponse({
+			
+			defaultResponse: () => {				
+				const message = dev ? escape_html(error.message) : 'Internal server error';
+				
+				res.statusCode = 500;
+				res.end(`<pre>${message}</pre>`);
+			},
+			routeType: RouteType.Page,
+			statusCode: 500,
+			req, res, error, onError
+		});
 	}
 
 	function handle_error(req: Req, res: Res, statusCode: number, error: Error | string) {
-		handle_page({
-			pattern: null,
-			parts: [
-				{ name: null, component: { default: error_route } }
-			]
-		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
+		error = error || new Error('Unknown error');
+
+		sendErrorResponse({
+			defaultResponse: () => {
+				handle_page({
+					pattern: null,
+					parts: [
+						{ name: null, component: { default: error_route } }
+					]
+				}, req, res, statusCode, error);	
+			},
+			routeType: RouteType.Page,
+			statusCode: 500,
+			req, res, error, onError
+		});
 	}
 
 	async function handle_page(page: ManifestPage, req: Req, res: Res, status = 200, error: Error | string = null) {

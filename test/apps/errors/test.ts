@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
 
-describe('errors', function() {
+describe('errors', function () {
 	this.timeout(10000);
 
 	let r: AppRunner;
@@ -15,14 +15,49 @@ describe('errors', function() {
 
 	after(() => r && r.end());
 
+	/**
+	 * On a JSON response, parse the JSON.
+	 */
+	function getJsonResponse() {
+		return r.page.evaluate(() => {
+			const body = document.querySelector('body').innerText;
+
+			try {
+				return JSON.parse(body);
+			} catch (e) {
+				throw new Error(`"${body}" is not JSON.`);
+			}
+		});
+	}
+
+	async function expectOnErrorToTrigger(url: string) {
+		// in server.js, we've defined a custom `onError`.
+		// in this case it will return JSON
+		await r.load(`${url}?onerror=custom`);
+
+		assert.equal((await getJsonResponse()).custom, true);
+
+		// here, it should return standard error response
+		// but also log the error.
+		await r.load(`${url}?onerror=log`);
+
+		await r.load(`/logged-errors.json`);
+
+		assert.equal((await getJsonResponse())[url], true);
+	}
+
 	// tests
 	it('handles missing route on server', async () => {
-		await r.load('/nope');
+		const url = '/nope';
+
+		await r.load(url);
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
+
+		await expectOnErrorToTrigger(url);
 	});
 
 	it('handles missing route on client', async () => {
@@ -36,15 +71,19 @@ describe('errors', function() {
 			await r.text('h1'),
 			'404'
 		);
+		assert.equal(await r.text('h1'), '404');
 	});
 
 	it('handles explicit 4xx on server', async () => {
-		await r.load('/blog/nope');
+		const url = '/blog/nope';
+		await r.load(url);
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
+
+		await expectOnErrorToTrigger(url);
 	});
 
 	it('handles explicit 4xx on client', async () => {
@@ -59,15 +98,21 @@ describe('errors', function() {
 			await r.text('h1'),
 			'404'
 		);
+		assert.equal(await r.text('h1'), '404');
 	});
 
 	it('handles error on server', async () => {
-		await r.load('/throw');
+		const url = '/throw';
+		await r.load(url);
+
+		assert.equal(await r.text('h1'), '500');
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'500'
 		);
+
+		await expectOnErrorToTrigger(url);
 	});
 
 	it('display correct stack trace sequences on server error referring to source file', async () => {

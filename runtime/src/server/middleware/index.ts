@@ -4,14 +4,16 @@ import mime from 'mime/lite';
 import { Handler, Req, Res, build_dir, dev, manifest } from '@sapper/internal/manifest-server';
 import { get_server_route_handler } from './get_server_route_handler';
 import { get_page_handler } from './get_page_handler';
+import { OnError } from './on_error';
 
 type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
 
 export default function middleware(opts: {
 	session?: (req: Req, res: Res) => any,
-	ignore?: IgnoreValue
+	ignore?: IgnoreValue,
+	onError?: OnError
 } = {}) {
-	const { session, ignore } = opts;
+	const { session, ignore, onError } = opts;
 
 	let emitted_basepath = false;
 
@@ -60,9 +62,9 @@ export default function middleware(opts: {
 			cache_control: dev ? 'no-cache' : 'max-age=31536000, immutable'
 		}),
 
-		get_server_route_handler(manifest.server_routes),
+		get_server_route_handler(manifest.server_routes, onError),
 
-		get_page_handler(manifest, session || noop)
+		get_page_handler(manifest, session || noop, onError)
 	].filter(Boolean));
 }
 
