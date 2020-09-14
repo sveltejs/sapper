@@ -1,6 +1,6 @@
 <script>
-	export let status;
 	export let error;
+	export let status;
 </script>
 
 <h1>{status}</h1>
