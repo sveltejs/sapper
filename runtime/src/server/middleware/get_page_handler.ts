@@ -42,7 +42,7 @@ export function get_page_handler(
 			parts: [
 				{ name: null, component: { default: error_route } }
 			]
-		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
+		}, req, res, statusCode, error || 'Unknown error');
 	}
 
 	async function handle_page(page: ManifestPage, req: Req, res: Res, status = 200, error: Error | string = null) {
