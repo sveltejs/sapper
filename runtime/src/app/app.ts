@@ -359,27 +359,8 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 	return { redirect, props, branch };
 }
 
-function load_css(chunk: string) {
-	const href = `client/${chunk}`;
-	if (document.querySelector(`link[href="${href}"]`)) return;
-
-	return new Promise((fulfil, reject) => {
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = href;
-
-		link.onload = () => fulfil();
-		link.onerror = reject;
-
-		document.head.appendChild(link);
-	});
-}
-
 export function load_component(component: DOMComponentLoader): Promise<DOMComponentModule> {
-	// TODO this is temporary — once placeholders are
-	// always rewritten, scratch the ternary
-	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
-	promises.unshift(component.js());
+	const promises: Array<Promise<any>> = [component.js()];
 	return Promise.all(promises).then(values => values[0]);
 }
 

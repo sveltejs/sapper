@@ -6,7 +6,6 @@ import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
 import { create_manifest_data, create_app, create_compilers, create_serviceworker_manifest } from '../core';
 import { Compiler, Compilers } from '../core/create_compilers';
-import inject_resources from '../core/create_compilers/inject';
 import { CompileResult } from '../core/create_compilers/interfaces';
 import Deferred from './utils/Deferred';
 import validate_bundler from './utils/validate_bundler';
@@ -233,10 +232,6 @@ class Watcher extends EventEmitter {
 				this.restart(filename, 'server');
 			},
 
-			// Note that we don't inject the CSS path into the server in dev mode, which means
-			// that styles might not work if you have JavaScript disabled. We skip it because if
-			// the server completes before the client it will fail to find build.json. This is not
-			// an issue for production builds because we don't have two simultaneous watchers then.
 			handle_result: (result: CompileResult) => {
 				deferred.promise.then(() => {
 					const restart = () => {
@@ -340,10 +335,6 @@ class Watcher extends EventEmitter {
 					path.join(dest, 'build.json'),
 					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
 				);
-
-				if (this.bundler === 'rollup') {
-					inject_resources(path.join(this.dirs.dest, 'build.json'), path.join(this.dirs.dest, 'client'));
-				}
 
 				const client_files = result.chunks.map(chunk => `client/${chunk.file}`);
 

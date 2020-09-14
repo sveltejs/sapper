@@ -19,8 +19,7 @@ export interface DOMComponentConstructor {
 }
 
 export interface DOMComponentLoader {
-  js: () => Promise<DOMComponentModule>,
-  css: string[]
+  js: () => Promise<DOMComponentModule>
 }
 
 export interface Route {
