@@ -102,8 +102,7 @@ function generate_client_manifest(
 			component_indexes[component.name] = i;
 
 			return `{
-					js: () => import(${annotation}${stringify(source)}),
-					css: "__SAPPER_CSS_PLACEHOLDER:${stringify(component.file, false)}__"
+					js: () => import(${annotation}${stringify(source)})
 				}`;
 		}).join(',\n\t\t\t\t')}
 	]`.replace(/^\t/gm, '');
