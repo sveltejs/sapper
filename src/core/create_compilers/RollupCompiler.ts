@@ -99,34 +99,31 @@ export default class RollupCompiler {
 			});
 		};
 
-		let entry_point: string | undefined;
+		let entry_point: string;
+
+		if (typeof mod.input === 'string') {
+			entry_point = mod.input;
+		} else {
+			const inputs: Array<{alias: string, file: string}> = [];
+			if (Array.isArray(mod.input)) {
+				inputs.push(...mod.input.map(file => ({file, alias: file})));
+			} else {
+				for (const alias in mod.input) {
+					inputs.push({file: mod.input[alias], alias});
+				}
+			}
+			entry_point = inputs[0].file;
+		}
 
 		const that = this;
 
 		// TODO this is hacky. refactor out into an external rollup plugin
 		(mod.plugins || (mod.plugins = [])).push(css_chunks({ injectImports: true }));
-		if (!JSON.stringify(mod.input).includes('client.')) {
+		if (!/[\\/]client\./.test(entry_point)) {
 			return mod;
 		}
 		mod.plugins.push({
 			name: 'sapper-internal',
-			buildStart(this: PluginContext, options: NormalizedInputOptions): void {
-				const input = options.input;
-				const inputs: Array<{alias: string, file: string}> = [];
-
-				if (typeof input === 'string') {
-					inputs.push({alias: 'main', file: input});
-				} else if (Array.isArray(input)) {
-					inputs.push(...input.map(file => ({file, alias: file})));
-				} else {
-					for (const alias in input) {
-						inputs.push({file: input[alias], alias});
-					}
-				}
-				if (!entry_point) {
-					entry_point = inputs[0].file;
-				}
-			},
 			renderChunk(code: string, chunk: RenderedChunk) {	
 				that.chunks.push(chunk);
 			},
