@@ -57,15 +57,19 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				const file = path.relative(cwd, resolved);
 				const is_dir = fs.statSync(resolved).isDirectory();
 
-				const ext = path.extname(basename);
+				const file_ext = path.extname(basename);
 
 				if (basename[0] === '_') return null;
 				if (basename[0] === '.' && basename !== '.well-known') return null;
-				if (!is_dir && !/^\.[a-z]+$/i.test(ext)) return null; // filter out tmp files etc
+				if (!is_dir && !/^\.[a-z]+$/i.test(file_ext)) return null; // filter out tmp files etc
 
-				const segment = is_dir
-					? basename
-					: basename.slice(0, -ext.length);
+				const component_extension = component_extensions.find((ext) =>
+					basename.endsWith(ext)
+				);
+				const ext = component_extension || file_ext;
+				const is_page = component_extension != null;
+				const segment = is_dir ? basename : basename.slice(0, -ext.length);
+
 
 				if (/\]\[/.test(segment)) {
 					throw new Error(`Invalid route ${file} — parameters must be separated`);
@@ -73,7 +77,6 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
-				const is_page = component_extensions.indexOf(ext) !== -1;
 				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
