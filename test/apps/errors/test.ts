@@ -97,7 +97,6 @@ describe('errors', function () {
 			await r.text('h1'),
 			'404'
 		);
-		assert.equal(await r.text('h1'), '404');
 	});
 
 	it('handles error on server', async () => {
