@@ -104,7 +104,7 @@ export async function build({
 		delete process.env.SAPPER_LEGACY_BUILD;
 	}
 
-	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info));
+	fs.writeFileSync(path.join(dest, 'build.json'), JSON.stringify(build_info, null, '  '));
 	if (bundler === 'rollup') {
 		inject_resources(path.join(dest, 'build.json'), path.join(dest, 'client'));
 	}
