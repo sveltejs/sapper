@@ -119,7 +119,7 @@ function handle_error(url: URL) {
 function buildPageContext(props: any, page: Page): PageContext {
   const { error, status } = props;
 
-  return Object.assign({ error, status }, page);
+  return { error, status, ...page };
 }
 
 async function handle_target(dest: Target): Promise<void> {
