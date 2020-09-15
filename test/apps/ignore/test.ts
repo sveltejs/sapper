@@ -3,7 +3,7 @@ import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
 
 describe('ignore', function() {
-	this.timeout(10000);
+	this.timeout(20000);
 
 	let r: AppRunner;
 
