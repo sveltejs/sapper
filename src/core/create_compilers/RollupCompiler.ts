@@ -5,7 +5,6 @@ import { dependenciesForTree, DependencyTreeOptions } from 'rollup-dependency-tr
 import css_chunks from 'rollup-plugin-css-chunks';
 import {
 	PluginContext,
-	NormalizedInputOptions,
 	NormalizedOutputOptions,
 	RenderedChunk,
 	RollupError,
@@ -141,6 +140,9 @@ export default class RollupCompiler {
 				}
 			},
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
+
+				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
+
 				const find_css = (chunk: RenderedChunk) => {
 					const css_files = new Set<string>();
 					const visited = new Set<RenderedChunk>();
@@ -164,8 +166,6 @@ export default class RollupCompiler {
 					return Array.from(css_files);
 				};
 
-				const dependencies = {};
-
 				let has_css = false;
 				for (const name in bundle) {
 					const chunk = <OutputChunk>bundle[name];
@@ -175,13 +175,10 @@ export default class RollupCompiler {
 					if (chunk.code) {
 						chunk.code = chunk.code.replace(/___SAPPER_CSS_INJECTION___([0-9a-f]+)___/g, (m, id) => {
 							id = Buffer.from(id, 'hex').toString();
-							const target = <OutputChunk>Object.values(bundle).find(c => (<OutputChunk>c).facadeModuleId === id);
+							const target = <OutputChunk>Object.values(bundle).find(c => !!(<OutputChunk>c).modules[id]);
 
 							if (target) {
 								const css_files = find_css(target);
-
-								dependencies[target.facadeModuleId] = css_files;
-
 								if (css_files.length > 0) {
 									chunk_has_css = true;
 									return `__inject_styles(${JSON.stringify(css_files)})`;
@@ -207,23 +204,15 @@ export default class RollupCompiler {
 				}
 
 				// Store the build dependencies so that we can create build.json
+				const dependencies = {};
 
-				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
+				function is_route(file_path: string) {
+					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_') && !file_path.endsWith('.css');
+				}
 
 				function js_deps(chunk: RenderedChunk, opts?: DependencyTreeOptions) {
 					return Array.from(dependenciesForTree(chunk, that.chunks, opts));
 				}
-
-				function is_route(file_path: string) {
-					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_');
-				}
-
-				function get_route_entry_chunks(main_entry_chunk: RenderedChunk) {
-					return js_deps(main_entry_chunk, { filter: ctx => ctx.dynamicImport
-						&& ctx.chunk.facadeModuleId && is_route(ctx.chunk.facadeModuleId) });
-				}
-
-				const route_entry_chunks = get_route_entry_chunks(entry_chunk);
 
 				// We need to handle the entry point separately
 				// If there's a single page and preserveEntrySignatures is false then Rollup will
@@ -236,10 +225,19 @@ export default class RollupCompiler {
 				that.css_main = find_css(entry_chunk);
 
 				// Routes dependencies
-				for (const chunk of route_entry_chunks) {
-					const js_dependencies = js_deps(chunk, { walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
-					const css_deps = dependencies[chunk.facadeModuleId];
-					dependencies[chunk.facadeModuleId] = css_deps ? css_deps.concat(js_dependencies) : js_dependencies;
+				function add_dependencies(chunk: RenderedChunk) {
+					for (const module of Object.keys(chunk.modules)) {
+						if (is_route(module)) {
+							const js_dependencies = js_deps(chunk,
+								{ walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
+							const css_dependencies = find_css(chunk).filter(x => !that.css_main.includes(x));
+							dependencies[module] = js_dependencies.concat(css_dependencies);
+						}
+					}
+				}
+
+				for (const chunk of js_deps(entry_chunk, { filter: ctx => ctx.dynamicImport })) {
+					add_dependencies(chunk);
 				}
 				that.dependencies = dependencies;
 			}
