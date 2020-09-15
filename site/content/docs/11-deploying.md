@@ -16,6 +16,10 @@ node __sapper__/build
 
 We can use a third-party library like [the `vercel-sapper` builder](https://www.npmjs.com/package/vercel-sapper) to deploy our projects to [Vercel] ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel)). See [that project's readme](https://github.com/thgh/vercel-sapper#readme) for more details regarding [Vercel] deployments.
 
+### Deploying to the Moovweb XDN
+
+The [Moovweb XDN](https://www.moovweb.com/) is a serverless platform focused on site speed, predictive prefetching, and ease of deployment. It provides direct support for Sapper. See the [Sapper Deployment Guide](https://developer.moovweb.com/guides/sapper) for details.
+
 ### Deploying service workers
 
 Sapper makes the Service Worker file (`service-worker.js`) unique by including a timestamp in the source code
