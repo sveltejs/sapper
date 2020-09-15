@@ -398,15 +398,15 @@ describe('basics', function() {
 	});
 
 	it('retrieves request headers', async () => {
-		const cookieString = 'foo=bar';
+		const headerValue = '123';
 
-		r.page.setExtraHTTPHeaders({ Cookie: cookieString });
+		await r.page.setExtraHTTPHeaders({ Foobar: headerValue });
 
-		const response = await r.load('/echo-cookies');
+		const response = await r.load('/echo-header');
 
 		assert.ok(response.ok());
 
-		assert.equal(await r.text('#cookie'), cookieString);
+		assert.equal(await r.text('#cookie'), headerValue);
 	});
 
 	it('survives the tests with no server errors', () => {
