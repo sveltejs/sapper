@@ -389,6 +389,26 @@ describe('basics', function() {
 		assert.equal(await r.text('h2'), 'Called 1 time');
 	});
 
+	it('sets response headers', async () => {
+		const response = await r.load('/nocache');
+
+		assert.ok(response.ok());
+
+		assert.equal(response.headers()['cache-control'], 'no-cache');
+	});
+
+	it('retrieves request headers', async () => {
+		const cookieString = 'foo=bar';
+
+		r.page.setExtraHTTPHeaders({ Cookie: cookieString });
+
+		const response = await r.load('/echo-cookies');
+
+		assert.ok(response.ok());
+
+		assert.equal(await r.text('#cookie'), cookieString);
+	});
+
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});

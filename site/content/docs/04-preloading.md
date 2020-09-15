@@ -58,11 +58,14 @@ When Sapper renders a page on the server, it will attempt to serialize the resol
 
 ### Context
 
-Inside `preload`, you have access to three methods:
+Inside `preload`, you have access to the following methods:
 
 * `this.fetch(url, options)`
 * `this.error(statusCode, error)`
 * `this.redirect(statusCode, location)`
+* `this.setHeader(name, value)`
+* `this.getHeader(name)`
+* `this.removeHeader(name)`
 
 
 #### this.fetch
@@ -130,5 +133,36 @@ You can abort rendering and redirect to a different location with `this.redirect
 
 		return { user };
 	}
+</script>
+```
+
+#### this.setHeader / removeHeader
+
+You can set custom response headers with `this.setHeader` or clear them again using `this.removeHeader`.
+The most common use case is to change cache policies for the page.
+
+Sapper by default does not set any set the `Cache-Control` header. You can set one as follows:
+
+```html
+<script context="module">
+  export function preload() {
+    this.setHeader('Cache-Control', 'no-cache');
+  }
+</script>
+```
+
+You can also use `setHeader` to set cookies.
+
+#### this.getHeader
+
+Use `this.getHeader` to retrieve any headers sent with the request.
+
+```html
+<script context="module">
+  export function preload() {
+		const preferredLanguage = this.getHeader('Accept-Language');
+
+		return { preferredLanguage };
+  }
 </script>
 ```

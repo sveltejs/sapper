@@ -1,13 +1,12 @@
 import { writable } from 'svelte/store';
 import fs from 'fs';
 import path from 'path';
-import cookie from 'cookie';
 import devalue from 'devalue';
-import fetch from 'node-fetch';
 import URL from 'url';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
+import { getPreloadFetch } from './preload_fetch';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -112,45 +111,10 @@ export function get_page_handler(
 			error: (statusCode: number, message: Error | string) => {
 				preload_error = { statusCode, message };
 			},
-			fetch: (url: string, opts?: any) => {
-				const protocol = req.socket.encrypted ? 'https' : 'http';
-				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
-
-				opts = Object.assign({}, opts);
-
-				const include_credentials = (
-					opts.credentials === 'include' ||
-					opts.credentials !== 'omit' && parsed.origin === `${protocol}://127.0.0.1:${process.env.PORT}`
-				);
-
-				if (include_credentials) {
-					opts.headers = Object.assign({}, opts.headers);
-
-					const cookies = Object.assign(
-						{},
-						cookie.parse(req.headers.cookie || ''),
-						cookie.parse(opts.headers.cookie || '')
-					);
-
-					const set_cookie = res.getHeader('Set-Cookie');
-					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-						const match = /([^=]+)=([^;]+)/.exec(<string>str);
-						if (match) cookies[match[1]] = match[2];
-					});
-
-					const str = Object.keys(cookies)
-						.map(key => `${key}=${cookies[key]}`)
-						.join('; ');
-
-					opts.headers.cookie = str;
-
-					if (!opts.headers.authorization && req.headers.authorization) {
-						opts.headers.authorization = req.headers.authorization;
-					}
-				}
-
-				return fetch(parsed.href, opts);
-			}
+			getHeader: (name: string) => req.headers[name.toLowerCase()],
+			setHeader: (name: string, value: string | number | string[]) => res.setHeader(name, value),
+			removeHeader: (name: string) => res.removeHeader(name),
+			fetch: getPreloadFetch(req, res)
 		};
 
 		let preloaded;
