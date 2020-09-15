@@ -13,7 +13,7 @@ import { OnError, sendErrorResponse, RouteType } from './on_error';
 
 export function get_page_handler(
 	manifest: Manifest,
-	session_getter: (req: Req, res: Res) => Promise<any>, 
+	session_getter: (req: Req, res: Res) => Promise<any>,
 	onError?: OnError
 ) {
 	const get_build_info = dev
@@ -32,10 +32,10 @@ export function get_page_handler(
 		console.error(error);
 
 		sendErrorResponse({
-			
-			defaultResponse: () => {				
+
+			defaultResponse: () => {
 				const message = dev ? escape_html(error.message) : 'Internal server error';
-				
+
 				res.statusCode = 500;
 				res.end(`<pre>${message}</pre>`);
 			},
@@ -55,7 +55,7 @@ export function get_page_handler(
 					parts: [
 						{ name: null, component: { default: error_route } }
 					]
-				}, req, res, statusCode, error);	
+				}, req, res, statusCode, error);
 			},
 			routeType: RouteType.Page,
 			statusCode: 500,
