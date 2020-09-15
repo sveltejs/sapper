@@ -29,9 +29,9 @@ export function sendErrorResponse({
 	onError?: OnError;
 	defaultResponse: () => void;
 }) {
-	if (onError) {
-		let sendDefaultResponse = true;
+	let sendDefaultResponse = true;
 
+	if (onError) {
 		function customizeResponse(handler: (res: Res) => void) {
 			handler(res);
 			sendDefaultResponse = false;
@@ -44,9 +44,9 @@ export function sendErrorResponse({
 			error,
 			customizeResponse
 		});
+	}
 
-		if (sendDefaultResponse) {
-			defaultResponse();
-		}
+	if (sendDefaultResponse) {
+		defaultResponse();
 	}
 }
