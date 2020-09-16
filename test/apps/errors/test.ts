@@ -19,7 +19,7 @@ describe('errors', function() {
 	it('handles missing route on server', async () => {
 		await r.load('/nope');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
@@ -32,7 +32,7 @@ describe('errors', function() {
 		await r.page.click('[href="nope"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
@@ -41,7 +41,7 @@ describe('errors', function() {
 	it('handles explicit 4xx on server', async () => {
 		await r.load('/blog/nope');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
@@ -55,7 +55,7 @@ describe('errors', function() {
 		await r.page.click('[href="blog/nope"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'404'
 		);
@@ -64,7 +64,7 @@ describe('errors', function() {
 	it('handles error on server', async () => {
 		await r.load('/throw');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'500'
 		);
@@ -87,7 +87,7 @@ describe('errors', function() {
 		await r.page.click('[href="throw"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'500'
 		);
@@ -97,7 +97,7 @@ describe('errors', function() {
 		await r.load('/preload-reject');
 		await r.sapper.start();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'500'
 		);
@@ -106,7 +106,7 @@ describe('errors', function() {
 	it('does not serve error page for explicit non-page errors', async () => {
 		await r.load('/nope.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'nope'
 		);
@@ -115,7 +115,7 @@ describe('errors', function() {
 	it('does not serve error page for thrown non-page errors', async () => {
 		await r.load('/throw.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'oops'
 		);
@@ -125,7 +125,7 @@ describe('errors', function() {
 		await r.load('/some-throw-page');
 		await r.sapper.start();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h2'),
 			'success'
 		);
@@ -134,7 +134,7 @@ describe('errors', function() {
 	it('does not serve error page for async non-page error', async () => {
 		await r.load('/async-throw.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'oops'
 		);
@@ -147,14 +147,14 @@ describe('errors', function() {
 
 		await r.page.click('[href="enhance-your-calm"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), '420');
+		assert.strictEqual(await r.text('h1'), '420');
 
 		await r.page.goBack();
 		await r.wait();
-		assert.equal(await r.text('h1'), 'No error here');
+		assert.strictEqual(await r.text('h1'), 'No error here');
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

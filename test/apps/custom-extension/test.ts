@@ -21,7 +21,7 @@ describe('custom extensions', function() {
 		await r.load(`/`);
 
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Great success!'
 		);
@@ -30,28 +30,28 @@ describe('custom extensions', function() {
 	it('works with other arbitrary extensions', async () => {
 		await r.load(`/const`);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Tremendous!'
 		);
 
 		await r.load(`/a`);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'a'
 		);
 
 		await r.load(`/test-slug`);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'TEST-SLUG'
 		);
 
 		await r.load(`/unsafe-replacement`);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Bazooom!'
 		);

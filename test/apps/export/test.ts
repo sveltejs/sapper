@@ -28,7 +28,7 @@ describe('export', function() {
 			}
 		}
 
-		assert.deepEqual(non_client_assets.sort(), [
+		assert.deepStrictEqual(non_client_assets.sort(), [
 			'blog.json',
 			'blog/bar.json',
 			'blog/bar/index.html',

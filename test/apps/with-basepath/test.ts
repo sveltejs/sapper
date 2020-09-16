@@ -21,7 +21,7 @@ describe('with-basepath', function() {
 	it('serves /custom-basepath', async () => {
 		await r.load('/custom-basepath');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Great success!'
 		);
@@ -30,7 +30,7 @@ describe('with-basepath', function() {
 	it('emits a basepath message', async () => {
 		await r.load('/custom-basepath');
 
-		assert.deepEqual(r.messages, [{
+		assert.deepStrictEqual(r.messages, [{
 			__sapper__: true,
 			event: 'basepath',
 			basepath: '/custom-basepath'
@@ -45,7 +45,7 @@ describe('with-basepath', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets, [
+		assert.deepStrictEqual(non_client_assets, [
 			'custom-basepath/global.css',
 			'custom-basepath/index.html',
 			'custom-basepath/redirect-from/index.html',
@@ -58,12 +58,12 @@ describe('with-basepath', function() {
 	it('redirects on server', async () => {
 		await r.load('/custom-basepath/redirect-from');
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/custom-basepath/redirect-to`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'redirected'
 		);
@@ -77,18 +77,18 @@ describe('with-basepath', function() {
 		await r.page.click('[href="redirect-from"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/custom-basepath/redirect-to`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'redirected'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

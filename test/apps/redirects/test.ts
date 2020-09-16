@@ -20,12 +20,12 @@ describe('redirects', function() {
 	it('redirects on server', async () => {
 		await r.load('/redirect-from');
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/redirect-to`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'redirected'
 		);
@@ -39,12 +39,12 @@ describe('redirects', function() {
 		await r.page.click('[href="redirect-from"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/redirect-to`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'redirected'
 		);
@@ -53,12 +53,12 @@ describe('redirects', function() {
 	it('redirects to root on server', async () => {
 		await r.load('/redirect-to-root');
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'root'
 		);
@@ -72,12 +72,12 @@ describe('redirects', function() {
 		await r.page.click('[href="redirect-to-root"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`${r.base}/`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'root'
 		);
@@ -100,12 +100,12 @@ describe('redirects', function() {
 			await r.load('/redirect-to-external');
 		});
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`https://example.com/`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'external'
 		);
@@ -121,18 +121,18 @@ describe('redirects', function() {
 			await r.wait();
 		});
 
-		assert.equal(
+		assert.strictEqual(
 			r.page.url(),
 			`https://example.com/`
 		);
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'external'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });
