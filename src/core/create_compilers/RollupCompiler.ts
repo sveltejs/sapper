@@ -15,6 +15,7 @@ import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
 const stderr = console.error.bind(console);
+const INJECT_STYLES_ID = 'inject_styles';
 
 let rollup: any;
 
@@ -123,6 +124,20 @@ export default class RollupCompiler {
 		}
 		mod.plugins.push({
 			name: 'sapper-internal',
+			buildStart(this: PluginContext): void {
+				this.emitFile({
+					type: 'chunk',
+					id: INJECT_STYLES_ID,
+					name: INJECT_STYLES_ID,
+					preserveSignature: 'strict'
+				});
+			},
+			load(id: string) {
+				return id === INJECT_STYLES_ID ? { code: inject_styles, moduleSideEffects: 'no-treeshake' } : null;
+			},
+			resolveId(importee: string, importer: string) {
+				return importee === INJECT_STYLES_ID ? INJECT_STYLES_ID : null;
+			},
 			renderChunk(code: string, chunk: RenderedChunk) {	
 				that.chunks.push(chunk);
 			},
@@ -166,6 +181,8 @@ export default class RollupCompiler {
 					return Array.from(css_files);
 				};
 
+				const inject_styles_file = Object.keys(bundle).find(f => f.startsWith('inject_styles'));
+
 				let has_css = false;
 				for (const name in bundle) {
 					const chunk = <OutputChunk>bundle[name];
@@ -190,17 +207,13 @@ export default class RollupCompiler {
 
 						if (chunk_has_css) {
 							has_css = true;
-							chunk.code += `\nimport __inject_styles from './inject_styles.js';`;
+							chunk.code += `\nimport __inject_styles from './${inject_styles_file}';`;
 						}
 					}
 				}
 
-				if (has_css) {
-					this.emitFile({
-						type: 'asset',
-						fileName: 'inject_styles.js',
-						source: inject_styles
-					});
+				if (!has_css) {
+					delete bundle[inject_styles_file];
 				}
 
 				// Store the build dependencies so that we can create build.json
