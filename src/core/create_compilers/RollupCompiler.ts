@@ -4,12 +4,13 @@ import relative from 'require-relative';
 import { dependenciesForTree, DependencyTreeOptions } from 'rollup-dependency-tree';
 import css_chunks from 'rollup-plugin-css-chunks';
 import {
-	PluginContext,
 	NormalizedOutputOptions,
-	RenderedChunk,
-	RollupError,
 	OutputBundle,
-	OutputChunk
+	OutputChunk,
+	Plugin,
+	PluginContext,
+	RenderedChunk,
+	RollupError
 } from 'rollup';
 import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
@@ -123,7 +124,7 @@ export default class RollupCompiler {
 		if (!/[\\/]client\./.test(entry_point)) {
 			return mod;
 		}
-		mod.plugins.push({
+		const sapper_internal: Plugin = {
 			name: 'sapper-internal',
 			buildStart(this: PluginContext): void {
 				this.emitFile({
@@ -136,13 +137,14 @@ export default class RollupCompiler {
 			load(id: string) {
 				return id === INJECT_STYLES_ID ? inject_styles : null;
 			},
-			resolveId(importee: string, importer: string) {
+			resolveId(importee: string) {
 				return importee === INJECT_STYLES_ID ? INJECT_STYLES_ID : null;
 			},
 			renderChunk(code: string, chunk: RenderedChunk) {	
 				that.chunks.push(chunk);
+				return null;
 			},
-			renderDynamicImport({ format, moduleId, targetModuleId, customResolution }) {
+			renderDynamicImport({ targetModuleId }) {
 				if (targetModuleId) {
 					return {
 						left: 'Promise.all([import(',
@@ -255,7 +257,8 @@ export default class RollupCompiler {
 				}
 				that.dependencies = dependencies;
 			}
-		});
+		};
+		mod.plugins.push(sapper_internal);
 
 		return mod;
 	}
