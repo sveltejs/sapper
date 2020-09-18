@@ -1,19 +1,21 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { Query } from '@sapper/internal/shared';
+import {
+	extract_query,
+	init,
+	load_current_page,
+	select_target
+} from './router';
 import {
 	DOMComponentLoader,
 	DOMComponentModule,
 	ErrorComponent,
-	ignore,
 	components,
-	root_comp,
-	routes
+	root_comp
 } from '@sapper/internal/manifest-client';
 import {
 	HydratedTarget,
 	Target,
-	ScrollPosition,
 	Redirect,
 	Page
 } from './types';
@@ -71,69 +73,23 @@ export function set_target(element) {
 	target = element;
 }
 
-export let uid = 1;
-export function set_uid(n) {
-	uid = n;
-}
+export default function start(opts: {
+	target: Node
+}): Promise<void> {
+	set_target(opts.target);
 
-export let cid: number;
-export function set_cid(n) {
-	cid = n;
-}
+	init(initial_data.baseUrl, handle_target);
 
-const _history = typeof history !== 'undefined' ? history : {
-	pushState: (state: any, title: string, href: string) => {},
-	replaceState: (state: any, title: string, href: string) => {},
-	scrollRestoration: ''
-};
-export { _history as history };
-
-export const scroll_history: Record<string, ScrollPosition> = {};
-
-export function extract_query(search: string) {
-	const query = Object.create(null);
-	if (search.length > 0) {
-		search.slice(1).split('&').forEach(searchParam => {
-			const [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
-			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
-			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
-			else query[key] = value;
+	if (initial_data.error) {
+		return Promise.resolve().then(() => {
+			return handle_error(new URL(location.href));
 		});
 	}
-	return query;
+
+	return load_current_page();
 }
 
-export function select_target(url: URL): Target {
-	if (url.origin !== location.origin) return null;
-	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
-
-	let path = url.pathname.slice(initial_data.baseUrl.length);
-
-	if (path === '') {
-		path = '/';
-	}
-
-	// avoid accidental clashes between server routes and page routes
-	if (ignore.some(pattern => pattern.test(path))) return;
-
-	for (let i = 0; i < routes.length; i += 1) {
-		const route = routes[i];
-
-		const match = route.pattern.exec(path);
-
-		if (match) {
-			const query: Query = extract_query(url.search);
-			const part = route.parts[route.parts.length - 1];
-			const params = part.params ? part.params(match) : {};
-
-			const page = { host: location.host, path, query, params };
-
-			return { href: url.href, route, match, page };
-		}
-	}
-}
-
-export function handle_error(url: URL) {
+function handle_error(url: URL) {
 	const { host, pathname, search } = location;
 	const { session, preloaded, status, error } = initial_data;
 
@@ -162,29 +118,7 @@ export function handle_error(url: URL) {
 	render([], props, { host, path: pathname, query, params: {} });
 }
 
-export function scroll_state() {
-	return {
-		x: pageXOffset,
-		y: pageYOffset
-	};
-}
-
-export async function navigate(dest: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
-	if (id) {
-		// popstate or initial navigation
-		cid = id;
-	} else {
-		const current_scroll = scroll_state();
-
-		// clicked on a link. preserve scroll state
-		scroll_history[cid] = current_scroll;
-
-		id = cid = ++uid;
-		scroll_history[cid] = noscroll ? current_scroll : { x: 0, y: 0 };
-	}
-
-	cid = id;
-
+async function handle_target(dest: Target): Promise<void> {
 	if (root_component) stores.preloading.set(true);
 
 	const loaded = prefetching && prefetching.href === dest.href ?
@@ -203,28 +137,6 @@ export async function navigate(dest: Target, id: number, noscroll?: boolean, has
 	} else {
 		const { props, branch } = loaded_result;
 		await render(branch, props, dest.page);
-	}
-	if (document.activeElement && (document.activeElement instanceof HTMLElement)) document.activeElement.blur();
-
-	if (!noscroll) {
-		let scroll = scroll_history[id];
-
-		if (hash) {
-			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.getElementById(hash.slice(1));
-
-			if (deep_linked) {
-				scroll = {
-					x: 0,
-					y: deep_linked.getBoundingClientRect().top + scrollY
-				};
-			}
-		}
-
-		scroll_history[cid] = scroll;
-		if (scroll) {
-			redirect ? scrollTo(0, 0) : scrollTo(scroll.x, scroll.y);
-		}
 	}
 }
 
