@@ -1,11 +1,9 @@
 import {
-  ComponentConstructor,
-  DOMComponentModule,
   Preload
 } from './shared';
 
 export interface DOMComponentModule {
-  default: ComponentConstructor;
+  default: DOMComponentConstructor;
   preload?: Preload;
 }
 

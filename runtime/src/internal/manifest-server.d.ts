@@ -1,8 +1,7 @@
 import { ClientRequest, ServerResponse } from 'http';
 import { TLSSocket } from 'tls';
 import {
-  SSRComponentModule,
-  SSRComponent
+  Preload
 } from './shared';
 
 export const src_dir: string;

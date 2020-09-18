@@ -16,14 +16,14 @@ function get_sourcemap_url(contents: string) {
 
 const file_cache = new Map<string, string>();
 
-function get_file_contents(path: string) {
-	if (file_cache.has(path)) {
-		return file_cache.get(path);
+function get_file_contents(file_path: string) {
+	if (file_cache.has(file_path)) {
+		return file_cache.get(file_path);
 	}
 
 	try {
-		const data = fs.readFileSync(path, 'utf8');
-		file_cache.set(path, data);
+		const data = fs.readFileSync(file_path, 'utf8');
+		file_cache.set(file_path, data);
 		return data;
 	} catch {
 		return undefined;
@@ -34,7 +34,7 @@ export function sourcemap_stacktrace(stack: string) {
 	const replace = (line: string) =>
 		line.replace(
 			/^ {4}at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?)\)?/,
-			(input, var_name, file_path, line, column) => {
+			(input, var_name, file_path, line_num, column) => {
 				if (!file_path) return input;
 
 				const contents = get_file_contents(file_path);
@@ -72,7 +72,7 @@ export function sourcemap_stacktrace(stack: string) {
 
 				const consumer = new SourceMapConsumer(raw_sourcemap);
 				const pos = consumer.originalPositionFor({
-					line: Number(line),
+					line: Number(line_num),
 					column: Number(column),
 					bias: SourceMapConsumer.LEAST_UPPER_BOUND
 				});
