@@ -15,15 +15,16 @@ import { CompileResult } from './interfaces';
 import RollupResult from './RollupResult';
 
 const stderr = console.error.bind(console);
-const INJECT_STYLES_ID = 'inject_styles';
+const INJECT_STYLES_NAME = 'inject_styles';
+const INJECT_STYLES_ID = 'inject_styles.js';
 
 let rollup: any;
 
 const inject_styles = `
-export default files => {
-	return Promise.all(files.map(file => new Promise((fulfil, reject) => {
-		const href = new URL(file, import.meta.url);
-		let link = document.querySelector('link[rel=stylesheet][href="' + href + '"]');
+export default function(files) {
+	return Promise.all(files.map(function(file) { return new Promise(function(fulfil, reject) {
+		var href = new URL(file, import.meta.url);
+		var link = document.querySelector('link[rel=stylesheet][href="' + href + '"]');
 		if (!link) {
 			link = document.createElement('link');
 			link.rel = 'stylesheet';
@@ -33,10 +34,10 @@ export default files => {
 		if (link.sheet) {
 			fulfil();
 		} else {
-			link.onload = () => fulfil();
+			link.onload = function() { return fulfil() };
 			link.onerror = reject;
 		}
-	})));
+	})}));
 };`.trim();
 
 const get_entry_point_output_chunk = (bundle: OutputBundle, entry_point?: string) => {
@@ -128,12 +129,12 @@ export default class RollupCompiler {
 				this.emitFile({
 					type: 'chunk',
 					id: INJECT_STYLES_ID,
-					name: INJECT_STYLES_ID,
-					preserveSignature: 'strict'
+					name: INJECT_STYLES_NAME,
+					preserveSignature: 'allow-extension'
 				});
 			},
 			load(id: string) {
-				return id === INJECT_STYLES_ID ? { code: inject_styles, moduleSideEffects: 'no-treeshake' } : null;
+				return id === INJECT_STYLES_ID ? inject_styles : null;
 			},
 			resolveId(importee: string, importer: string) {
 				return importee === INJECT_STYLES_ID ? INJECT_STYLES_ID : null;
@@ -145,7 +146,7 @@ export default class RollupCompiler {
 				if (targetModuleId) {
 					return {
 						left: 'Promise.all([import(',
-						right: `), ___SAPPER_CSS_INJECTION___${Buffer.from(targetModuleId).toString('hex')}___]).then(x => x[0])`
+						right: `), ___SAPPER_CSS_INJECTION___${Buffer.from(targetModuleId).toString('hex')}___]).then(function(x) { return x[0]; })`
 					};
 				} else {
 					return {
