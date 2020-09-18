@@ -19,7 +19,7 @@ describe('ignore', function() {
 	it('respects `options.ignore` values (RegExp)', async () => {
 		await r.load('/foobar');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'foobar'
 		);
@@ -28,7 +28,7 @@ describe('ignore', function() {
 	it('respects `options.ignore` values (String #1)', async () => {
 		await r.load('/buzz');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'buzz'
 		);
@@ -37,7 +37,7 @@ describe('ignore', function() {
 	it('respects `options.ignore` values (String #2)', async () => {
 		await r.load('/fizzer');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'fizzer'
 		);
@@ -46,13 +46,13 @@ describe('ignore', function() {
 	it('respects `options.ignore` values (Function)', async () => {
 		await r.load('/hello');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'hello'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

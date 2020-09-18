@@ -51,7 +51,7 @@ describe('scroll', function() {
 		await r.page.click('[href="another-tall-page"]');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.page.evaluate(() => window.scrollY),
 			0
 		);
@@ -77,7 +77,7 @@ describe('scroll', function() {
 
 		await r.page.click('[href="another-tall-page#bar"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), 'Another tall page');
+		assert.strictEqual(await r.text('h1'), 'Another tall page');
 		const scrollY = await r.page.evaluate(() => window.scrollY);
 		assert.ok(scrollY > 0);
 	});
@@ -99,7 +99,7 @@ describe('scroll', function() {
 		await r.wait();
 		const secondScrollY = await r.page.evaluate(() => window.scrollY);
 
-		assert.equal(firstScrollY, secondScrollY);
+		assert.strictEqual(firstScrollY, secondScrollY);
 	});
 
 	it('scrolls to the top when navigating with goto', async () => {
@@ -141,6 +141,6 @@ describe('scroll', function() {
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

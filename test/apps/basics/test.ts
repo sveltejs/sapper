@@ -324,11 +324,11 @@ describe('basics', function() {
 		await r.load('/dirs/bar/xyz');
 		await r.sapper.start();
 
-		assert.equal(await r.text('h1'), 'A page');
+		assert.strictEqual(await r.text('h1'), 'A page');
 
 		await r.page.click('[href="dirs/foo/xyz"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), 'B page');
+		assert.strictEqual(await r.text('h1'), 'B page');
 	});
 
 	it('find regexp routes', async () => {
