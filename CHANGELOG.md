@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Minify and hash inject_styles.js [#1524](https://github.com/sveltejs/sapper/pull/1524)
+* Fix support for legacy browsers [#1525](https://github.com/sveltejs/sapper/pull/1525)
 
 ## 0.28.7
 
