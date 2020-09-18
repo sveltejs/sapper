@@ -20,19 +20,20 @@ import {
 	Redirect,
 	Branch,
 	Page,
-	PageContext
+	PageContext,
+	InitialData
 } from './types';
 import goto from './goto';
 import { page_store } from './stores';
 
 declare const __SAPPER__;
-export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
+export const initial_data: InitialData = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
 let ready = false;
 let root_component: InstanceType<typeof App>;
 let current_token: {};
 let root_preloaded: Promise<any>;
-let current_branch = [];
+let current_branch: Branch = [];
 let current_query = '{}';
 
 const stores = {
@@ -41,7 +42,7 @@ const stores = {
 	session: writable(initial_data && initial_data.session)
 };
 
-let $session;
+let $session: any;
 let session_dirty: boolean;
 
 stores.session.subscribe(async value => {
@@ -63,9 +64,9 @@ stores.session.subscribe(async value => {
 	}
 });
 
-export let target: Element;
-export function set_target(element) {
-	target = element;
+export let target: Node;
+export function set_target(node: Node) {
+	target = node;
 }
 
 export default function start(opts: {
@@ -79,14 +80,14 @@ export default function start(opts: {
 
 	if (initial_data.error) {
 		return Promise.resolve().then(() => {
-			return handle_error(new URL(location.href));
+			return handle_error();
 		});
 	}
 
 	return load_current_page();
 }
 
-function handle_error(url: URL) {
+function handle_error() {
 	const { host, pathname, search } = location;
 	const { session, preloaded, status, error } = initial_data;
 
@@ -246,7 +247,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			const { default: component, preload } = await load_component(components[part.i]);
 
-			let preloaded;
+			let preloaded: any;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
 					? await preload.call(preload_context, {
@@ -272,10 +273,5 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 }
 
 export function load_component(component: DOMComponentLoader): Promise<DOMComponentModule> {
-	const promises: Array<Promise<any>> = [component.js()];
-	return Promise.all(promises).then(values => values[0]);
-}
-
-function detach(node: Node) {
-	node.parentNode.removeChild(node);
+	return component.js();
 }
