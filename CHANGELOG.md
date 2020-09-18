@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Minify and hash inject_styles.js [#1524](https://github.com/sveltejs/sapper/pull/1524)
+
 ## 0.28.7
 
 * Fix a number of additional bugs with CSS handling with Rollup ([#1492](https://github.com/sveltejs/sapper/issues/1492), [#1508](https://github.com/sveltejs/sapper/pull/1508))
