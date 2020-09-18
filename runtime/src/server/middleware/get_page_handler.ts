@@ -1,12 +1,13 @@
 import { writable } from 'svelte/store';
 import fs from 'fs';
 import path from 'path';
-import cookie from 'cookie';
+import { parse } from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
+import { PreloadResult } from '@sapper/internal/shared';
 import App from '@sapper/internal/App.svelte';
 
 export function get_page_handler(
@@ -128,14 +129,14 @@ export function get_page_handler(
 
 					const cookies = Object.assign(
 						{},
-						cookie.parse(req.headers.cookie || ''),
-						cookie.parse(opts.headers.cookie || '')
+						parse(req.headers.cookie || ''),
+						parse(opts.headers.cookie || '')
 					);
 
 					const set_cookie = res.getHeader('Set-Cookie');
-					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach(str => {
-						const match = /([^=]+)=([^;]+)/.exec(<string>str);
-						if (match) cookies[match[1]] = match[2];
+					(Array.isArray(set_cookie) ? set_cookie : [set_cookie]).forEach((s: string) => {
+						const m = /([^=]+)=([^;]+)/.exec(s);
+						if (m) cookies[m[1]] = m[2];
 					});
 
 					const str = Object.keys(cookies)
@@ -153,13 +154,13 @@ export function get_page_handler(
 			}
 		};
 
-		let preloaded;
-		let match;
-		let params;
+		let preloaded: object[];
+		let match: RegExpExecArray;
+		let params: Record<string,string>;
 
 		try {
 			const root_preload = manifest.root_comp.preload || (() => {});
-			const root_preloaded = root_preload.call(preload_context, {
+			const root_preloaded: PreloadResult = root_preload.call(preload_context, {
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
@@ -168,8 +169,7 @@ export function get_page_handler(
 
 			match = error ? null : page.pattern.exec(req.path);
 
-
-			let toPreload = [root_preloaded];
+			let toPreload: PreloadResult[] = [root_preloaded];
 			if (!is_service_worker_index) {
 				toPreload = toPreload.concat(page.parts.map(part => {
 					if (!part) return null;
@@ -258,12 +258,12 @@ export function get_page_handler(
 			};
 
 			if (!is_service_worker_index) {
-				let l = 1;
+				let level_index = 1;
 				for (let i = 0; i < page.parts.length; i += 1) {
 					const part = page.parts[i];
 					if (!part) continue;
 
-					props[`level${l++}`] = {
+					props[`level${level_index++}`] = {
 						component: part.component.default,
 						props: preloaded[i + 1] || {},
 						segment: segments[i]
@@ -295,7 +295,7 @@ export function get_page_handler(
 				script += `if('serviceWorker' in navigator)navigator.serviceWorker.register('${req.baseUrl}/service-worker.js');`;
 			}
 
-			const file = [].concat(build_info.assets.main).filter(file => file && /\.js$/.test(file))[0];
+			const file = [].concat(build_info.assets.main).filter(f => f && /\.js$/.test(f))[0];
 			const main = `${req.baseUrl}/client/${file}`;
 
 			// users can set a CSP nonce using res.locals.nonce
