@@ -64,6 +64,29 @@ const get_entry_point_output_chunk = (bundle: OutputBundle, entry_point?: string
 	return entry_point_output_chunk;
 };
 
+const find_css = (chunk: RenderedChunk, bundle: OutputBundle) => {
+	const css_files = new Set<string>();
+	const visited = new Set<RenderedChunk>();
+
+	const recurse = (c: RenderedChunk) => {
+		if (visited.has(c)) return;
+		visited.add(c);
+
+		if (c.imports) {
+			c.imports.forEach(file => {
+				if (file.endsWith('.css')) {
+					css_files.add(file);
+				} else {
+					recurse(<OutputChunk>bundle[file]);
+				}
+			});
+		}
+	};
+
+	recurse(chunk);
+	return Array.from(css_files);
+};
+
 export default class RollupCompiler {
 	_: Promise<any>;
 	_oninvalid: (filename: string) => void;
@@ -124,8 +147,13 @@ export default class RollupCompiler {
 		if (!/[\\/]client\./.test(entry_point)) {
 			return mod;
 		}
-		const sapper_internal: Plugin = {
-			name: 'sapper-internal',
+
+		/**
+		 * Finds dynamic imports and rewrites them to import the component and its CSS in parallel
+		 * This is somewhat similar to rollup-plugin-hoist-import-deps in that it loads static imports as soon as possible
+		 */
+		const css_injection: Plugin = {
+			name: 'sapper-css-injection',
 			buildStart(this: PluginContext): void {
 				this.emitFile({
 					type: 'chunk',
@@ -139,10 +167,6 @@ export default class RollupCompiler {
 			},
 			resolveId(importee: string) {
 				return importee === INJECT_STYLES_ID ? INJECT_STYLES_ID : null;
-			},
-			renderChunk(code: string, chunk: RenderedChunk) {	
-				that.chunks.push(chunk);
-				return null;
 			},
 			renderDynamicImport({ targetModuleId }) {
 				if (targetModuleId) {
@@ -159,31 +183,6 @@ export default class RollupCompiler {
 			},
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
 
-				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
-
-				const find_css = (chunk: RenderedChunk) => {
-					const css_files = new Set<string>();
-					const visited = new Set<RenderedChunk>();
-
-					const recurse = (c: RenderedChunk) => {
-						if (visited.has(c)) return;
-						visited.add(c);
-
-						if (c.imports) {
-							c.imports.forEach(file => {
-								if (file.endsWith('.css')) {
-									css_files.add(file);
-								} else {
-									recurse(<OutputChunk>bundle[file]);
-								}
-							});
-						}
-					};
-
-					recurse(chunk);
-					return Array.from(css_files);
-				};
-
 				const inject_styles_file = Object.keys(bundle).find(f => f.startsWith('inject_styles'));
 
 				let has_css = false;
@@ -195,10 +194,11 @@ export default class RollupCompiler {
 					if (chunk.code) {
 						chunk.code = chunk.code.replace(/___SAPPER_CSS_INJECTION___([0-9a-f]+)___/g, (m, id) => {
 							id = Buffer.from(id, 'hex').toString();
-							const target = <OutputChunk>Object.values(bundle).find(c => !!(<OutputChunk>c).modules[id]);
+							const target = <OutputChunk>Object.values(bundle)
+								.find(c => (<OutputChunk>c).modules && (<OutputChunk>c).modules[id]);
 
 							if (target) {
-								const css_files = find_css(target);
+								const css_files = find_css(target, bundle);
 								if (css_files.length > 0) {
 									chunk_has_css = true;
 									return `__inject_styles(${JSON.stringify(css_files)})`;
@@ -218,6 +218,21 @@ export default class RollupCompiler {
 				if (!has_css) {
 					delete bundle[inject_styles_file];
 				}
+			}
+		};
+
+		/**
+		 * A read-only plugin used to gather information for the creation of the build.json manifest
+		 */
+		const sapper_internal: Plugin = {
+			name: 'sapper-internal',
+			renderChunk(code: string, chunk: RenderedChunk) {	
+				that.chunks.push(chunk);
+				return null;
+			},
+			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
+
+				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
 
 				// Store the build dependencies so that we can create build.json
 				const dependencies = {};
@@ -238,7 +253,7 @@ export default class RollupCompiler {
 
 				// We consider the dependencies of the entry chunk as well when finding the CSS in
 				// case preserveEntrySignatures is true and there are multiple chunks
-				that.css_main = find_css(entry_chunk);
+				that.css_main = find_css(entry_chunk, bundle);
 
 				// Routes dependencies
 				function add_dependencies(chunk: RenderedChunk) {
@@ -246,7 +261,7 @@ export default class RollupCompiler {
 						if (is_route(module)) {
 							const js_dependencies = js_deps(chunk,
 								{ walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
-							const css_dependencies = find_css(chunk).filter(x => !that.css_main.includes(x));
+							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main.includes(x));
 							dependencies[module] = js_dependencies.concat(css_dependencies);
 						}
 					}
@@ -258,6 +273,8 @@ export default class RollupCompiler {
 				that.dependencies = dependencies;
 			}
 		};
+
+		mod.plugins.push(css_injection);
 		mod.plugins.push(sapper_internal);
 
 		return mod;
