@@ -25,7 +25,9 @@ const inject_styles = `
 export default function(files) {
 	return Promise.all(files.map(function(file) { return new Promise(function(fulfil, reject) {
 		var href = new URL(file, import.meta.url);
-		var link = document.querySelector('link[rel=stylesheet][href="' + href + '"]');
+		var relative = ('' + href).substring(document.baseURI.length);
+		var link = document.querySelector('link[rel=stylesheet][href="' + relative + '"]')
+			|| document.querySelector('link[rel=stylesheet][href="' + href + '"]');
 		if (!link) {
 			link = document.createElement('link');
 			link.rel = 'stylesheet';
