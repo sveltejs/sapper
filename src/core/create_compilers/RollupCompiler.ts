@@ -25,7 +25,9 @@ const inject_styles = `
 export default function(files) {
 	return Promise.all(files.map(function(file) { return new Promise(function(fulfil, reject) {
 		var href = new URL(file, import.meta.url);
-		var link = document.querySelector('link[rel=stylesheet][href="' + href + '"]');
+		var relative = ('' + href).substring(document.baseURI.length);
+		var link = document.querySelector('link[rel=stylesheet][href="' + relative + '"]')
+			|| document.querySelector('link[rel=stylesheet][href="' + href + '"]');
 		if (!link) {
 			link = document.createElement('link');
 			link.rel = 'stylesheet';
@@ -226,7 +228,7 @@ export default class RollupCompiler {
 		 */
 		const sapper_internal: Plugin = {
 			name: 'sapper-internal',
-			renderChunk(code: string, chunk: RenderedChunk) {	
+			renderChunk(code: string, chunk: RenderedChunk) {
 				that.chunks.push(chunk);
 				return null;
 			},
@@ -263,7 +265,8 @@ export default class RollupCompiler {
 
 				// We consider the dependencies of the entry chunk as well when finding the CSS in
 				// case preserveEntrySignatures is true and there are multiple chunks
-				that.css_main = find_css(entry_chunk, bundle);
+				const entry_css = find_css(entry_chunk, bundle);
+				that.css_main = entry_css && entry_css.length ? entry_css : undefined;
 
 				// Routes dependencies
 				function add_dependencies(chunk: RenderedChunk) {
@@ -274,7 +277,7 @@ export default class RollupCompiler {
 							if (inject_styles_file) {
 								js_dependencies = js_dependencies.concat(inject_styles_file);
 							}
-							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main.includes(x));
+							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main || !that.css_main.includes(x));
 							dependencies[module] = js_dependencies.concat(css_dependencies);
 						}
 					}
