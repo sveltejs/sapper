@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Support preloading ES6 modules in exported pages ([#1539](https://github.com/sveltejs/sapper/pull/1539))
+
 ## 0.28.8
 
 * Minify and hash inject_styles.js ([#1524](https://github.com/sveltejs/sapper/pull/1524))
