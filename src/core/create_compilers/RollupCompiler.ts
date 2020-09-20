@@ -228,7 +228,7 @@ export default class RollupCompiler {
 		 */
 		const sapper_internal: Plugin = {
 			name: 'sapper-internal',
-			renderChunk(code: string, chunk: RenderedChunk) {	
+			renderChunk(code: string, chunk: RenderedChunk) {
 				that.chunks.push(chunk);
 				return null;
 			},
@@ -247,6 +247,16 @@ export default class RollupCompiler {
 					return Array.from(dependenciesForTree(chunk, that.chunks, opts));
 				}
 
+				// It's hacky for the plugin to have to be aware of the style injection plugin
+				// However, there doesn't appear to be any more generic way of handling it
+				// https://github.com/rollup/rollup/issues/3790
+				let inject_styles_file: string;
+				for (const key of Object.keys(bundle)) {
+					if (key.startsWith('inject_styles')) {
+						inject_styles_file = key;
+					}
+				}
+
 				// We need to handle the entry point separately
 				// If there's a single page and preserveEntrySignatures is false then Rollup will
 				// put everything in the entry point chunk (client.hash.js)
@@ -262,8 +272,11 @@ export default class RollupCompiler {
 				function add_dependencies(chunk: RenderedChunk) {
 					for (const module of Object.keys(chunk.modules)) {
 						if (is_route(module)) {
-							const js_dependencies = js_deps(chunk,
+							let js_dependencies = js_deps(chunk,
 								{ walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
+							if (inject_styles_file) {
+								js_dependencies = js_dependencies.concat(inject_styles_file);
+							}
 							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main || !that.css_main.includes(x));
 							dependencies[module] = js_dependencies.concat(css_dependencies);
 						}

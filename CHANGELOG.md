@@ -4,6 +4,7 @@
 
 * Minify and hash inject_styles.js [#1524](https://github.com/sveltejs/sapper/pull/1524)
 * Fix support for legacy browsers [#1525](https://github.com/sveltejs/sapper/pull/1525)
+* Improve performance by preloading `inject_styles.js` script [#1530](https://github.com/sveltejs/sapper/issues/1530)
 * Fix flash of unstyled content [#1531](https://github.com/sveltejs/sapper/issues/1531)
 * Fix duplicate CSS injection with both relative and absolute URLs [#1535](https://github.com/sveltejs/sapper/issues/1535)
 
