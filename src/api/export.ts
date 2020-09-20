@@ -227,9 +227,9 @@ async function _export({
 			// parse link rel=preload headers and embed them in the HTML
 			const link = parseLinkHeader(response.headers.get('Link') || '');
 			link.refs.forEach((ref: Ref) => {
-				if (ref.rel === 'preload') {
+				if (ref.rel === 'preload' || ref.rel === 'modulepreload') {
 					body = (body as string).replace('</head>',
-						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)}></head>`);
+						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)} ${ref.as === 'script' ? 'crossorigin="use-credentials"' : ''}></head>`);
 				}
 			});
 
