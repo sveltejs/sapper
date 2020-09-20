@@ -253,7 +253,8 @@ export default class RollupCompiler {
 
 				// We consider the dependencies of the entry chunk as well when finding the CSS in
 				// case preserveEntrySignatures is true and there are multiple chunks
-				that.css_main = find_css(entry_chunk, bundle);
+				const entry_css = find_css(entry_chunk, bundle);
+				that.css_main = entry_css && entry_css.length ? entry_css : undefined;
 
 				// Routes dependencies
 				function add_dependencies(chunk: RenderedChunk) {
@@ -261,7 +262,7 @@ export default class RollupCompiler {
 						if (is_route(module)) {
 							const js_dependencies = js_deps(chunk,
 								{ walk: ctx => !ctx.dynamicImport && ctx.chunk.fileName !== entry_chunk.fileName }).map(c => c.fileName);
-							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main.includes(x));
+							const css_dependencies = find_css(chunk, bundle).filter(x => !that.css_main || !that.css_main.includes(x));
 							dependencies[module] = js_dependencies.concat(css_dependencies);
 						}
 					}
