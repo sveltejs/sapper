@@ -16,7 +16,7 @@ describe('errors', function() {
 	after(() => r && r.end());
 
 	async function assertErrorPageRenders(statusCode: number) {
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			statusCode + ''
 		);
