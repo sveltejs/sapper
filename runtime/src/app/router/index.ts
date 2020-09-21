@@ -2,12 +2,12 @@ import {
 	ScrollPosition,
 	Target
 } from '../types';
-import prefetch from '../prefetch/index';
 import {
 	ignore,
 	routes
 } from '@sapper/internal/manifest-client';
 import { Query } from '@sapper/internal/shared';
+import find_anchor from './find_anchor';
 
 export let uid = 1;
 export function set_uid(n: number) {
@@ -49,7 +49,7 @@ export function init(base: string, handler: (dest: Target) => Promise<void>): vo
 	if ('scrollRestoration' in _history) {
 		_history.scrollRestoration = 'manual';
 	}
-	
+
 	// Adopted from Nuxt.js
 	// Reset scrollRestoration to auto when leaving page, allowing page reload
 	// and back-navigation from other pages to use the browser to restore the
@@ -65,10 +65,6 @@ export function init(base: string, handler: (dest: Target) => Promise<void>): vo
 
 	addEventListener('click', handle_click);
 	addEventListener('popstate', handle_popstate);
-
-	// prefetch
-	addEventListener('touchstart', trigger_prefetch);
-	addEventListener('mousemove', handle_mousemove);
 }
 
 export function extract_query(search: string) {
@@ -112,22 +108,6 @@ export function select_target(url: URL): Target {
 			return { href: url.href, route, match, page };
 		}
 	}
-}
-
-let mousemove_timeout: NodeJS.Timer;
-
-function handle_mousemove(event: MouseEvent) {
-	clearTimeout(mousemove_timeout);
-	mousemove_timeout = setTimeout(() => {
-		trigger_prefetch(event);
-	}, 20);
-}
-
-function trigger_prefetch(event: MouseEvent | TouchEvent) {
-	const a: HTMLAnchorElement = <HTMLAnchorElement>find_anchor(<Node>event.target);
-	if (!a || a.rel !== 'prefetch') return;
-
-	prefetch(a.href);
 }
 
 function handle_click(event: MouseEvent) {
@@ -176,11 +156,6 @@ function handle_click(event: MouseEvent) {
 
 function which(event: MouseEvent) {
 	return event.which === null ? event.button : event.which;
-}
-
-function find_anchor(node: Node) {
-	while (node && node.nodeName.toUpperCase() !== 'A') node = node.parentNode; // SVG <a> elements have a lowercase name
-	return node;
 }
 
 function scroll_state() {

@@ -2,10 +2,11 @@ import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
 import {
 	extract_query,
-	init,
+	init as init_router,
 	load_current_page,
 	select_target
 } from './router';
+import { get_prefetched, start as start_prefetching } from './prefetch';
 import {
 	DOMComponentLoader,
 	DOMComponentModule,
@@ -60,14 +61,6 @@ stores.session.subscribe(async value => {
 	}
 });
 
-export let prefetching: {
-	href: string;
-	promise: Promise<HydratedTarget>;
-} = null;
-export function set_prefetching(href, promise) {
-	prefetching = { href, promise };
-}
-
 export let target: Element;
 export function set_target(element) {
 	target = element;
@@ -78,7 +71,9 @@ export default function start(opts: {
 }): Promise<void> {
 	set_target(opts.target);
 
-	init(initial_data.baseUrl, handle_target);
+	init_router(initial_data.baseUrl, handle_target);
+
+	start_prefetching();
 
 	if (initial_data.error) {
 		return Promise.resolve().then(() => {
@@ -121,21 +116,17 @@ function handle_error(url: URL) {
 async function handle_target(dest: Target): Promise<void> {
 	if (root_component) stores.preloading.set(true);
 
-	const loaded = prefetching && prefetching.href === dest.href ?
-		prefetching.promise :
-		hydrate_target(dest);
-
-	prefetching = null;
+	const hydrating = get_prefetched(dest);
 
 	const token = current_token = {};
-	const loaded_result = await loaded;
-	const { redirect } = loaded_result;
+	const hydrated_target = await hydrating;
+	const { redirect } = hydrated_target;
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
 	if (redirect) {
 		await goto(redirect.location, { replaceState: true });
 	} else {
-		const { props, branch } = loaded_result;
+		const { props, branch } = hydrated_target;
 		await render(branch, props, dest.page);
 	}
 }
