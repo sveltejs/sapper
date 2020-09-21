@@ -2,7 +2,6 @@
 question: How do I use TypeScript with Sapper?
 ---
 
-The default template is currently setup only with JavaScript support, but here are some templates that community members have created with TypeScript support:
+If you're a Rollup user, you can run `node ./scripts/setupTypeScriptRollup.js`, which is provided in the template, after first starting a new project.
 
-* https://github.com/babichjacob/sapper-typescript-graphql-template
-* https://github.com/Zimtir/SENT-template
+You can also take a look at [templates that community members have created](https://github.com/sveltejs/integrations#sapper-templates-boilerplates) with TypeScript support.
