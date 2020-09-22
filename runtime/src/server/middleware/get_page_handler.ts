@@ -240,8 +240,7 @@ export function get_page_handler(
 					? error instanceof Error
 						? error
 						: { message: error, name: "PreloadError" }
-					: null,
-				status: error ? status : 200
+					: null
 			};
 
 			const props = {
@@ -255,7 +254,7 @@ export function get_page_handler(
 					session: writable(session)
 				},
 				segments: layout_segments,
-				status: pageContext.status,
+				status: error ? status : 200,
 				error: pageContext.error,
 				level0: {
 					props: preloaded[0]

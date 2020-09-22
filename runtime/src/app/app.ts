@@ -112,14 +112,14 @@ function handle_error(url: URL) {
 
 	};
 	const query = extract_query(search);
-	render([], props, { host, path: pathname, query, params: {}, error, status });
+	render([], props, { host, path: pathname, query, params: {}, error });
 }
 
 
 function buildPageContext(props: any, page: Page): PageContext {
-  const { error, status } = props;
+  const { error } = props;
 
-  return { error, status, ...page };
+  return { error, ...page };
 }
 
 async function handle_target(dest: Target): Promise<void> {
