@@ -8,9 +8,10 @@ export interface HydratedTarget {
 }
 
 export type Branch = Array<{
-  Component: DOMComponentConstructor;
-  preload: (page) => Promise<any>;
-  segment: string;
+	segment: string;
+	match?: RegExpExecArray;
+	component?: DOMComponentConstructor;
+	part?: number;
 }>;
 
 export interface ScrollPosition {
@@ -43,5 +44,4 @@ export interface Page {
 export interface PageContext extends Page {
 	/** `error` is only set when the error page is being rendered. */
 	error?: Error;
-	status: number;
 }
