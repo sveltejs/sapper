@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-* Add `error` to page store on error pages ([#1498](hhttps://github.com/sveltejs/sapper/pull/1498))
+* Add a CSP-nonce to style tag ([#1232](https://github.com/sveltejs/sapper/pull/1232))
+* Add `error` to page store on error pages ([#1498](https://github.com/sveltejs/sapper/pull/1498))
 * Support preloading ES6 modules in exported pages ([#1539](https://github.com/sveltejs/sapper/pull/1539))
 
 ## 0.28.8
