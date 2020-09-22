@@ -245,7 +245,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			segment_dirty = false;
 
-			const { default: component, preload } = await load_component(components[part.i]);
+			const { default: component, preload } = await components[part.i].js();
 
 			let preloaded: Object;
 			if (ready || !initial_data.preloaded[i + 1]) {
@@ -270,8 +270,4 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 	}
 
 	return { redirect, props, branch };
-}
-
-export function load_component(component: DOMComponentLoader): Promise<DOMComponentModule> {
-	return component.js();
 }
