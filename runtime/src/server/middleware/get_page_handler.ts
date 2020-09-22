@@ -341,7 +341,7 @@ export function get_page_handler(
 					.map(href => `<link rel="stylesheet" href="client/${href}">`)
 					.join('');
 			} else {
-				styles = (css && css.code ? `<style>${css.code}</style>` : '');
+				styles = (css && css.code ? `<style${nonce_attr}>${css.code}</style>` : '');
 			}
 
 			const body = template()
