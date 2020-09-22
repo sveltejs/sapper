@@ -153,7 +153,7 @@ async function _export({
 			if (typeof body === 'string') {
 				body = minify_html(body);
 			} else {
-				oninfo({ message: `Content of {url} has content-type text/html but the content was received as a binary buffer. The HTML will not be minified.` });
+				oninfo({ message: `Content of ${url} has content-type text/html but the content was received as a binary buffer. The HTML will not be minified.` });
 			}
 		}
 

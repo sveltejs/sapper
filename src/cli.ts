@@ -10,8 +10,8 @@ const prog = sade('sapper').version(pkg.version);
 
 if (process.argv[2] === 'start') {
 	// remove this in a future version
-	console.error(colors.bold().red(`'sapper start' has been removed`));
-	console.error(`Use 'node [build_dir]' instead`);
+	console.error(colors.bold().red('"sapper start" has been removed'));
+	console.error('Use "node [build_dir]" instead');
 	process.exit(1);
 }
 
@@ -155,7 +155,7 @@ prog.command('build [dest]')
 	.option('--routes', 'Routes directory', 'src/routes')
 	.option('--output', 'Sapper intermediate file output directory', 'src/node_modules/@sapper')
 	.option('--ext', 'Custom page route extensions (space separated)', '.svelte .html')
-	.example(`build custom-dir -p 4567`)
+	.example('build custom-dir -p 4567')
 	.action(async (dest = '__sapper__/build', opts: {
 		port: string;
 		legacy: boolean;
@@ -166,7 +166,7 @@ prog.command('build [dest]')
 		output: string;
 		ext: string;
 	}) => {
-		console.log(`> Building...`);
+		console.log('> Building...');
 
 		try {
 			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
@@ -226,7 +226,7 @@ prog.command('export [dest]')
 	}) => {
 		try {
 			if (opts.build) {
-				console.log(`> Building...`);
+				console.log('> Building...');
 				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}

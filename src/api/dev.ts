@@ -218,7 +218,7 @@ class Watcher extends EventEmitter {
 
 		const emitFatal = () => {
 			this.emit('fatal', {
-				message: `Server crashed`
+				message: 'Server crashed'
 			} as FatalEvent);
 
 			this.crashed = true;

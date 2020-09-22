@@ -13,7 +13,7 @@ export default {
 
 		output: (): OutputOptions => {
 			let dir = `${dest}/client`;
-			if (process.env.SAPPER_LEGACY_BUILD) dir += `/legacy`;
+			if (process.env.SAPPER_LEGACY_BUILD) dir += '/legacy';
 
 			return {
 				dir,

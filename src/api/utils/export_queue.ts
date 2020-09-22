@@ -30,7 +30,7 @@ type QueueOpts = {
 // determines current state of a promise
 function promiseState(p: Promise<any>) {
 	const t = {};
-	return Promise.race([p, t]).then(v => (v === t) ? "pending" : "fulfilled", () => "rejected");
+	return Promise.race([p, t]).then(v => (v === t) ? 'pending' : 'fulfilled', () => 'rejected');
 }
 
 // finds first non-pending promise in a list of promises

@@ -199,7 +199,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
 			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-				throw new Error(`Conflicting redirects`);
+				throw new Error('Conflicting redirects');
 			}
 			redirect = { statusCode, location };
 		},

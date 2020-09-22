@@ -45,7 +45,7 @@ export default function(files) {
 
 const get_entry_point_output_chunk = (bundle: OutputBundle, entry_point?: string) => {
 	if (entry_point === undefined) {
-		throw new Error("Internal error: entry_point cannot be undefined");
+		throw new Error('Internal error: entry_point cannot be undefined');
 	}
 
 	let entry_point_output_chunk: OutputChunk;

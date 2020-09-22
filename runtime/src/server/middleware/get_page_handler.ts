@@ -106,7 +106,7 @@ export function get_page_handler(
 		const preload_context = {
 			redirect: (statusCode: number, location: string) => {
 				if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-					throw new Error(`Conflicting redirects`);
+					throw new Error('Conflicting redirects');
 				}
 				location = location.replace(/^\//g, ''); // leading slash (only)
 				redirect = { statusCode, location };
@@ -239,7 +239,7 @@ export function get_page_handler(
 				error: error
 					? error instanceof Error
 						? error
-						: { message: error, name: "PreloadError" }
+						: { message: error, name: 'PreloadError' }
 					: null
 			};
 
@@ -410,7 +410,7 @@ function serialize_error(error: Error | { message: string }) {
 function escape_html(html: string) {
 	const chars: Record<string, string> = {
 		'"' : 'quot',
-		"'": '#39',
+		'\'': '#39',
 		'&': 'amp',
 		'<' : 'lt',
 		'>' : 'gt'

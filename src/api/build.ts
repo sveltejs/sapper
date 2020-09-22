@@ -46,7 +46,7 @@ export async function build({
 	static_files = path.resolve(cwd, static_files);
 
 	if (legacy && bundler === 'webpack') {
-		throw new Error(`Legacy builds are not supported for projects using webpack`);
+		throw new Error('Legacy builds are not supported for projects using webpack');
 	}
 
 	rimraf(output);
