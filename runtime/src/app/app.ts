@@ -32,7 +32,7 @@ export const initial_data: InitialData = typeof __SAPPER__ !== 'undefined' && __
 let ready = false;
 let root_component: InstanceType<typeof App>;
 let current_token: {};
-let root_preloaded: Promise<any>;
+let root_preloaded: Object | Promise<Object>;
 let current_branch: Branch = [];
 let current_query = '{}';
 
@@ -211,7 +211,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 	};
 
 	if (!root_preloaded) {
-		const root_preload = root_comp.preload || (() => {});
+		const root_preload = root_comp.preload || (() => ({}));
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,
@@ -247,7 +247,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			const { default: component, preload } = await load_component(components[part.i]);
 
-			let preloaded: any;
+			let preloaded: Object;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
 					? await preload.call(preload_context, {

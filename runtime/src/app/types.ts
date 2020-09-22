@@ -16,7 +16,7 @@ export type Branch = Array<{
 
 export type InitialData = {
 	session: any;
-	preloaded: any;
+	preloaded?: Object[];
 	status: number;
 	error: Error | { message: string };
 	baseUrl: string;
