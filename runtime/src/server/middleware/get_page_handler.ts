@@ -9,6 +9,7 @@ import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
 import { PreloadResult } from '@sapper/internal/shared';
 import App from '@sapper/internal/App.svelte';
+import { PageContext } from '@sapper/app/types';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -41,7 +42,7 @@ export function get_page_handler(
 			parts: [
 				{ name: null, component: { default: error_route } }
 			]
-		}, req, res, statusCode, error || new Error('Unknown error in preload function'));
+		}, req, res, statusCode, error || 'Unknown error');
 	}
 
 	async function handle_page(page: ManifestPage, req: Req, res: Res, status = 200, error: Error | string = null) {
@@ -230,15 +231,22 @@ export function get_page_handler(
 				error.stack = sourcemap_stacktrace(error.stack);
 			}
 
+			const pageContext: PageContext = {
+				host: req.headers.host,
+				path: req.path,
+				query: req.query,
+				params,
+				error: error
+					? error instanceof Error
+						? error
+						: { message: error, name: "PreloadError" }
+					: null
+			};
+
 			const props = {
 				stores: {
 					page: {
-						subscribe: writable({
-							host: req.headers.host,
-							path: req.path,
-							query: req.query,
-							params
-						}).subscribe
+						subscribe: writable(pageContext).subscribe
 					},
 					preloading: {
 						subscribe: writable(null).subscribe
@@ -247,7 +255,7 @@ export function get_page_handler(
 				},
 				segments: layout_segments,
 				status: error ? status : 200,
-				error: error ? error instanceof Error ? error : { message: error } : null,
+				error: pageContext.error,
 				level0: {
 					props: preloaded[0]
 				},

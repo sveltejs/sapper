@@ -4,8 +4,15 @@ export interface HydratedTarget {
 	redirect?: Redirect;
 	preload_error?: any;
 	props: any;
-	branch: Array<{ Component: DOMComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
+	branch: Branch;
 }
+
+export type Branch = Array<{
+	segment: string;
+	match?: RegExpExecArray;
+	component?: DOMComponentConstructor;
+	part?: number;
+}>;
 
 export interface ScrollPosition {
 	x: number;
@@ -29,4 +36,12 @@ export interface Page {
 	path: string;
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;
+}
+
+/**
+ * Information about the current page in the `page` store.
+ */
+export interface PageContext extends Page {
+	/** `error` is only set when the error page is being rendered. */
+	error?: Error;
 }
