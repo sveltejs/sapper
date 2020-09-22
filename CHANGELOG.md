@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Add `error` to page store on error pages ([#1498](hhttps://github.com/sveltejs/sapper/pull/1498))
 * Support preloading ES6 modules in exported pages ([#1539](https://github.com/sveltejs/sapper/pull/1539))
 
 ## 0.28.8
