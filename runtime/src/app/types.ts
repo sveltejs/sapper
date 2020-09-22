@@ -18,7 +18,7 @@ export type InitialData = {
 	session: any;
 	preloaded?: Object[];
 	status: number;
-	error: Error | { message: string };
+	error: Error;
 	baseUrl: string;
 }
 
