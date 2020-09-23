@@ -49,9 +49,10 @@ declare module "@sapper/common" {
 		path: string;
 		params: Record<string, string>;
 		query: Record<string, string | string[]>;
+		error?: Error;
 	}
 
 	export interface PreloadFunction {
-		(this: PreloadContext, page: PreloadPage, session: any): any | Promise<any>;
+		(this: PreloadContext, page: PreloadPage, session: any): object | Promise<object>;
 	}
 }
