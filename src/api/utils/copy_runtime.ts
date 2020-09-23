@@ -4,7 +4,7 @@ import { mkdirp } from './fs_utils';
 
 const runtime = [
 	'index.d.ts',
-	... fs.readdirSync(path.join(__dirname, `../runtime`)).filter(f => f.includes('.mjs')),
+	...fs.readdirSync(path.join(__dirname, '../runtime')).filter(f => f.includes('.mjs')),
 	'internal/shared.mjs',
 	'internal/layout.svelte',
 	'internal/error.svelte'
