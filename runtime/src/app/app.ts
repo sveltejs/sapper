@@ -8,8 +8,6 @@ import {
 } from './router';
 import { get_prefetched, start as start_prefetching } from './prefetch';
 import {
-	DOMComponentLoader,
-	DOMComponentModule,
 	ErrorComponent,
 	components,
 	root_comp
