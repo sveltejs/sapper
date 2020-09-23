@@ -1,7 +1,7 @@
 import {
 	ScrollPosition,
 	Target
-} from '../types';
+} from './types';
 import {
 	ignore,
 	routes

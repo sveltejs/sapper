@@ -1,4 +1,6 @@
 import { writable, Readable } from 'svelte/store';
+import { getContext } from 'svelte';
+import { CONTEXT_KEY } from '@sapper/internal/shared';
 
 /** Callback to inform of a value updates. */
 type Subscriber<T> = (value: T) => void;
@@ -45,3 +47,7 @@ export function page_store<T>(value: T): PageStore<T> {
 
 	return { notify, set, subscribe };
 }
+
+const stores = () => getContext(CONTEXT_KEY);
+
+export default stores;

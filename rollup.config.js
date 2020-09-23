@@ -4,6 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import { builtinModules } from 'module';
+import { readdirSync } from 'fs';
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
@@ -19,13 +20,22 @@ const tsOptions = {
 	}
 };
 
-function template(kind, external) {
+function template(kind, external, module) {
 	return {
-		input: `runtime/src/${kind}/index.ts`,
+		input: `runtime/src/${kind}/${module || 'index'}.ts`,
 		output: {
-			file: `runtime/${kind}.mjs`,
+			file: `runtime/${module || kind}.mjs`,
 			format: 'es',
-			paths: id => id.replace('@sapper', '.')
+			paths: id => {
+				const m = id.match(new RegExp(`runtime\\/src\\/${kind}\\/([^/]*)$`));
+
+				if (m) {
+					return './' + m[1];
+				}
+				else {
+					return id.replace('@sapper', '.');
+				}
+			}
 		},
 		external,
 		plugins: [
@@ -38,8 +48,14 @@ function template(kind, external) {
 	};
 }
 
+const clientModules = readdirSync('./runtime/src/app')
+	.filter(f => f.includes('.ts'))
+	.map(f => f.replace('.ts', ''));
+
 export default [
-	template('app', id => /^(svelte\/?|@sapper\/)/.test(id)),
+	...clientModules.map(module =>
+		template('app', id => id.startsWith('./') || /^(svelte\/?|@sapper\/)/.test(id), module)
+	),
 	template('server', id => /^(svelte\/?|@sapper\/)/.test(id) || builtinModules.includes(id)),
 
 	{
