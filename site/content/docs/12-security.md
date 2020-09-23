@@ -35,5 +35,11 @@ app.use(sapper.middleware());
 Using `res.locals.nonce` in this way follows the convention set by
 [Helmet's CSP docs](https://helmetjs.github.io/docs/csp/#generating-nonces).
 
+If a CSP nonce is set via `res.locals.nonce`, you can refer to that value via tag `%sapper.cspnonce%` in `src/template.html`. For instance:
+
+```html
+<script nonce="%sapper.cspnonce%" src="..."></script>
+```
+
 [Express]: https://expressjs.com/
 [Helmet]: https://helmetjs.github.io/
