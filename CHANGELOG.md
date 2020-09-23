@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Upgraded shimport to fix legacy browser support ([#1544](https://github.com/sveltejs/sapper/issues/1544))
 * Make CSP nonce available in template ([#1549](https://github.com/sveltejs/sapper/pull/1549))
 * Add CSP nonce to style tag ([#1232](https://github.com/sveltejs/sapper/pull/1232))
 * Add `error` to page store on error pages ([#1498](https://github.com/sveltejs/sapper/pull/1498))
