@@ -32,7 +32,7 @@ export const initial_data: InitialData = typeof __SAPPER__ !== 'undefined' && __
 let ready = false;
 let root_component: InstanceType<typeof App>;
 let current_token: {};
-let root_preloaded: Object | Promise<Object>;
+let root_preloaded: object | Promise<object>;
 let current_branch: Branch = [];
 let current_query = '{}';
 
@@ -247,7 +247,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			const { default: component, preload } = await components[part.i].js();
 
-			let preloaded: Object;
+			let preloaded: object;
 			if (ready || !initial_data.preloaded[i + 1]) {
 				preloaded = preload
 					? await preload.call(preload_context, {
