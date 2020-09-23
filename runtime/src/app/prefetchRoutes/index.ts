@@ -1,5 +1,4 @@
 import { components, routes } from '@sapper/internal/manifest-client';
-import { load_component } from '../app';
 
 export default function prefetchRoutes(pathnames: string[]): Promise<void> {
 	return routes
@@ -8,6 +7,6 @@ export default function prefetchRoutes(pathnames: string[]): Promise<void> {
 			: () => true
 		)
 		.reduce((promise: Promise<any>, route) => promise.then(() => {
-			return Promise.all(route.parts.map(part => part && load_component(components[part.i])));
+			return Promise.all(route.parts.map(part => part && components[part.i].js()));
 		}), Promise.resolve());
 }

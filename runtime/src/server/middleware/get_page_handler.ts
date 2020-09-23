@@ -386,7 +386,7 @@ function read_template(dir = build_dir) {
 	return fs.readFileSync(`${dir}/template.html`, 'utf-8');
 }
 
-function try_serialize(data: any, fail?: (err) => void) {
+function try_serialize(data: any, fail?: (err: Error) => void) {
 	try {
 		return devalue(data);
 	} catch (err) {
@@ -396,7 +396,7 @@ function try_serialize(data: any, fail?: (err) => void) {
 }
 
 // Ensure we return something truthy so the client will not re-render the page over the error
-function serialize_error(error: Error | { message: string }) {
+function serialize_error(error: Error) {
 	if (!error) return null;
 	let serialized = try_serialize(error);
 	if (!serialized) {

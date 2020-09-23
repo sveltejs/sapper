@@ -14,6 +14,14 @@ export type Branch = Array<{
 	part?: number;
 }>;
 
+export type InitialData = {
+	session: any;
+	preloaded?: object[];
+	status: number;
+	error: Error;
+	baseUrl: string;
+}
+
 export interface ScrollPosition {
 	x: number;
 	y: number;
