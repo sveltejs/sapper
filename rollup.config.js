@@ -5,6 +5,7 @@ import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import { builtinModules } from 'module';
 import { readdirSync } from 'fs';
+import { sep } from 'path';
 
 const external = [].concat(
 	Object.keys(pkg.dependencies),
@@ -27,7 +28,7 @@ function template(kind, external, module) {
 			file: `runtime/${module || kind}.mjs`,
 			format: 'es',
 			paths: id => {
-				const m = id.match(new RegExp(`runtime\\/src\\/${kind}\\/([^/]*)$`));
+				const m = id.match(new RegExp(`runtime\\${sep}src\\${sep}${kind}\\${sep}([^\\${sep}]*)$`));
 
 				if (m) {
 					return './' + m[1];
