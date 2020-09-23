@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-* Add a CSP-nonce to style tag ([#1232](https://github.com/sveltejs/sapper/pull/1232))
+* Make CSP nonce available in template ([#1549](https://github.com/sveltejs/sapper/pull/1549))
+* Add CSP nonce to style tag ([#1232](https://github.com/sveltejs/sapper/pull/1232))
 * Add `error` to page store on error pages ([#1498](https://github.com/sveltejs/sapper/pull/1498))
 * Support preloading ES6 modules in exported pages ([#1539](https://github.com/sveltejs/sapper/pull/1539))
 
