@@ -79,7 +79,10 @@ const find_css = (chunk: RenderedChunk, bundle: OutputBundle) => {
 				if (file.endsWith('.css')) {
 					css_files.add(file);
 				} else {
-					recurse(<OutputChunk>bundle[file]);
+					const imported_chunk = <OutputChunk>bundle[file];
+					if (imported_chunk) {
+						recurse(imported_chunk);
+					}
 				}
 			});
 		}
