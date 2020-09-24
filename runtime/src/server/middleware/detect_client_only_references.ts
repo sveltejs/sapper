@@ -18,7 +18,7 @@ function convertThrownError<T>(fn: () => T, convertError: (error: any) => Error)
  * If the code executing in fn() tries to access `window` or `document`, throw
  * an explanatory error. Also works if fn() is async.
  */
-export default function protectBrowserGlobals<T>(fn: () => T): T {
+export default function detectClientOnlyReferences<T>(fn: () => T): T {
 	return convertThrownError(fn, e => {
 		const m = e.message.match('(document|window) is not defined');
 
