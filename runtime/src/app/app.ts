@@ -209,7 +209,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 	};
 
 	if (!root_preloaded) {
-		const root_preload = root_comp.preload || (() => ({}));
+		const { preload: root_preload = (() => ({})) } = root_comp;
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,
