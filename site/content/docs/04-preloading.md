@@ -29,8 +29,9 @@ The following code shows how to load a blog post and passs it to the page in the
 </script>
 
 <h1>{article.title}</h1>
-
 ```
+
+The [routing section](docs#Routing) describes how the dynamic parameter `slug` works.
 
 It should be defined in a `context="module"` script since it is not part of the component instance itself – it runs before the component has been created. See the [tutorial](https://svelte.dev/tutorial/module-exports) for more on the module context.
 
