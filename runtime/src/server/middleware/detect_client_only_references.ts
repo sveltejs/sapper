@@ -23,7 +23,7 @@ export default function detectClientOnlyReferences<T>(fn: () => T): T {
 		const m = e.message.match('(document|window) is not defined');
 
 		if (m && e.name === 'ReferenceError') {
-			e.message = `Server-side code is attempting to access the global variable "${m[1]}", which is client only. See https://sapper.svelte.dev/docs/#Making_a_component_SSR_compatible`;
+			e.message = `Server-side code is attempting to access the global variable "${m[1]}", which is client only. See https://sapper.svelte.dev/docs/#Server-side_rendering`;
 		}
 
 		return e;
