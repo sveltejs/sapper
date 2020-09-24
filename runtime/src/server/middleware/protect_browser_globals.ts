@@ -1,54 +1,16 @@
-function createProtectedBrowserGlobal(name: string) {
-	return new Proxy(
-		{},
-		{
-			get: () => {
-				const e = new Error(
-					`Server-side code is attempting to access the global variable "${name}", which is client only. See https://sapper.svelte.dev/docs/#Making_a_component_SSR_compatible`
-				);
-				e.name = 'IllegalAccessError';
-
-				throw e;
-			}
-		}
-	);
-}
-
-const protectedDocument = createProtectedBrowserGlobal('document');
-const protectedWindow = createProtectedBrowserGlobal('window');
-
-function afterPromise<T>(promise: Promise<T>, onAfter: () => void): Promise<T> {
-	return promise.then(
-		result => {
-			onAfter();
-
-			return result;
-		},
-		e => {
-			onAfter();
-
-			throw e;
-		}
-	) as any;
-}
-
-function after<T>(fn: () => T, onAfter: () => void): T {
-	let isSync = true;
-
+function convertThrownError<T>(fn: () => T, convertError: (error: any) => Error): T {
 	try {
 		const result = fn();
 
 		if (result instanceof Promise) {
-			isSync = false;
-
-			return afterPromise(result, onAfter) as any;
+			return result.catch(e => {
+				throw convertError(e);
+			}) as any;
 		} else {
 			return result;
 		}
-	} finally {
-		if (isSync) {
-			onAfter();
-		}
+	} catch (e) {
+		throw convertError(e);
 	}
 }
 
@@ -57,16 +19,13 @@ function after<T>(fn: () => T, onAfter: () => void): T {
  * an explanatory error. Also works if fn() is async.
  */
 export default function protectBrowserGlobals<T>(fn: () => T): T {
-	const oldDocument = global['document'];
-	const oldWindow = global['window'];
+	return convertThrownError(fn, e => {
+		const m = e.message.match('(document|window) is not defined');
 
-	global['document'] = protectedDocument;
-	global['window'] = protectedWindow;
+		if (m && e.name === 'ReferenceError') {
+			e.message = `Server-side code is attempting to access the global variable "${m[1]}", which is client only. See https://sapper.svelte.dev/docs/#Making_a_component_SSR_compatible`;
+		}
 
-	function restore() {
-		global['document'] = oldDocument;
-		global['window'] = oldWindow;
-	}
-
-	return after(fn, restore);
+		return e;
+	});
 }
