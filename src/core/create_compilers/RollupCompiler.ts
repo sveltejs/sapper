@@ -29,7 +29,7 @@ export default function(files) {
 
 		if (!baseURI) {
 			var baseTags = document.getElementsByTagName('base');
-			baseURI = baseTags.length ? baseTags[0].href : document.URI;
+			baseURI = baseTags.length ? baseTags[0].href : document.URL;
 		}
 
 		var relative = ('' + href).substring(baseURI.length);
