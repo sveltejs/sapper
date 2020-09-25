@@ -1,13 +1,13 @@
 # sapper changelog
 
-## Unreleased
+## 0.28.9
 
+* Support preloading ES6 modules in exported pages ([#919](https://github.com/sveltejs/sapper/issues/919))
+* Add `error` to `$page` store on error pages ([#948](https://github.com/sveltejs/sapper/issues/948))
 * Add `document.baseURI` fallback for legacy browsers ([#1034](https://github.com/sveltejs/sapper/issues/1034), [#1561](https://github.com/sveltejs/sapper/issues/1561))
-* Upgraded shimport to fix legacy browser support ([#1544](https://github.com/sveltejs/sapper/issues/1544))
-* Make CSP nonce available in template ([#1549](https://github.com/sveltejs/sapper/pull/1549))
-* Add CSP nonce to style tag ([#1232](https://github.com/sveltejs/sapper/pull/1232))
-* Add `error` to page store on error pages ([#1498](https://github.com/sveltejs/sapper/pull/1498))
-* Support preloading ES6 modules in exported pages ([#1539](https://github.com/sveltejs/sapper/pull/1539))
+* Add CSP nonce to `<style>` tag ([#1231](https://github.com/sveltejs/sapper/issues/1231))
+* Make CSP nonce available in template ([#1248](https://github.com/sveltejs/sapper/issues/1248))
+* Upgrade shimport to fix legacy browser support ([#1544](https://github.com/sveltejs/sapper/issues/1544))
 
 ## 0.28.8
 
