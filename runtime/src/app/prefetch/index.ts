@@ -2,6 +2,7 @@ import { hydrate_target } from '../app';
 import { select_target } from '../router';
 import find_anchor from '../router/find_anchor';
 import { HydratedTarget, Target } from '../types';
+import { get_base_uri } from '../baseuri_helper';
 
 let prefetching: {
 	href: string;
@@ -16,7 +17,7 @@ export function start() {
 }
 
 export default function prefetch(href: string) {
-	const target = select_target(new URL(href, document.baseURI));
+	const target = select_target(new URL(href, get_base_uri(document)));
 
 	if (target) {
 		if (!prefetching || href !== prefetching.href) {
