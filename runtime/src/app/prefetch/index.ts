@@ -17,7 +17,7 @@ export function start() {
 }
 
 export default function prefetch(href: string) {
-	const target = select_target(new URL(href, get_base_uri()));
+	const target = select_target(new URL(href, get_base_uri(document)));
 
 	if (target) {
 		if (!prefetching || href !== prefetching.href) {
