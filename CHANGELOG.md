@@ -1,5 +1,9 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix the service worker requesting non-existent file when `emitCss: false` ([#1559](https://github.com/sveltejs/sapper/issues/1559))
+
 ## 0.28.9
 
 * Support preloading ES6 modules in exported pages ([#919](https://github.com/sveltejs/sapper/issues/919))
