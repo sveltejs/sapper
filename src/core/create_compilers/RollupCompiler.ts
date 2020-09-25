@@ -238,16 +238,7 @@ export default class RollupCompiler {
 		 */
 		const sapper_internal: Plugin = {
 			name: 'sapper-internal',
-			renderChunk(code: string, chunk: RenderedChunk) {
-				that.chunks.push(chunk);
-				return null;
-			},
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
-
-				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
-
-				// Store the build dependencies so that we can create build.json
-				const dependencies = {};
 
 				function is_route(file_path: string) {
 					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_') && !file_path.endsWith('.css');
@@ -256,6 +247,14 @@ export default class RollupCompiler {
 				function js_deps(chunk: RenderedChunk, opts?: DependencyTreeOptions) {
 					return Array.from(dependenciesForTree(chunk, that.chunks, opts));
 				}
+
+				// Store the chunks for later use
+				Object.values(bundle)
+					.filter(c => c.type === 'chunk')
+					.forEach(c => that.chunks.push(<OutputChunk>c));
+						
+				// Store the build dependencies so that we can create build.json
+				const dependencies = {};
 
 				// It's hacky for the plugin to have to be aware of the style injection plugin
 				// However, there doesn't appear to be any more generic way of handling it
@@ -271,6 +270,7 @@ export default class RollupCompiler {
 				// If there's a single page and preserveEntrySignatures is false then Rollup will
 				// put everything in the entry point chunk (client.hash.js)
 				// In that case we can't look it up by route, but still want to include it
+				const entry_chunk = get_entry_point_output_chunk(bundle, entry_point);
 				that.js_main = entry_chunk.fileName;
 
 				// We consider the dependencies of the entry chunk as well when finding the CSS in
