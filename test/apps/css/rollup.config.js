@@ -22,7 +22,8 @@ export default {
 				emitCss: true
 			}),
 			resolve()
-		]
+		],
+		preserveEntrySignatures: false
 	},
 
 	server: {
@@ -41,7 +42,8 @@ export default {
 				preferBuiltins: true
 			})
 		],
-		external: ['sirv', 'polka']
+		external: ['sirv', 'polka'],
+		preserveEntrySignatures: 'strict'
 	},
 
 	serviceworker: {
@@ -53,6 +55,7 @@ export default {
 				'process.browser': true,
 				'process.env.NODE_ENV': JSON.stringify(mode)
 			})
-		]
+		],
+		preserveEntrySignatures: false
 	}
 };

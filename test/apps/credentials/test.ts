@@ -22,7 +22,7 @@ describe('credentials', function() {
 	it('sends cookies when using this.fetch with credentials: "include"', async () => {
 		await r.load('/credentials?creds=include&type=cookie');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'a: 1, b: 2, max-age: undefined'
 		);
@@ -31,7 +31,7 @@ describe('credentials', function() {
 	it('does not send cookies when using this.fetch with credentials: "omit"', async () => {
 		await r.load('/credentials?creds=omit&type=cookie');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'unauthorized'
 		);
@@ -40,7 +40,7 @@ describe('credentials', function() {
 	it('sends cookies to same origin when using this.fetch without credentials', async () => {
 		await r.load('/credentials?type=cookie');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'a: 1, b: 2, max-age: undefined'
 		);
@@ -52,7 +52,7 @@ describe('credentials', function() {
 	it('sends authorization when using this.fetch with credentials: "include"', async () => {
 		await r.load('/credentials?creds=include&type=authorization');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'my-auth'
 		);
@@ -61,7 +61,7 @@ describe('credentials', function() {
 	it('does not send authorization when using this.fetch with credentials: "omit"', async () => {
 		await r.load('/credentials?creds=omit&type=authorization');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'unauthorized'
 		);
@@ -70,7 +70,7 @@ describe('credentials', function() {
 	it('sends authorization to same origin when using this.fetch without credentials', async () => {
 		await r.load('/credentials?type=authorization');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'my-auth'
 		);
@@ -86,13 +86,13 @@ describe('credentials', function() {
 		await r.page.click('#cookie');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'a: 1, b: 2, max-age: undefined'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

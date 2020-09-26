@@ -214,11 +214,11 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, routes, dest, true);
 
 		const emitFatal = () => {
 			this.emit('fatal', {
-				message: `Server crashed`
+				message: 'Server crashed'
 			} as FatalEvent);
 
 			this.crashed = true;
@@ -333,8 +333,6 @@ class Watcher extends EventEmitter {
 			handle_result: (result: CompileResult) => {
 				fs.writeFileSync(
 					path.join(dest, 'build.json'),
-
-					// TODO should be more explicit that to_json has effects
 					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
 				);
 

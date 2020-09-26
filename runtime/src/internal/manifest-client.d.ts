@@ -1,11 +1,9 @@
 import {
-  ComponentConstructor,
-  DOMComponentModule,
   Preload
 } from './shared';
 
 export interface DOMComponentModule {
-  default: ComponentConstructor;
+  default: DOMComponentConstructor;
   preload?: Preload;
 }
 
@@ -19,8 +17,7 @@ export interface DOMComponentConstructor {
 }
 
 export interface DOMComponentLoader {
-  js: () => Promise<DOMComponentModule>,
-  css: string[]
+  js: () => Promise<DOMComponentModule>
 }
 
 export interface Route {

@@ -19,7 +19,7 @@ describe('export w/o serviceworker', function() {
 
 		assert.ok(client_assets.length > 0);
 
-		assert.deepEqual(non_client_assets.sort(), [
+		assert.deepStrictEqual(non_client_assets.sort(), [
 			'global.css',
 			'index.html',
 		].sort());

@@ -4,7 +4,7 @@ import * as api from '../../../api';
 import { readFileSync } from 'fs';
 
 describe('export', function() {
-	this.timeout(10000);
+	this.timeout(20000);
 
 	// hooks
 	before('build app', () => api.build({ cwd: __dirname }));
@@ -28,7 +28,7 @@ describe('export', function() {
 			}
 		}
 
-		assert.deepEqual(non_client_assets.sort(), [
+		assert.deepStrictEqual(non_client_assets.sort(), [
 			'blog.json',
 			'blog/bar.json',
 			'blog/bar/index.html',
@@ -45,6 +45,7 @@ describe('export', function() {
 			'img/example-192.png',
 			'img/example-512.png',
 			'pdfs/test.pdf',
+			'manifest.json',
 			...boom
 		].sort());
 	});

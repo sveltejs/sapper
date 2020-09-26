@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('errors', function() {
 	this.timeout(10000);
@@ -16,14 +15,23 @@ describe('errors', function() {
 
 	after(() => r && r.end());
 
+	async function assertErrorPageRenders(statusCode: number) {
+		assert.strictEqual(
+			await r.text('h1'),
+			statusCode + ''
+		);
+
+		assert.ok(
+			await r.page.$eval(".error-layout", (el) => !!el),
+			"Layout did not get error in page store"
+		);
+	}
+
 	// tests
 	it('handles missing route on server', async () => {
 		await r.load('/nope');
 
-		assert.equal(
-			await r.text('h1'),
-			'404'
-		);
+		await assertErrorPageRenders(404);
 	});
 
 	it('handles missing route on client', async () => {
@@ -33,19 +41,13 @@ describe('errors', function() {
 		await r.page.click('[href="nope"]');
 		await r.wait();
 
-		assert.equal(
-			await r.text('h1'),
-			'404'
-		);
+		await assertErrorPageRenders(404);
 	});
 
 	it('handles explicit 4xx on server', async () => {
 		await r.load('/blog/nope');
 
-		assert.equal(
-			await r.text('h1'),
-			'404'
-		);
+		await assertErrorPageRenders(404);
 	});
 
 	it('handles explicit 4xx on client', async () => {
@@ -56,19 +58,13 @@ describe('errors', function() {
 		await r.page.click('[href="blog/nope"]');
 		await r.wait();
 
-		assert.equal(
-			await r.text('h1'),
-			'404'
-		);
+		await assertErrorPageRenders(404);
 	});
 
 	it('handles error on server', async () => {
 		await r.load('/throw');
 
-		assert.equal(
-			await r.text('h1'),
-			'500'
-		);
+		await assertErrorPageRenders(500);
 	});
 
 	it('display correct stack trace sequences on server error referring to source file', async () => {
@@ -88,35 +84,37 @@ describe('errors', function() {
 		await r.page.click('[href="throw"]');
 		await r.wait();
 
-		assert.equal(
-			await r.text('h1'),
-			'500'
-		);
+		await assertErrorPageRenders(500);
+
+		const didLayoutGetError = await r.page.$eval('.error-layout', (el) => el);
+
+		assert.ok(didLayoutGetError);
 	});
 
 	it('does not replace server side rendered error', async () => {
 		await r.load('/preload-reject');
 		await r.sapper.start();
 
-		assert.equal(
-			await r.text('h1'),
-			'500'
-		);
+		await assertErrorPageRenders(500);
 	});
 
 	it('does not serve error page for explicit non-page errors', async () => {
 		await r.load('/nope.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'nope'
 		);
+
+		const didLayoutGetError = await r.page.$$eval('.error-layout', (els) => els.length > 0);
+
+		assert.equal(didLayoutGetError, false);
 	});
 
 	it('does not serve error page for thrown non-page errors', async () => {
 		await r.load('/throw.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'oops'
 		);
@@ -126,7 +124,7 @@ describe('errors', function() {
 		await r.load('/some-throw-page');
 		await r.sapper.start();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h2'),
 			'success'
 		);
@@ -135,7 +133,7 @@ describe('errors', function() {
 	it('does not serve error page for async non-page error', async () => {
 		await r.load('/async-throw.json');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('body'),
 			'oops'
 		);
@@ -148,14 +146,14 @@ describe('errors', function() {
 
 		await r.page.click('[href="enhance-your-calm"]');
 		await r.wait();
-		assert.equal(await r.text('h1'), '420');
+		assert.strictEqual(await r.text('h1'), '420');
 
 		await r.page.goBack();
 		await r.wait();
-		assert.equal(await r.text('h1'), 'No error here');
+		assert.strictEqual(await r.text('h1'), 'No error here');
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

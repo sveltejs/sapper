@@ -30,7 +30,7 @@ type QueueOpts = {
 // determines current state of a promise
 function promiseState(p: Promise<any>) {
 	const t = {};
-	return Promise.race([p, t]).then(v => (v === t) ? "pending" : "fulfilled", () => "rejected");
+	return Promise.race([p, t]).then(v => (v === t) ? 'pending' : 'fulfilled', () => 'rejected');
 }
 
 // finds first non-pending promise in a list of promises
@@ -88,8 +88,7 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 
 		// move urls from urls queue and into fetching queue until fetching queue is full
 		while (fetching.length < concurrent && urls.length) {
-			const url = urls.shift();
-			addToQueue(handleFetch(url, fetchOpts), fetching);
+			addToQueue(handleFetch(urls.shift(), fetchOpts), fetching);
 		}
 
 		if (urls.length === 0 && saving.length === 0 && fetching.length === 0) {
@@ -100,8 +99,8 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 	}
 
 	return {
-		add: (url: URL) => {
-			urls.push(url);
+		add: (u: URL) => {
+			urls.push(u);
 			return processQueue();
 		},
 		addSave: (p: Promise<any>) => {

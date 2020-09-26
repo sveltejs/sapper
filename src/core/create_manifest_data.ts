@@ -9,7 +9,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 	// TODO remove in a future version
 	if (!fs.existsSync(cwd)) {
-		throw new Error(`As of Sapper 0.21, the routes/ directory should become src/routes/`);
+		throw new Error('As of Sapper 0.21, the routes/ directory should become src/routes/');
 	}
 
 	function find_layout(file_name: string, component_name: string, dir: string = '') {

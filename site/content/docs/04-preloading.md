@@ -74,9 +74,7 @@ To fix this, Sapper provides `this.fetch`, which works on the server as well as 
 ```html
 <script context="module">
 	export async function preload() {
-		const res = await this.fetch(`secret-data.json`, {
-			credentials: 'include'
-		});
+		const res = await this.fetch(`server-route.json`);
 
 		// ...
 	}
@@ -84,7 +82,7 @@ To fix this, Sapper provides `this.fetch`, which works on the server as well as 
 ```
 
 It is important to note that `preload` may run on either the server or in the client browser. Code called inside `preload` blocks:
-  - should run on the same domain as any upstream API servers requiring credentials; otherwise, `credentials: 'include'` cannot guarantee access to 3rd party session cookies
+  - should run on the same domain as any upstream API servers requiring credentials
   - should not reference `window`, `document` or any browser-specific objects
   - should not reference any API keys or secrets, which will be exposed to the client
 

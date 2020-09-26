@@ -93,6 +93,7 @@ This file is a template for responses from the server. Sapper will inject conten
 * `%sapper.head%` — HTML representing page-specific `<head>` contents, like `<title>`
 * `%sapper.html%` — HTML representing the body of the page being rendered
 * `%sapper.scripts%` — script tags for the client-side app
+* `%sapper.cspnonce%` — CSP nonce taken from `res.locals.nonce` (see [Content Security Policy (CSP)](docs#Content_Security_Policy_CSP))
 
 
 ### src/routes

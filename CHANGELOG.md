@@ -2,14 +2,69 @@
 
 ## Unreleased
 
-* Provide TypeScript declarations ([#1402](https://github.com/sveltejs/sapper/pull/1402))
-* Fix exporting server routes which return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
+* Fix the service worker requesting non-existent file when `emitCss: false` ([#1559](https://github.com/sveltejs/sapper/issues/1559))
+
+## 0.28.9
+
+* Support preloading ES6 modules in exported pages ([#919](https://github.com/sveltejs/sapper/issues/919))
+* Add `error` to `$page` store on error pages ([#948](https://github.com/sveltejs/sapper/issues/948))
+* Add `document.baseURI` fallback for legacy browsers ([#1034](https://github.com/sveltejs/sapper/issues/1034), [#1561](https://github.com/sveltejs/sapper/issues/1561))
+* Add CSP nonce to `<style>` tag ([#1231](https://github.com/sveltejs/sapper/issues/1231))
+* Make CSP nonce available in template ([#1248](https://github.com/sveltejs/sapper/issues/1248))
+* Upgrade shimport to fix legacy browser support ([#1544](https://github.com/sveltejs/sapper/issues/1544))
+
+## 0.28.8
+
+* Minify and hash inject_styles.js ([#1524](https://github.com/sveltejs/sapper/pull/1524))
+* Fix support for legacy browsers ([#1525](https://github.com/sveltejs/sapper/pull/1525))
+* Improve performance by preloading `inject_styles.js` script ([#1530](https://github.com/sveltejs/sapper/issues/1530))
+* Fix flash of unstyled content ([#1531](https://github.com/sveltejs/sapper/issues/1531))
+* Fix duplicate CSS injection with both relative and absolute URLs ([#1535](https://github.com/sveltejs/sapper/issues/1535))
+
+## 0.28.7
+
+* Fix a number of additional bugs with CSS handling with Rollup ([#1492](https://github.com/sveltejs/sapper/issues/1492), [#1508](https://github.com/sveltejs/sapper/pull/1508))
+
+## 0.28.6
+
+* Fix CSS handling with Rollup when dynamically imported styles are also statically imported elsewhere ([#1493](https://github.com/sveltejs/sapper/issues/1493))
+
+## 0.28.5
+
+* Fix CSS handling with Rollup when one route imports another ([#1486](https://github.com/sveltejs/sapper/issues/1486))
+
+## 0.28.4
+
+* Fix webpack CSS support ([#1454](https://github.com/sveltejs/sapper/issues/1454))
+* Protect against undefined value in Rollup CSS handling ([#1466](https://github.com/sveltejs/sapper/issues/1466))
+* Reset scroll position to top after `this.redirect()` in `preload()` ([#1470](https://github.com/sveltejs/sapper/issues/1470))
+* Fix inclusion of CSS on error page for Rollup apps ([#1472](https://github.com/sveltejs/sapper/issues/1472))
+
+## 0.28.3
+
+* Allow default link behavior when Alt is pressed ([#1372](https://github.com/sveltejs/sapper/pull/1372))
+* Fix various bugs with asset handling ([#1446](https://github.com/sveltejs/sapper/issues/1446), [#1447](https://github.com/sveltejs/sapper/issues/1447), [#1448](https://github.com/sveltejs/sapper/issues/1448))
+* Revert change in 0.28.1 to dev reload server when serving over HTTPS ([#1453](https://github.com/sveltejs/sapper/pull/1453))
+
+## 0.28.2
+
+* Fix updating styles upon dev mode reloads ([#1439](https://github.com/sveltejs/sapper/pull/1439))
+* Fix race condition with Rollup in dev mode ([#1440](https://github.com/sveltejs/sapper/issues/1440))
+* Follow `<link href>` when crawling site during export ([#1444](https://github.com/sveltejs/sapper/pull/1444))
+
+## 0.28.1
+
+* Apply source map to stack traces ([#117](https://github.com/sveltejs/sapper/issues/117))
+* Add support for vanilla Node `http` server ([#923](https://github.com/sveltejs/sapper/issues/923))
+* Fix exporting server routes that return binary files ([#1103](https://github.com/sveltejs/sapper/issues/1103))
 * Follow `<img src>`, `<source src>`, and `<source srcset>` when crawling site during export ([#1104](https://github.com/sveltejs/sapper/issues/1104))
-* Apply source map to stack traces ([#1357](https://github.com/sveltejs/sapper/pull/1357))
-* Improved https support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
-* Improved script `preload` support for Rollup by upgrading `rollup-dependency-tree` ([#1389](https://github.com/sveltejs/sapper/pull/1389))
-* Added CSP nonce support for Webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
 * Export `service-worker-index.html` only when `service-worker.js` exists ([#1291](https://github.com/sveltejs/sapper/pull/1291))
+* Improved HTTPS support ([#1358](https://github.com/sveltejs/sapper/pull/1358), [#1379](https://github.com/sveltejs/sapper/pull/1379))
+* Provide TypeScript declarations ([#1381](https://github.com/sveltejs/sapper/issues/1381))
+* Fix creation of CSS files with duplicate content when using Rollup ([#1397](https://github.com/sveltejs/sapper/issues/1397))
+* Improved script `preload` support for Rollup ([#1415](https://github.com/sveltejs/sapper/pull/1415))
+* Fix hash in CSS filenames with Rollup ([#1388](https://github.com/sveltejs/sapper/issues/1388))
+* Added CSP nonce support for webpack scripts ([#1395](https://github.com/sveltejs/sapper/pull/1395))
 
 ## 0.28.0
 
