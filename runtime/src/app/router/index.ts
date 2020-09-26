@@ -134,8 +134,8 @@ function handle_click(event: MouseEvent) {
 
 	// Ignore if tag has
 	// 1. 'download' attribute
-	// 2. rel='external' attribute
-	if (a.hasAttribute('download') || a.getAttribute('rel') === 'external') return;
+	// 2. 'sapper:external' attribute
+	if (a.hasAttribute('download') || a.hasAttribute('sapper:external')) return;
 
 	// Ignore if <a> has a target
 	if (svg ? (<SVGAElement>a).target.baseVal : a.target) return;
