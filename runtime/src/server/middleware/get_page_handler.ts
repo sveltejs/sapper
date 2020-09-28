@@ -27,7 +27,7 @@ export function get_page_handler(
 
 	const { pages, error: error_route } = manifest;
 
-	function bail(res: Res, err: Error|string) {
+	function bail(res: Res, err: Error | string) {
 		console.error(err);
 
 		const message = dev ? escape_html(typeof err === 'string' ? err : err.message) : 'Internal server error';
