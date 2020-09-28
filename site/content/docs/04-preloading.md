@@ -10,7 +10,7 @@ Preload is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` 
 
 Note that `preload` will run both on the server side and on the client side. It may therefore not reference any APIs only present in the browser.
 
-The following code shows how to load a blog post and passs it to the page in the `article` prop:
+The following code shows how to load a blog post and pass it to the page in the `article` prop:
 
 ```html
 <script context="module">
