@@ -2,9 +2,7 @@
 title: Server-side rendering
 ---
 
-Sapper will render any component on the server side and send it to the client as HTML. It will then run the component again on the client side to allow it to update based on dynamic data. This is known as "hydration."
-
-Server-side rendering makes the page load faster and allows search engines to index it, but it does add some complexity, primarily that you need to ensure that components can run both on the client and server side.
+Sapper will render any component first on the server side and send it to the client as HTML. It will then run the component again on the client side to allow it to update based on dynamic data. This means you need to ensure that components can run both on the client and server side.
 
 If, for example, your components try to access the global variables `document` or `window`, this will result in an error when the page is pre-rendered on the server side.
 
