@@ -55,5 +55,5 @@ This will scaffold a new project in the `my-app` directory, install its dependen
 Sapper supports TypeScript. If you are using the template with Rollup as described in "Getting started" you can convert your project to TypeScript simply by running:
 
 ```bash
-node scripts/setupTypeScriptRollup.js
+node scripts/setupTypeScript.js
 ```
