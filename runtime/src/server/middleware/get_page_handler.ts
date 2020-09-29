@@ -213,8 +213,7 @@ export function get_page_handler(
 			if (preload_error) {
 				if (!error) {
 					handle_error(req, res, preload_error.statusCode, preload_error.message);
-				}
-				else {
+				} else {
 					bail(res, preload_error.message);
 				}
 
