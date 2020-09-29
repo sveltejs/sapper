@@ -351,7 +351,7 @@ export function get_page_handler(
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles)
-				.replace(/%sapper.cspnonce%/g, nonce_value);
+				.replace(/%sapper\.cspnonce%/g, () => nonce_value);
 
 			res.statusCode = status;
 			res.end(body);
