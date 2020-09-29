@@ -22,14 +22,13 @@ A component can retrieve the stores using the `stores` function:
 
 `session` is `undefined` by default. To populate it with data, implement a function that returns session data given an HTTP request. Pass it as an option to `sapper.middleware` when the server is started.
 
-As an example, here is how to populate the session with the current user:
+As an example, let's look at how to populate the session with the current user. First, add the `session` parameter to the Sapper middleware:
 
 ```js
 // src/server.js
-express()
+polka()
 	.use(
-		serve('static'),
-		authenticationMiddleware(),
+		// ...
 		sapper.middleware({
 			// customize the session
 			session: (req, res) => ({
@@ -37,12 +36,11 @@ express()
 			})
 		})
 	)
-	.listen(process.env.PORT);
 ```
 
 `req` is an `http.ClientRequest` and `res` an `http.ServerResponse`.
 
-The session data must be serializable. This means it must not contain functions or custom classes, just built-in JavaScript data types. [devalue](https://github.com/Rich-Harris/devalue) is used for serialization.
+The session data must be serializable. This means it must not contain functions or custom classes, just built-in JavaScript data types.
 
 The `session` function may return a `Promise` (or, equivalently, be `async`).
 
