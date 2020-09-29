@@ -44,4 +44,4 @@ The session data must be serializable. This means it must not contain functions 
 
 The `session` function may return a `Promise` (or, equivalently, be `async`).
 
-> If `session` returns a `Promise`, every server-rendered page route will wait for it to resolve. This can slow down your application significantly.
+> Note that if `session` returns a `Promise` (or is `async`), it will be re-awaited for on **every** server-rendered page route.
