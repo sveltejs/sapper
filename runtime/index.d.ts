@@ -44,7 +44,7 @@ declare module "@sapper/common" {
 		redirect: (statusCode: number, location: string) => void;
 	}
 
-	export interface PreloadPage {
+	export interface Page {
 		host: string;
 		path: string;
 		params: Record<string, string>;
@@ -53,6 +53,6 @@ declare module "@sapper/common" {
 	}
 
 	export interface PreloadFunction {
-		(this: PreloadContext, page: PreloadPage, session: any): object | Promise<object>;
+		(this: PreloadContext, page: Page, session: any): object | Promise<object>;
 	}
 }
