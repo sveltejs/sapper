@@ -14,7 +14,7 @@ A component can retrieve the stores using the `stores` function:
 ```
 
 * `preloading` contains a read-only boolean value, indicating whether or not a navigation is pending
-* `page` contains information on the current address. See [preloading](docs#Arguments) for details. This store is read-only.
+* `page` contains read-only information about the current route. See [preloading](docs#Arguments) for details.
 * `session` can be used to pass data from the server related to the current request. It is a [writable store](https://svelte.dev/tutorial/writable-stores), meaning you can update it with new data. If, for example, you populate the session with the current user on the server, you can update the store when the user logs in. Your components will refresh to reflect the new state
 
 
