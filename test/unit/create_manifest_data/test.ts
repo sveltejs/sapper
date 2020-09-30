@@ -171,7 +171,7 @@ describe('manifest_data', () => {
 
 	it('fails on clashes', () => {
 		assert.throws(() => {
-			const { pages } = create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
+			create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
 		}, /The \[bar\]\/index\.html and \[foo\]\.html pages clash/);
 
 		assert.throws(() => {

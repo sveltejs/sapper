@@ -161,12 +161,16 @@ export function get_page_handler(
 
 		try {
 			const root_preload = manifest.root_comp.preload || (() => {});
-			const root_preloaded: PreloadResult = root_preload.call(preload_context, {
+			const root_preloaded: PreloadResult = root_preload.call(
+				preload_context,
+				{
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
 					params: {}
-				}, session);
+				},
+				session
+			);
 
 			match = error ? null : page.pattern.exec(req.path);
 
@@ -314,7 +318,8 @@ export function get_page_handler(
 				if (build_info.legacy_assets) {
 					const legacy_main = `${req.baseUrl}/client/legacy/${build_info.legacy_assets.main}`;
 					script += `(function(){try{eval("async function x(){}");var main="${main}"}catch(e){main="${legacy_main}"};var s=document.createElement("script");try{new Function("if(0)import('')")();s.src=main;s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main",main);}document.head.appendChild(s);}());`;
-				} else {
+				}
+				else {
 					script += `var s=document.createElement("script");try{new Function("if(0)import('')")();s.src="${main}";s.type="module";s.crossOrigin="use-credentials";}catch(e){s.src="${req.baseUrl}/client/shimport@${build_info.shimport}.js";s.setAttribute("data-main","${main}")}document.head.appendChild(s)`;
 				}
 			} else {

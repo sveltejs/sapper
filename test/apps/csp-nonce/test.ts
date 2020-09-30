@@ -18,18 +18,18 @@ describe('csp-nonce', function() {
 	it('includes a script nonce', async () => {
 		await r.load('/');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.page.$eval('script:not([src])', node => node.getAttribute('nonce')),
 			'nonce'
-        );
+		);
 	});
 
 	it('includes a style nonce', async () => {
 		await r.load('/');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.page.$eval('style', node => node.getAttribute('nonce')),
 			'nonce'
-        );
+		);
 	});
 });

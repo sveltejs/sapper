@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
-import { wait } from '../../utils';
 
 describe('scroll', function() {
 	this.timeout(10000);

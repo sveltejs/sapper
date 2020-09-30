@@ -81,7 +81,7 @@
     "pretest": "npm run check",
     "build": "rm -rf dist && rollup -c",
     "check": "rm -rf dist && cross-env TS_CHECK_ENABLED=true rollup -c",
-    "lint": "eslint '{src,runtime,test}/**/*.{ts,js}' && cd site && npm run lint",
+    "lint": "eslint '{src,runtime,test}/**/*.{ts,js,svelte}' && cd site && npm run lint",
     "prepare": "npm run build",
     "dev": "rollup -cw",
     "prepublishOnly": "npm test"

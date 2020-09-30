@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { timestamp, files, shell } from '@sapper/service-worker';
 
 const ASSETS = `cache${timestamp}`;
@@ -71,7 +72,7 @@ self.addEventListener('fetch', event => {
 					const response = await fetch(event.request);
 					cache.put(event.request, response.clone());
 					return response;
-				} catch(err) {
+				} catch (err) {
 					const response = await cache.match(event.request);
 					if (response) return response;
 

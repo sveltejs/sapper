@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
-import { readFileSync } from 'fs';
 
 describe('export w/o serviceworker', function() {
 	this.timeout(10000);

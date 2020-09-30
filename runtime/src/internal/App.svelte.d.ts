@@ -1,6 +1,6 @@
 import {
-  ComponentConstructor,
-  SSRComponent
+	ComponentConstructor,
+	SSRComponent
 } from './shared';
 
 declare const App: ComponentConstructor & SSRComponent;

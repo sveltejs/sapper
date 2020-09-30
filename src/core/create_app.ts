@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import * as fs from 'fs';
 import * as path from 'path';
 import { posixify, stringify, walk, write_if_changed } from '../utils';
@@ -176,9 +177,6 @@ function generate_server_manifest(
 	manifest_data.components.forEach((component, i) => {
 		component_lookup[component.name] = i;
 	});
-
-	const code = `
-		`.replace(/^\t\t/gm, '').trim();
 
 	const build_dir = posixify(path.normalize(path.relative(cwd, dest)));
 	const src_dir = posixify(path.normalize(path.relative(cwd, src)));

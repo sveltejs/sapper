@@ -133,7 +133,7 @@ export default function generate_docs(dir) {
 				metadata,
 				subsections,
 				slug: section_slug,
-				file,
+				file
 			};
 		});
 }
