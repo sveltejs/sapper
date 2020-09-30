@@ -4,6 +4,6 @@ export function get(req, res) {
 	});
 
 	res.end(JSON.stringify(
-		"I'm afraid I just blue myself"
+		'I\'m afraid I just blue myself'
 	));
 }

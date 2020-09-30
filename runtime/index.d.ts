@@ -1,8 +1,8 @@
-declare module "@sapper/app"
-declare module "@sapper/server"
-declare module "@sapper/service-worker"
+declare module '@sapper/app'
+declare module '@sapper/server'
+declare module '@sapper/service-worker'
 
-declare module "@sapper/app" {
+declare module '@sapper/app' {
 	export interface Redirect {
 		statusCode: number
 		location: string
@@ -15,7 +15,7 @@ declare module "@sapper/app" {
 	export const stores: () => unknown;
 }
 
-declare module "@sapper/server" {
+declare module '@sapper/server' {
 	import { Handler, Req, Res } from '@sapper/internal/manifest-server';
 
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
@@ -28,7 +28,7 @@ declare module "@sapper/server" {
 	export function middleware(opts: MiddlewareOptions): Handler;
 }
 
-declare module "@sapper/service-worker" {
+declare module '@sapper/service-worker' {
 	export const timestamp: number;
 	export const files: string[];
 	export const assets: string[];

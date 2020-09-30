@@ -22,8 +22,8 @@ describe('errors', function() {
 		);
 
 		assert.ok(
-			await r.page.$eval(".error-layout", (el) => !!el),
-			"Layout did not get error in page store"
+			await r.page.$eval('.error-layout', (el) => !!el),
+			'Layout did not get error in page store'
 		);
 	}
 

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { walk } from '../../utils';
 import * as api from '../../../api';
-import { readFileSync } from 'fs'
+import { readFileSync } from 'fs';
 
 describe('export w/o serviceworker', function() {
 	this.timeout(10000);
@@ -21,7 +21,7 @@ describe('export w/o serviceworker', function() {
 
 		assert.deepStrictEqual(non_client_assets.sort(), [
 			'global.css',
-			'index.html',
+			'index.html'
 		].sort());
 	});
 });

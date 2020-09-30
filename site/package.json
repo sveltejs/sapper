@@ -9,6 +9,7 @@
     "predeploy": "npm run export",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
+    "lint": "eslint './**/*.{ts,js}'",
     "test": "run-p --race dev cy:run"
   },
   "dependencies": {
