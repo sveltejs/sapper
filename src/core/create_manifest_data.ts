@@ -139,9 +139,7 @@ export default function create_manifest_data(cwd: string, extensions = '.svelte 
 						? stack.concat({ component, params })
 						: stack.concat(null)
 				);
-			}
-
-			else if (item.is_page) {
+			} else if (item.is_page) {
 				const component = {
 					name: get_slug(item.file),
 					file: item.file
@@ -157,9 +155,7 @@ export default function create_manifest_data(cwd: string, extensions = '.svelte 
 					pattern: get_pattern(segments, true),
 					parts
 				});
-			}
-
-			else {
+			} else {
 				server_routes.push({
 					name: `route_${get_slug(item.file)}`,
 					pattern: get_pattern(segments, !item.route_suffix),

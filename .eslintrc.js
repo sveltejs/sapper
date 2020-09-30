@@ -14,9 +14,8 @@ module.exports = {
 	},
 	rules: {
 		indent: ['error', 'tab'],
-		'a11y-invalid-attribute': 'off',
-		'a11y-missing-attribute': 'off',
-		'@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+		'brace-style': ['error', '1tbs'],
+		'@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
 		'@typescript-eslint/ban-types': 'off',
 		'@typescript-eslint/no-var-requires': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
