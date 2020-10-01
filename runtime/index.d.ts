@@ -52,7 +52,7 @@ declare module "@sapper/common" {
 		error?: Error;
 	}
 
-	export interface PreloadFunction {
+	export interface Preload {
 		(this: PreloadContext, page: Page, session: any): object | Promise<object>;
 	}
 }
