@@ -63,9 +63,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				if (basename[0] === '.' && basename !== '.well-known') return null;
 				if (!is_dir && !/^\.[a-z]+$/i.test(file_ext)) return null; // filter out tmp files etc
 
-				const component_extension = component_extensions.find((ext) =>
-					basename.endsWith(ext)
-				);
+				const component_extension = component_extensions.find((ext) => basename.endsWith(ext));
 				const ext = component_extension || file_ext;
 				const is_page = component_extension != null;
 				const segment = is_dir ? basename : basename.slice(0, -ext.length);
