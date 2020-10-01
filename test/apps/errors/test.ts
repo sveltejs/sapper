@@ -103,7 +103,7 @@ describe('errors', function() {
 
 		const responseText = await res.text();
 
-		assert.ok((responseText).includes('Internal server error'), `Expected response "${responseText}" to say "Internal server error"`);
+		assert.ok(responseText.includes('Internal server error'), `Expected response "${responseText}" to say "Internal server error"`);
 	});
 
 	it('does not serve error page for explicit non-page errors', async () => {
