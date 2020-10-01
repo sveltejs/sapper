@@ -27,10 +27,10 @@ export function get_page_handler(
 
 	const { pages, error: error_route } = manifest;
 
-	function bail(req: Req, res: Res, err: Error) {
+	function bail(res: Res, err: Error | string) {
 		console.error(err);
 
-		const message = dev ? escape_html(err.message) : 'Internal server error';
+		const message = dev ? escape_html(typeof err === 'string' ? err : err.message) : 'Internal server error';
 
 		res.statusCode = 500;
 		res.end(`<pre>${message}</pre>`);
@@ -97,7 +97,7 @@ export function get_page_handler(
 		try {
 			session = await session_getter(req, res);
 		} catch (err) {
-			return bail(req, res, err);
+			return bail(res, err);
 		}
 
 		let redirect: { statusCode: number, location: string };
@@ -192,7 +192,7 @@ export function get_page_handler(
 			preloaded = await Promise.all(toPreload);
 		} catch (err) {
 			if (error) {
-				return bail(req, res, err);
+				return bail(res, err);
 			}
 
 			preload_error = { statusCode: 500, message: err };
@@ -211,7 +211,12 @@ export function get_page_handler(
 			}
 
 			if (preload_error) {
-				handle_error(req, res, preload_error.statusCode, preload_error.message);
+				if (!error) {
+					handle_error(req, res, preload_error.statusCode, preload_error.message);
+				} else {
+					bail(res, preload_error.message);
+				}
+
 				return;
 			}
 
@@ -357,7 +362,7 @@ export function get_page_handler(
 			res.end(body);
 		} catch (err) {
 			if (error) {
-				bail(req, res, err);
+				bail(res, err);
 			} else {
 				handle_error(req, res, 500, err);
 			}
