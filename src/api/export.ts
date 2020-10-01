@@ -66,7 +66,6 @@ export function get_srcset_urls(attrs: string) {
 		// and should cover most reasonable cases.
 		const regex = /\s*([^\s,]\S+[^\s,])\s*((?:\d+w)|(?:-?\d+(?:\.\d+)?(?:[eE]-?\d+)?x))?/gm;
 		let sub_matches;
-		// eslint-disable-next-line no-cond-assign
 		while (sub_matches = regex.exec(attr_content)) {
 			results.push(sub_matches[1]);
 		}
@@ -244,7 +243,6 @@ async function _export({
 				let match;
 				const pattern = /<(a|img|link|source)\s+([\s\S]+?)>/gm;
 
-				// eslint-disable-next-line no-cond-assign
 				while (match = pattern.exec(cleaned)) {
 					let hrefs: string[] = [];
 					const element = match[1];

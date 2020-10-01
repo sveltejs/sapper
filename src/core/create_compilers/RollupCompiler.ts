@@ -152,7 +152,6 @@ export default class RollupCompiler {
 			entry_point = inputs[0].file;
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const that = this;
 
 		// TODO this is hacky. refactor out into an external rollup plugin
@@ -345,41 +344,41 @@ export default class RollupCompiler {
 
 		watcher.on('event', (event: any) => {
 			switch (event.code) {
-			case 'FATAL':
-				// TODO kill the process?
-				if (event.error.filename) {
-					// TODO this is a bit messy. Also, can
-					// Rollup emit other kinds of error?
-					event.error.message = [
-						`Failed to build — error in ${event.error.filename}: ${event.error.message}`,
-						event.error.frame
-					].filter(Boolean).join('\n');
+				case 'FATAL':
+					// TODO kill the process?
+					if (event.error.filename) {
+						// TODO this is a bit messy. Also, can
+						// Rollup emit other kinds of error?
+						event.error.message = [
+							`Failed to build — error in ${event.error.filename}: ${event.error.message}`,
+							event.error.frame
+						].filter(Boolean).join('\n');
+					}
+
+					cb(event.error);
+					break;
+
+				case 'ERROR':
+					this.errors.push(event.error);
+					cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
+					break;
+
+				case 'START':
+				case 'END':
+					// TODO is there anything to do with this info?
+					break;
+
+				case 'BUNDLE_START':
+					this._start = Date.now();
+					break;
+
+				case 'BUNDLE_END':
+					cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
+					break;
+
+				default:
+					console.log(`Unexpected event ${event.code}`);
 				}
-
-				cb(event.error);
-				break;
-
-			case 'ERROR':
-				this.errors.push(event.error);
-				cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
-				break;
-
-			case 'START':
-			case 'END':
-				// TODO is there anything to do with this info?
-				break;
-
-			case 'BUNDLE_START':
-				this._start = Date.now();
-				break;
-
-			case 'BUNDLE_END':
-				cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
-				break;
-
-			default:
-				console.log(`Unexpected event ${event.code}`);
-			}
 		});
 	}
 

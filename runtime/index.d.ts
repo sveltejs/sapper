@@ -16,6 +16,8 @@ declare module '@sapper/app' {
 }
 
 declare module '@sapper/server' {
+	import { Handler, Req, Res } from '@sapper/internal/manifest-server';
+
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
 
 	export interface MiddlewareOptions {

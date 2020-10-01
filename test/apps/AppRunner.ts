@@ -54,19 +54,19 @@ export class AppRunner {
 			if (!message.__sapper__) return;
 
 			switch (message.event) {
-			case 'listening':
-				this.address = message.address;
-				this.base = `http://localhost:${this.address.port}`;
+				case 'listening':
+					this.address = message.address;
+					this.base = `http://localhost:${this.address.port}`;
 
-				server_listening.resolve();
-				break;
+					server_listening.resolve();
+					break;
 
-			case 'error':
-				this.errors.push(Object.assign(new Error(), message.error));
-				break;
+				case 'error':
+					this.errors.push(Object.assign(new Error(), message.error));
+					break;
 
-			default:
-				this.messages.push(message);
+				default:
+					this.messages.push(message);
 			}
 		});
 
