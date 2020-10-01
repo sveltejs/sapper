@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Fix `preload` links for exported sites ([#1578](https://github.com/sveltejs/sapper/pull/1578))
 * Support extensions with multiple dots ([#1513](https://github.com/sveltejs/sapper/issues/1513))
 * Improved error message if exporting with missing `index.svelte` ([#1574](https://github.com/sveltejs/sapper/issues/1574))
 * Allow multiple occurrences of `%sapper.cspnonce%` ([#1570](https://github.com/sveltejs/sapper/issues/1570))
