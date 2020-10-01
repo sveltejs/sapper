@@ -370,20 +370,15 @@ export function get_page_handler(
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		if (req.path === '/service-worker-index.html') {
-			const homePage = pages.find(page => page.pattern.test('/'));
-			handle_page(homePage, req, res);
-			return;
-		}
+		const path = req.path === '/service-worker-index.html' ? '/' : req.path;
 
-		for (const page of pages) {
-			if (page.pattern.test(req.path)) {
-				handle_page(page, req, res);
-				return;
-			}
-		}
+		const page = pages.find(page => page.pattern.test(path));
 
-		handle_error(req, res, 404, 'Not found');
+		if (page) {
+			handle_page(page, req, res);
+		} else {
+			handle_error(req, res, 404, 'Not found');
+		}
 	};
 }
 
