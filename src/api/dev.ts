@@ -237,7 +237,7 @@ class Watcher extends EventEmitter {
 					const restart = () => {
 						this.crashed = false;
 
-						return ports.wait(this.port)
+						return ports.wait(this.port, {timeout: 30000})
 							.then((() => {
 								this.emit('ready', {
 									port: this.port,
