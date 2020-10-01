@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Support extensions with multiple dots ([#1513](https://github.com/sveltejs/sapper/issues/1513))
 * Improved error message if exporting with missing `index.svelte` ([#1574](https://github.com/sveltejs/sapper/issues/1574))
 * Allow multiple occurrences of `%sapper.cspnonce%` ([#1570](https://github.com/sveltejs/sapper/issues/1570))
 * Avoid infinite loop if layout's preload crashes on error page ([#1569](https://github.com/sveltejs/sapper/issues/1569))
