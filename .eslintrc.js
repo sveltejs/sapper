@@ -1,6 +1,6 @@
 module.exports = {
 	root: true,
-	extends: ['@sveltejs'],
+	extends: '@sveltejs',
 	plugins: ['import'],
 	settings: {
 		'import/resolver': {
