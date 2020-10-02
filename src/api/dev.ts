@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as http from 'http';
