@@ -38,6 +38,7 @@ export async function build({
 }: Opts = {}) {
 	bundler = validate_bundler(bundler);
 
+	const root = path.resolve('.');
 	cwd = path.resolve(cwd);
 	src = path.resolve(cwd, src);
 	dest = path.resolve(cwd, dest);
@@ -69,7 +70,7 @@ export async function build({
 	create_app({
 		bundler,
 		manifest_data,
-		cwd,
+		root,
 		src,
 		dest,
 		routes,
