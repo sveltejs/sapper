@@ -1,10 +1,10 @@
 <script>
-    import Test from '../_components/Test.svelte';
+    import NestedRouteTest from '../_components/NestedRouteTest.svelte';
 </script>
 
 <h2>This is content defined in a layout in a nested route. It should have a green background.</h2>
 
-<Test/>
+<NestedRouteTest/>
 
 <slot></slot>
 
