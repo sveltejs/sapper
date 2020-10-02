@@ -161,16 +161,12 @@ export function get_page_handler(
 
 		try {
 			const root_preload = manifest.root_comp.preload || (() => {});
-			const root_preloaded: PreloadResult = root_preload.call(
-				preload_context,
-				{
+			const root_preloaded: PreloadResult = root_preload.call(preload_context, {
 					host: req.headers.host,
 					path: req.path,
 					query: req.query,
 					params: {}
-				},
-				session
-			);
+				}, session);
 
 			match = error ? null : page.pattern.exec(req.path);
 
