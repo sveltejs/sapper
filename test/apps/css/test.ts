@@ -49,7 +49,7 @@ describe('css', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click(`[href="foo"]`);
+		await r.page.click('[href="foo"]');
 		await r.wait();
 
 		assert.strictEqual(
@@ -64,7 +64,7 @@ describe('css', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click(`[href="bar"]`);
+		await r.page.click('[href="bar"]');
 		await r.wait();
 
 		assert.strictEqual(

@@ -252,7 +252,7 @@ export default class RollupCompiler {
 				Object.values(bundle)
 					.filter(c => c.type === 'chunk')
 					.forEach(c => that.chunks.push(<OutputChunk>c));
-						
+
 				// Store the build dependencies so that we can create build.json
 				const dependencies = {};
 

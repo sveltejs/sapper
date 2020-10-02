@@ -21,7 +21,7 @@ describe('encoding', function() {
 
 		assert.strictEqual(
 			await r.text('h1'),
-			`I'm afraid I just blue myself`
+			"I'm afraid I just blue myself"
 		);
 	});
 

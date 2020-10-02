@@ -1,7 +1,7 @@
 import { ClientRequest, ServerResponse } from 'http';
 import { TLSSocket } from 'tls';
 import {
-  Preload
+	Preload
 } from './shared';
 
 export const src_dir: string;
@@ -10,36 +10,36 @@ export const dev: boolean;
 export const manifest: Manifest;
 
 export interface SSRComponentModule {
-  default: SSRComponent;
-  preload?: Preload;
+	default: SSRComponent;
+	preload?: Preload;
 }
 
 export interface SSRComponent {
-  render(props: unknown): {
-    html: string
-    head: string
-    css: { code: string, map: unknown };
-  }
+	render(props: unknown): {
+		html: string
+		head: string
+		css: { code: string, map: unknown };
+	}
 }
 
 export interface Manifest {
-  server_routes: ServerRoute[];
-  ignore: RegExp[];
-  root_comp: SSRComponentModule
-  error: SSRComponent
-  pages: ManifestPage[]
+	server_routes: ServerRoute[];
+	ignore: RegExp[];
+	root_comp: SSRComponentModule
+	error: SSRComponent
+	pages: ManifestPage[]
 }
 
 export interface ManifestPage {
-  pattern: RegExp | null;
-  parts: ManifestPagePart[];
+	pattern: RegExp | null;
+	parts: ManifestPagePart[];
 }
 
 export interface ManifestPagePart {
-  name: string | null;
-  file?: string;
-  component: SSRComponentModule;
-  params?: (match: RegExpMatchArray | null) => Record<string, string>;
+	name: string | null;
+	file?: string;
+	component: SSRComponentModule;
+	params?: (match: RegExpMatchArray | null) => Record<string, string>;
 }
 
 export type Handler = (req: Req, res: Res, next: () => void) => void;
@@ -65,7 +65,7 @@ export interface Res extends ServerResponse {
 }
 
 export interface ServerRoute {
-  pattern: RegExp;
-  handlers: Record<string, Handler>;
-  params: (match: RegExpMatchArray) => Record<string, string>;
+	pattern: RegExp;
+	handlers: Record<string, Handler>;
+	params: (match: RegExpMatchArray) => Record<string, string>;
 }

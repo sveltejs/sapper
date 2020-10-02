@@ -177,9 +177,6 @@ function generate_server_manifest(
 		component_lookup[component.name] = i;
 	});
 
-	const code = `
-		`.replace(/^\t\t/gm, '').trim();
-
 	const build_dir = posixify(path.normalize(path.relative(cwd, dest)));
 	const src_dir = posixify(path.normalize(path.relative(cwd, src)));
 

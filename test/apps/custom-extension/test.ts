@@ -18,7 +18,7 @@ describe('custom extensions', function() {
 
 	
 	it('works with arbitrary extensions', async () => {
-		await r.load(`/`);
+		await r.load('/');
 
 
 		assert.strictEqual(
@@ -28,39 +28,39 @@ describe('custom extensions', function() {
 	});
 
 	it('works with other arbitrary extensions', async () => {
-		await r.load(`/const`);
+		await r.load('/const');
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'Tremendous!'
 		);
 
-		await r.load(`/a`);
+		await r.load('/a');
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'a'
 		);
 
-		await r.load(`/test-slug`);
+		await r.load('/test-slug');
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'TEST-SLUG'
 		);
 
-		await r.load(`/unsafe-replacement`);
+		await r.load('/unsafe-replacement');
 
 		assert.strictEqual(
 			await r.text('h1'),
 			'Bazooom!'
 		);
 
-		await r.load(`/ide-friendly`);
+		await r.load('/ide-friendly');
 
 		assert.equal(
 			await r.text('h1'), 
-			"Great success, IDE friendly custom extensions!"
+			'Great success, IDE friendly custom extensions!'
 		);
 	});
 

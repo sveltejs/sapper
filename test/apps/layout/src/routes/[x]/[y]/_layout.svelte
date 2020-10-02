@@ -13,7 +13,7 @@
 	const { page } = stores();
 
 	export let count;
-	$: segment = $page.path.split("/")[3];
+	$: segment = $page.path.split('/')[3];
 </script>
 
 <span>y: {$page.params.y} {count}</span>
