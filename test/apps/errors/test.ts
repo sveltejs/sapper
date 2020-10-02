@@ -98,6 +98,14 @@ describe('errors', function() {
 		await assertErrorPageRenders(500);
 	});
 
+	it('handles errors occurring in the layout preload', async () => {
+		const res = await r.load('/?layoutthrows=true');
+
+		const responseText = await res.text();
+
+		assert.ok(responseText.includes('Internal server error'), `Expected response "${responseText}" to say "Internal server error"`);
+	});
+
 	it('does not serve error page for explicit non-page errors', async () => {
 		await r.load('/nope.json');
 

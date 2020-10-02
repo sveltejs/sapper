@@ -39,15 +39,7 @@ So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/bl
 * `page.query.foo === 'bar'`
 * `page.query.baz === true`
 
-`session` is generated on the server by the `session` option passed to `sapper.middleware`. For example:
-
-```js
-sapper.middleware({
-	session: (req, res) => ({
-		user: req.user
-	})
-})
-```
+`session` can be used to pass data from the server related to the current request, e.g. the current user. By default it is `undefined`. [Seeding session data](docs#Seeding_session_data) describes how to add data to it.
 
 
 ### Return value

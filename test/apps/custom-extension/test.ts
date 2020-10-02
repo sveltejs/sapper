@@ -8,7 +8,7 @@ describe('custom extensions', function() {
 	let r: AppRunner;
 
 	// hooks
-	before('build app', () => build({ cwd: __dirname , ext: '.jesuslivesineveryone .whokilledthemuffinman .mdx .svelte' }));
+	before('build app', () => build({ cwd: __dirname , ext: '.jesuslivesineveryone .whokilledthemuffinman .route.svelte .mdx .svelte' }));
 	before('start runner', async () => {
 		r = await new AppRunner().start(__dirname);
 	});
@@ -54,6 +54,13 @@ describe('custom extensions', function() {
 		assert.strictEqual(
 			await r.text('h1'),
 			'Bazooom!'
+		);
+
+		await r.load(`/ide-friendly`);
+
+		assert.equal(
+			await r.text('h1'), 
+			"Great success, IDE friendly custom extensions!"
 		);
 	});
 
