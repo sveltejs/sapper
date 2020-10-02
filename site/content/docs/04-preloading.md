@@ -122,3 +122,23 @@ You can abort rendering and redirect to a different location with `this.redirect
 	}
 </script>
 ```
+
+#### Typing the function
+
+If you use TypeScript and want to access the above context methods, TypeScript will thow an error and tell you that it does not know the type of `this`. To fix it, you need to specify the type of `this` (see the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#specifying-the-type-of-this-for-functions)). We provide you with helper interfaces so you can type the function like this:
+
+```html
+<script context="module">
+	import type { Page, PreloadContext } from "@sapper/common";
+
+	export const preload: Preload = async function(this, page, session) {
+		const { user } = session;
+
+		if (!user) {
+			return this.redirect(302, 'login'); // TypeScript will know the type of `this` now
+		}
+
+		return { user };
+	}
+</script>
+```
