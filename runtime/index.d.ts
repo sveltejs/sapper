@@ -37,7 +37,7 @@ declare module '@sapper/service-worker' {
 	export const routes: Array<{ pattern: RegExp }>;
 }
 
-declare module "@sapper/common" {
+declare module '@sapper/common' {
 	export interface PreloadContext {
 		fetch: (url: string, options?: any) => Promise<any>;
 		error: (statusCode: number, message: Error | string) => void;

@@ -56,11 +56,11 @@ describe('custom extensions', function() {
 			'Bazooom!'
 		);
 
-		await r.load(`/ide-friendly`);
+		await r.load('/ide-friendly');
 
 		assert.equal(
 			await r.text('h1'), 
-			"Great success, IDE friendly custom extensions!"
+			'Great success, IDE friendly custom extensions!'
 		);
 	});
 
