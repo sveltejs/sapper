@@ -1,15 +1,15 @@
 # sapper changelog
 
-## Unreleased
+## 0.28.10
 
-* Ensure CSS is applied to nested route layouts ([#1581](https://github.com/sveltejs/sapper/pull/1581))
-* Add TypeScript types for the `preload` function ([#1468](https://github.com/sveltejs/sapper/pull/1468))
-* Fix `preload` links for exported sites ([#1578](https://github.com/sveltejs/sapper/pull/1578))
-* Support extensions with multiple dots ([#1513](https://github.com/sveltejs/sapper/issues/1513))
-* Improved error message if exporting with missing `index.svelte` ([#1574](https://github.com/sveltejs/sapper/issues/1574))
-* Allow multiple occurrences of `%sapper.cspnonce%` ([#1570](https://github.com/sveltejs/sapper/issues/1570))
-* Avoid infinite loop if layout's preload crashes on error page ([#1569](https://github.com/sveltejs/sapper/issues/1569))
+* Improve error message if exporting site with missing `index.svelte` ([#1390](https://github.com/sveltejs/sapper/issues/1390))
+* Add TypeScript types for the `preload` function and its `this` context ([#1463](https://github.com/sveltejs/sapper/issues/1463))
+* Avoid infinite loop if layout's `preload` crashes on error page ([#1506](https://github.com/sveltejs/sapper/issues/1506))
+* Support extensions with multiple dots ([#1513](https://github.com/sveltejs/sapper/pull/1513))
 * Fix the service worker requesting non-existent file when `emitCss: false` ([#1559](https://github.com/sveltejs/sapper/issues/1559))
+* Allow multiple occurrences of `%sapper.cspnonce%` ([#1565](https://github.com/sveltejs/sapper/issues/1565))
+* Fix `preload` links in exported sites ([#1576](https://github.com/sveltejs/sapper/issues/1576))
+* Ensure CSS is applied to nested route layouts ([#1579](https://github.com/sveltejs/sapper/issues/1579))
 
 ## 0.28.9
 
