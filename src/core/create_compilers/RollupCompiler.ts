@@ -378,7 +378,7 @@ export default class RollupCompiler {
 
 				default:
 					console.log(`Unexpected event ${event.code}`);
-				}
+			}
 		});
 	}
 
