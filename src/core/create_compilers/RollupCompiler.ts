@@ -241,7 +241,7 @@ export default class RollupCompiler {
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
 
 				function is_route(file_path: string) {
-					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_') && !file_path.endsWith('.css');
+					return file_path.includes(that.routes) && !file_path.endsWith('.css');
 				}
 
 				function js_deps(chunk: RenderedChunk, opts?: DependencyTreeOptions) {
