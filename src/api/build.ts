@@ -36,7 +36,6 @@ export async function build({
 	ext = undefined,
 	oncompile = noop
 }: Opts = {}) {
-	bundler = validate_bundler(bundler);
 
 	const root = path.resolve('.');
 	cwd = path.resolve(cwd);
@@ -45,6 +44,8 @@ export async function build({
 	routes = path.resolve(cwd, routes);
 	output = path.resolve(cwd, output);
 	static_files = path.resolve(cwd, static_files);
+
+	bundler = validate_bundler(cwd, bundler);
 
 	if (legacy && bundler === 'webpack') {
 		throw new Error('Legacy builds are not supported for projects using webpack');
