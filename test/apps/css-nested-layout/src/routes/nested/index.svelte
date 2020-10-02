@@ -1,1 +1,0 @@
-<p>This is slotted page content in a nested routes.</p>
