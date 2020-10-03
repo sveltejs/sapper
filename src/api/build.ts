@@ -15,6 +15,7 @@ type Opts = {
 	src?: string;
 	routes?: string;
 	dest?: string;
+	export_build?: boolean;
 	output?: string;
 	static?: string;
 	legacy?: boolean;
@@ -30,6 +31,7 @@ export async function build({
 	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
+	export_build = false,
 
 	bundler = undefined,
 	legacy = false,
@@ -71,12 +73,14 @@ export async function build({
 	create_app({
 		bundler,
 		manifest_data,
+		cwd,
 		root,
 		src,
 		dest,
 		routes,
 		output,
-		dev: false
+		dev: false,
+		export_build
 	});
 
 	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, routes, dest, false);

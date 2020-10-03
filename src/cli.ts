@@ -169,7 +169,7 @@ prog.command('build [dest]')
 		console.log('> Building...');
 
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
+			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, false);
 
 			const launcher = path.resolve(opts.cwd, dest, 'index.js');
 
@@ -182,7 +182,7 @@ prog.command('build [dest]')
 				require('./server/server.js');
 			`.replace(/^\t+/gm, '').trim());
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`node ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`node ${path.join(opts.cwd, dest)}`)} to run the app.`);
 		} catch (err) {
 			console.log(`${colors.bold().red(`> ${err.message}`)}`);
 			console.log(colors.gray(err.stack));
@@ -227,7 +227,7 @@ prog.command('export [dest]')
 		try {
 			if (opts.build) {
 				console.log('> Building...');
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, true);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -261,7 +261,7 @@ prog.command('export [dest]')
 				}
 			});
 
-			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`npx serve ${dest}`)} to run the app.`);
+			console.error(`\n> Finished in ${elapsed(start)}. Type ${colors.bold().cyan(`npx serve ${path.join(opts.cwd, dest)}`)} to run the app.`);
 		} catch (err) {
 			console.error(colors.bold().red(`> ${err.message}`));
 			process.exit(1);
@@ -279,7 +279,8 @@ async function _build(
 	routes: string,
 	output: string,
 	dest: string,
-	ext: string
+	ext: string,
+	export_build: boolean
 ) {
 	const { build } = await import('./api/build');
 
@@ -290,6 +291,7 @@ async function _build(
 		src,
 		routes,
 		dest,
+		export_build,
 		ext,
 		output,
 		oncompile: event => {

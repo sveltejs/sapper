@@ -163,7 +163,7 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
-				root, src, dest, routes, output
+				cwd, root, src, dest, routes, output
 			});
 		} catch (err) {
 			this.emit('fatal', {
@@ -191,7 +191,7 @@ class Watcher extends EventEmitter {
 							manifest_data,
 							dev: true,
 							dev_port: this.dev_port,
-							root, src, dest, routes, output
+							cwd, root, src, dest, routes, output, export_build: false
 						});
 					} catch (error) {
 						this.emit('error', {
