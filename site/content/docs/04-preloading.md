@@ -129,7 +129,7 @@ If you use TypeScript and want to access the above context methods, TypeScript w
 
 ```html
 <script context="module">
-	import type { Page, PreloadContext } from "@sapper/common";
+	import type { Preload } from "@sapper/common";
 
 	export const preload: Preload = async function(this, page, session) {
 		const { user } = session;
