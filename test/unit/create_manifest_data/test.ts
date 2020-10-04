@@ -148,10 +148,10 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(server_routes, [
 			{
-				name: "route_$file$93_$91ext",
+				name: 'route_$file$93_$91ext',
 				pattern: /^\/([^/]+?)\.([^/]+?)$/,
-				file: "[file].[ext].js",
-				params: ["file", "ext"]
+				file: '[file].[ext].js',
+				params: ['file', 'ext']
 			}
 		]);
 	});
@@ -161,17 +161,17 @@ describe('manifest_data', () => {
 
 		assert.deepEqual(server_routes, [
 			{
-				name: "route_$file_$91ext$40$91a$45z$93$43$41$93",
+				name: 'route_$file_$91ext$40$91a$45z$93$43$41$93',
 				pattern: /^\/([a-z]+)\.([a-z]+)$/,
-				file: "[file([a-z]+)].[ext([a-z]+)].js",
-				params: ["file", "ext"]
+				file: '[file([a-z]+)].[ext([a-z]+)].js',
+				params: ['file', 'ext']
 			}
 		]);
 	});
 
 	it('fails on clashes', () => {
 		assert.throws(() => {
-			const { pages } = create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
+			create_manifest_data(path.join(__dirname, 'samples/clash-pages'));
 		}, /The \[bar\]\/index\.html and \[foo\]\.html pages clash/);
 
 		assert.throws(() => {

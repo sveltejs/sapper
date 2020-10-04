@@ -127,7 +127,7 @@ describe('basics', function() {
 	});
 
 	it('prefetches programmatically', async () => {
-		await r.load(`/a`);
+		await r.load('/a');
 		await r.sapper.start();
 
 		const requests = await r.capture_requests(() => r.sapper.prefetch('b'));

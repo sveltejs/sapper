@@ -88,7 +88,7 @@ describe('redirects', function() {
 			request.respond({
 				status: 200,
 				contentType: 'text/html',
-				body: `<h1>external</h1>`
+				body: '<h1>external</h1>'
 			});
 		} else {
 			request.continue();
@@ -102,7 +102,7 @@ describe('redirects', function() {
 
 		assert.strictEqual(
 			r.page.url(),
-			`https://example.com/`
+			'https://example.com/'
 		);
 
 		assert.strictEqual(
@@ -123,7 +123,7 @@ describe('redirects', function() {
 
 		assert.strictEqual(
 			r.page.url(),
-			`https://example.com/`
+			'https://example.com/'
 		);
 
 		assert.strictEqual(
