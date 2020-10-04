@@ -1,1 +1,1 @@
-<h1>{params.slug.toUpperCase()}</h1>
+<h1>Svelte template rendered</h1>

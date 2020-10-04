@@ -10,7 +10,6 @@
 	import { stores } from '@sapper/app';
 	import { setContext } from 'svelte';
 
-	export let child;
 	export let rootPreloadFunctionRan;
 
 	const { preloading } = stores();

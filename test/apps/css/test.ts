@@ -25,6 +25,24 @@ describe('css', function() {
 		);
 	});
 
+	it('includes CSS defined in nested layout with server render', async () => {
+		await r.load('/nested');
+
+		assert.strictEqual(
+			await r.page.$eval('h2', node => getComputedStyle(node).backgroundColor),
+			'rgb(0, 128, 0)'
+		);
+	});
+
+	it('includes CSS defined in component imported by nested layout with server render', async () => {
+		await r.load('/nested');
+
+		assert.strictEqual(
+			await r.page.$eval('h3', node => getComputedStyle(node).backgroundColor),
+			'rgb(255, 0, 0)'
+		);
+	});
+
 	it('includes CSS on error page', async () => {
 		await r.load('/doesnotexist');
 
@@ -49,7 +67,7 @@ describe('css', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click(`[href="foo"]`);
+		await r.page.click('[href="foo"]');
 		await r.wait();
 
 		assert.strictEqual(
@@ -64,7 +82,7 @@ describe('css', function() {
 		await r.sapper.start();
 		await r.sapper.prefetchRoutes();
 
-		await r.page.click(`[href="bar"]`);
+		await r.page.click('[href="bar"]');
 		await r.wait();
 
 		assert.strictEqual(

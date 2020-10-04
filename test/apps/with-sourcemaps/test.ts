@@ -1,7 +1,7 @@
 import { build } from '../../../api';
-import * as assert from "assert";
+import * as assert from 'assert';
 import * as fs from 'fs';
-import * as path from "path";
+import * as path from 'path';
 
 describe('with-sourcemaps', function() {
 	this.timeout(10000);

@@ -6,7 +6,7 @@
 <script context="module">
 	export function preload({ params, query }) {
 		if (query['layoutthrows']) {
-			this.error(500, "layout preload threw");
+			this.error(500, 'layout preload threw');
 		}
 	}
 </script>
