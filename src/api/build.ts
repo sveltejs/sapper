@@ -12,10 +12,10 @@ import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
 	cwd?: string;
+	root?: string;
 	src?: string;
 	routes?: string;
 	dest?: string;
-	export_build?: boolean;
 	output?: string;
 	static?: string;
 	legacy?: boolean;
@@ -26,12 +26,12 @@ type Opts = {
 
 export async function build({
 	cwd,
+	root,
 	src = 'src',
 	routes = 'src/routes',
 	output = 'src/node_modules/@sapper',
 	static: static_files = 'static',
 	dest = '__sapper__/build',
-	export_build = false,
 
 	bundler = undefined,
 	legacy = false,
@@ -39,8 +39,8 @@ export async function build({
 	oncompile = noop
 }: Opts = {}) {
 
-	const root = path.resolve('.');
 	cwd = path.resolve(cwd);
+	root = path.resolve(root);
 	src = path.resolve(cwd, src);
 	dest = path.resolve(cwd, dest);
 	routes = path.resolve(cwd, routes);
@@ -73,7 +73,7 @@ export async function build({
 	create_app({
 		bundler,
 		manifest_data,
-		root: export_build ? cwd : root,
+		root,
 		src,
 		dest,
 		routes,

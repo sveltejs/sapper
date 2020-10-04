@@ -168,8 +168,10 @@ prog.command('build [dest]')
 	}) => {
 		console.log('> Building...');
 
+		const root = process.cwd();
+
 		try {
-			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext, false);
+			await _build(opts.bundler, opts.legacy, opts.cwd, root, opts.src, opts.routes, opts.output, dest, opts.ext);
 
 			const launcher = path.resolve(opts.cwd, dest, 'index.js');
 
@@ -227,7 +229,7 @@ prog.command('export [dest]')
 		try {
 			if (opts.build) {
 				console.log('> Building...');
-				await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext, true);
+				await _build(opts.bundler, opts.legacy, opts.cwd, opts.cwd, opts.src, opts.routes, opts.output, opts['build-dir'], opts.ext);
 				console.error(`\n> Built in ${elapsed(start)}`);
 			}
 
@@ -275,12 +277,12 @@ async function _build(
 	bundler: 'rollup' | 'webpack',
 	legacy: boolean,
 	cwd: string,
+	root: string,
 	src: string,
 	routes: string,
 	output: string,
 	dest: string,
-	ext: string,
-	export_build: boolean
+	ext: string
 ) {
 	const { build } = await import('./api/build');
 
@@ -288,10 +290,10 @@ async function _build(
 		bundler,
 		legacy,
 		cwd,
+		root,
 		src,
 		routes,
 		dest,
-		export_build,
 		ext,
 		output,
 		oncompile: event => {
