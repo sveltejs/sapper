@@ -73,14 +73,12 @@ export async function build({
 	create_app({
 		bundler,
 		manifest_data,
-		cwd,
-		root,
+		root: export_build ? cwd : root,
 		src,
 		dest,
 		routes,
 		output,
-		dev: false,
-		export_build
+		dev: false
 	});
 
 	const { client, server, serviceworker } = await create_compilers(bundler, cwd, src, routes, dest, false);

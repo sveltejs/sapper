@@ -5,7 +5,7 @@ export default function validate_bundler(cwd: string, bundler?: 'rollup' | 'webp
 	if (!bundler) {
 		bundler = (
 			fs.existsSync(path.resolve(cwd, 'rollup.config.js')) || fs.existsSync(path.resolve(cwd, 'rollup.config.ts')) ? 'rollup' :
-			fs.existsSync(path.resolve(cwd, 'webpack.config.js')) || fs.existsSync(path.resolve(cwd, 'webpack.config.ts')) ? 'webpack' : null
+				fs.existsSync(path.resolve(cwd, 'webpack.config.js')) || fs.existsSync(path.resolve(cwd, 'webpack.config.ts')) ? 'webpack' : null
 		);
 
 		if (!bundler) {
