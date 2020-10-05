@@ -19,6 +19,7 @@ const start = Date.now();
 
 prog.command('dev')
 	.describe('Start a development server')
+	.option('-h, --host', 'Specify a host', 'localhost')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
 	.option('--dev-port', 'Specify a port for development server')
@@ -33,6 +34,7 @@ prog.command('dev')
 	.option('--build-dir', 'Development build directory', '__sapper__/dev')
 	.option('--ext', 'Custom Route Extension', '.svelte .html')
 	.action(async (opts: {
+		host: string;
 		port: number;
 		open: boolean;
 		'dev-port': number;
@@ -57,6 +59,7 @@ prog.command('dev')
 				static: opts.static,
 				output: opts.output,
 				dest: opts['build-dir'],
+				host: opts.host,
 				port: opts.port,
 				'dev-port': opts['dev-port'],
 				live: opts.live,
@@ -77,10 +80,10 @@ prog.command('dev')
 
 			watcher.on('ready', async (event: ReadyEvent) => {
 				if (first) {
-					console.log(colors.bold().cyan(`> Listening on http://localhost:${event.port}`));
+					console.log(colors.bold().cyan(`> Listening on http://${event.host}:${event.port}`));
 					if (opts.open) {
 						const { exec } = await import('child_process');
-						exec(`open http://localhost:${event.port}`);
+						exec(`open http://${event.host}:${event.port}`);
 					}
 					first = false;
 				}

@@ -27,6 +27,7 @@ type Opts = {
 	hot?: boolean;
 	'devtools-port'?: number;
 	bundler?: 'rollup' | 'webpack';
+	host?: string;
 	port?: number;
 	ext: string;
 };
@@ -45,6 +46,7 @@ class Watcher extends EventEmitter {
 		output: string;
 		static: string;
 	}
+	host: string;
 	port: number;
 	closed: boolean;
 
@@ -81,6 +83,7 @@ class Watcher extends EventEmitter {
 		hot,
 		'devtools-port': devtools_port,
 		bundler,
+		host = process.env.HOST,
 		port = +process.env.PORT,
 		ext
 	}: Opts) {
@@ -98,6 +101,7 @@ class Watcher extends EventEmitter {
 			static: path.resolve(cwd, static_files)
 		};
 		this.ext = ext;
+		this.host = host;
 		this.port = port;
 		this.closed = false;
 
@@ -126,6 +130,9 @@ class Watcher extends EventEmitter {
 	}
 
 	async init() {
+		if (!this.host) {
+			this.host = 'localhost';
+		}
 		if (this.port) {
 			if (!await ports.check(this.port)) {
 				this.emit('fatal', {
@@ -240,6 +247,7 @@ class Watcher extends EventEmitter {
 						return ports.wait(this.port)
 							.then((() => {
 								this.emit('ready', {
+									host: this.host,
 									port: this.port,
 									process: this.proc
 								} as ReadyEvent);

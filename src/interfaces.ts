@@ -62,6 +62,7 @@ export type ManifestData = {
 };
 
 export type ReadyEvent = {
+	host: string;
 	port: number;
 	process: child_process.ChildProcess;
 };
