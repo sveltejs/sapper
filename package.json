@@ -58,7 +58,7 @@
     "puppeteer": "^5.0.0",
     "require-relative": "^0.8.7",
     "rimraf": "^3.0.2",
-    "rollup": "^2.21.0",
+    "rollup": "^2.28.2",
     "rollup-dependency-tree": "0.0.14",
     "rollup-plugin-css-chunks": "^1.2.6",
     "rollup-plugin-svelte": "^5.1.0",
