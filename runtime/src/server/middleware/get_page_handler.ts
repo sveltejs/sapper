@@ -370,9 +370,9 @@ export function get_page_handler(
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		const path = req.path === '/service-worker-index.html' ? '/' : req.path;
+		const req_path = req.path === '/service-worker-index.html' ? '/' : req.path;
 
-		const page = pages.find(page => page.pattern.test(path));
+		const page = pages.find(p => p.pattern.test(req_path));
 
 		if (page) {
 			handle_page(page, req, res);
