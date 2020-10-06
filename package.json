@@ -69,7 +69,7 @@
     "svelte-loader": "^2.13.6",
     "ts-node": "^8.10.2",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.7",
+    "typescript": "^4.0.3",
     "webpack": "^4.38.0",
     "webpack-format-messages": "^2.0.5",
     "webpack-modules": "^1.0.0"
