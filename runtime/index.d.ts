@@ -1,8 +1,3 @@
-declare module '@sapper/app'
-declare module '@sapper/server'
-declare module '@sapper/service-worker'
-declare module '@sapper/common'
-
 declare module '@sapper/app' {
 	export interface Redirect {
 		statusCode: number
