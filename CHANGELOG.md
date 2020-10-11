@@ -1,5 +1,10 @@
 # sapper changelog
 
+## Unreleased
+
+* Fix dynamic imports in Rollup entry chunk ([#1595](https://github.com/sveltejs/sapper/issues/1595))
+* Remove duplicate TypeScript module definitions ([#1598](https://github.com/sveltejs/sapper/issues/1598))
+
 ## 0.28.10
 
 * Improve error message if exporting site with missing `index.svelte` ([#1390](https://github.com/sveltejs/sapper/issues/1390))
