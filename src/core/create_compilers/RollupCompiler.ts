@@ -222,7 +222,7 @@ export default class RollupCompiler {
 
 						if (chunk_has_css) {
 							has_css = true;
-							chunk.code += `\nimport __inject_styles from './${inject_styles_file}';`;
+							chunk.code = `import __inject_styles from './${inject_styles_file}';\n` + chunk.code;
 						}
 					}
 				}
@@ -241,7 +241,7 @@ export default class RollupCompiler {
 			async generateBundle(this: PluginContext, options: NormalizedOutputOptions, bundle: OutputBundle): Promise<void> {
 
 				function is_route(file_path: string) {
-					return file_path.includes(that.routes) && !file_path.includes(path.sep + '_') && !file_path.endsWith('.css');
+					return file_path.includes(that.routes) && !file_path.endsWith('.css');
 				}
 
 				function js_deps(chunk: RenderedChunk, opts?: DependencyTreeOptions) {
@@ -252,7 +252,7 @@ export default class RollupCompiler {
 				Object.values(bundle)
 					.filter(c => c.type === 'chunk')
 					.forEach(c => that.chunks.push(<OutputChunk>c));
-						
+
 				// Store the build dependencies so that we can create build.json
 				const dependencies = {};
 

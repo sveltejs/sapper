@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Page, PageComponent, ServerRoute, ManifestData } from '../interfaces';
 import { posixify, reserved_words } from '../utils';
 
-export default function create_manifest_data(cwd: string, extensions: string = '.svelte .html'): ManifestData {
+export default function create_manifest_data(cwd: string, extensions = '.svelte .html'): ManifestData {
 
 	const component_extensions = extensions.split(' ');
 
@@ -12,7 +12,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 		throw new Error('As of Sapper 0.21, the routes/ directory should become src/routes/');
 	}
 
-	function find_layout(file_name: string, component_name: string, dir: string = '') {
+	function find_layout(file_name: string, component_name: string, dir = '') {
 		const ext = component_extensions.find((ext) => fs.existsSync(path.join(cwd, dir, `${file_name}${ext}`)));
 		const file = posixify(path.join(dir, `${file_name}${ext}`));
 
@@ -57,15 +57,17 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 				const file = path.relative(cwd, resolved);
 				const is_dir = fs.statSync(resolved).isDirectory();
 
-				const ext = path.extname(basename);
+				const file_ext = path.extname(basename);
 
 				if (basename[0] === '_') return null;
 				if (basename[0] === '.' && basename !== '.well-known') return null;
-				if (!is_dir && !/^\.[a-z]+$/i.test(ext)) return null; // filter out tmp files etc
+				if (!is_dir && !/^\.[a-z]+$/i.test(file_ext)) return null; // filter out tmp files etc
 
-				const segment = is_dir
-					? basename
-					: basename.slice(0, -ext.length);
+				const component_extension = component_extensions.find((ext) => basename.endsWith(ext));
+				const ext = component_extension || file_ext;
+				const is_page = component_extension != null;
+				const segment = is_dir ? basename : basename.slice(0, -ext.length);
+
 
 				if (/\]\[/.test(segment)) {
 					throw new Error(`Invalid route ${file} — parameters must be separated`);
@@ -73,7 +75,6 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 
 				const parts = get_parts(segment);
 				const is_index = is_dir ? false : basename.startsWith('index.');
-				const is_page = component_extensions.indexOf(ext) !== -1;
 				const route_suffix = basename.slice(basename.indexOf('.'), -ext.length);
 
 				parts.forEach(part => {
@@ -139,9 +140,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 						? stack.concat({ component, params })
 						: stack.concat(null)
 				);
-			}
-
-			else if (item.is_page) {
+			} else if (item.is_page) {
 				const component = {
 					name: get_slug(item.file),
 					file: item.file
@@ -157,9 +156,7 @@ export default function create_manifest_data(cwd: string, extensions: string = '
 					pattern: get_pattern(segments, true),
 					parts
 				});
-			}
-
-			else {
+			} else {
 				server_routes.push({
 					name: `route_${get_slug(item.file)}`,
 					pattern: get_pattern(segments, !item.route_suffix),

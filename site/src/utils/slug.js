@@ -7,7 +7,7 @@ export const urlsafeSlugProcessor = string =>
 	slugify(string, {
 		customReplacements: [	// runs before any other transformations
 			['$', 'DOLLAR'], // `$destroy` & co
-			['-', 'DASH'], // conflicts with `separator`
+			['-', 'DASH'] // conflicts with `separator`
 		],
 		separator: SLUG_SEPARATOR,
 		decamelize: false,

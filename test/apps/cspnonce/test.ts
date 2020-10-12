@@ -21,6 +21,9 @@ describe('cspnonce', function() {
 		assert.equal(
 			await r.page.$eval('#hasNonce', node => node.getAttribute('nonce')), 'rAnd0m123'
 		);
+		assert.equal(
+			await r.page.$eval('#hasNonceAgain', node => node.getAttribute('nonce')), 'rAnd0m123'
+		);
 	});
 
 });

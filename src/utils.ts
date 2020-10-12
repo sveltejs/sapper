@@ -52,7 +52,7 @@ export function write_if_changed(file: string, code: string) {
 	}
 }
 
-export function stringify(string: string, includeQuotes: boolean = true) {
+export function stringify(string: string, includeQuotes = true) {
 	const quoted = JSON.stringify(string);
 	return includeQuotes ? quoted : quoted.slice(1, -1);
 }

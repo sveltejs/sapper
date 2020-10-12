@@ -27,10 +27,10 @@ export function get_page_handler(
 
 	const { pages, error: error_route } = manifest;
 
-	function bail(req: Req, res: Res, err: Error) {
+	function bail(res: Res, err: Error | string) {
 		console.error(err);
 
-		const message = dev ? escape_html(err.message) : 'Internal server error';
+		const message = dev ? escape_html(typeof err === 'string' ? err : err.message) : 'Internal server error';
 
 		res.statusCode = 500;
 		res.end(`<pre>${message}</pre>`);
@@ -97,7 +97,7 @@ export function get_page_handler(
 		try {
 			session = await session_getter(req, res);
 		} catch (err) {
-			return bail(req, res, err);
+			return bail(res, err);
 		}
 
 		let redirect: { statusCode: number, location: string };
@@ -192,7 +192,7 @@ export function get_page_handler(
 			preloaded = await Promise.all(toPreload);
 		} catch (err) {
 			if (error) {
-				return bail(req, res, err);
+				return bail(res, err);
 			}
 
 			preload_error = { statusCode: 500, message: err };
@@ -211,7 +211,12 @@ export function get_page_handler(
 			}
 
 			if (preload_error) {
-				handle_error(req, res, preload_error.statusCode, preload_error.message);
+				if (!error) {
+					handle_error(req, res, preload_error.statusCode, preload_error.message);
+				} else {
+					bail(res, preload_error.message);
+				}
+
 				return;
 			}
 
@@ -351,13 +356,13 @@ export function get_page_handler(
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles)
-				.replace('%sapper.cspnonce%', () => nonce_value);
+				.replace(/%sapper\.cspnonce%/g, () => nonce_value);
 
 			res.statusCode = status;
 			res.end(body);
 		} catch (err) {
 			if (error) {
-				bail(req, res, err);
+				bail(res, err);
 			} else {
 				handle_error(req, res, 500, err);
 			}
@@ -365,20 +370,15 @@ export function get_page_handler(
 	}
 
 	return function find_route(req: Req, res: Res, next: () => void) {
-		if (req.path === '/service-worker-index.html') {
-			const homePage = pages.find(page => page.pattern.test('/'));
-			handle_page(homePage, req, res);
-			return;
-		}
+		const req_path = req.path === '/service-worker-index.html' ? '/' : req.path;
 
-		for (const page of pages) {
-			if (page.pattern.test(req.path)) {
-				handle_page(page, req, res);
-				return;
-			}
-		}
+		const page = pages.find(p => p.pattern.test(req_path));
 
-		handle_error(req, res, 404, 'Not found');
+		if (page) {
+			handle_page(page, req, res);
+		} else {
+			handle_error(req, res, 404, 'Not found');
+		}
 	};
 }
 

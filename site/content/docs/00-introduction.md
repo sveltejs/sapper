@@ -49,3 +49,11 @@ npm run dev
 ```
 
 This will scaffold a new project in the `my-app` directory, install its dependencies, and start a server on [localhost:3000](http://localhost:3000). Try editing the files to get a feel for how everything works – you may not need to bother reading the rest of this guide!
+
+#### TypeScript support
+
+Sapper supports TypeScript. If you are using the template with Rollup as described in "Getting started" you can convert your project to TypeScript simply by running:
+
+```bash
+node scripts/setupTypeScript.js
+```

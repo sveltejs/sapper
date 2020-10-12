@@ -19,11 +19,11 @@ export function set_cid(n: number) {
 	cid = n;
 }
 
-const _history = typeof history !== 'undefined' ? history : {
-	pushState: (state: any, title: string, href: string) => {},
-	replaceState: (state: any, title: string, href: string) => {},
-	scrollRestoration: ''
-};
+const _history: History = typeof history !== 'undefined' ? history : {
+	pushState: () => {},
+	replaceState: () => {},
+	scrollRestoration: 'auto'
+} as Partial<History> as any;
 export { _history as history };
 
 export const scroll_history: Record<string, ScrollPosition> = {};
@@ -185,7 +185,7 @@ function handle_popstate(event: PopStateEvent) {
 	}
 }
 
-export async function navigate(dest: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
+export async function navigate(dest: Target, id: number, noscroll?: boolean, hash?: string): Promise<void> {
 	const popstate = !!id;
 	if (popstate) {
 		cid = id;

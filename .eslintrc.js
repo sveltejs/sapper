@@ -3,8 +3,8 @@ module.exports = {
 	extends: '@sveltejs',
 	plugins: ['import'],
 	settings: {
-		"import/resolver": {
+		'import/resolver': {
 			typescript: {} // this loads <rootdir>/tsconfig.json to eslint
-		},
-	},
+		}
+	}
 };

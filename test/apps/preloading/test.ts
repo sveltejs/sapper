@@ -126,7 +126,7 @@ describe('preloading', function() {
 
 		assert.strictEqual(
 			await r.text('pre'),
-			`{"foo":"1"}`
+			'{"foo":"1"}'
 		);
 
 		await r.page.click('a[href="echo?foo=2"]');
@@ -134,7 +134,7 @@ describe('preloading', function() {
 
 		assert.strictEqual(
 			await r.text('pre'),
-			`{"foo":"2"}`
+			'{"foo":"2"}'
 		);
 	});
 });

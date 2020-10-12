@@ -5,7 +5,7 @@ import { start } from '../../common.js';
 
 const app = polka()
 	.use((req, res, next) => {
-		res.locals = { nonce: "rAnd0m123"};
+		res.locals = { nonce: 'rAnd0m123'};
 		next();
 	})
 	.use(sapper.middleware());

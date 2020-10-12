@@ -99,7 +99,7 @@ export class AppRunner {
 		return this.page.$eval(selector, node => node.textContent);
 	}
 
-	wait(extra_ms: number = 0) {
+	wait(extra_ms = 0) {
 		return wait(DELAY + extra_ms);
 	}
 

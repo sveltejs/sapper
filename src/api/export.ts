@@ -229,7 +229,7 @@ async function _export({
 			link.refs.forEach((ref: Ref) => {
 				if (ref.rel === 'preload' || ref.rel === 'modulepreload') {
 					body = (body as string).replace('</head>',
-						`<link rel="preload" as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)} ${ref.as === 'script' ? 'crossorigin="use-credentials"' : ''}></head>`);
+						`<link rel=${JSON.stringify(ref.rel)} as=${JSON.stringify(ref.as)} href=${JSON.stringify(ref.uri)} ${ref.as === 'script' ? 'crossorigin="use-credentials"' : ''}></head>`);
 				}
 			});
 

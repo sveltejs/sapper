@@ -65,8 +65,7 @@ function exportQueue({ concurrent, handleFetch, handleResponse, fetchOpts, callb
 			p.then((ret?: any) => {
 				res(ret);
 				processQueue();
-			})
-			.catch((err: Error) => {
+			}).catch((err: Error) => {
 				rej(err);
 				processQueue();
 			});
