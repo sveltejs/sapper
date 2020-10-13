@@ -1,4 +1,7 @@
 declare module '@sapper/app' {
+	import { Readable, Writable } from 'svelte/store';
+	import { PageContext } from '@sapper/app/types';
+
 	export interface Redirect {
 		statusCode: number
 		location: string
@@ -8,7 +11,11 @@ declare module '@sapper/app' {
 	export function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>;
 	export function prefetchRoutes(pathnames: string[]): Promise<void>;
 	export function start(opts: { target: Node }): Promise<void>;
-	export const stores: () => unknown;
+	export function stores(): {
+		preloading: Readable<boolean>
+		page: Readable<PageContext>
+		session: Writable<any>
+	};
 }
 
 declare module '@sapper/server' {
@@ -39,15 +46,9 @@ declare module '@sapper/common' {
 		redirect: (statusCode: number, location: string) => void;
 	}
 
-	export interface Page {
-		host: string;
-		path: string;
-		params: Record<string, string>;
-		query: Record<string, string | string[]>;
-		error?: Error;
-	}
+	export { PageContext as Page } from '@sapper/app/types';
 
 	export interface Preload {
-		(this: PreloadContext, page: Page, session: any): object | Promise<object>;
+		(this: PreloadContext, page: PageContext, session: any): object | Promise<object>;
 	}
 }
