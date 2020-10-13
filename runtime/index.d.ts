@@ -28,7 +28,7 @@ declare module '@sapper/server' {
 		ignore?: Ignore
 	}
 
-	export function middleware(opts: MiddlewareOptions): Handler;
+	export function middleware(opts?: MiddlewareOptions): Handler;
 }
 
 declare module '@sapper/service-worker' {
