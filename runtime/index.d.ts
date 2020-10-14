@@ -34,7 +34,7 @@ declare module '@sapper/service-worker' {
 
 declare module '@sapper/common' {
 	export interface PreloadContext {
-		fetch: (url: string, options?: any) => Promise<any>;
+		fetch: (url: string, options?: any) => Promise<Response>;
 		error: (statusCode: number, message: Error | string) => void;
 		redirect: (statusCode: number, location: string) => void;
 	}
