@@ -26,7 +26,7 @@ type Opts = {
 
 export async function build({
 	cwd,
-	root,
+	root = undefined,
 	src = 'src',
 	routes = 'src/routes',
 	output = 'src/node_modules/@sapper',
@@ -40,7 +40,7 @@ export async function build({
 }: Opts = {}) {
 
 	cwd = path.resolve(cwd);
-	root = path.resolve(root);
+	root = root ? path.resolve(root) : cwd;
 	src = path.resolve(cwd, src);
 	dest = path.resolve(cwd, dest);
 	routes = path.resolve(cwd, routes);
