@@ -7,10 +7,10 @@ declare module '@sapper/app' {
 		location: string
 	}
 
-	export function goto(href: string, opts: { noscroll?: boolean, replaceState?: boolean }): Promise<void>;
+	export function goto(href: string, opts?: { noscroll?: boolean, replaceState?: boolean }): Promise<void>;
 	export function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>;
 	export function prefetchRoutes(pathnames: string[]): Promise<void>;
-	export function start(opts: { target: Node }): Promise<void>;
+	export function start(opts: { target: Element }): Promise<void>;
 	export function stores(): {
 		preloading: Readable<boolean>
 		page: Readable<PageContext>
