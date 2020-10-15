@@ -21,16 +21,16 @@ declare module '@sapper/app' {
 declare module '@sapper/server' {
 	import { ClientRequest, ServerResponse } from 'http';
 
-  export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
+	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
 
-  export interface MiddlewareOptions {
-    session?: (req: ClientRequest, res: ServerResponse) => unknown;
-    ignore?: Ignore;
-  }
+	export interface MiddlewareOptions {
+		session?: (req: ClientRequest, res: ServerResponse) => unknown;
+		ignore?: Ignore;
+	}
 
-  export function middleware(
-    opts: MiddlewareOptions
-  ): (req: ClientRequest, res: ServerResponse, next: () => void) => void;
+	export function middleware(
+		opts: MiddlewareOptions
+	): (req: ClientRequest, res: ServerResponse, next: () => void) => void;
 }
 
 declare module '@sapper/service-worker' {
