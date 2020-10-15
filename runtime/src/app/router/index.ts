@@ -6,7 +6,6 @@ import {
 	ignore,
 	routes
 } from '@sapper/internal/manifest-client';
-import { Query } from '@sapper/internal/shared';
 import find_anchor from './find_anchor';
 
 export let uid = 1;
