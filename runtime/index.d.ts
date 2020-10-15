@@ -57,7 +57,14 @@ declare module '@sapper/common' {
 		error?: Error;
 	}
 
+	/**
+	 * @deprecated PageContext is the preferred name. Page might be removed in the future.
+	 */
+	export { PageContext as Page };
+
+	export type PreloadResult = object | Promise<object>
+
 	export interface Preload {
-		(this: PreloadContext, page: PageContext, session: any): object | Promise<object>;
+		(this: PreloadContext, page: PageContext, session: any): PreloadResult;
 	}
 }

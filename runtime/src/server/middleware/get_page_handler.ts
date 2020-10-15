@@ -7,9 +7,8 @@ import fetch from 'node-fetch';
 import URL from 'url';
 import { sourcemap_stacktrace } from './sourcemap_stacktrace';
 import { Manifest, ManifestPage, Req, Res, build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
-import { PreloadResult } from '@sapper/internal/shared';
 import App from '@sapper/internal/App.svelte';
-import { PageContext } from '@sapper/common';
+import { PageContext, PreloadResult } from '@sapper/common';
 
 export function get_page_handler(
 	manifest: Manifest,
