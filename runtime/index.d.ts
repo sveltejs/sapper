@@ -19,18 +19,64 @@ declare module '@sapper/app' {
 }
 
 declare module '@sapper/server' {
-	import { ClientRequest, ServerResponse } from 'http';
+	import { IncomingMessage, ServerResponse } from 'http';
+	import { TLSSocket } from 'tls';
 
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
 
+	/**
+	 * The request object passed to middleware and server-side routes. 
+	 * These fields are common to both Polka and Express, but you are free to 
+	 * instead use the typings that come with the server you use.
+	 */
+	export interface Req extends IncomingMessage {
+		url: string;
+		method: string;	
+		baseUrl: string;
+	
+		/**
+		 * The originally requested URL, including parent router segments.
+		 */
+		originalUrl: string;
+	
+		/**
+		 * The path portion of the requested URL.
+		 */
+		path: string;
+	
+		/**
+		 * The values of named parameters within your route pattern
+		 */
+		params: Record<string, string>;
+	
+		/**
+		 * The un-parsed querystring
+		 */
+		search: string | null;
+	
+		/**
+		 * The parsed querystring
+		 */
+		query: Record<string, string>;
+
+		socket: TLSSocket;
+	}
+
+	export interface Res extends ServerResponse {
+		locals?: {
+			nonce?: string;
+			name?: string;
+		};
+	}
+		
 	export interface MiddlewareOptions {
-		session?: (req: ClientRequest, res: ServerResponse) => unknown;
+		session?: (req: Req, res: Res) => unknown;
 		ignore?: Ignore;
 	}
 
 	export function middleware(
 		opts: MiddlewareOptions
-	): (req: ClientRequest, res: ServerResponse, next: () => void) => void;
+	): (req: Req, res: Res, next: () => void) => void;
 }
 
 declare module '@sapper/service-worker' {

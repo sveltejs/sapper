@@ -1,5 +1,3 @@
-import { ClientRequest, ServerResponse } from 'http';
-import { TLSSocket } from 'tls';
 import {
 	Preload
 } from './shared';
@@ -8,6 +6,8 @@ export const src_dir: string;
 export const build_dir: string;
 export const dev: boolean;
 export const manifest: Manifest;
+
+export { Req, Res } from '@sapper/server';
 
 export interface SSRComponentModule {
 	default: SSRComponent;
@@ -43,26 +43,6 @@ export interface ManifestPagePart {
 }
 
 export type Handler = (req: Req, res: Res, next: () => void) => void;
-
-export interface Req extends ClientRequest {
-	url: string;
-	baseUrl: string;
-	originalUrl: string;
-	method: string;
-	path: string;
-	params: Record<string, string>;
-	query: Record<string, string>;
-	headers: Record<string, string>;
-	socket: TLSSocket;
-}
-
-export interface Res extends ServerResponse {
-	write: (data: any) => boolean;
-	locals?: {
-		nonce?: string;
-		name?: string;
-	};
-}
 
 export interface ServerRoute {
 	pattern: RegExp;
