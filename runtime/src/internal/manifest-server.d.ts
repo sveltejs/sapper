@@ -7,7 +7,7 @@ export const build_dir: string;
 export const dev: boolean;
 export const manifest: Manifest;
 
-export { Req, Res } from '@sapper/server';
+export { SapperRequest, SapperResponse } from '@sapper/server';
 
 export interface SSRComponentModule {
 	default: SSRComponent;

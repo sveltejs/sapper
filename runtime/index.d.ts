@@ -29,7 +29,7 @@ declare module '@sapper/server' {
 	 * These fields are common to both Polka and Express, but you are free to 
 	 * instead use the typings that come with the server you use.
 	 */
-	export interface Req extends IncomingMessage {
+	export interface SapperRequest extends IncomingMessage {
 		url: string;
 		method: string;	
 		baseUrl: string;
@@ -62,7 +62,7 @@ declare module '@sapper/server' {
 		socket: TLSSocket;
 	}
 
-	export interface Res extends ServerResponse {
+	export interface SapperResponse extends ServerResponse {
 		locals?: {
 			nonce?: string;
 			name?: string;
@@ -70,13 +70,13 @@ declare module '@sapper/server' {
 	}
 		
 	export interface MiddlewareOptions {
-		session?: (req: Req, res: Res) => unknown;
+		session?: (req: SapperRequest, res: SapperResponse) => unknown;
 		ignore?: Ignore;
 	}
 
 	export function middleware(
 		opts: MiddlewareOptions
-	): (req: Req, res: Res, next: () => void) => void;
+	): (req: SapperRequest, res: SapperResponse, next: () => void) => void;
 }
 
 declare module '@sapper/service-worker' {
