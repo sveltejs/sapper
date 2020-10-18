@@ -7,6 +7,7 @@ import {
 	routes
 } from '@sapper/internal/manifest-client';
 import find_anchor from './find_anchor';
+import { Page, Query } from '@sapper/common';
 
 export let uid = 1;
 export function set_uid(n: number) {
@@ -67,7 +68,7 @@ export function init(base: string, handler: (dest: Target) => Promise<void>): vo
 }
 
 export function extract_query(search: string) {
-	const query: Record<string, string | string[]> = Object.create(null);
+	const query: Query = Object.create(null);
 	if (search.length > 0) {
 		search.slice(1).split('&').forEach(searchParam => {
 			const [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
@@ -102,7 +103,7 @@ export function select_target(url: URL): Target {
 			const part = route.parts[route.parts.length - 1];
 			const params = part.params ? part.params(match) : {};
 
-			const page = { host: location.host, path, query, params };
+			const page: Page = { host: location.host, path, query, params };
 
 			return { href: url.href, route, match, page };
 		}

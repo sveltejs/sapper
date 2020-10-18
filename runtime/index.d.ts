@@ -94,11 +94,14 @@ declare module '@sapper/common' {
 		redirect: (statusCode: number, location: string) => void;
 	}
 
+	export type PageParams = Record<string, string>;
+	export type Query = Record<string, string | string[]>;
+	
 	export interface PageContext {
 		host: string;
 		path: string;
-		params: Record<string, string>;
-		query: Record<string, string | string[]>;
+		params: PageParams;
+		query: Query;
 		/** `error` is only set when the error page is being rendered. */
 		error?: Error;
 	}
