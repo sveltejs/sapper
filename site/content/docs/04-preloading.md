@@ -2,7 +2,15 @@
 title: Preloading
 ---
 
-As seen in the [routing](docs#Routing) section, page components can have an optional `preload` function that will load some data that the page depends on. This is similar to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
+Page components can define a `preload` function that runs before the component is created. The values it returns are passed as props to the page.
+
+Preload functions are typically used to load data that the page depends on, hence its name. This avoids the user seeing the page update as it loads, as is typically the case with client-side loading.
+
+Preload is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
+
+Note that `preload` will run both on the server side and on the client side. It may therefore not reference any APIs only present in the browser.
+
+The following code shows how to load a blog post and pass it to the page in the `article` prop:
 
 ```html
 <script context="module">
@@ -21,10 +29,11 @@ As seen in the [routing](docs#Routing) section, page components can have an opti
 </script>
 
 <h1>{article.title}</h1>
-
 ```
 
-It lives in a `context="module"` script — see the [tutorial](https://svelte.dev/tutorial/module-exports) — because it's not part of the component instance itself; instead, it runs *before* the component is created, allowing you to avoid flashes while data is fetched.
+The [routing section](docs#Routing) describes how the dynamic parameter `slug` works.
+
+It should be defined in a `context="module"` script since it is not part of the component instance itself – it runs before the component has been created. See the [tutorial](https://svelte.dev/tutorial/module-exports) for more on the module context.
 
 ### Arguments
 

@@ -17,6 +17,7 @@ import {
 } from '@sapper/internal/manifest-server';
 import App from '@sapper/internal/App.svelte';
 import { PageContext, PreloadResult } from '@sapper/common';
+import detectClientOnlyReferences from './detect_client_only_references';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -173,12 +174,18 @@ export function get_page_handler(
 
 		try {
 			const root_preload = manifest.root_comp.preload || (() => {});
-			const root_preloaded: PreloadResult = root_preload.call(preload_context, {
-					host: req.headers.host,
-					path: req.path,
-					query: req.query,
-					params: {}
-				}, session);
+			const root_preloaded: PreloadResult = detectClientOnlyReferences(() =>
+				root_preload.call(
+					preload_context,
+					{
+						host: req.headers.host,
+						path: req.path,
+						query: req.query,
+						params: {}
+					},
+					session
+				)
+			);
 
 			match = error ? null : page.pattern.exec(req.path);
 
@@ -191,12 +198,18 @@ export function get_page_handler(
 					params = part.params ? part.params(match) : {};
 
 					return part.component.preload
-						? part.component.preload.call(preload_context, {
-							host: req.headers.host,
-							path: req.path,
-							query: req.query,
-							params
-						}, session)
+						? detectClientOnlyReferences(() =>
+								part.component.preload.call(
+									preload_context,
+									{
+										host: req.headers.host,
+										path: req.path,
+										query: req.query,
+										params
+									},
+									session
+								)
+						  )
 						: {};
 				}));
 			}
@@ -296,7 +309,7 @@ export function get_page_handler(
 				}
 			}
 
-			const { html, head, css } = App.render(props);
+			const { html, head, css } = detectClientOnlyReferences(() => App.render(props));
 
 			const serialized = {
 				preloaded: `[${preloaded.map(data => try_serialize(data, err => {
