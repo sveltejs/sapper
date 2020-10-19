@@ -75,7 +75,7 @@ declare module '@sapper/server' {
 	}
 
 	export function middleware(
-		opts: MiddlewareOptions
+		opts?: MiddlewareOptions
 	): (req: SapperRequest, res: SapperResponse, next: () => void) => void;
 }
 

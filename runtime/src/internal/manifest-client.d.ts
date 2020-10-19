@@ -1,3 +1,4 @@
+import { PageParams } from '@sapper/common';
 import {
 	Preload
 } from './shared';
@@ -24,7 +25,7 @@ export interface Route {
 	pattern: RegExp;
 	parts: Array<{
 		i: number;
-		params?: (match: RegExpExecArray) => Record<string, string>;
+		params?: (match: RegExpExecArray) => PageParams;
 	}>;
 }
 

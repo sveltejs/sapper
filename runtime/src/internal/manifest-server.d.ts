@@ -42,7 +42,7 @@ export interface ManifestPagePart {
 	params?: (match: RegExpMatchArray | null) => Record<string, string>;
 }
 
-export type Handler = (req: Req, res: Res, next: () => void) => void;
+export type Handler = (req: SapperRequest, res: SapperResponse, next: () => void) => void;
 
 export interface ServerRoute {
 	pattern: RegExp;
