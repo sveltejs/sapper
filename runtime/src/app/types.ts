@@ -45,11 +45,3 @@ export interface Page {
 	params: Record<string, string>;
 	query: Record<string, string | string[]>;
 }
-
-/**
- * Information about the current page in the `page` store.
- */
-export interface PageContext extends Page {
-	/** `error` is only set when the error page is being rendered. */
-	error?: Error;
-}

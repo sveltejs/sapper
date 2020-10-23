@@ -1,3 +1,10 @@
+/*
+ * This file declares all Sapper types that are accessible to project code.
+ * It is created in src/node_modules/@sapper in projects during the build.
+ * It must not import any internal Sapper types as it will not be possible for
+ * project code to reference those.
+ */
+
 declare module '@sapper/app' {
 	export interface Redirect {
 		statusCode: number
@@ -12,16 +19,64 @@ declare module '@sapper/app' {
 }
 
 declare module '@sapper/server' {
-	import { Handler, Req, Res } from '@sapper/internal/manifest-server';
+	import { IncomingMessage, ServerResponse } from 'http';
+	import { TLSSocket } from 'tls';
 
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
 
-	export interface MiddlewareOptions {
-		session?: (req: Req, res: Res) => unknown
-		ignore?: Ignore
+	/**
+	 * The request object passed to middleware and server-side routes. 
+	 * These fields are common to both Polka and Express, but you are free to 
+	 * instead use the typings that come with the server you use.
+	 */
+	export interface SapperRequest extends IncomingMessage {
+		url: string;
+		method: string;	
+		baseUrl: string;
+	
+		/**
+		 * The originally requested URL, including parent router segments.
+		 */
+		originalUrl: string;
+	
+		/**
+		 * The path portion of the requested URL.
+		 */
+		path: string;
+	
+		/**
+		 * The values of named parameters within your route pattern
+		 */
+		params: Record<string, string>;
+	
+		/**
+		 * The un-parsed querystring
+		 */
+		search: string | null;
+	
+		/**
+		 * The parsed querystring
+		 */
+		query: Record<string, string>;
+
+		socket: TLSSocket;
 	}
 
-	export function middleware(opts: MiddlewareOptions): Handler;
+	export interface SapperResponse extends ServerResponse {
+		locals?: {
+			nonce?: string;
+			name?: string;
+		};
+	}
+		
+	export interface MiddlewareOptions {
+		session?: (req: SapperRequest, res: SapperResponse) => unknown;
+		ignore?: Ignore;
+	}
+
+	export function middleware(
+		opts?: MiddlewareOptions
+	): (req: SapperRequest, res: SapperResponse, next: () => void) => void;
 }
 
 declare module '@sapper/service-worker' {
@@ -39,15 +94,26 @@ declare module '@sapper/common' {
 		redirect: (statusCode: number, location: string) => void;
 	}
 
-	export interface Page {
+	export type PageParams = Record<string, string>;
+	export type Query = Record<string, string | string[]>;
+	
+	export interface PageContext {
 		host: string;
 		path: string;
-		params: Record<string, string>;
-		query: Record<string, string | string[]>;
+		params: PageParams;
+		query: Query;
+		/** `error` is only set when the error page is being rendered. */
 		error?: Error;
 	}
 
+	/**
+	 * @deprecated PageContext is the preferred name. Page might be removed in the future.
+	 */
+	export { PageContext as Page };
+
+	export type PreloadResult = object | Promise<object>
+
 	export interface Preload {
-		(this: PreloadContext, page: Page, session: any): object | Promise<object>;
+		(this: PreloadContext, page: PageContext, session: any): PreloadResult;
 	}
 }

@@ -1,7 +1,7 @@
-import { Req, Res, ServerRoute } from '@sapper/internal/manifest-server';
+import { SapperRequest, SapperResponse, ServerRoute } from '@sapper/internal/manifest-server';
 
 export function get_server_route_handler(routes: ServerRoute[]) {
-	async function handle_route(route: ServerRoute, req: Req, res: Res, next: () => void) {
+	async function handle_route(route: ServerRoute, req: SapperRequest, res: SapperResponse, next: () => void) {
 		req.params = route.params(route.pattern.exec(req.path));
 
 		const method = req.method.toLowerCase();
@@ -63,7 +63,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 		}
 	}
 
-	return function find_route(req: Req, res: Res, next: () => void) {
+	return function find_route(req: SapperRequest, res: SapperResponse, next: () => void) {
 		for (const route of routes) {
 			if (route.pattern.test(req.path)) {
 				handle_route(route, req, res, next);
