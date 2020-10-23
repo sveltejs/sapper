@@ -88,8 +88,12 @@ declare module '@sapper/service-worker' {
 }
 
 declare module '@sapper/common' {
+
+	import type fetchType from 'node-fetch';
+	export type FetchResponse = Response | ReturnType<typeof fetchType>;
+
 	export interface PreloadContext {
-		fetch: (url: string, options?: any) => Promise<any>;
+		fetch: (url: string, options?: any) => Promise<FetchResponse>;
 		error: (statusCode: number, message: Error | string) => void;
 		redirect: (statusCode: number, location: string) => void;
 	}
