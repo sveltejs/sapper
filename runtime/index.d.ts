@@ -11,10 +11,10 @@ declare module '@sapper/app' {
 	export function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>;
 	export function prefetchRoutes(pathnames: string[]): Promise<void>;
 	export function start(opts: { target: Node }): Promise<void>;
-	export function stores(): {
+	export function stores<Session = any>(): {
 		preloading: Readable<boolean>
 		page: Readable<PageContext>
-		session: Writable<any>
+		session: Writable<Session>
 	};
 }
 
