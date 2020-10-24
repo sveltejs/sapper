@@ -91,6 +91,14 @@ describe('errors', function() {
 		assert.ok(didLayoutGetError);
 	});
 
+	it('displays a good error messsage when accessing "document" variable on server', async () => {
+		await r.load('/access_document');
+
+		const stack = await r.text('span');
+
+		assert.ok(stack.includes('client only'));
+	});
+
 	it('does not replace server side rendered error', async () => {
 		await r.load('/preload-reject');
 		await r.sapper.start();

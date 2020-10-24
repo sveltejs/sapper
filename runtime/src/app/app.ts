@@ -18,9 +18,9 @@ import {
 	Redirect,
 	Branch,
 	Page,
-	PageContext,
 	InitialData
 } from './types';
+import { PageContext } from '@sapper/common';
 import goto from './goto';
 import { page_store } from './stores';
 
