@@ -6,16 +6,23 @@
  */
 
 declare module '@sapper/app' {
+	import { Readable, Writable } from 'svelte/store';
+	import { PageContext } from '@sapper/common';
+
 	export interface Redirect {
 		statusCode: number
 		location: string
 	}
 
-	export function goto(href: string, opts: { noscroll?: boolean, replaceState?: boolean }): Promise<void>;
+	export function goto(href: string, opts?: { noscroll?: boolean, replaceState?: boolean }): Promise<void>;
 	export function prefetch(href: string): Promise<{ redirect?: Redirect; data?: unknown }>;
 	export function prefetchRoutes(pathnames: string[]): Promise<void>;
 	export function start(opts: { target: Node }): Promise<void>;
-	export const stores: () => unknown;
+	export function stores<Session = any>(): {
+		preloading: Readable<boolean>
+		page: Readable<PageContext>
+		session: Writable<Session>
+	};
 }
 
 declare module '@sapper/server' {
