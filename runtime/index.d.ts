@@ -7,7 +7,7 @@
 
 declare module '@sapper/app' {
 	import { Readable, Writable } from 'svelte/store';
-	import { PageContext } from '@sapper/app/types';
+	import { PageContext } from '@sapper/common';
 
 	export interface Redirect {
 		statusCode: number
