@@ -7,7 +7,7 @@
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
-		"lib": ["es5", "es6", "dom"],
+		"lib": ["es5", "es6", "dom", "dom.iterable"],
 		"importHelpers": true,
 		"target": "ES6",
 		"baseUrl": ".",
