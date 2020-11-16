@@ -22,6 +22,7 @@ prog.command('dev')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
 	.option('--dev-port', 'Specify a port for development server')
+	.option('--dev-port-timeout', 'Specify a timeout for the dev port watcher', 5000)
 	.option('--hot', 'Use hot module replacement (requires webpack)', true)
 	.option('--live', 'Reload on changes if not using --hot', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
@@ -36,6 +37,7 @@ prog.command('dev')
 		port: number;
 		open: boolean;
 		'dev-port': number;
+		'dev-port-timeout': number;
 		live: boolean;
 		hot: boolean;
 		bundler?: 'rollup' | 'webpack';
@@ -59,6 +61,7 @@ prog.command('dev')
 				dest: opts['build-dir'],
 				port: opts.port,
 				'dev-port': opts['dev-port'],
+				'dev-port-timeout': opts['dev-port-timeout'],
 				live: opts.live,
 				hot: opts.hot,
 				bundler: opts.bundler,

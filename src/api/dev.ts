@@ -23,6 +23,7 @@ type Opts = {
 	output?: string;
 	static?: string;
 	'dev-port'?: number;
+	'dev-port-timeout'?: number;
 	live?: boolean;
 	hot?: boolean;
 	'devtools-port'?: number;
@@ -49,6 +50,7 @@ class Watcher extends EventEmitter {
 	closed: boolean;
 
 	dev_port: number;
+	dev_port_timeout: number;
 	live: boolean;
 	hot: boolean;
 
@@ -77,6 +79,7 @@ class Watcher extends EventEmitter {
 		static: static_files = 'static',
 		dest = '__sapper__/dev',
 		'dev-port': dev_port,
+		'dev-port-timeout': dev_port_timeout = 5000, // Value found in `port-authority` https://github.com/Rich-Harris/port-authority/blob/master/src/wait.ts#L3
 		live,
 		hot,
 		'devtools-port': devtools_port,
@@ -102,6 +105,7 @@ class Watcher extends EventEmitter {
 		this.closed = false;
 
 		this.dev_port = dev_port;
+		this.dev_port_timeout = dev_port_timeout;
 		this.live = live;
 		this.hot = hot;
 
@@ -237,7 +241,7 @@ class Watcher extends EventEmitter {
 					const restart = () => {
 						this.crashed = false;
 
-						return ports.wait(this.port)
+						return ports.wait(this.port, { timeout: this.dev_port_timeout })
 							.then((() => {
 								this.emit('ready', {
 									port: this.port,
