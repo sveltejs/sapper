@@ -3,4 +3,4 @@
  * (@sapper/common is a namespace defined in index.d.ts)
  */
 
- export default null;
+export default null;
