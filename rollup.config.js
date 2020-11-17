@@ -53,6 +53,7 @@ export default [
 		output: {
 			dir: 'dist',
 			format: 'cjs',
+			interop: false,
 			sourcemap: true,
 			chunkFileNames: '[name].js'
 		},
