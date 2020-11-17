@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as http from 'http';
+import CheapWatch from 'cheap-watch';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
 import { EventEmitter } from 'events';
@@ -493,7 +494,7 @@ function watch_dir(
 	let watch: any;
 	let closed = false;
 
-	import('cheap-watch').then(({ default: CheapWatch }) => {
+	Promise.resolve().then(() => {
 		if (closed) return;
 
 		watch = new CheapWatch({ dir, filter, debounce: 50 });
