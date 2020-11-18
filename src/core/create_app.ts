@@ -172,6 +172,12 @@ function generate_server_manifest(
 		`import error from ${stringify(get_file(path_to_routes, manifest_data.error))};`
 	);
 
+	if (manifest_data.error_handler_file) {
+		imports.push(`import error_handler from ${stringify(posixify(`${path_to_routes}/${manifest_data.error_handler_file}`))};`);
+	} else {
+		imports.push('const error_handler = null;');
+	}
+
 	const component_lookup: Record<string, number> = {};
 	manifest_data.components.forEach((component, i) => {
 		component_lookup[component.name] = i;
@@ -224,7 +230,8 @@ function generate_server_manifest(
 			],
 
 			root_comp,
-			error
+			error,
+			error_handler
 		};
 
 		export const build_dir = ${JSON.stringify(build_dir)};

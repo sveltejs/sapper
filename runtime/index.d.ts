@@ -32,35 +32,35 @@ declare module '@sapper/server' {
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
 
 	/**
-	 * The request object passed to middleware and server-side routes. 
-	 * These fields are common to both Polka and Express, but you are free to 
+	 * The request object passed to middleware and server-side routes.
+	 * These fields are common to both Polka and Express, but you are free to
 	 * instead use the typings that come with the server you use.
 	 */
 	export interface SapperRequest extends IncomingMessage {
 		url: string;
-		method: string;	
+		method: string;
 		baseUrl: string;
-	
+
 		/**
 		 * The originally requested URL, including parent router segments.
 		 */
 		originalUrl: string;
-	
+
 		/**
 		 * The path portion of the requested URL.
 		 */
 		path: string;
-	
+
 		/**
 		 * The values of named parameters within your route pattern
 		 */
 		params: Record<string, string>;
-	
+
 		/**
 		 * The un-parsed querystring
 		 */
 		search: string | null;
-	
+
 		/**
 		 * The parsed querystring
 		 */
@@ -75,7 +75,13 @@ declare module '@sapper/server' {
 			name?: string;
 		};
 	}
-		
+
+	export type SapperNext = (err?: any) => void;
+
+	export type SapperHandler = (req: SapperRequest, res: SapperResponse, next: SapperNext) => void;
+
+	export type SapperErrorHandler = (err?: any, req: SapperRequest, res: SapperResponse, next: SapperNext) => void;
+
 	export interface MiddlewareOptions {
 		session?: (req: SapperRequest, res: SapperResponse) => unknown;
 		ignore?: Ignore;
@@ -83,7 +89,7 @@ declare module '@sapper/server' {
 
 	export function middleware(
 		opts?: MiddlewareOptions
-	): (req: SapperRequest, res: SapperResponse, next: () => void) => void;
+	): SapperHandler;
 }
 
 declare module '@sapper/service-worker' {
@@ -95,7 +101,6 @@ declare module '@sapper/service-worker' {
 }
 
 declare module '@sapper/common' {
-
 	import type fetchType from 'node-fetch';
 	export type FetchResponse = Response | ReturnType<typeof fetchType>;
 
@@ -107,7 +112,7 @@ declare module '@sapper/common' {
 
 	export type PageParams = Record<string, string>;
 	export type Query = Record<string, string | string[]>;
-	
+
 	export interface PageContext {
 		host: string;
 		path: string;

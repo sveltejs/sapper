@@ -59,6 +59,7 @@ export type ManifestData = {
 	components: PageComponent[];
 	pages: Page[];
 	server_routes: ServerRoute[];
+	error_handler_file?: string;
 };
 
 export type ReadyEvent = {

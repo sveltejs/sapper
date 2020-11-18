@@ -24,6 +24,19 @@ export default function create_manifest_data(cwd: string, extensions = '.svelte 
 			: null;
 	}
 
+	function find_handler(file_name: string, dir = '') {
+		const handler_basename = fs.readdirSync(path.join(cwd, dir)).find(basename => {
+			const ext = path.extname(basename);
+			basename = path.basename(basename, ext);
+
+			return (basename === file_name && !component_extensions.includes(ext));
+		});
+
+		if (handler_basename) {
+			return posixify(path.join(dir, handler_basename));
+		}
+	}
+
 	const components: PageComponent[] = [];
 	const pages: Page[] = [];
 	const server_routes: ServerRoute[] = [];
@@ -198,12 +211,15 @@ export default function create_manifest_data(cwd: string, extensions = '.svelte 
 		seen_routes.set(pattern, route);
 	});
 
+	const error_handler_file = find_handler('_error');
+
 	return {
 		root,
 		error,
 		components,
 		pages,
-		server_routes
+		server_routes,
+		error_handler_file
 	};
 }
 

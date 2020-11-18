@@ -118,9 +118,9 @@ export async function get(req, res, next) {
 If you are using TypeScript, use the following types:
 
 ```js
-import { SapperRequest, SapperResponse } from '@sapper/server';
+import { SapperRequest, SapperResponse, SapperNext } from '@sapper/server';
 
-function get(req: SapperRequest, res: SapperResponse, next: () => void) { ... }
+function get(req: SapperRequest, res: SapperResponse, next: SapperNext) { ... }
 ```
 
 `SapperRequest` and `SapperResponse` will work with both Polka and Express. You can replace them with the types specific to your server, which are `polka.Request` / `http.ServerResponse` and `express.Request` / `express.Response`, respectively.

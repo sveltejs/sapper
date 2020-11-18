@@ -127,13 +127,10 @@ describe('errors', function() {
 		assert.equal(didLayoutGetError, false);
 	});
 
-	it('does not serve error page for thrown non-page errors', async () => {
+	it('does serve error page for thrown non-page errors', async () => {
 		await r.load('/throw.json');
 
-		assert.strictEqual(
-			await r.text('body'),
-			'oops'
-		);
+		await assertErrorPageRenders(500);
 	});
 
 	it('execute error page hooks', async () => {
@@ -146,13 +143,10 @@ describe('errors', function() {
 		);
 	});
 
-	it('does not serve error page for async non-page error', async () => {
+	it('does serve error page for async non-page error', async () => {
 		await r.load('/async-throw.json');
 
-		assert.strictEqual(
-			await r.text('body'),
-			'oops'
-		);
+		await assertErrorPageRenders(500);
 	});
 
 	it('clears props.error on successful render', async () => {
