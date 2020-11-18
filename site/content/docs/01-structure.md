@@ -24,7 +24,7 @@ If you take a look inside the [sapper-template](https://github.com/sveltejs/sapp
 
 When you first run Sapper, it will create an additional `__sapper__` directory containing generated files.
 
-You'll notice a few extra files and a `cypress` directory which relates to [testing](docs#Testing) — we don't need to worry about those right now.
+You'll notice a few extra files — we don't need to worry about those right now.
 
 > You *can* create these files from scratch, but it's much better to use the template. See [getting started](docs#Getting_started) for instructions on how to easily clone it
 
