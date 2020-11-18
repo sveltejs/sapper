@@ -37,7 +37,6 @@ Your package.json contains your app's dependencies and defines a number of scrip
 * `npm run build` — build the app in production mode
 * `npm run export` — bake out a static version, if applicable (see [exporting](docs#Exporting))
 * `npm start` — start the app in production mode after you've built it
-* `npm test` — run the tests (see [testing](docs#Testing))
 
 
 ### src
