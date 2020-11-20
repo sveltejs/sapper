@@ -10,8 +10,7 @@ type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
 
 export default function middleware(opts: {
 	session?: (req: SapperRequest, res: SapperResponse) => any,
-	ignore?: IgnoreValue,
-	catchErrors?: boolean
+	ignore?: IgnoreValue
 } = {}) {
 	const { session, ignore } = opts;
 
@@ -80,16 +79,13 @@ export function compose_handlers(ignore: IgnoreValue, handlers: SapperHandler[],
 			return next();
 		}
 
-		const handler = handlers[n];
-		const handler_next: SapperNext = (err) => {
+		handlers[n](req, res, (err) => {
 			if (err) {
 				error_next(err);
 			} else {
 				nth_handler(n+1, req, res, next, error_next);
 			}
-		};
-
-		handler(req, res, handler_next);
+		});
 	}
 
 	return !ignore
