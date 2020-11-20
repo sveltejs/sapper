@@ -7,7 +7,7 @@ import {
 	SapperErrorHandler,
 	dev
 } from '@sapper/internal/manifest-server';
-import { PageRenderer } from './get_page_renderer';
+import { PageRenderer } from './get_page_handler';
 
 export function get_error_handler(
 	manifest: Manifest,

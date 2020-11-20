@@ -2,9 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import mime from 'mime/lite';
 import { SapperRequest, SapperResponse, SapperNext, SapperHandler, SapperErrorHandler, build_dir, dev, manifest } from '@sapper/internal/manifest-server';
-import { get_page_renderer } from './get_page_renderer';
 import { get_server_route_handler } from './get_server_route_handler';
-import { get_page_handler } from './get_page_handler';
+import { get_page_handler, get_page_renderer } from './get_page_handler';
 import { get_error_handler } from './get_error_handler';
 
 type IgnoreValue = IgnoreValue[] | RegExp | ((uri: string) => boolean) | string;
