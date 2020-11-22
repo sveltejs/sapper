@@ -94,6 +94,7 @@ This file is a template for responses from the server. Sapper will inject conten
 * `%sapper.scripts%` — script tags for the client-side app
 * `%sapper.cspnonce%` — CSP nonce taken from `res.locals.nonce` (see [Content Security Policy (CSP)](docs#Content_Security_Policy_CSP))
 
+To learn how to change these replacements or replace your own tags in the template file, see [Template Transforms](docs#Template_Transforms)
 
 ### src/routes
 
@@ -111,3 +112,59 @@ Sapper doesn't serve these files — you'd typically use [sirv](https://github.c
 ### rollup.config.js / webpack.config.js
 
 Sapper can use [Rollup](https://rollupjs.org/) or [webpack](https://webpack.js.org/) to bundle your app. You probably won't need to change the config, but if you want to (for example to add new loaders or plugins), you can.
+
+### Template Transforms
+
+Sapper provides a few tags that it will automatically replace inside the `src/.template.html` file. These replacements can be changed by providing your own template transformer.
+
+You can register a template transformer inside the `src/server.js` file.
+```diff
+	import polka from 'polka';
+	import * as sapper from '@sapper/server';
++	import { makeHash } from './my-helpers';
+
+	import { start } from '../../common.js';
+
++	sapper.registerTemplateTransformer((template) => 
++		template.replace(
++			'%mytag.globalCss%',
++			() => 'global.css?v=' + makeHash('global.css')
++		)
++	)
++
+	const app = polka()
+		.use(sapper.middleware());
+
+	start(app);
+```
+
+The function that you pass to `registerTemplateTransformer` will be given two arguments:
+
+1. `template`: string contents of the template before Sapper's replacements
+2. `data`: an object containing all the values you'd need to completely replace the tags that Sapper itself replaces:  
+	- `html`: string
+	- `head`: string
+	- `styles`: string
+	- `script`: string
+	- `nonce_value`: string
+	- `nonce_attr`: string
+	- `req`: the request object
+
+You must return a string which is the full contents of the template file as you'd like them to appear. Any of Sapper's own tags that you do not replace will be replaced as normal by Sapper.
+
+```ts
+type Transformer = (
+	template: string,
+	data: {
+		html: string
+		head: string
+		styles: string
+		script: string
+		nonce_value: string
+		nonce_attr: string
+		req: SapperRequest
+	}
+) => string
+```
+
+You may call the function multiple times. Transformers will run in the order in which they are registered, with the default Sapper transformer running last.

@@ -18,6 +18,7 @@ import {
 import App from '@sapper/internal/App.svelte';
 import { PageContext, PreloadResult } from '@sapper/common';
 import detectClientOnlyReferences from './detect_client_only_references';
+import { transformTemplate } from './template_transform';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -375,13 +376,10 @@ export function get_page_handler(
 				styles = (css && css.code ? `<style${nonce_attr}>${css.code}</style>` : '');
 			}
 
-			const body = template()
-				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
-				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
-				.replace('%sapper.html%', () => html)
-				.replace('%sapper.head%', () => head)
-				.replace('%sapper.styles%', () => styles)
-				.replace(/%sapper\.cspnonce%/g, () => nonce_value);
+			const body = transformTemplate(
+				template(),
+				{req, nonce_attr, nonce_value, html, head,styles,script}
+			);
 
 			res.statusCode = status;
 			res.end(body);
