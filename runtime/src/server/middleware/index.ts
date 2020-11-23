@@ -80,7 +80,7 @@ export function compose_handlers(ignore: IgnoreValue, handlers: Handler[]): Hand
 	return !ignore
 		? (req, res, next) => nth_handler(0, req, res, next)
 		: (req, res, next) => {
-			if (should_ignore(req.path, ignore)) {
+			if (should_ignore(req.path || req.url, ignore)) {
 				next();
 			} else {
 				nth_handler(0, req, res, next);
