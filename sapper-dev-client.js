@@ -5,20 +5,20 @@ function check() {
 
 	if (module.hot.status() === 'idle') {
 		module.hot.check(true).then(modules => {
-			console.log(`[SAPPER] applied HMR update`);
+			console.log('[SAPPER] applied HMR update');
 		});
 	}
 }
 
-export function connect(port) {
+export function connect(serveHttps, port) {
 	if (source || !window.EventSource) return;
 
-	source = new EventSource(`http://${window.location.hostname}:${port}/__sapper__`);
+	source = new EventSource(`${serveHttps ? 'https' : 'http'}://${window.location.hostname}:${port}/__sapper__`);
 
 	window.source = source;
 
 	source.onopen = function(event) {
-		console.log(`[SAPPER] dev client connected`);
+		console.log('[SAPPER] dev client connected');
 	};
 
 	source.onerror = function(error) {

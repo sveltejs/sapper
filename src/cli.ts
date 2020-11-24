@@ -22,6 +22,9 @@ prog.command('dev')
 	.option('-p, --port', 'Specify a port')
 	.option('-o, --open', 'Open a browser window')
 	.option('--dev-port', 'Specify a port for development server')
+	.option('--https', 'Specify if development server should be served in https')
+	.option('--https-certfile-path', 'Specify the cert file path for the https development server')
+	.option('--https-keyfile-path', 'Specify the key file path for the https development server')
 	.option('--hot', 'Use hot module replacement (requires webpack)', true)
 	.option('--live', 'Reload on changes if not using --hot', true)
 	.option('--bundler', 'Specify a bundler (rollup or webpack)')
@@ -38,6 +41,9 @@ prog.command('dev')
 		'dev-port': number;
 		live: boolean;
 		hot: boolean;
+		https?: boolean;
+		'https-certfile-path'?: string;
+		'https- keyfile-path'?: string;
 		bundler?: 'rollup' | 'webpack';
 		cwd: string;
 		src: string;
@@ -61,6 +67,9 @@ prog.command('dev')
 				'dev-port': opts['dev-port'],
 				live: opts.live,
 				hot: opts.hot,
+				serveHttps: opts.https,
+				'https-certfile-path': opts['https-certfile-path'],
+				'https-keyfile-path': opts['https-keyfile-path'],
 				bundler: opts.bundler,
 				ext: opts.ext
 			});

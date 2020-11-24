@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as https from 'https';
 import * as http from 'http';
 import * as child_process from 'child_process';
 import * as ports from 'port-authority';
@@ -14,6 +15,7 @@ import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
+import { readFileSync } from 'fs';
 
 type Opts = {
 	cwd?: string;
@@ -25,11 +27,19 @@ type Opts = {
 	'dev-port'?: number;
 	live?: boolean;
 	hot?: boolean;
+	serveHttps?: boolean;
+	'https-certfile-path'?:string;
+	'https-keyfile-path'?:string;
 	'devtools-port'?: number;
 	bundler?: 'rollup' | 'webpack';
 	port?: number;
 	ext: string;
 };
+
+ type SslOptions = {
+	 key: string;
+	 cert: string;
+ }
 
 export function dev(opts: Opts) {
 	return new Watcher(opts);
@@ -51,6 +61,12 @@ class Watcher extends EventEmitter {
 	dev_port: number;
 	live: boolean;
 	hot: boolean;
+
+	serveHttps: boolean;
+
+	https_certfile_path: string;
+
+	https_keyfile_path: string;
 
 	devtools_port: number;
 
@@ -79,6 +95,9 @@ class Watcher extends EventEmitter {
 		'dev-port': dev_port,
 		live,
 		hot,
+		serveHttps,
+		'https-certfile-path': https_certfile_path,
+		'https-keyfile-path': https_keyfile_path,
 		'devtools-port': devtools_port,
 		bundler,
 		port = +process.env.PORT,
@@ -104,6 +123,9 @@ class Watcher extends EventEmitter {
 		this.dev_port = dev_port;
 		this.live = live;
 		this.hot = hot;
+		this.serveHttps = serveHttps;
+		this.https_certfile_path = https_certfile_path;
+		this.https_keyfile_path = https_keyfile_path;
 
 		this.devtools_port = devtools_port;
 
@@ -161,6 +183,7 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
+				dev_serveHttps: this.serveHttps,
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
@@ -170,7 +193,14 @@ class Watcher extends EventEmitter {
 			return;
 		}
 
-		this.dev_server = new DevServer(this.dev_port);
+		this.dev_server = new DevServer(
+			this.dev_port,
+			undefined,
+			this.serveHttps,
+			{
+				key: this.https_keyfile_path,
+				cert: this.https_certfile_path
+			});
 
 		this.filewatchers.push(
 			watch_dir(
@@ -189,6 +219,7 @@ class Watcher extends EventEmitter {
 							manifest_data,
 							dev: true,
 							dev_port: this.dev_port,
+							dev_serveHttps: this.serveHttps,
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
@@ -434,16 +465,24 @@ class Watcher extends EventEmitter {
 }
 
 const INTERVAL = 10000;
+const EMPTY_SSL_OPTIONS = { key: '', cert: ''};
 
 class DevServer {
 	clients: Set<http.ServerResponse>;
 	interval: NodeJS.Timer;
-	_: http.Server;
+	_: https.Server | http.Server;
 
-	constructor(port: number, interval = 10000) {
+	constructor(port: number, interval = INTERVAL, serverHttps = false, sslOptions: SslOptions = EMPTY_SSL_OPTIONS) {
+		let serverSslOptions;
+		if (https) {
+			serverSslOptions = {
+				key: readFileSync(sslOptions.key),
+				cert: readFileSync(sslOptions.cert)
+			};
+		}
 		this.clients = new Set();
 
-		this._ = http.createServer((req, res) => {
+		const handler = (req, res) => {
 			if (req.url !== '/__sapper__') return;
 
 			req.socket.setKeepAlive(true);
@@ -464,7 +503,11 @@ class DevServer {
 			req.on('close', () => {
 				this.clients.delete(res);
 			});
-		});
+		};
+
+		this._ = serverHttps
+			? https.createServer(serverSslOptions, handler)
+			: http.createServer(handler);
 
 		this._.listen(port);
 

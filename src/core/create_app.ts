@@ -7,6 +7,7 @@ export function create_app({
 	bundler,
 	manifest_data,
 	dev_port,
+	dev_serveHttps,
 	dev,
 	cwd,
 	src,
@@ -17,6 +18,7 @@ export function create_app({
 	bundler: string;
 	manifest_data: ManifestData;
 	dev_port?: number;
+	dev_serveHttps?: boolean;
 	dev: boolean;
 	cwd: string;
 	src: string;
@@ -28,7 +30,7 @@ export function create_app({
 
 	const path_to_routes = path.relative(`${output}/internal`, routes);
 
-	const client_manifest = generate_client_manifest(manifest_data, path_to_routes, bundler, dev, dev_port);
+	const client_manifest = generate_client_manifest(manifest_data, path_to_routes, bundler, dev, dev_port, dev_serveHttps);
 	const server_manifest = generate_server_manifest(manifest_data, path_to_routes, cwd, src, dest, dev);
 
 	const app = generate_app(manifest_data, path_to_routes);
@@ -81,7 +83,8 @@ function generate_client_manifest(
 	path_to_routes: string,
 	bundler: string,
 	dev: boolean,
-	dev_port?: number
+	dev_port?: number,
+	serveHttps?: boolean
 ) {
 	const page_ids = new Set(manifest_data.pages.map(page =>
 		page.pattern.toString()));
@@ -149,7 +152,7 @@ function generate_client_manifest(
 
 		${dev ? `if (typeof window !== 'undefined') {
 			import(${stringify(posixify(path.resolve(__dirname, '../sapper-dev-client.js')))}).then(client => {
-				client.connect(${dev_port});
+				client.connect(${serveHttps}, ${dev_port});
 			});
 		}` : ''}
 	`.replace(/^\t{2}/gm, '').trim();
