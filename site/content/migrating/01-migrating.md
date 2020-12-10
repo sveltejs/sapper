@@ -5,6 +5,9 @@ title: Migrating
 
 Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects.
 
+### 0.28 to 0.29
+
+* Rollup 2.29.0 is now required. ([#1666](https://github.com/sveltejs/sapper/pull/1666))
 
 ### 0.27 to 0.28
 
