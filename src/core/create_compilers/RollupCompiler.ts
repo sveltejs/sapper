@@ -222,7 +222,7 @@ export default class RollupCompiler {
 
 						if (chunk_has_css) {
 							has_css = true;
-							chunk.code = `import __inject_styles from './${inject_styles_file}';\n` + chunk.code;
+							chunk.code += `\nimport __inject_styles from './${inject_styles_file}';`;
 						}
 					}
 				}
