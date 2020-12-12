@@ -392,4 +392,34 @@ describe('basics', function() {
 	it('survives the tests with no server errors', () => {
 		assert.deepEqual(r.errors, []);
 	});
+
+	/**
+	 * Before a page navigation finishes, hover over a prefetching link back to the page we came from.
+	 * Prefetching starts, but we're still on the page being preloaded! 
+	 * After that happened, clicking on the link back to the original page did not work.
+	 * https://github.com/sveltejs/sapper/issues/1667
+	 */
+	it('handles prefetching to the current page', async () => {
+			await r.load('/prefetch-timing/prefetched');
+			await r.sapper.start();
+			await r.sapper.prefetchRoutes();
+
+			assert.strictEqual(await r.text('h1'), 'Prefetched');
+
+			const prefetchedSelector = 'a[href="/prefetch-timing/prefetched"]';
+			const prefetcherSelector = 'a[href="/prefetch-timing/prefetcher"]';
+
+			await r.page.click(prefetcherSelector);
+			await r.wait();
+
+			await r.page.hover(prefetchedSelector);
+			await r.wait(50);
+
+			await r.page.waitForFunction(() => document.querySelector('h1').innerHTML == 'Prefetcher');
+
+			await r.page.click(prefetchedSelector);
+			await r.wait();
+
+			assert.strictEqual(await r.text('h1'), 'Prefetched');
+	});
 });
