@@ -240,8 +240,7 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			if (!session_dirty && !segment_dirty && current_branch[i] && current_branch[i].part === part.i) {
 				result = current_branch[i];
-			}
-			else {
+			} else {
 				segment_dirty = false;
 	
 				const { default: component, preload } = await components[part.i].js();
