@@ -15,7 +15,7 @@
 
 				/**
 				 * This emulates the logic in start prefetching. Just firing after the first mouse move
-				 * would also work fine in the Pupetteer tests, just not if you try it manually.
+				 * would also work fine in the Puppeteer tests, just not if you try it manually.
 				 */
 				prefetchlink.addEventListener('mousemove', () => {
 						clearTimeout(timeout);
