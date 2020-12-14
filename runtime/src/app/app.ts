@@ -236,29 +236,34 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			const j = l++;
 
+			let result;
+
 			if (!session_dirty && !segment_dirty && current_branch[i] && current_branch[i].part === part.i) {
-				return current_branch[i];
-			}
-
-			segment_dirty = false;
-
-			const { default: component, preload } = await components[part.i].js();
-
-			let preloaded: object;
-			if (ready || !initial_data.preloaded[i + 1]) {
-				preloaded = preload
-					? await preload.call(preload_context, {
-						host: page.host,
-						path: page.path,
-						query: page.query,
-						params: part.params ? part.params(dest.match) : {}
-					}, $session)
-					: {};
+				result = current_branch[i];
 			} else {
-				preloaded = initial_data.preloaded[i + 1];
+				segment_dirty = false;
+	
+				const { default: component, preload } = await components[part.i].js();
+	
+				let preloaded: object;
+	
+				if (ready || !initial_data.preloaded[i + 1]) {
+					preloaded = preload
+						? await preload.call(preload_context, {
+							host: page.host,
+							path: page.path,
+							query: page.query,
+							params: part.params ? part.params(dest.match) : {}
+						}, $session)
+						: {};
+				} else {
+					preloaded = initial_data.preloaded[i + 1];
+				}
+
+				result = { component, props: preloaded, segment, match, part: part.i };
 			}
 
-			return (props[`level${j}`] = { component, props: preloaded, segment, match, part: part.i });
+			return (props[`level${j}`] = result);
 		}));
 	} catch (error) {
 		props.error = error;
