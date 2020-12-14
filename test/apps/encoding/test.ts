@@ -26,11 +26,11 @@ describe('encoding', function() {
 	});
 
 	it('encodes req.params and req.query for server-rendered pages', async () => {
-		await r.load('/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789');
+		await r.load('/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789&multiline=multi%0Aline');
 
 		assert.strictEqual(
 			await r.text('h1'),
-			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789","multiline":"multi\\nline"}'
 		);
 	});
 
@@ -44,7 +44,7 @@ describe('encoding', function() {
 
 		assert.strictEqual(
 			await r.text('h1'),
-			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789","multiline":"multi\\nline"}'
 		);
 	});
 

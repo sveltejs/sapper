@@ -67,17 +67,30 @@ export function init(base: string, handler: (dest: Target) => Promise<void>): vo
 	addEventListener('popstate', handle_popstate);
 }
 
-export function extract_query(search: string) {
+// IE11 does not support URLSearchParams so we'll fall back to a custom
+// RegExp that mimics the standard URLSearchParams method
+const _get_query_array = (search: string): string[][] => {
+	if (typeof URLSearchParams !== 'undefined') {
+		return 	[...new URLSearchParams(search).entries()];
+	}
+	return search.slice(1).split('&').map(searchParam => {
+		// Instead of `.*` we'll use \s\S to allow characters and non characters
+		// such as [\r\n\v\f]
+		const [, key, value = ''] = /([^=]*)(?:=([\S\s]*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
+		return [ key, value ];
+	});
+};
+
+export function extract_query(search: string): Query {
 	const query: Query = Object.create(null);
-	if (search.length > 0) {
-		search.slice(1).split('&').forEach(searchParam => {
-			const [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
+	return search.length ? _get_query_array(search).reduce(
+		(query, [key, value]) => {
 			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
 			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
 			else query[key] = value;
-		});
-	}
-	return query;
+			return query;
+		}, query) :
+		query;
 }
 
 export function select_target(url: URL): Target {
