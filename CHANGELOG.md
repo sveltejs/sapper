@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Fix dynamic imports in Rollup entry chunk ([#1595](https://github.com/sveltejs/sapper/issues/1595))
 * Numerous TypeScript definition improvements ([#1598](https://github.com/sveltejs/sapper/issues/1598), [#1601](https://github.com/sveltejs/sapper/issues/1601), [#1603](https://github.com/sveltejs/sapper/issues/1603), [#1604](https://github.com/sveltejs/sapper/issues/1604))
 
 ## 0.28.10
