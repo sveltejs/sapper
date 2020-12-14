@@ -256,7 +256,7 @@ The `4xx.html` and `5xx.html` error pages have been replaced with a single page,
 
 In earlier versions, each page was a completely standalone component. Upon navigation, the entire page would be torn down and a new one created. Typically, each page would import a shared `<Layout>` component to achieve visual consistency.
 
-As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/master/app/App.html) for an example.
+As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/365e8521ae6e1ffc5f1359342bb59c92a0014dca/app/App.html) for an example.
 
 This component is rendered with the following values:
 
