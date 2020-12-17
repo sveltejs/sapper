@@ -232,7 +232,7 @@ export async function navigate(dest: Target, id: number, noscroll?: boolean, has
 		}
 
 		scroll_history[cid] = scroll;
-		if (popstate || deep_linked) {
+		if (scroll && (popstate || deep_linked)) {
 			scrollTo(scroll.x, scroll.y);
 		} else {
 			scrollTo(0, 0);
