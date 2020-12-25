@@ -2,8 +2,6 @@
 title: Sapper app structure
 ---
 
-This section is a reference for the curious. We recommend you play around with the project template first, and come back here when you've got a feel for how things fit together.
-
 If you take a look inside the [sapper-template](https://github.com/sveltejs/sapper-template) repo, you'll see some files that Sapper expects to find:
 
 ```bash
