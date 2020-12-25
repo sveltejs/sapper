@@ -4,9 +4,9 @@ title: Preloading
 
 Page components can define a `preload` function that runs before the component is created. The values it returns are passed as props to the page.
 
-Preload functions are typically used to load data that the page depends on, hence its name. This avoids the user seeing the page update as it loads, as is typically the case with client-side loading.
+`preload` functions are called when a page is loaded and are typically used to load data that the page depends on - hence its name. This avoids the user seeing the page update as it loads, as is typically the case with client-side loading.
 
-Preload is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
+`preload` is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
 
 Note that `preload` will run both on the server side and on the client side. It may therefore not reference any APIs only present in the browser.
 
