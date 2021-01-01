@@ -373,6 +373,12 @@ export default class RollupCompiler {
 					break;
 
 				case 'BUNDLE_END':
+					if (event.result.getTimings != null) {
+						const timings = event.result.getTimings();
+						for (const [key, info] of Object.entries(timings)) {
+							console.info(`${key} took ${info[0].toFixed(0)}ms`);
+						}
+					}
 					cb(null, new RollupResult(Date.now() - this._start, this, sourcemap));
 					break;
 
