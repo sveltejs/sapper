@@ -2,13 +2,13 @@
 title: Preloading
 ---
 
-Page components can define a `preload` function that runs before the component is created. The values it returns are passed as props to the page.
+Page components can define a `preload` function that runs before the component is created. The returned value/values by this function, will get passed to the page(your page component) as props.
 
 `preload` functions are called when a page is loaded and are typically used to load data that the page depends on - hence its name. This avoids the user seeing the page update as it loads, as is typically the case with client-side loading.
 
 `preload` is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
 
-Note that `preload` will run both on the server side and on the client side. It may therefore not reference any APIs only present in the browser.
+This function will run, both on the server side and the client side. It may therefore not reference any APIs only present in the browser.
 
 The following code shows how to load a blog post and pass it to the page in the `article` prop:
 
@@ -39,7 +39,11 @@ It should be defined in a `context="module"` script since it is not part of the 
 
 The `preload` function receives two arguments — `page` and `session`.
 
-`page` is a `{ host, path, params, query }` object where `host` is the URL's host, `path` is its pathname, `params` is derived from `path` and the route filename, and `query` is an object of values in the query string.
+The `page` is an object that contains `{ host, path, params, query }`.
+* The `host` is the URL's host.
+* The `path` is it's pathname.
+* The `params` is derived from `path` and the route filename.
+* The `query` is, an object of values, in the query string.
 
 So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/blog/some-post?foo=bar&baz`, the following would be true:
 
@@ -76,13 +80,12 @@ To fix this, Sapper provides `this.fetch`, which works on the server as well as 
 <script context="module">
 	export async function preload() {
 		const res = await this.fetch(`server-route.json`);
-
 		// ...
 	}
 </script>
 ```
 
-It is important to note that `preload` may run on either the server or in the client browser. Code called inside `preload` blocks:
+It is important to note that `preload` may run on either the server or in the client browser. So, the code that is called inside the `preload` block:
   - should run on the same domain as any upstream API servers requiring credentials
   - should not reference `window`, `document` or any browser-specific objects
   - should not reference any API keys or secrets, which will be exposed to the client
