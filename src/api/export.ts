@@ -306,7 +306,7 @@ async function _export({
 		queue.addSave(save(message.url, message.status, message.type, message.body));
 	});
 
-	return new Promise((res, rej) => {
+	return new Promise<void>((res, rej) => {
 		queue.setCallback('onDone', () => {
 			proc.kill();
 			res();
