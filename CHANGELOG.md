@@ -496,7 +496,7 @@ Also:
 
 ## 0.15.0
 
-* Nested routes (consult [migration guide](https://sapper.svelte.dev/migrating#0_14_to_0_15) and docs on [layouts](https://sapper.svelte.technology/guide#layouts)) ([#262](https://github.com/sveltejs/sapper/issues/262))
+* Nested routes (consult [migration guide](https://sapper.svelte.dev/migrating#0_14_to_0_15) and docs on [layouts](https://sapper.svelte.dev/guide#layouts)) ([#262](https://github.com/sveltejs/sapper/issues/262))
 
 ## 0.14.2
 
@@ -549,7 +549,7 @@ Also:
 
 ## 0.12.0
 
-* Each app has a single `<App>` component. See the [migration guide](https://sapper.svelte.technology/guide#0-11-to-0-12) for more information ([#157](https://github.com/sveltejs/sapper/issues/157))
+* Each app has a single `<App>` component. See the [migration guide](https://sapper.svelte.dev/guide#0-11-to-0-12) for more information ([#157](https://github.com/sveltejs/sapper/issues/157))
 * Process exits with error code 1 if build/export fails ([#208](https://github.com/sveltejs/sapper/issues/208))
 
 ## 0.11.1
@@ -698,7 +698,7 @@ Also:
 
 ## 0.7.0
 
-* Restructure app layout (see [migration guide](https://sapper.svelte.technology/guide#0-6-to-0-7)) ([#126](https://github.com/sveltejs/sapper/pull/126))
+* Restructure app layout (see [migration guide](https://sapper.svelte.dev/guide#0-6-to-0-7)) ([#126](https://github.com/sveltejs/sapper/pull/126))
 * Support `this.redirect(status, location)` and `this.error(status, error)` in `preload` functions ([#127](https://github.com/sveltejs/sapper/pull/127))
 * Add `sapper dev` command
 * Add `sapper --help` command
