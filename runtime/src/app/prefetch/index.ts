@@ -39,7 +39,7 @@ export function get_prefetched(target: Target): Promise<HydratedTarget> {
 function trigger_prefetch(event: MouseEvent | TouchEvent) {
 	const a: HTMLAnchorElement = <HTMLAnchorElement>find_anchor(<Node>event.target);
 
-	if (a && a.rel === 'prefetch') {
+	if (a && a.hasAttribute('sapper:prefetch')) {
 		prefetch(a.href);
 	}
 }

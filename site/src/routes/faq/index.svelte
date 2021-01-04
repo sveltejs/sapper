@@ -6,7 +6,7 @@
 </script>
 
 <script>
-	const description = "Frequently Asked Questions about Sapper"
+	const description = "Frequently Asked Questions about Sapper";
 
 	export let faqs;
 </script>
@@ -26,7 +26,7 @@
 		<article class='faq'>
 			<h2>
 			<span id={faq.fragment} class="offset-anchor"></span>
-			<a class="anchor" rel='prefetch' href='faq#{faq.fragment}' title='{faq.question}'>&nbsp;</a>
+			<a class="anchor" sapper:prefetch href='faq#{faq.fragment}' title='{faq.question}'>&nbsp;</a>
 			{faq.metadata.question}
 			</h2>
 			<p>{@html faq.answer}</p>
