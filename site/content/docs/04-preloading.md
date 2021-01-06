@@ -137,7 +137,7 @@ You can abort rendering and redirect to a different location with `this.redirect
 If you use TypeScript and want to access the above context methods, TypeScript will throw an error and tell you that it does not know the type of `this`. To fix it, you need to specify the type of `this` (see the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#specifying-the-type-of-this-for-functions)). We provide you with helper interfaces so you can type the function like this:
 
 ```html
-<script context="module">
+<script context="module" lang="ts">
 	import type { Preload } from "@sapper/common";
 
 	export const preload: Preload = async function(this, page, session) {
