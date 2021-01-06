@@ -57,3 +57,4 @@ Sapper supports TypeScript. If you are using the template with Rollup as describ
 ```bash
 node scripts/setupTypeScript.js
 ```
+2
