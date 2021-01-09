@@ -10,7 +10,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 		const method_export = method === 'delete' ? 'del' : method;
 		const handle_method = route.handlers[method_export];
 		if (handle_method) {
-			const isSapperExportEnabled = JSON.parse(process.env.SAPPER_EXPORT)
+			const isSapperExportEnabled = JSON.parse(process.env.SAPPER_EXPORT);
 			if (isSapperExportEnabled) {
 				const { write, end, setHeader } = res;
 				const chunks: any[] = [];
