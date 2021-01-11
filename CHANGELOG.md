@@ -4,6 +4,7 @@
 
 Please see the [migration guide](https://sapper.svelte.dev/migrating#0_28_to_0_29) for details on migrating from Sapper 0.28 to Sapper 0.29.
 
+* Allow dynamic imports in client.js by upgrading Shimport to properly hoist imports ([#1593](https://github.com/sveltejs/sapper/issues/1593))
 * Change rel=prefetch to sapper:prefetch ([#1566](https://github.com/sveltejs/sapper/pull/1566))
 * Support Rollup's `perf` option ([#1685](https://github.com/sveltejs/sapper/pull/1685))
 * Avoid error in scroll tracking when navigating off-site and then going back ([#1592](https://github.com/sveltejs/sapper/issues/1592))
