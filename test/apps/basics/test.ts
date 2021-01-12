@@ -277,6 +277,18 @@ describe('basics', function() {
 		assert.equal(html.indexOf('%sapper'), -1);
 	});
 
+	it('replaces %sapper.lang%', async () => {
+		await r.load('/lang/sv');
+		await r.sapper.start();
+
+		const get_document_lang = () => r.page.evaluate(() => document.documentElement.lang);
+		assert.equal(await get_document_lang(), 'sv');
+
+		await r.page.click('#en');
+		await r.wait();
+		assert.equal(await get_document_lang(), 'en');
+	});
+
 	it('navigates between routes with empty parts', async () => {
 		await r.load('/dirs/foo');
 		await r.sapper.start();

@@ -1,4 +1,4 @@
-import { PageParams } from '@sapper/common';
+import { PageContext, PageParams } from '@sapper/common';
 import {
 	Preload
 } from './shared';
@@ -6,6 +6,7 @@ import {
 export interface DOMComponentModule {
 	default: DOMComponentConstructor;
 	preload?: Preload;
+	lang?: (ctx: PageContext) => string;
 }
 
 export interface DOMComponent {
@@ -32,5 +33,5 @@ export interface Route {
 export const ErrorComponent: DOMComponentConstructor;
 export const components: DOMComponentLoader[];
 export const ignore: RegExp[];
-export const root_comp: { preload: Preload };
+export const root_comp: { preload: Preload; lang?: (ctx: PageContext) => string };
 export const routes: Route[];

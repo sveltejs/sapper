@@ -172,20 +172,29 @@ export function get_page_handler(
 		let match: RegExpExecArray;
 		let params: Record<string,string>;
 
+		let lang = 'en';
+
+		const page_context: PageContext = {
+			host: req.headers.host,
+			path: req.path,
+			query: req.query,
+			params: {}
+		};
+
 		try {
 			const root_preload = manifest.root_comp.preload || (() => {});
 			const root_preloaded: PreloadResult = detectClientOnlyReferences(() =>
 				root_preload.call(
 					preload_context,
-					{
-						host: req.headers.host,
-						path: req.path,
-						query: req.query,
-						params: {}
-					},
+					page_context,
 					session
 				)
 			);
+
+			if (manifest.root_comp.lang) {
+				lang = detectClientOnlyReferences(() =>
+					manifest.root_comp.lang(page_context));
+			}
 
 			match = error ? null : page.pattern.exec(req.path);
 
@@ -197,16 +206,16 @@ export function get_page_handler(
 					// the deepest level is used below, to initialise the store
 					params = part.params ? part.params(match) : {};
 
+					if (part.component.lang) {
+						lang = detectClientOnlyReferences(() =>
+							part.component.lang({ ...page_context, params }));
+					}
+
 					return part.component.preload
 						? detectClientOnlyReferences(() =>
 								part.component.preload.call(
 									preload_context,
-									{
-										host: req.headers.host,
-										path: req.path,
-										query: req.query,
-										params
-									},
+									{ ...page_context, params },
 									session
 								)
 						  )
@@ -381,6 +390,7 @@ export function get_page_handler(
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => head)
 				.replace('%sapper.styles%', () => styles)
+				.replace('%sapper.lang%', () => lang)
 				.replace(/%sapper\.cspnonce%/g, () => nonce_value);
 
 			res.statusCode = status;

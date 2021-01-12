@@ -1,5 +1,6 @@
 import {
-	Preload
+	Preload,
+	PageContext
 } from './shared';
 
 export const src_dir: string;
@@ -12,6 +13,7 @@ export { SapperRequest, SapperResponse } from '@sapper/server';
 export interface SSRComponentModule {
 	default: SSRComponent;
 	preload?: Preload;
+	lang?: (ctx: PageContext) => string;
 }
 
 export interface SSRComponent {

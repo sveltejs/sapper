@@ -5,14 +5,19 @@ export interface HydratedTarget {
 	preload_error?: any;
 	props: any;
 	branch: Branch;
+	lang?: string;
 }
 
-export type Branch = Array<{
+export interface BranchSegment {
 	segment: string;
+	props?: object;
 	match?: RegExpExecArray;
 	component?: DOMComponentConstructor;
 	part?: number;
-}>;
+	lang?: string;
+}
+
+export type Branch = BranchSegment[];
 
 export type InitialData = {
 	session: any;

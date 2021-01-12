@@ -16,6 +16,7 @@ import {
 	HydratedTarget,
 	Target,
 	Redirect,
+	BranchSegment,
 	Branch,
 	Page,
 	InitialData
@@ -136,6 +137,11 @@ async function handle_target(dest: Target): Promise<void> {
 		const { props, branch } = hydrated_target;
 		await render(branch, props, buildPageContext(props, dest.page));
 	}
+
+	
+	const { lang } = hydrated_target;
+
+	if (lang) document.querySelector('html').setAttribute('lang', lang);
 }
 
 async function render(branch: Branch, props: any, page: PageContext) {
@@ -207,14 +213,21 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 		}
 	};
 
+	let lang: string;
+
 	if (!root_preloaded) {
 		const root_preload = root_comp.preload || (() => ({}));
-		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
+		const page_context = {
 			host: page.host,
 			path: page.path,
 			query: page.query,
 			params: {}
-		}, $session);
+		};
+		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, page_context, $session);
+
+		if (root_comp.lang) {
+			lang = root_comp.lang(page_context);
+		}
 	}
 
 	let branch: Branch;
@@ -236,31 +249,38 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 
 			const j = l++;
 
-			let result;
+			let result: BranchSegment;
 
 			if (!session_dirty && !segment_dirty && current_branch[i] && current_branch[i].part === part.i) {
 				result = current_branch[i];
+				lang = result.lang || lang;
 			} else {
 				segment_dirty = false;
 	
-				const { default: component, preload } = await components[part.i].js();
+				const { default: component, preload, lang: get_lang } = await components[part.i].js();
 	
+				const page_context = {
+					host: page.host,
+					path: page.path,
+					query: page.query,
+					params: part.params ? part.params(dest.match) : {}
+				};
+		
 				let preloaded: object;
 	
 				if (ready || !initial_data.preloaded[i + 1]) {
 					preloaded = preload
-						? await preload.call(preload_context, {
-							host: page.host,
-							path: page.path,
-							query: page.query,
-							params: part.params ? part.params(dest.match) : {}
-						}, $session)
+						? await preload.call(preload_context, page_context, $session)
 						: {};
 				} else {
 					preloaded = initial_data.preloaded[i + 1];
 				}
 
-				result = { component, props: preloaded, segment, match, part: part.i };
+				if (get_lang) {
+					lang = get_lang(page_context);
+				}
+
+				result = { component, props: preloaded, segment, match, part: part.i, lang };
 			}
 
 			return (props[`level${j}`] = result);
@@ -271,5 +291,5 @@ export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
 		branch = [];
 	}
 
-	return { redirect, props, branch };
+	return { redirect, props, branch, lang };
 }
