@@ -1,5 +1,5 @@
 <script>
-  import { goto } from "@sapper/app";
+  import { goto } from '@sapper/app';
   function search(query) {
     goto(window.location.pathname + `?q=${query}`);
   }
