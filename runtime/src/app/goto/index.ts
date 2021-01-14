@@ -8,8 +8,9 @@ export default function goto(
 	const target = select_target(new URL(href, get_base_uri(document)));
 
 	if (target) {
+		const res = navigate(target, null, opts.noscroll);
 		history[opts.replaceState ? 'replaceState' : 'pushState']({ id: cid }, '', href);
-		return navigate(target, null, opts.noscroll);
+		return res;
 	}
 
 	location.href = href;
