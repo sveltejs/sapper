@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { build } from '../../../api';
 import { AppRunner } from '../AppRunner';
 
-describe('scroll', function () {
+describe('scroll', function() {
 	this.timeout(10000);
 
 	let r: AppRunner;
