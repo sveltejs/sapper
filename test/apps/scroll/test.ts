@@ -50,10 +50,7 @@ describe('scroll', function() {
 		await r.page.click('[href="another-tall-page"]');
 		await r.wait();
 
-		assert.strictEqual(
-			await r.page.evaluate(() => window.scrollY),
-			0
-		);
+		assert.strictEqual(await r.page.evaluate(() => window.scrollY), 0);
 	});
 
 	it('preserves scroll when a link with sapper:noscroll is clicked', async () => {
@@ -99,6 +96,75 @@ describe('scroll', function() {
 		const secondScrollY = await r.page.evaluate(() => window.scrollY);
 
 		assert.strictEqual(firstScrollY, secondScrollY);
+	});
+
+	it('restores scroll on popstate events', async () => {
+		await r.load('/search-page#end');
+		await r.sapper.start();
+		await r.sapper.prefetchRoutes();
+
+		assert.strictEqual(await r.text('h1'), 'A search form');
+
+		const firstScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(firstScrollY > 0, String(firstScrollY));
+
+		await r.page.click('button#navigate');
+
+		const newScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(newScrollY === 0);
+
+		await r.page.goBack();
+
+		const secondScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.strictEqual(firstScrollY, secondScrollY);
+	});
+
+	it('restores scroll on popstate events preceded by search param changes', async () => {
+		await r.load('/search-page#search');
+		await r.sapper.start();
+
+		assert.strictEqual(await r.text('h1'), 'A search form');
+
+		// We're at the search button, ~9999px down the page
+		const initialScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(
+			initialScrollY > 9999,
+			`Scroll pos when loading page for the first time: ${String(initialScrollY)}`
+		);
+
+		// Applies search params (but keep same pathname)
+		await r.page.click('button#submit-search');
+
+		// Now we're scrolled back at the top, at 0px, same page but with search params
+		const newScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(newScrollY === 0, 'Scroll pos after updating search params');
+
+		// Scroll down to the 'end' div, near the bottom of the page
+		await r.page.evaluate(() => document.querySelector('#end').scrollIntoView());
+		const beforeClickScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.ok(
+			beforeClickScrollY > 14000,
+			`Scroll pos before navigating away from the page: ${String(beforeClickScrollY)}`
+		);
+
+		// Go to a new page
+		await r.page.click('button#navigate');
+
+		// Go back (popstate)
+		await r.page.goBack();
+
+		const finalScrollY = await r.page.evaluate(() => window.scrollY);
+
+		assert.strictEqual(
+			finalScrollY,
+			beforeClickScrollY
+		);
 	});
 
 	it('scrolls to the top when navigating with goto', async () => {
