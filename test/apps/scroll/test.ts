@@ -159,14 +159,11 @@ describe('scroll', function() {
 		// Go back (popstate)
 		await r.page.goBack();
 
-		// We should be at `beforeClickScrollY`
-		// But alas we are at `initialScrollY`
 		const finalScrollY = await r.page.evaluate(() => window.scrollY);
 
 		assert.strictEqual(
 			finalScrollY,
-			beforeClickScrollY,
-			`\nscrollY before navigating away: ${beforeClickScrollY}\nscrollY after popstate: ${finalScrollY}`
+			beforeClickScrollY
 		);
 	});
 
