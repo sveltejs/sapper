@@ -1,16 +1,16 @@
 # sapper changelog
 
-## 0.29.0 - Unreleased
+## 0.29.0
 
 Please see the [migration guide](https://sapper.svelte.dev/migrating#0_28_to_0_29) for details on migrating from Sapper 0.28 to Sapper 0.29.
 
 * Fix scroll position restoration after changing search param with `goto` ([#1697](https://github.com/sveltejs/sapper/issues/1697))
-* Allow dynamic imports in client.js by upgrading Shimport to properly hoist imports ([#1593](https://github.com/sveltejs/sapper/issues/1593))
-* Change rel=prefetch to sapper:prefetch ([#1566](https://github.com/sveltejs/sapper/pull/1566))
+* Fix dynamic imports in `client.js` on browsers that do not support ES modules ([#1593](https://github.com/sveltejs/sapper/issues/1593))
+* Change `rel="prefetch"` to `sapper:prefetch` ([#1566](https://github.com/sveltejs/sapper/pull/1566))
 * Support Rollup's `perf` option ([#1685](https://github.com/sveltejs/sapper/pull/1685))
 * Avoid error in scroll tracking when navigating off-site and then going back ([#1592](https://github.com/sveltejs/sapper/issues/1592))
 * Fix runtime router handling of encoded query parameters ([#1620](https://github.com/sveltejs/sapper/pull/1620))
-* Fix prefetching when clicking quickly back and forth ([#1668](https://github.com/sveltejs/sapper/issues/1668)) 
+* Fix prefetching when clicking quickly back and forth ([#1668](https://github.com/sveltejs/sapper/issues/1668))
 * Numerous TypeScript definition improvements ([#1598](https://github.com/sveltejs/sapper/issues/1598), [#1601](https://github.com/sveltejs/sapper/issues/1601), [#1603](https://github.com/sveltejs/sapper/issues/1603), [#1604](https://github.com/sveltejs/sapper/issues/1604))
 
 ## 0.28.10
