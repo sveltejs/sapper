@@ -88,7 +88,7 @@ prog.command('dev')
 
 			watcher.on('invalid', (event: InvalidEvent) => {
 				const changed = event.changed.map(filename => path.relative(process.cwd(), filename)).join(', ');
-				console.log(`\n${colors.bold().cyan(changed)} changed. rebuilding...`);
+				console.log(`\n${colors.bold().cyan(changed)} changed. Rebuilding...`);
 			});
 
 			watcher.on('error', (event: ErrorEvent) => {
