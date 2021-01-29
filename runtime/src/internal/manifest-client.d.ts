@@ -1,7 +1,4 @@
-import { PageParams } from '@sapper/common';
-import {
-	Preload
-} from './shared';
+import { PageParams, Preload } from '@sapper/common';
 
 export interface DOMComponentModule {
 	default: DOMComponentConstructor;

@@ -1,13 +1,12 @@
-import {
-	Preload
-} from './shared';
+import { Preload } from '@sapper/common';
+import { SapperRequest, SapperResponse } from '@sapper/server';
 
 export const src_dir: string;
 export const build_dir: string;
 export const dev: boolean;
 export const manifest: Manifest;
 
-export { SapperRequest, SapperResponse } from '@sapper/server';
+export type { SapperRequest, SapperResponse };
 
 export interface SSRComponentModule {
 	default: SSRComponent;
