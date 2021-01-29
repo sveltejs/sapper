@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.29.1 (Unreleased)
+
+* Fix bad imports in type definitions ([#1709](https://github.com/sveltejs/sapper/pull/1709))
+
 ## 0.29.0
 
 Please see the [migration guide](https://sapper.svelte.dev/migrating#0_28_to_0_29) for details on migrating from Sapper 0.28 to Sapper 0.29.
