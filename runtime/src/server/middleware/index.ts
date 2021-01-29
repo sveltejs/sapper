@@ -112,7 +112,7 @@ export function serve({ prefix, pathname, cache_control }: {
 
 	return (req: SapperRequest, res: SapperResponse, next: () => void) => {
 		if (filter(req)) {
-			const type = mime.getType(req.path);
+			const type = (<any>mime).getType(req.path);
 
 			try {
 				const file = path.posix.normalize(decodeURIComponent(req.path));

@@ -128,7 +128,7 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const protocol = req.socket.encrypted ? 'https' : 'http';
+				const protocol = (<any>req.socket).encrypted ? 'https' : 'http';
 				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
 				opts = Object.assign({}, opts);
@@ -264,7 +264,7 @@ export function get_page_handler(
 			const pageContext: PageContext = {
 				host: req.headers.host,
 				path: req.path,
-				query: req.query,
+				query: <any>req.query,
 				params,
 				error: error
 					? error instanceof Error
