@@ -18,6 +18,7 @@ import {
 import App from '@sapper/internal/App.svelte';
 import { PageContext, PreloadResult } from '@sapper/common';
 import detectClientOnlyReferences from './detect_client_only_references';
+import { TLSSocket } from 'tls';
 
 export function get_page_handler(
 	manifest: Manifest,
@@ -128,7 +129,7 @@ export function get_page_handler(
 				preload_error = { statusCode, message };
 			},
 			fetch: (url: string, opts?: any) => {
-				const protocol = req.socket.encrypted ? 'https' : 'http';
+				const protocol = (req.socket as TLSSocket).encrypted ? 'https' : 'http';
 				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
 				opts = Object.assign({}, opts);
@@ -264,7 +265,7 @@ export function get_page_handler(
 			const pageContext: PageContext = {
 				host: req.headers.host,
 				path: req.path,
-				query: req.query,
+				query: req.query as Record<string, string | string[]>,
 				params,
 				error: error
 					? error instanceof Error

@@ -27,9 +27,11 @@ declare module '@sapper/app' {
 
 declare module '@sapper/server' {
 	import { IncomingMessage, ServerResponse } from 'http';
-	import { TLSSocket } from 'tls';
+	import { Socket } from 'net';
 
 	export type Ignore = string | RegExp | ((uri: string) => boolean) | Ignore[];
+
+	interface ParsedQs { [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[] }
 
 	/**
 	 * The request object passed to middleware and server-side routes. 
@@ -57,16 +59,11 @@ declare module '@sapper/server' {
 		params: Record<string, string>;
 	
 		/**
-		 * The un-parsed querystring
+		 * The parsed query string
 		 */
-		search: string | null;
-	
-		/**
-		 * The parsed querystring
-		 */
-		query: Record<string, string>;
+		query: ParsedQs;
 
-		socket: TLSSocket;
+		socket: Socket;
 	}
 
 	export interface SapperResponse extends ServerResponse {
