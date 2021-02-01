@@ -2,6 +2,7 @@
 
 ## 0.29.1 (Unreleased)
 
+* Fixed typings to be compatible with express/polka ([#1713](https://github.com/sveltejs/sapper/pull/1713))
 * Fix bad imports in type definitions ([#1709](https://github.com/sveltejs/sapper/pull/1709))
 
 ## 0.29.0
