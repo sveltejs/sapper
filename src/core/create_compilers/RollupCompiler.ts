@@ -162,7 +162,6 @@ export default class RollupCompiler {
 
 		// TODO this is hacky. refactor out into an external rollup plugin
 		(mod.plugins || (mod.plugins = [])).push(css_chunks({
-			chunkFileNames: '[name]-[hash].css',
 			entryFileNames: '[name]-[hash].css'
 		}));
 		if (!/[\\/]client\./.test(entry_point)) {
