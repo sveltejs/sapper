@@ -1,6 +1,6 @@
 # sapper changelog
 
-## 0.29.1 (Unreleased)
+## 0.29.1
 
 * Restore hashing of all CSS file names ([#1716](https://github.com/sveltejs/sapper/issues/1716))
 * Fixed typings to be compatible with express/polka ([#1713](https://github.com/sveltejs/sapper/pull/1713))
