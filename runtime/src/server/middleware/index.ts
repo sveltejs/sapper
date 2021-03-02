@@ -124,6 +124,9 @@ export function serve({ prefix, pathname, cache_control }: {
 			} catch (err) {
 				if (err.code === 'ENOENT') {
 					next();
+				} else if (err.code === 'EISDIR') {
+					res.statusCode = 404;
+					res.end('Not Found');
 				} else {
 					console.error(err);
 
