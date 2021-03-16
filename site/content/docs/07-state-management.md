@@ -27,6 +27,8 @@ As an example, let's look at how to populate the session with the current user. 
 ```js
 // src/server.js
 polka()
+	// Create a middleware to set `req.user` for the Sapper middleware
+	.use(userMiddleware)
 	.use(
 		// ...
 		sapper.middleware({
