@@ -7,6 +7,11 @@ assignees: ''
 
 ---
 
+NOTE: All development is currently focused on Sapper's successor, SvelteKit: https://kit.svelte.dev/
+While we might fix some particularly pressing or easy to address bugs, it's highly unlikely that
+most issues filed here will be addressed. You might consider trying out SvelteKit to see if it is
+free of the issue you're facing and if not filing the issue there instead.
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 

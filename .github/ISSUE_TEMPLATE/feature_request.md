@@ -7,11 +7,11 @@ assignees: ''
 
 ---
 
-<!--
-If you'd like to propose an implementation for a large new feature or change then please create an RFC:
-https://github.com/sveltejs/rfcs
--->
+NOTE: All development is currently focused on Sapper's successor, SvelteKit: https://kit.svelte.dev/
+We are not adding new features to Sapper. Please see whether SvelteKit has the feature you need and
+if not consider filing your feature request there instead.
 
+<!--
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. For example: I'm always frustrated when [...]
 
@@ -26,3 +26,4 @@ Note: the more honest and specific you are here the more we will take you seriou
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
+-->
