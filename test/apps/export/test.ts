@@ -41,6 +41,7 @@ describe('export', function() {
 			'index.html',
 			'service-worker-index.html',
 			'service-worker.js',
+			'test.html',
 			'test.pdf',
 			'img/example-192.png',
 			'img/example-512.png',

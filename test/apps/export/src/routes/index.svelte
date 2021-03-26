@@ -17,4 +17,5 @@
 <!-- svelte-ignore a11y-missing-attribute -->
 <a>empty anchor #6</a>
 <a href="boom">boom</a>
+<a href="test.html">html file</a>
 <a href="test.pdf">pdf file</a>

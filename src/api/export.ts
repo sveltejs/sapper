@@ -237,7 +237,7 @@ async function _export({
 				const cleaned = clean_html(body as string);
 
 				const base_match = /<base ([\s\S]+?)>/m.exec(cleaned);
-				const base_href = base_match && get_href(base_match[1]);
+				const base_href = base_match ? get_href(base_match[1]) : path.dirname(url.pathname);
 				const base = resolve(url.href, base_href);
 
 				let match;
