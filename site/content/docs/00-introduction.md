@@ -29,10 +29,9 @@ For web developers, the stakes are generally lower than for combat engineers. Bu
 
 ### Comparison with Next.js
 
-[Next.js](https://github.com/zeit/next.js) is a React framework from [Zeit](https://zeit.co), and is the inspiration for Sapper. There are a few notable differences, however:
+[Next.js](https://github.com/zeit/next.js) is a React framework from [Vercel (formerly ZEIT)](https://vercel.com), and is the inspiration for Sapper. There are a few notable differences, however:
 
 * Sapper is powered by Svelte instead of React, so it's faster and your apps are smaller
-* Instead of route masking, we encode route parameters in filenames (see the [routing](docs#Routing) section below)
 * As well as *pages*, you can create *server routes* in your `src/routes` directory. This makes it very easy to, for example, add a JSON API such as the one powering this very page (try visiting [/docs.json](/docs.json))
 * Links are just `<a>` elements, rather than framework-specific `<Link>` components. That means, for example, that [this link right here](/), despite being inside a blob of markdown, works with the router as you'd expect
 
@@ -50,3 +49,11 @@ npm run dev
 ```
 
 This will scaffold a new project in the `my-app` directory, install its dependencies, and start a server on [localhost:3000](http://localhost:3000). Try editing the files to get a feel for how everything works – you may not need to bother reading the rest of this guide!
+
+#### TypeScript support
+
+Sapper supports TypeScript. If you are using the template with Rollup as described in "Getting started" you can convert your project to TypeScript simply by running:
+
+```bash
+node scripts/setupTypeScript.js
+```

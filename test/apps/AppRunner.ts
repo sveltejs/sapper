@@ -1,9 +1,9 @@
 import * as path from 'path';
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import { fork, ChildProcess } from 'child_process';
 import { AddressInfo } from 'net';
 
-import { wait } from '../utils'
+import { wait } from '../utils';
 
 const DEFAULT_ENTRY = '__sapper__/build/server/server.js';
 const DELAY = parseInt(process.env.SAPPER_TEST_DELAY) || 50;
@@ -99,7 +99,7 @@ export class AppRunner {
 		return this.page.$eval(selector, node => node.textContent);
 	}
 
-	wait(extra_ms: number = 0) {
+	wait(extra_ms = 0) {
 		return wait(DELAY + extra_ms);
 	}
 
@@ -127,7 +127,7 @@ export class AppRunner {
 
 			function handle_requestfailed(request: puppeteer.Request) {
 				cleanup();
-				reject(new Error(`failed to fetch ${request.url()}`))
+				reject(new Error(`failed to fetch ${request.url()}`));
 			}
 
 			const cleanup = () => {
@@ -154,7 +154,7 @@ export class AppRunner {
 	async intercept_requests(interceptor: (request: puppeteer.Request) => void, fn: () => any): Promise<void> {
 		const unique_interceptor = request => interceptor(request);
 
-		this.page.prependListener('request', unique_interceptor);
+		this.page.on('request', unique_interceptor);
 		await this.page.setRequestInterception(true);
 
 		const result = await Promise.resolve(fn());

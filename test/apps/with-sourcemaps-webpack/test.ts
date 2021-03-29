@@ -1,7 +1,7 @@
 import { build } from '../../../api';
-import * as assert from "assert";
+import * as assert from 'assert';
 import * as fs from 'fs';
-import * as path from "path";
+import * as path from 'path';
 
 describe('with-sourcemaps-webpack', function() {
 	this.timeout(10000);
@@ -15,10 +15,10 @@ describe('with-sourcemaps-webpack', function() {
 		const shell_source = /shell = (\[[\s\S]+?\])/.exec(service_worker_source)[1];
 		const shell = JSON.parse(shell_source);
 
-		assert.equal(shell.filter(_ => _.endsWith('.map')).length, 0,
+		assert.strictEqual(shell.filter(_ => _.endsWith('.map')).length, 0,
 			'sourcemap files are not cached in SW');
 
-		const clientShellDir = path.resolve(`${__dirname}/__sapper__/build`, path.dirname(shell[0]));
+		const clientShellDir = path.resolve(`${__dirname}/__sapper__/build`, path.dirname(shell[0]).replace(/^\//, ''));
 		const sourcemapFiles = fs.readdirSync(clientShellDir).filter(_ => _.endsWith('.map'));
 		assert.ok(sourcemapFiles.length > 0, 'sourcemap files exist');
 	});

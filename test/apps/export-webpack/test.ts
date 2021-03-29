@@ -3,7 +3,7 @@ import * as api from '../../../api';
 import * as fs from 'fs';
 
 describe('export-webpack', function() {
-	this.timeout(10000);
+	this.timeout(20000);
 
 	// hooks
 	before('build app', () => api.build({ cwd: __dirname, bundler: 'webpack' }));

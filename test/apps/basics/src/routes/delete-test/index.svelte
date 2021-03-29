@@ -6,7 +6,7 @@
 	});
 
 	function del() {
-		fetch(`delete-test/42.json`, { method: 'DELETE' })
+		fetch('delete-test/42.json', { method: 'DELETE' })
 			.then(r => r.json())
 			.then(data => {
 				window.deleted = data;

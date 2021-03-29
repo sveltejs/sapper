@@ -9,6 +9,6 @@ const app = polka()
 		res.setHeader('Set-Cookie', ['a=1; Max-Age=3600', 'b=2; Max-Age=3600']);
 		next();
 	})
-	.use(sapper.middleware())
+	.use(sapper.middleware());
 
 start(app);

@@ -2,8 +2,6 @@
 title: Sapper app structure
 ---
 
-This section is a reference for the curious. We recommend you play around with the project template first, and come back here when you've got a feel for how things fit together.
-
 If you take a look inside the [sapper-template](https://github.com/sveltejs/sapper-template) repo, you'll see some files that Sapper expects to find:
 
 ```bash
@@ -24,7 +22,7 @@ If you take a look inside the [sapper-template](https://github.com/sveltejs/sapp
 
 When you first run Sapper, it will create an additional `__sapper__` directory containing generated files.
 
-You'll notice a few extra files and a `cypress` directory which relates to [testing](docs#Testing) — we don't need to worry about those right now.
+You'll notice a few extra files — we don't need to worry about those right now.
 
 > You *can* create these files from scratch, but it's much better to use the template. See [getting started](docs#Getting_started) for instructions on how to easily clone it
 
@@ -37,7 +35,6 @@ Your package.json contains your app's dependencies and defines a number of scrip
 * `npm run build` — build the app in production mode
 * `npm run export` — bake out a static version, if applicable (see [exporting](docs#Exporting))
 * `npm start` — start the app in production mode after you've built it
-* `npm test` — run the tests (see [testing](docs#Testing))
 
 
 ### src
@@ -93,6 +90,7 @@ This file is a template for responses from the server. Sapper will inject conten
 * `%sapper.head%` — HTML representing page-specific `<head>` contents, like `<title>`
 * `%sapper.html%` — HTML representing the body of the page being rendered
 * `%sapper.scripts%` — script tags for the client-side app
+* `%sapper.cspnonce%` — CSP nonce taken from `res.locals.nonce` (see [Content Security Policy (CSP)](docs#Content_Security_Policy_CSP))
 
 
 ### src/routes
@@ -104,8 +102,9 @@ This is the meat of your app — the pages and server routes. See the section on
 
 This is a place to put any files that your app uses — fonts, images and so on. For example `static/favicon.png` will be served as `/favicon.png`.
 
-Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#templates-service-worker-js)).
+Sapper doesn't serve these files — you'd typically use [sirv](https://github.com/lukeed/sirv) or [serve-static](https://github.com/expressjs/serve-static) for that — but it will read the contents of the `static` folder so that you can easily generate a cache manifest for offline support (see [service-worker.js](docs#src_service-worker_js)).
 
+> Note that the default behaviour of the service worker is to cache all assets from the static directory, so if you have more than 50mb of files here, you will start to exceed the cache limit for service-workers in some browsers, which can cause the service worker to stop loading. In this instance, it is advisable to customise what files are cached by editing the service-worker yourself.
 
 ### rollup.config.js / webpack.config.js
 

@@ -8,7 +8,7 @@ describe('custom extensions', function() {
 	let r: AppRunner;
 
 	// hooks
-	before('build app', () => build({ cwd: __dirname , ext: '.jesuslivesineveryone .whokilledthemuffinman .mdx .svelte' }));
+	before('build app', () => build({ cwd: __dirname , ext: '.jesuslivesineveryone .whokilledthemuffinman .route.svelte .mdx .svelte' }));
 	before('start runner', async () => {
 		r = await new AppRunner().start(__dirname);
 	});
@@ -18,42 +18,49 @@ describe('custom extensions', function() {
 
 	
 	it('works with arbitrary extensions', async () => {
-		await r.load(`/`);
+		await r.load('/');
 
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Great success!'
 		);
 	});
 
 	it('works with other arbitrary extensions', async () => {
-		await r.load(`/const`);
+		await r.load('/const');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Tremendous!'
 		);
 
-		await r.load(`/a`);
+		await r.load('/a');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'a'
 		);
 
-		await r.load(`/test-slug`);
+		await r.load('/test-slug');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'TEST-SLUG'
 		);
 
-		await r.load(`/unsafe-replacement`);
+		await r.load('/unsafe-replacement');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'Bazooom!'
+		);
+
+		await r.load('/ide-friendly');
+
+		assert.equal(
+			await r.text('h1'), 
+			'Great success, IDE friendly custom extensions!'
 		);
 	});
 

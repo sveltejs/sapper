@@ -27,18 +27,33 @@ sapper.start({
 ### goto(href, options?)
 
 * `href` — the page to go to
-* `options` — can include a `replaceState` property, which determines whether to use `history.pushState` (the default) or `history.replaceState`. Not required
+* `options` — not required
+  * `replaceState` (`boolean`, default `false`) — determines whether to use `history.pushState` (the default) or `history.replaceState`.
+  * `noscroll` (`boolean`, default `false`) — prevent scroll to top after navigation.
 
 Programmatically navigates to the given `href`. If the destination is a Sapper route, Sapper will handle the navigation, otherwise the page will be reloaded with the new `href`. In other words, the behaviour is as though the user clicked on a link with this `href`.
 
-Returns a `Promise` that resolves when the navigation is complete.
+Returns a `Promise` that resolves when the navigation is complete. This can be used to perform actions once the navigation has completed, such as updating a database, store, etc.
+
+```js
+import { goto } from '@sapper/app';
+
+const navigateAndSave = async () => {
+	await goto('/');
+	saveItem();
+}
+
+const saveItem = () => {
+	// do something with the database
+}
+```
 
 
 ### prefetch(href)
 
 * `href` — the page to prefetch
 
-Programmatically prefetches the given page, which means a) ensuring that the code for the page is loaded, and b) calling the page's `preload` method with the appropriate options. This is the same behaviour that Sapper triggers when the user taps or mouses over an `<a>` element with [rel=prefetch](docs#Prefetching).
+Programmatically prefetches the given page, which means a) ensuring that the code for the page is loaded, and b) calling the page's `preload` method with the appropriate options. This is the same behaviour that Sapper triggers when the user taps or mouses over an `<a>` element with [sapper:prefetch](docs#sapper_prefetch).
 
 Returns a `Promise` that resolves when the prefetch is complete.
 

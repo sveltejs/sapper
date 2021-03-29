@@ -11,25 +11,24 @@ import Deferred from './utils/Deferred';
 import validate_bundler from './utils/validate_bundler';
 import { copy_shimport } from './utils/copy_shimport';
 import { ManifestData, FatalEvent, ErrorEvent, ReadyEvent, InvalidEvent } from '../interfaces';
-import read_template from '../core/read_template';
 import { noop } from './utils/noop';
 import { copy_runtime } from './utils/copy_runtime';
 import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
-	cwd?: string,
-	src?: string,
-	dest?: string,
-	routes?: string,
-	output?: string,
-	static?: string,
-	'dev-port'?: number,
-	live?: boolean,
-	hot?: boolean,
-	'devtools-port'?: number,
-	bundler?: 'rollup' | 'webpack',
-	port?: number,
-	ext: string
+	cwd?: string;
+	src?: string;
+	dest?: string;
+	routes?: string;
+	output?: string;
+	static?: string;
+	'dev-port'?: number;
+	live?: boolean;
+	hot?: boolean;
+	'devtools-port'?: number;
+	bundler?: 'rollup' | 'webpack';
+	port?: number;
+	ext: string;
 };
 
 export function dev(opts: Opts) {
@@ -117,14 +116,6 @@ class Watcher extends EventEmitter {
 			unique_warnings: new Set()
 		};
 
-		// remove this in a future version
-		const template = read_template(src);
-		if (template.indexOf('%sapper.base%') === -1) {
-			const error = new Error(`As of Sapper v0.10, your template.html file must include %sapper.base% in the <head>`);
-			error.code = `missing-sapper-base`;
-			throw error;
-		}
-
 		process.env.NODE_ENV = 'development';
 
 		process.on('exit', () => {
@@ -137,9 +128,9 @@ class Watcher extends EventEmitter {
 	async init() {
 		if (this.port) {
 			if (!await ports.check(this.port)) {
-				this.emit('fatal', <FatalEvent>{
+				this.emit('fatal', {
 					message: `Port ${this.port} is unavailable`
-				});
+				} as FatalEvent);
 				return;
 			}
 		} else {
@@ -173,9 +164,9 @@ class Watcher extends EventEmitter {
 				cwd, src, dest, routes, output
 			});
 		} catch (err) {
-			this.emit('fatal', <FatalEvent>{
+			this.emit('fatal', {
 				message: err.message
-			});
+			} as FatalEvent);
 			return;
 		}
 
@@ -201,10 +192,10 @@ class Watcher extends EventEmitter {
 							cwd, src, dest, routes, output
 						});
 					} catch (error) {
-						this.emit('error', <ErrorEvent>{
+						this.emit('error', {
 							type: 'manifest',
 							error
-						});
+						} as ErrorEvent);
 					}
 				}
 			)
@@ -223,12 +214,12 @@ class Watcher extends EventEmitter {
 		let deferred = new Deferred();
 
 		// TODO watch the configs themselves?
-		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, dest, true);
+		const compilers: Compilers = await create_compilers(this.bundler, cwd, src, routes, dest, true);
 
 		const emitFatal = () => {
-			this.emit('fatal', <FatalEvent>{
-				message: `Server crashed`
-			});
+			this.emit('fatal', {
+				message: 'Server crashed'
+			} as FatalEvent);
 
 			this.crashed = true;
 			this.proc = null;
@@ -247,13 +238,13 @@ class Watcher extends EventEmitter {
 						this.crashed = false;
 						this.restarted_at = this.restarted_at || Date.now()
 
-						ports.wait(this.port)
+						return ports.wait(this.port)
 							.then((() => {
 								this.restarted_at = 0
 								this.emit('ready', <ReadyEvent>{
 									port: this.port,
 									process: this.proc
-								});
+								} as ReadyEvent);
 
 								if (this.hot && this.bundler === 'webpack') {
 									this.dev_server.send({
@@ -269,9 +260,9 @@ class Watcher extends EventEmitter {
 								if (this.crashed) return;
 
 								const delay = Math.round((Date.now() - this.restarted_at) / 1000)
-								this.emit('fatal', <FatalEvent>{
+								this.emit('fatal', {
 									message: `Server is not listening on port ${this.port} after ${delay} seconds`
-								});
+								} as FatalEvent);
 
 								if (delay < 30) {
 									restart()
@@ -317,11 +308,14 @@ class Watcher extends EventEmitter {
 					};
 
 					if (this.proc) {
+						if (this.restarting) return;
+						this.restarting = true;
 						this.proc.removeListener('exit', emitFatal);
 						this.proc.kill();
-						this.proc.on('exit', () => {
+						this.proc.on('exit', async () => {
 							start_server();
-							restart();
+							await restart();
+							this.restarting = false;
 						});
 					} else {
 						start_server();
@@ -346,8 +340,6 @@ class Watcher extends EventEmitter {
 			handle_result: (result: CompileResult) => {
 				fs.writeFileSync(
 					path.join(dest, 'build.json'),
-
-					// TODO should be more explicit that to_json has effects
 					JSON.stringify(result.to_json(manifest_data, this.dirs), null, '  ')
 				);
 
@@ -406,14 +398,14 @@ class Watcher extends EventEmitter {
 			};
 
 			process.nextTick(() => {
-				this.emit('invalid', <InvalidEvent>{
+				this.emit('invalid', {
 					changed: Array.from(this.current_build.changed),
 					invalid: {
 						server: this.current_build.rebuilding.has('server'),
 						client: this.current_build.rebuilding.has('client'),
-						serviceworker: this.current_build.rebuilding.has('serviceworker'),
+						serviceworker: this.current_build.rebuilding.has('serviceworker')
 					}
-				});
+				} as InvalidEvent);
 
 				this.restarting = false;
 			});
@@ -421,7 +413,7 @@ class Watcher extends EventEmitter {
 	}
 
 	watch(compiler: Compiler, { name, invalid = noop, handle_result = noop }: {
-		name: string,
+		name: string;
 		invalid?: (filename: string) => void;
 		handle_result?: (result: CompileResult) => void;
 	}) {
@@ -429,10 +421,10 @@ class Watcher extends EventEmitter {
 
 		compiler.watch((error?: Error, result?: CompileResult) => {
 			if (error) {
-				this.emit('error', <ErrorEvent>{
+				this.emit('error', {
 					type: name,
 					error
-				});
+				} as ErrorEvent);
 			} else {
 				this.emit('build', {
 					type: name,
@@ -467,7 +459,7 @@ class DevServer {
 				'Access-Control-Allow-Headers': 'Cache-Control',
 				'Content-Type': 'text/event-stream;charset=utf-8',
 				'Cache-Control': 'no-cache, no-transform',
-				'Connection': 'keep-alive',
+				Connection: 'keep-alive',
 				// While behind nginx, event stream should not be buffered:
 				// http://nginx.org/docs/http/ngx_http_proxy_module.html#proxy_buffering
 				'X-Accel-Buffering': 'no'
@@ -502,7 +494,7 @@ class DevServer {
 
 function watch_dir(
 	dir: string,
-	filter: ({ path, stats }: { path: string, stats: fs.Stats }) => boolean,
+	filter: ({ path, stats }: { path: string; stats: fs.Stats }) => boolean,
 	callback: () => void
 ) {
 	let watch: any;

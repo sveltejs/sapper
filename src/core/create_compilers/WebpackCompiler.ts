@@ -28,10 +28,8 @@ export class WebpackCompiler {
 
 				if (result.errors.length) {
 					console.error(stats.toString({ colors: true }));
-					reject(new Error(`Encountered errors while building app`));
-				}
-
-				else {
+					reject(new Error('Encountered errors while building app'));
+				} else {
 					fulfil(result);
 				}
 			});

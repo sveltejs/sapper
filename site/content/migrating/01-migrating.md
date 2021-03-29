@@ -5,6 +5,22 @@ title: Migrating
 
 Until we reach version 1.0, there may be occasional changes to the project structure Sapper expects.
 
+### 0.28 to 0.29
+
+* Rollup 2.29+ is now required. ([#1666](https://github.com/sveltejs/sapper/pull/1666))
+* `rel="prefetch"` must be changed to `sapper:prefetch` ([#1566](https://github.com/sveltejs/sapper/pull/1566))
+
+### 0.27 to 0.28
+
+* Rollup 0.x.x is no longer supported. ([#1326](https://github.com/sveltejs/sapper/pull/1326)). Any version greater than 1.x is supported, but the latest (currently 2.x) is strongly recommended.
+* Versions of Svelte before 3.17.3 are no longer supported. ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* `<script>` tags will now be loaded with the `defer` attribute ([#1123](https://github.com/sveltejs/sapper/pull/1123)), which means:
+	* IE9 support was dropped since IE9 may interleave deferred script execution.
+	* `%sapper.scripts%` can be moved to the `<head>` section for slightly better performance
+* You must set `hydratable: true` in your server build as well in order to properly hydrate `<head>` elements ([#1067](https://github.com/sveltejs/sapper/pull/1067))
+* The files in the generated `service-worker.js` file are now prefixed with a `/` ([#1244](https://github.com/sveltejs/sapper/pull/1244)). If you are using the `service-worker.js` from the default template, no changes will be necessary. If you have modified your service worker, please check to ensure compatibility.
+* The `sapper-noscroll` attribute was renamed to `sapper:noscroll` ([#1320](https://github.com/sveltejs/sapper/pull/1320))
+* Rollup users should update the `onwarn` filter in `rollup.config.js` to match [the change made in `sapper-template`](https://github.com/sveltejs/sapper-template/pull/246/files).
 
 ### 0.25 to 0.26
 
@@ -244,7 +260,7 @@ The `4xx.html` and `5xx.html` error pages have been replaced with a single page,
 
 In earlier versions, each page was a completely standalone component. Upon navigation, the entire page would be torn down and a new one created. Typically, each page would import a shared `<Layout>` component to achieve visual consistency.
 
-As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/master/app/App.html) for an example.
+As of 0.12, this changes: we have a single `<App>` component, defined in `app/App.html`, which controls the rendering of the rest of the app. See [sapper-template](https://github.com/sveltejs/sapper-template/blob/365e8521ae6e1ffc5f1359342bb59c92a0014dca/app/App.html) for an example.
 
 This component is rendered with the following values:
 

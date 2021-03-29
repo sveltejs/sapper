@@ -2,7 +2,15 @@
 title: Preloading
 ---
 
-As seen in the [routing](docs#Routing) section, page components can have an optional `preload` function that will load some data that the page depends on. This is similar to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
+Page components can define a `preload` function that runs before the component is created. The values it returns are passed as props to the page.
+
+`preload` functions are called when a page is loaded and are typically used to load data that the page depends on - hence its name. This avoids the user seeing the page update as it loads, as is typically the case with client-side loading.
+
+`preload` is the Sapper equivalent to `getInitialProps` in Next.js or `asyncData` in Nuxt.js.
+
+Note that `preload` will run both on the server side and on the client side. It may therefore not reference any APIs only present in the browser.
+
+The following code shows how to load a blog post and pass it to the page in the `article` prop:
 
 ```html
 <script context="module">
@@ -15,11 +23,19 @@ As seen in the [routing](docs#Routing) section, page components can have an opti
 		return { article };
 	}
 </script>
+
+<script>
+	export let article;
+</script>
+
+<h1>{article.title}</h1>
 ```
 
-It lives in a `context="module"` script — see the [tutorial](https://svelte.dev/tutorial/module-exports) — because it's not part of the component instance itself; instead, it runs *before* the component is created, allowing you to avoid flashes while data is fetched.
+The [routing section](docs#Routing) describes how the dynamic parameter `slug` works.
 
-### Argument
+It should be defined in a `context="module"` script since it is not part of the component instance itself – it runs before the component has been created. See the [tutorial](https://svelte.dev/tutorial/module-exports) for more on the module context.
+
+### Arguments
 
 The `preload` function receives two arguments — `page` and `session`.
 
@@ -32,12 +48,12 @@ So if the example above was `src/routes/blog/[slug].svelte` and the URL was `/bl
 * `page.query.foo === 'bar'`
 * `page.query.baz === true`
 
-`session` is generated on the server by the `session` option passed to `sapper.middleware` (TODO this needs further documentation. Perhaps a server API section?)
+`session` can be used to pass data from the server related to the current request, e.g. the current user. By default it is `undefined`. [Seeding session data](docs#Seeding_session_data) describes how to add data to it.
 
 
 ### Return value
 
-If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object.
+If you return a Promise from `preload`, the page will delay rendering until the promise resolves. You can also return a plain object. In both cases, the values in the object will be passed into the components as props.
 
 When Sapper renders a page on the server, it will attempt to serialize the resolved value (using [devalue](https://github.com/Rich-Harris/devalue)) and include it on the page, so that the client doesn't also need to call `preload` upon initialization. Serialization will fail if the value includes functions or custom classes (cyclical and repeated references are fine, as are built-ins like `Date`, `Map`, `Set` and `RegExp`).
 
@@ -59,16 +75,19 @@ To fix this, Sapper provides `this.fetch`, which works on the server as well as 
 ```html
 <script context="module">
 	export async function preload() {
-		const res = await this.fetch(`secret-data.json`, {
-			credentials: 'include'
-		});
+		const res = await this.fetch(`server-route.json`);
 
 		// ...
 	}
 </script>
 ```
 
-Note that you will need to use session middleware such as [express-session](https://github.com/expressjs/session) in your `app/server.js` in order to maintain user sessions or do anything involving authentication.
+It is important to note that `preload` may run on either the server or in the client browser. Code called inside `preload` blocks:
+  - should run on the same domain as any upstream API servers requiring credentials
+  - should not reference `window`, `document` or any browser-specific objects
+  - should not reference any API keys or secrets, which will be exposed to the client
+
+If you are using Sapper as an authentication/authorization server, you can use session middleware such as [express-session](https://github.com/expressjs/session) in your `app/server.js` in order to maintain user sessions.
 
 
 #### this.error
@@ -106,6 +125,26 @@ You can abort rendering and redirect to a different location with `this.redirect
 
 		if (!user) {
 			return this.redirect(302, 'login');
+		}
+
+		return { user };
+	}
+</script>
+```
+
+#### Typing the function
+
+If you use TypeScript and want to access the above context methods, TypeScript will throw an error and tell you that it does not know the type of `this`. To fix it, you need to specify the type of `this` (see the [official TypeScript documentation](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#specifying-the-type-of-this-for-functions)). We provide you with helper interfaces so you can type the function like this:
+
+```html
+<script context="module" lang="ts">
+	import type { Preload } from "@sapper/common";
+
+	export const preload: Preload = async function(this, page, session) {
+		const { user } = session;
+
+		if (!user) {
+			return this.redirect(302, 'login'); // TypeScript will know the type of `this` now
 		}
 
 		return { user };

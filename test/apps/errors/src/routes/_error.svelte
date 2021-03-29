@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 
 	export let status, error = {};
 
@@ -7,7 +7,7 @@
 
 	onMount(() => {
 		mounted = 'success';
-	})
+	});
 </script>
 
 <h1>{status}</h1>
@@ -15,3 +15,5 @@
 <h2>{mounted}</h2>
 
 <p>{error.message}</p>
+
+<span>{error.stack}</span>

@@ -3,6 +3,7 @@ import * as path from 'path';
 import { mkdirp } from './fs_utils';
 
 const runtime = [
+	'index.d.ts',
 	'app.mjs',
 	'server.mjs',
 	'internal/shared.mjs',

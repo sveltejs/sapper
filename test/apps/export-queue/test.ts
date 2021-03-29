@@ -1,7 +1,7 @@
 import * as api from '../../../api';
 
 describe('export-queue', function() {
-	this.timeout(10000);
+	this.timeout(20000);
 
 	// hooks
 	before('build app', () => api.build({ cwd: __dirname }));

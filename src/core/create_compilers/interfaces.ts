@@ -22,18 +22,18 @@ export interface CompileResult {
 	warnings: CompileError[];
 	chunks: Chunk[];
 	assets: Record<string, string>;
-	css_files: CssFile[];
+	print: () => void;
 
-	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo
+	to_json: (manifest_data: ManifestData, dirs: Dirs) => BuildInfo;
 }
 
 export type BuildInfo = {
 	bundler: string;
 	shimport: string;
 	assets: Record<string, string>;
+	dependencies?: Record<string, string[]>;
 	legacy_assets?: Record<string, string>;
-	css: {
-		main: string | null,
-		chunks: Record<string, string[]>
-	}
+	css: {	
+		main: string[] | null;
+	};
 }

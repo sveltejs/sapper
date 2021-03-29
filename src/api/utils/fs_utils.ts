@@ -42,5 +42,6 @@ export function copy(from: string, to: string) {
 	} else {
 		mkdirp(path.dirname(to));
 		fs.writeFileSync(to, fs.readFileSync(from));
+		fs.utimesSync(to, stats.atime, stats.mtime);
 	}
 }

@@ -70,6 +70,22 @@ Dynamic parameters are encoded using `[brackets]`. For example, here's how you c
 </div>
 ```
 
+If you want to capture more params, you can create nested folders using the same naming convention: `[slug]/[language]`.
+
+If you don't want to create several folders to capture more than one parameter like `[year]/[month]/...`, or if the number of parameters is dynamic, you can use a spread route parameter. For example, instead of individually capturing `/blog/[slug]/[year]/[month]/[day]`, you can create a file for `/blog/[...slug].svelte` and extract the params like so:
+
+```html
+<!-- src/routes/blog/[...slug].svelte -->
+<script context="module">
+	export async function preload({ params }) {
+		let [slug, year, month, day] = params.slug;
+
+		return { slug, year, month, day };
+	}
+</script>
+```
+
+
 > See the section on [preloading](docs#Preloading) for more info about `preload` and `this.fetch`
 
 
@@ -99,6 +115,15 @@ export async function get(req, res, next) {
 
 > `delete` is a reserved word in JavaScript. To handle DELETE requests, export a function called `del` instead.
 
+If you are using TypeScript, use the following types:
+
+```js
+import { SapperRequest, SapperResponse } from '@sapper/server';
+
+function get(req: SapperRequest, res: SapperResponse, next: () => void) { ... }
+```
+
+`SapperRequest` and `SapperResponse` will work with both Polka and Express. You can replace them with the types specific to your server, which are `polka.Request` / `http.ServerResponse` and `express.Request` / `express.Response`, respectively.
 
 ### File naming rules
 
@@ -114,7 +139,7 @@ There are three simple rules for naming the files that define your routes:
 
 In addition to regular pages, there is a 'special' page that Sapper expects to find — `src/routes/_error.svelte`. This will be shown when an error occurs while rendering a page.
 
-The `error` object is made available to the template along with the HTTP `status` code.
+The `error` object is made available to the template along with the HTTP `status` code. `error` is also available in the [`page` store](docs#Stores).
 
 
 
@@ -122,6 +147,6 @@ The `error` object is made available to the template along with the HTTP `status
 
 You can use a subset of regular expressions to qualify route parameters, by placing them in parentheses after the parameter name.
 
-For example, `src/routes/items/[id([0-9]+)].svelte` would only match numeric IDs — `/items/123` would match, but `/items/xyz` would not.
+For example, `src/routes/items/[id([0-9]+)].svelte` would only match numeric IDs — `/items/123` would match and make the value `123` available in `page.params.id`, but `/items/xyz` would not match.
 
 Because of technical limitations, the following characters cannot be used: `/`, `\`, `?`, `:`, `(` and `)`.

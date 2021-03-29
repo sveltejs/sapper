@@ -19,18 +19,18 @@ describe('encoding', function() {
 	it('encodes routes', async () => {
 		await r.load('/fünke');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
-			`I'm afraid I just blue myself`
+			"I'm afraid I just blue myself"
 		);
 	});
 
 	it('encodes req.params and req.query for server-rendered pages', async () => {
-		await r.load('/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789');
+		await r.load('/echo/page/encöded?message=hëllö+wörld&föo=bar&=baz&tel=%2B123456789&multiline=multi%0Aline');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
-			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789","multiline":"multi\\nline"}'
 		);
 	});
 
@@ -42,22 +42,22 @@ describe('encoding', function() {
 		await r.page.click('a');
 		await r.wait();
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
-			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789"}'
+			'encöded {"message":"hëllö wörld","föo":"bar","":"baz","tel":"+123456789","multiline":"multi\\nline"}'
 		);
 	});
 
 	it('encodes req.params for server routes', async () => {
 		await r.load('/echo/server-route/encöded');
 
-		assert.equal(
+		assert.strictEqual(
 			await r.text('h1'),
 			'encöded'
 		);
 	});
 
 	it('survives the tests with no server errors', () => {
-		assert.deepEqual(r.errors, []);
+		assert.deepStrictEqual(r.errors, []);
 	});
 });

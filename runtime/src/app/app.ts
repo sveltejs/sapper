@@ -1,36 +1,46 @@
 import { writable } from 'svelte/store';
 import App from '@sapper/internal/App.svelte';
-import { root_preload, ErrorComponent, ignore, components, routes } from '@sapper/internal/manifest-client';
 import {
+	extract_query,
+	init as init_router,
+	load_current_page,
+	select_target
+} from './router';
+import { get_prefetched, start as start_prefetching } from './prefetch';
+import {
+	ErrorComponent,
+	components,
+	root_comp
+} from '@sapper/internal/manifest-client';
+import {
+	HydratedTarget,
 	Target,
-	ScrollPosition,
-	Component,
 	Redirect,
-	ComponentLoader,
-	ComponentConstructor,
-	Route,
-	Query,
-	Page
+	Branch,
+	Page,
+	InitialData
 } from './types';
+import { PageContext } from '@sapper/common';
 import goto from './goto';
+import { page_store } from './stores';
 
 declare const __SAPPER__;
-export const initial_data = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
+export const initial_data: InitialData = typeof __SAPPER__ !== 'undefined' && __SAPPER__;
 
 let ready = false;
-let root_component: Component;
+let root_component: InstanceType<typeof App>;
 let current_token: {};
-let root_preloaded: Promise<any>;
-let current_branch = [];
+let root_preloaded: object | Promise<object>;
+let current_branch: Branch = [];
 let current_query = '{}';
 
 const stores = {
-	page: writable({}),
+	page: page_store({}),
 	preloading: writable(null),
 	session: writable(initial_data && initial_data.session)
 };
 
-let $session;
+let $session: any;
 let session_dirty: boolean;
 
 stores.session.subscribe(async value => {
@@ -39,96 +49,48 @@ stores.session.subscribe(async value => {
 	if (!ready) return;
 	session_dirty = true;
 
-	const target = select_target(new URL(location.href));
+	const dest = select_target(new URL(location.href));
 
 	const token = current_token = {};
-	const { redirect, props, branch } = await hydrate_target(target);
+	const { redirect, props, branch } = await hydrate_target(dest);
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
-	await render(redirect, branch, props, target.page);
+	if (redirect) {
+		await goto(redirect.location, { replaceState: true });
+	} else {
+		await render(branch, props, buildPageContext(props, dest.page));
+	}
 });
 
-export let prefetching: {
-	href: string;
-	promise: Promise<{ redirect?: Redirect, data?: any }>;
-} = null;
-export function set_prefetching(href, promise) {
-	prefetching = { href, promise };
-}
-
 export let target: Node;
-export function set_target(element) {
-	target = element;
+export function set_target(node: Node) {
+	target = node;
 }
 
-export let uid = 1;
-export function set_uid(n) {
-	uid = n;
-}
+export default function start(opts: {
+	target: Node
+}): Promise<void> {
+	set_target(opts.target);
 
-export let cid: number;
-export function set_cid(n) {
-	cid = n;
-}
+	init_router(initial_data.baseUrl, handle_target);
 
-const _history = typeof history !== 'undefined' ? history : {
-	pushState: (state: any, title: string, href: string) => {},
-	replaceState: (state: any, title: string, href: string) => {},
-	scrollRestoration: ''
-};
-export { _history as history };
+	start_prefetching();
 
-export const scroll_history: Record<string, ScrollPosition> = {};
-
-export function extract_query(search: string) {
-	const query = Object.create(null);
-	if (search.length > 0) {
-		search.slice(1).split('&').forEach(searchParam => {
-			let [, key, value = ''] = /([^=]*)(?:=(.*))?/.exec(decodeURIComponent(searchParam.replace(/\+/g, ' ')));
-			if (typeof query[key] === 'string') query[key] = [<string>query[key]];
-			if (typeof query[key] === 'object') (query[key] as string[]).push(value);
-			else query[key] = value;
+	if (initial_data.error) {
+		return Promise.resolve().then(() => {
+			return handle_error();
 		});
 	}
-	return query;
+
+	return load_current_page();
 }
 
-export function select_target(url: URL): Target {
-	if (url.origin !== location.origin) return null;
-	if (!url.pathname.startsWith(initial_data.baseUrl)) return null;
-
-	let path = url.pathname.slice(initial_data.baseUrl.length);
-
-	if (path === '') {
-		path = '/';
-	}
-
-	// avoid accidental clashes between server routes and page routes
-	if (ignore.some(pattern => pattern.test(path))) return;
-
-	for (let i = 0; i < routes.length; i += 1) {
-		const route = routes[i];
-
-		const match = route.pattern.exec(path);
-
-		if (match) {
-			const query: Query = extract_query(url.search);
-			const part = route.parts[route.parts.length - 1];
-			const params = part.params ? part.params(match) : {};
-
-			const page = { host: location.host, path, query, params };
-
-			return { href: url.href, route, match, page };
-		}
-	}
-}
-
-export function handle_error(url: URL) {
+function handle_error() {
 	const { host, pathname, search } = location;
 	const { session, preloaded, status, error } = initial_data;
 
 	if (!root_preloaded) {
-		root_preloaded = preloaded && preloaded[0]
+		root_preloaded = preloaded && preloaded[0];
 	}
 
 	const props = {
@@ -147,72 +109,36 @@ export function handle_error(url: URL) {
 		},
 		segments: preloaded
 
-	}
-	const query = extract_query(search);
-	render(null, [], props, { host, path: pathname, query, params: {} });
-}
-
-export function scroll_state() {
-	return {
-		x: pageXOffset,
-		y: pageYOffset
 	};
+	const query = extract_query(search);
+	render([], props, { host, path: pathname, query, params: {}, error });
 }
 
-export async function navigate(target: Target, id: number, noscroll?: boolean, hash?: string): Promise<any> {
-	if (id) {
-		// popstate or initial navigation
-		cid = id;
-	} else {
-		const current_scroll = scroll_state();
+function buildPageContext(props: any, page: Page): PageContext {
+	const { error } = props;
 
-		// clicked on a link. preserve scroll state
-		scroll_history[cid] = current_scroll;
+	return { error, ...page };
+}
 
-		id = cid = ++uid;
-		scroll_history[cid] = noscroll ? current_scroll : { x: 0, y: 0 };
-	}
-
-	cid = id;
-
+async function handle_target(dest: Target): Promise<void> {
 	if (root_component) stores.preloading.set(true);
 
-	const loaded = prefetching && prefetching.href === target.href ?
-		prefetching.promise :
-		hydrate_target(target);
-
-	prefetching = null;
+	const hydrating = get_prefetched(dest);
 
 	const token = current_token = {};
-	const { redirect, props, branch } = await loaded;
+	const hydrated_target = await hydrating;
+	const { redirect } = hydrated_target;
 	if (token !== current_token) return; // a secondary navigation happened while we were loading
 
-	await render(redirect, branch, props, target.page);
-	if (document.activeElement) document.activeElement.blur();
-
-	if (!noscroll) {
-		let scroll = scroll_history[id];
-
-		if (hash) {
-			// scroll is an element id (from a hash), we need to compute y.
-			const deep_linked = document.getElementById(hash.slice(1));
-
-			if (deep_linked) {
-				scroll = {
-					x: 0,
-					y: deep_linked.getBoundingClientRect().top
-				};
-			}
-		}
-
-		scroll_history[cid] = scroll;
-		if (scroll) scrollTo(scroll.x, scroll.y);
+	if (redirect) {
+		await goto(redirect.location, { replaceState: true });
+	} else {
+		const { props, branch } = hydrated_target;
+		await render(branch, props, buildPageContext(props, dest.page));
 	}
 }
 
-async function render(redirect: Redirect, branch: any[], props: any, page: Page) {
-	if (redirect) return goto(redirect.location, { replaceState: true });
-
+async function render(branch: Branch, props: any, page: PageContext) {
 	stores.page.set(page);
 	stores.preloading.set(false);
 
@@ -227,16 +153,7 @@ async function render(redirect: Redirect, branch: any[], props: any, page: Page)
 		props.level0 = {
 			props: await root_preloaded
 		};
-
-		// first load — remove SSR'd <head> contents
-		const start = document.querySelector('#sapper-head-start');
-		const end = document.querySelector('#sapper-head-end');
-
-		if (start && end) {
-			while (start.nextSibling !== end) detach(start.nextSibling);
-			detach(start);
-			detach(end);
-		}
+		props.notify = stores.page.notify;
 
 		root_component = new App({
 			target,
@@ -268,12 +185,8 @@ function part_changed(i, segment, match, stringified_query) {
 	}
 }
 
-export async function hydrate_target(target: Target): Promise<{
-	redirect?: Redirect;
-	props?: any;
-	branch?: Array<{ Component: ComponentConstructor, preload: (page) => Promise<any>, segment: string }>;
-}> {
-	const { route, page } = target;
+export async function hydrate_target(dest: Target): Promise<HydratedTarget> {
+	const { route, page } = dest;
 	const segments = page.path.split('/').filter(Boolean);
 
 	let redirect: Redirect = null;
@@ -284,7 +197,7 @@ export async function hydrate_target(target: Target): Promise<{
 		fetch: (url: string, opts?: any) => fetch(url, opts),
 		redirect: (statusCode: number, location: string) => {
 			if (redirect && (redirect.statusCode !== statusCode || redirect.location !== location)) {
-				throw new Error(`Conflicting redirects`);
+				throw new Error('Conflicting redirects');
 			}
 			redirect = { statusCode, location };
 		},
@@ -295,6 +208,7 @@ export async function hydrate_target(target: Target): Promise<{
 	};
 
 	if (!root_preloaded) {
+		const root_preload = root_comp.preload || (() => ({}));
 		root_preloaded = initial_data.preloaded[0] || root_preload.call(preload_context, {
 			host: page.host,
 			path: page.path,
@@ -303,7 +217,7 @@ export async function hydrate_target(target: Target): Promise<{
 		}, $session);
 	}
 
-	let branch;
+	let branch: Branch;
 	let l = 1;
 
 	try {
@@ -322,29 +236,34 @@ export async function hydrate_target(target: Target): Promise<{
 
 			const j = l++;
 
+			let result;
+
 			if (!session_dirty && !segment_dirty && current_branch[i] && current_branch[i].part === part.i) {
-				return current_branch[i];
-			}
-
-			segment_dirty = false;
-
-			const { default: component, preload } = await load_component(components[part.i]);
-
-			let preloaded;
-			if (ready || !initial_data.preloaded[i + 1]) {
-				preloaded = preload
-					? await preload.call(preload_context, {
-						host: page.host,
-						path: page.path,
-						query: page.query,
-						params: part.params ? part.params(target.match) : {}
-					}, $session)
-					: {};
+				result = current_branch[i];
 			} else {
-				preloaded = initial_data.preloaded[i + 1];
+				segment_dirty = false;
+	
+				const { default: component, preload } = await components[part.i].js();
+	
+				let preloaded: object;
+	
+				if (ready || !initial_data.preloaded[i + 1]) {
+					preloaded = preload
+						? await preload.call(preload_context, {
+							host: page.host,
+							path: page.path,
+							query: page.query,
+							params: part.params ? part.params(dest.match) : {}
+						}, $session)
+						: {};
+				} else {
+					preloaded = initial_data.preloaded[i + 1];
+				}
+
+				result = { component, props: preloaded, segment, match, part: part.i };
 			}
 
-			return (props[`level${j}`] = { component, props: preloaded, segment, match, part: part.i });
+			return (props[`level${j}`] = result);
 		}));
 	} catch (error) {
 		props.error = error;
@@ -353,35 +272,4 @@ export async function hydrate_target(target: Target): Promise<{
 	}
 
 	return { redirect, props, branch };
-}
-
-function load_css(chunk: string) {
-	const href = `client/${chunk}`;
-	if (document.querySelector(`link[href="${href}"]`)) return;
-
-	return new Promise((fulfil, reject) => {
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = href;
-
-		link.onload = () => fulfil();
-		link.onerror = reject;
-
-		document.head.appendChild(link);
-	});
-}
-
-export function load_component(component: ComponentLoader): Promise<{
-	default: ComponentConstructor,
-	preload?: (input: any) => any
-}> {
-	// TODO this is temporary — once placeholders are
-	// always rewritten, scratch the ternary
-	const promises: Array<Promise<any>> = (typeof component.css === 'string' ? [] : component.css.map(load_css));
-	promises.unshift(component.js());
-	return Promise.all(promises).then(values => values[0]);
-}
-
-function detach(node: Node) {
-	node.parentNode.removeChild(node);
 }

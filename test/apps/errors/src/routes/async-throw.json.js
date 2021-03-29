@@ -1,3 +1,3 @@
 export function get(req, res) {
-  return Promise.reject(new Error('oops'));
+	return Promise.reject(new Error('oops'));
 }

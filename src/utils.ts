@@ -52,7 +52,7 @@ export function write_if_changed(file: string, code: string) {
 	}
 }
 
-export function stringify(string: string, includeQuotes: boolean = true) {
+export function stringify(string: string, includeQuotes = true) {
 	const quoted = JSON.stringify(string);
 	return includeQuotes ? quoted : quoted.slice(1, -1);
 }
@@ -115,5 +115,11 @@ export const reserved_words = new Set([
 	'void',
 	'while',
 	'with',
-	'yield',
+	'yield'
 ]);
+
+export function normalize_path(user_path) {
+	const p = path.normalize(user_path);
+	// normalize drive letter on Windows
+	return p.length ? p.charAt(0).toLowerCase() + p.slice(1) : '';
+}
