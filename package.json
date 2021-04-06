@@ -19,7 +19,6 @@
     "test": "test"
   },
   "dependencies": {
-    "helmet": "4.4.1",
     "html-minifier": "^4.0.0",
     "http-link-header": "^1.0.2",
     "shimport": "^2.0.5",
@@ -48,6 +47,7 @@
     "eslint-import-resolver-typescript": "^2.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-svelte3": "^2.7.3",
+    "helmet": "4.4.1",
     "kleur": "^4.0.0",
     "mime": "^2.4.4",
     "mocha": "^8.0.0",
