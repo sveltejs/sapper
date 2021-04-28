@@ -10,7 +10,7 @@ Sapper is a framework for building high-performance universal web apps. [Read th
 
 ## SvelteKit
 
-Sapper's successor, [SvelteKit](https://kit.svelte.dev/), is currently in development. Please see [the FAQ](https://sapper.svelte.dev/faq#version-numbers) for more details.
+Sapper's successor, [SvelteKit](https://kit.svelte.dev/), is currently available for use. Please see [the FAQ](https://sapper.svelte.dev/faq#version-numbers) for more details.
 
 
 ## Get started
