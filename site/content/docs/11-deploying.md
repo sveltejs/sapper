@@ -16,6 +16,12 @@ node __sapper__/build
 
 We can use a third-party library like [the `vercel-sapper` builder](https://www.npmjs.com/package/vercel-sapper) to deploy our projects to [Vercel] ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel)). See [that project's readme](https://github.com/thgh/vercel-sapper#readme) for more details regarding [Vercel] deployments.
 
+### Deploying to Layer0
+
+[Layer0](https://layer0.co) is an all-in-one platform to develop, deploy, preview, experiment on, monitor, and run your headless frontend. It is focused on large, dynamic websites and best-in-class performance through EdgeJS (a JavaScript-based Content Delivery Network), predictive prefetching, and performance monitoring.
+
+See the official guide on [how to deploy Sapper apps on Layer0](https://docs.layer0.co/guides/sapper).
+
 ### Deploying service workers
 
 Sapper makes the Service Worker file (`service-worker.js`) unique by including a timestamp in the source code
