@@ -4,7 +4,7 @@ title: Introduction
 
 ### Before we begin
 
-> Sapper's succesor, [https://kit.svelte.dev](SvelteKit), is currently available for use. All development efforts moving forward will be focused on [https://kit.svelte.dev](SvelteKit).
+> Sapper's succesor, [SvelteKit](https://kit.svelte.dev), is currently available for use. All development efforts moving forward will be focused on [SvelteKit](https://kit.svelte.dev).
 >
 > If you get stuck, reach out for help in the [Discord chatroom](https://svelte.dev/chat). See the [migration guides](migrating) for help upgrading from older versions.
 
