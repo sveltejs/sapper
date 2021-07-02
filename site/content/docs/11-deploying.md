@@ -16,6 +16,22 @@ node __sapper__/build
 
 We can use a third-party library like [the `vercel-sapper` builder](https://www.npmjs.com/package/vercel-sapper) to deploy our projects to [Vercel] ([formerly ZEIT Now](https://vercel.com/blog/zeit-is-now-vercel)). See [that project's readme](https://github.com/thgh/vercel-sapper#readme) for more details regarding [Vercel] deployments.
 
+
+### Deploying to Layer0
+
+To prepare your Sapper app for deployment on [Layer0](https://layer0.co), run the following in the root folder of your project:
+```bash
+npm install -g @layer0/cli # yarn global add @layer0/cli
+layer0 init
+```
+
+To deploy with Webpack builds, follow [this step](https://docs.layer0.co/guides/sapper#section_webpack) and for deployment with Rollup builds, follow [this step](https://docs.layer0.co/guides/sapper#section_rollup). Then execute
+```bash
+layer0 deploy
+```
+
+For detailed instructions consult the [Layer0 Sapper](https://docs.layer0.co/guides/sapper#section_getting_started) documentation.
+
 ### Deploying service workers
 
 Sapper makes the Service Worker file (`service-worker.js`) unique by including a timestamp in the source code
