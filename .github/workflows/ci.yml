@@ -26,4 +26,4 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           cache: npm
-      - run: "npm i && npm run lint"
+      - run: 'npm i && npm run lint'
