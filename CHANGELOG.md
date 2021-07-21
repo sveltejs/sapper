@@ -1,6 +1,6 @@
 # sapper changelog
 
-## Unreleased
+## 0.29.2
 
 * Allow export to succeed when user has not provided a `base` tag ([#1208](https://github.com/sveltejs/sapper/issues/1208))
 * Update `rollup-plugin-chunks` dependency to fix regex routes ([#1757](https://github.com/sveltejs/sapper/issues/1757))
