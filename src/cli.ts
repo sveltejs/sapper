@@ -77,8 +77,8 @@ prog.command('dev')
 
 			watcher.on('ready', async (event: ReadyEvent) => {
 				if (first) {
-					console.log(colors.bold().cyan(`> Listening on http://localhost:${event.port}`));
-					if (opts.open) {
+					console.log(colors.bold().cyan(`🚀 http://localhost:${event.port}`));
+				if (opts.open) {
 						const { exec } = await import('child_process');
 						exec(`open http://localhost:${event.port}`);
 					}
@@ -94,7 +94,7 @@ prog.command('dev')
 			watcher.on('error', (event: ErrorEvent) => {
 				const { type, error } = event;
 
-				console.log(colors.bold().red(`✗ ${type}`));
+				console.log(colors.bold().red(`❌ ${type}`));
 
 				if (error.loc && error.loc.file) {
 					console.log(colors.bold(`${path.relative(process.cwd(), error.loc.file)} (${error.loc.line}:${error.loc.column})`));
@@ -111,7 +111,7 @@ prog.command('dev')
 
 			watcher.on('build', (event: BuildEvent) => {
 				if (event.errors.length) {
-					console.log(colors.bold().red(`✗ ${event.type}`));
+					console.log(colors.bold().red(`❌ ${event.type}`));
 
 					event.errors.filter(e => !e.duplicate).forEach(error => {
 						if (error.file) console.log(colors.bold(error.file));
@@ -135,7 +135,7 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 					}
 				} else {
-					console.log(`${colors.bold().green(`✔ ${event.type}`)} ${colors.gray(`(${formatMs(event.duration)})`)}`);
+					console.log(`${colors.bold().green(`✅ ${event.type}`)} ${colors.gray(`${formatMs(event.duration)}`)}`);
 				}
 			});
 		} catch (err) {
