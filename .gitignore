@@ -1,8 +1,18 @@
-.DS_Store
-/node_modules
-/test/**/node_modules
+# Project
+runtime/app.mjs
+runtime/server.mjs
+
+# Compiled output
+node_modules
 __sapper__
 dist
-/runtime/app.mjs
-/runtime/server.mjs
-/.vscode/settings.json
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# vsCode
+.vscode/settings.json
+
+# Related to macOS
+.DS_Store
