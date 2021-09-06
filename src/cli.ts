@@ -65,8 +65,6 @@ prog.command('dev')
 				ext: opts.ext
 			});
 
-			let first = true;
-
 			watcher.on('stdout', data => {
 				process.stdout.write(data);
 			});
@@ -76,13 +74,10 @@ prog.command('dev')
 			});
 
 			watcher.on('ready', async (event: ReadyEvent) => {
-				if (first) {
-					console.log(colors.bold().cyan(`🚀 http://localhost:${event.port}`));
+				console.log(colors.bold().cyan(`🚀 http://localhost:${event.port}`));
 				if (opts.open) {
-						const { exec } = await import('child_process');
-						exec(`open http://localhost:${event.port}`);
-					}
-					first = false;
+					const { exec } = await import('child_process');
+					exec(`open http://localhost:${event.port}`);
 				}
 			});
 
