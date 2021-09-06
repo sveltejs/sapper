@@ -87,7 +87,7 @@ prog.command('dev')
 
 				console.log(`🔄 modified ${get_watcher_on_invalid_current_name(event.invalid)}`);
 				event.changed.map(filename => {
-					console.log(`📁 ${colors.bold().cyan(path.relative(`${process.cwd()}/src/routes/`, filename))}`);
+					console.log(`📁 ${colors.bold().cyan(path.relative(`${process.cwd()}`, filename))}`);
 				});
 			});
 
