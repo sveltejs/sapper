@@ -21,9 +21,9 @@ export function repeat(str: string, i: number) {
 const convertMsToSec = (ms: number) => Math.round(ms / 1000);
 const convertMsToMin = (ms: number) => Math.floor(ms / 60000);
 export const formatMs = (ms: number) => {
-	if ( ms < 1000 ) 									return `${ms}ms`;
+	if ( ms < 1000 ) 					return `${ms}ms`;
 	if ( ms >= 1000 && ms < 60000 ) 	return `${convertMsToSec(ms)}s`;
-	if ( ms >= 60000 ) 								return `${convertMsToMin(ms)}m`;
+	if ( ms >= 60000 ) 					return `${convertMsToMin(ms)}m`;
 };
 
 export function elapsed(start: number) {
