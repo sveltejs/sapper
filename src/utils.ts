@@ -12,17 +12,16 @@ export function repeat(str: string, i: number) {
 	return result;
 }
 
-export function format_milliseconds(ms: number) {
-	if (ms < 1000) return `${ms}ms`;
-	if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-
-	const minutes = ~~(ms / 60000);
-	const seconds = Math.round((ms % 60000) / 1000);
-	return `${minutes}m${seconds < 10 ? '0' : ''}${seconds}s`;
-}
+const convertMsToSec = (ms: number) => Math.round(ms / 1000);
+const convertMsToMin = (ms: number) => Math.floor(ms / 60000);
+export const formatMs = (ms: number) => {
+	if ( ms < 1000 ) 									return `${ms}ms`;
+	if ( ms >= 1000 && ms < 60000 ) 	return `${convertMsToSec(ms)}s`;
+	if ( ms >= 60000 ) 								return `${convertMsToMin(ms)}m`;
+};
 
 export function elapsed(start: number) {
-	return format_milliseconds(Date.now() - start);
+	return formatMs(Date.now() - start);
 }
 
 export function walk(cwd: string, dir = cwd, files: string[] = []) {

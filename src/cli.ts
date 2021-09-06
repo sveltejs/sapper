@@ -3,7 +3,7 @@ import * as path from 'path';
 import sade from 'sade';
 import colors from 'kleur';
 import * as pkg from '../package.json';
-import { elapsed, repeat, left_pad, format_milliseconds } from './utils';
+import { elapsed, repeat, left_pad, formatMs } from './utils';
 import { InvalidEvent, ErrorEvent, FatalEvent, BuildEvent, ReadyEvent } from './interfaces';
 
 const prog = sade('sapper').version(pkg.version);
@@ -135,7 +135,7 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 					}
 				} else {
-					console.log(`${colors.bold().green(`✔ ${event.type}`)} ${colors.gray(`(${format_milliseconds(event.duration)})`)}`);
+					console.log(`${colors.bold().green(`✔ ${event.type}`)} ${colors.gray(`(${formatMs(event.duration)})`)}`);
 				}
 			});
 		} catch (err) {
