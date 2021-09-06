@@ -1,6 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+export const get_watcher_on_invalid_current_name = (object: object) => {
+	for (const key in object) {
+		if ( object[key] === true ) return key;
+	}
+};
+
 export function left_pad(str: string, len: number) {
 	while (str.length < len) str = ` ${str}`;
 	return str;

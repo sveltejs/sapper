@@ -3,7 +3,7 @@ import * as path from 'path';
 import sade from 'sade';
 import colors from 'kleur';
 import * as pkg from '../package.json';
-import { elapsed, repeat, left_pad, formatMs } from './utils';
+import { elapsed, repeat, left_pad, formatMs, get_watcher_on_invalid_current_name } from './utils';
 import { InvalidEvent, ErrorEvent, FatalEvent, BuildEvent, ReadyEvent } from './interfaces';
 
 const prog = sade('sapper').version(pkg.version);
@@ -85,7 +85,7 @@ prog.command('dev')
 				// Separate it from the previous print
 				console.log('');
 
-				console.log('🔄 modified');
+				console.log(`🔄 modified ${get_watcher_on_invalid_current_name(event.invalid)}`);
 				event.changed.map(filename => {
 					console.log(`📁 ${colors.bold().cyan(path.relative(`${process.cwd()}/src/routes/`, filename))}`);
 				});
