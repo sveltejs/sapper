@@ -82,8 +82,13 @@ prog.command('dev')
 			});
 
 			watcher.on('invalid', (event: InvalidEvent) => {
-				const changed = event.changed.map(filename => path.relative(process.cwd(), filename)).join(', ');
-				console.log(`\n${colors.bold().cyan(changed)} changed. Rebuilding...`);
+				// Separate it from the previous print
+				console.log('');
+
+				console.log('🔄 modified');
+				event.changed.map(filename => {
+					console.log(`📁 ${colors.bold().cyan(path.relative(`${process.cwd()}/src/routes/`, filename))}`);
+				});
 			});
 
 			watcher.on('error', (event: ErrorEvent) => {
@@ -130,6 +135,7 @@ prog.command('dev')
 						console.log(`${hidden} duplicate ${hidden === 1 ? 'warning' : 'warnings'} hidden\n`);
 					}
 				} else {
+					if (event.type === 'server') console.log('');
 					console.log(`${colors.bold().green(`✅ ${event.type}`)} ${colors.gray(`${formatMs(event.duration)}`)}`);
 				}
 			});
