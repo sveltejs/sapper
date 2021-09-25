@@ -39,7 +39,7 @@
     "@types/puppeteer": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
-    "cheap-watch": "^1.0.2",
+    "cheap-watch": "^1.0.4",
     "cookie": "^0.4.1",
     "cross-env": "^7.0.2",
     "devalue": "^2.0.0",
