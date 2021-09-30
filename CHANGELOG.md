@@ -1,5 +1,9 @@
 # sapper changelog
 
+## 0.29.3
+
+* Generate ESM code when project's `package.json` indicates `"type": "module"` ([#1800](https://github.com/sveltejs/sapper/pull/1800))
+
 ## 0.29.2
 
 * Allow export to succeed when user has not provided a `base` tag ([#1208](https://github.com/sveltejs/sapper/issues/1208))
