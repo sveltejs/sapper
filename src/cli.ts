@@ -5,6 +5,7 @@ import colors from 'kleur';
 import * as pkg from '../package.json';
 import { elapsed, repeat, left_pad, format_milliseconds } from './utils';
 import { InvalidEvent, ErrorEvent, FatalEvent, BuildEvent, ReadyEvent } from './interfaces';
+import { module } from './config/env';
 
 const prog = sade('sapper').version(pkg.version);
 
@@ -172,8 +173,7 @@ prog.command('build [dest]')
 			await _build(opts.bundler, opts.legacy, opts.cwd, opts.src, opts.routes, opts.output, dest, opts.ext);
 
 			const launcher = path.resolve(dest, 'index.js');
-			const pkg = await import(path.resolve(opts.cwd, 'package.json'));
-			const import_statement = pkg.type === 'module'
+			const import_statement = module
 				? "import './server/server.js';"
 				: "require('./server/server.js');";
 

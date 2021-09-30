@@ -1,4 +1,4 @@
-import { dev, src, dest } from './env';
+import { dev, src, dest, module } from './env';
 import { InputOption, OutputOptions } from 'rollup';
 
 const sourcemap = dev ? 'inline' : false;
@@ -32,11 +32,10 @@ export default {
 			};
 		},
 
-		output: (opts): OutputOptions => {
-			const { format } = opts || {};
+		output: (): OutputOptions => {
 			return {
 				dir: `${dest}/server`,
-				format: format || 'cjs',
+				format: module ? 'esm' : 'cjs',
 				sourcemap
 			};
 		}
