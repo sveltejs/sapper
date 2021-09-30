@@ -83,7 +83,7 @@ describe('redirects', function() {
 		);
 	});
 
-	const interceptor = (request: puppeteer.Request) => {
+	const interceptor = (request: puppeteer.HTTPRequest) => {
 		if (/example\.com/.test(request.url())) {
 			request.respond({
 				status: 200,
