@@ -1,7 +1,8 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import RollupCompiler from './RollupCompiler';
 import { WebpackCompiler } from './WebpackCompiler';
-import { set_dev, set_src, set_dest } from '../../config/env';
+import { set_dev, set_src, set_dest, set_module } from '../../config/env';
 
 export type Compiler = RollupCompiler | WebpackCompiler;
 
@@ -22,6 +23,11 @@ export default async function create_compilers(
 	set_dev(dev);
 	set_src(src);
 	set_dest(dest);
+	try {
+		set_module(JSON.parse(fs.readFileSync(path.resolve(cwd, 'package.json'), 'utf-8')).type === 'module');
+	} catch (err) {
+		set_module(false);
+	}
 
 	if (bundler === 'rollup') {
 		const config = await RollupCompiler.load_config(cwd);

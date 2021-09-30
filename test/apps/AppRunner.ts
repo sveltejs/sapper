@@ -109,13 +109,13 @@ export class AppRunner {
 			const pending: Set<string> = new Set();
 			let done = false;
 
-			function handle_request(request: puppeteer.Request) {
+			function handle_request(request: puppeteer.HTTPRequest) {
 				const url = request.url();
 				requests.push(url);
 				pending.add(url);
 			}
 
-			function handle_requestfinished(request: puppeteer.Request) {
+			function handle_requestfinished(request: puppeteer.HTTPRequest) {
 				const url = request.url();
 				pending.delete(url);
 
@@ -125,7 +125,7 @@ export class AppRunner {
 				}
 			}
 
-			function handle_requestfailed(request: puppeteer.Request) {
+			function handle_requestfailed(request: puppeteer.HTTPRequest) {
 				cleanup();
 				reject(new Error(`failed to fetch ${request.url()}`));
 			}
@@ -151,7 +151,7 @@ export class AppRunner {
 		});
 	}
 
-	async intercept_requests(interceptor: (request: puppeteer.Request) => void, fn: () => any): Promise<void> {
+	async intercept_requests(interceptor: (request: puppeteer.HTTPRequest) => void, fn: () => any): Promise<void> {
 		const unique_interceptor = request => interceptor(request);
 
 		this.page.on('request', unique_interceptor);
