@@ -32,10 +32,11 @@ export default {
 			};
 		},
 
-		output: (): OutputOptions => {
+		output: (opts): OutputOptions => {
+			const { format } = opts || {};
 			return {
 				dir: `${dest}/server`,
-				format: 'cjs',
+				format: format || 'cjs',
 				sourcemap
 			};
 		}
