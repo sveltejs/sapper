@@ -23,7 +23,11 @@ export default async function create_compilers(
 	set_dev(dev);
 	set_src(src);
 	set_dest(dest);
-	set_module(JSON.parse(fs.readFileSync(path.resolve(cwd, 'package.json'), 'utf-8')).type === 'module');
+	try {
+		set_module(JSON.parse(fs.readFileSync(path.resolve(cwd, 'package.json'), 'utf-8')).type === 'module');
+	} catch (err) {
+		set_module(false)
+	}
 
 	if (bundler === 'rollup') {
 		const config = await RollupCompiler.load_config(cwd);
