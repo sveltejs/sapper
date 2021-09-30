@@ -26,7 +26,7 @@ export default async function create_compilers(
 	try {
 		set_module(JSON.parse(fs.readFileSync(path.resolve(cwd, 'package.json'), 'utf-8')).type === 'module');
 	} catch (err) {
-		set_module(false)
+		set_module(false);
 	}
 
 	if (bundler === 'rollup') {
