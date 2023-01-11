@@ -43,6 +43,10 @@
 		color: white;
 		text-align: left;
 	}
+	
+	.box p {
+		margin-bottom: 0;
+	}
 
 	section {
 		position: relative;
