@@ -1,1 +1,0 @@
-<h1>Svelte template rendered</h1>
