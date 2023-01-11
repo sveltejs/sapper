@@ -4,9 +4,9 @@ title: Introduction
 
 ### Before we begin
 
-> Sapper's successor, [SvelteKit](https://kit.svelte.dev), is currently available for use. All development efforts moving forward will be focused on [SvelteKit](https://kit.svelte.dev).
+> Sapper has been deprecated in favor of [SvelteKit](https://kit.svelte.dev). We recommend using [SvelteKit](https://kit.svelte.dev) for all projects moving forward. Sapper will no be receiving security fixes, bug fixes, or any type of improvements.
 >
-> If you get stuck, reach out for help in the [Discord chatroom](https://svelte.dev/chat). See the [migration guides](migrating) for help upgrading from older versions.
+> See the [migration guide](https://kit.svelte.dev/docs/migrating) for help migrating from Sapper to SvelteKit. If you get stuck, reach out for help in the [Discord chatroom](https://svelte.dev/chat).
 
 ### What is Sapper?
 
